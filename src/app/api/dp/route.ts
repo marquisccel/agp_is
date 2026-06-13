@@ -4,11 +4,12 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
+import { isOperationalRole } from "@/lib/roles"
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || !["STAFF", "ADMIN"].includes(session.user.role)) {
+    if (!session || !session.user || !isOperationalRole(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -18,18 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // Determine status approval: if Staff -> Admin needs to approve. If Admin and nominal > 2,000,000 -> Manager.
-    let status = "menunggu_approval_admin"
-    const role = session.user.role
-    if (role === "ADMIN") {
-      if (nominal_diajukan > 2000000) {
-        status = "menunggu_approval_manager"
-      } else {
-        // Admin auto-approve for small amounts? PRD says Admin can directly approve if <= 2M.
-        // Actually, if Admin requests it and it's <= 2M, it goes straight to approved.
-        status = "approved"
-      }
-    }
+    const status = nominal_diajukan > 2000000 ? "menunggu_approval_manager" : "approved"
 
     const dp = await prisma.downPayment.create({
       data: {

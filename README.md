@@ -41,7 +41,7 @@ npx prisma migrate dev
 npm run seed
 ```
 
-Seeded login accounts use `password123`. Available roles are Manager, Supervisor, Admin, and Staff. Example supervisor account:
+Seeded login accounts use `password123`. Available roles are Manager, Supervisor, Admin, and Staff. Staff and Admin are currently treated as one operational warehouse role while the legacy role names are kept for compatibility. Example supervisor account:
 
 ```text
 supervisor.kediri@example.com

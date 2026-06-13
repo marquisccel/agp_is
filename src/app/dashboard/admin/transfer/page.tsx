@@ -3,10 +3,11 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import TransferList from "@/components/features/TransferList"
 import { redirect } from "next/navigation"
+import { isOperationalRole } from "@/lib/roles"
 
 export default async function AdminTransferPage() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session || !isOperationalRole(session.user.role)) {
     redirect("/login")
   }
 

@@ -3,17 +3,21 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { getErrorMessage } from "@/lib/errors"
+import { isOperationalRole } from "@/lib/roles"
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !["ADMIN", "MANAGER"].includes(session.user.role)) {
+    if (!session || (!isOperationalRole(session.user.role) && session.user.role !== "MANAGER")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { id: purchaseId } = await params
     const purchase = await prisma.purchase.findUnique({ where: { id: purchaseId } })
     if (!purchase) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    if (isOperationalRole(session.user.role) && purchase.warehouseId !== session.user.warehouseId) {
+      return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
+    }
     
     if (!["approved", "sudah_transfer"].includes(purchase.status_approval)) {
       return NextResponse.json({ error: "Hanya transaksi yang approved atau sudah transfer yang bisa ditandai/diubah transfer" }, { status: 400 })

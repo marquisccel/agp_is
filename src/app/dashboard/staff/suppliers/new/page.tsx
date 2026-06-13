@@ -2,10 +2,11 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import SupplierForm from "@/components/features/SupplierForm"
+import { isOperationalRole } from "@/lib/roles"
 
 export default async function NewSupplierPage() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== "STAFF") return null
+  if (!session || !isOperationalRole(session.user.role)) return null
 
   const staffWarehouseId = session.user.warehouseId
   if (!staffWarehouseId) return null

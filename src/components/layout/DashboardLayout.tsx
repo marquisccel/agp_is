@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
   BarChart3,
-  CheckCircle2,
   ClipboardList,
   CreditCard,
   Database,
@@ -22,6 +21,7 @@ import {
   WalletCards,
   type LucideIcon,
 } from "lucide-react"
+import { isOperationalRole } from "@/lib/roles"
 
 type NavItem = {
   name: string
@@ -121,17 +121,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const role = session.user.role
 
   const navItems: NavItem[] = [
-    ...(role === "STAFF" ? [
+    ...(isOperationalRole(role) ? [
       { name: "Input Pembelian", href: "/dashboard/staff", icon: Package },
       { name: "Data Supplier", href: "/dashboard/staff/suppliers", icon: Store },
       { name: "Pengajuan Kasbon", href: "/dashboard/staff/dp", icon: WalletCards },
       { name: "Daftar Transaksi", href: "/dashboard/staff/history", icon: ClipboardList },
-    ] : []),
-    ...(role === "ADMIN" ? [
-      { name: "Double Check", href: "/dashboard/admin", icon: CheckCircle2 },
       { name: "Transfer Pembayaran", href: "/dashboard/admin/transfer", icon: CreditCard },
-      { name: "Manajemen Kasbon", href: "/dashboard/admin/dp", icon: WalletCards },
-      { name: "Daftar Transaksi", href: "/dashboard/admin/history", icon: ClipboardList },
     ] : []),
     ...(role === "SUPERVISOR" ? [
       { name: "Review Transaksi", href: "/dashboard/supervisor", icon: ShieldCheck },

@@ -2,10 +2,11 @@ import { authOptions } from "@/lib/authOptions"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import DPRequestForm from "@/components/features/DPRequestForm"
+import { isOperationalRole } from "@/lib/roles"
 
 export default async function StaffNewDPRequestPage() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== "STAFF") return null
+  if (!session || !isOperationalRole(session.user.role)) return null
 
   const warehouseId = session.user.warehouseId
   if (!warehouseId) return null
@@ -26,7 +27,7 @@ export default async function StaffNewDPRequestPage() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-        <DPRequestForm suppliers={suppliers} role="STAFF" />
+        <DPRequestForm suppliers={suppliers} role={session.user.role} />
       </div>
     </div>
   )

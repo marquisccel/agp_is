@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from "@/lib/authOptions"
+import { isOperationalRole } from "@/lib/roles"
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -15,9 +16,7 @@ export default async function Home() {
     redirect('/dashboard/manager')
   } else if (role === 'SUPERVISOR') {
     redirect('/dashboard/supervisor')
-  } else if (role === 'ADMIN') {
-    redirect('/dashboard/admin')
-  } else if (role === 'STAFF') {
+  } else if (isOperationalRole(role)) {
     redirect('/dashboard/staff')
   }
 

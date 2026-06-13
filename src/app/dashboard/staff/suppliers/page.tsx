@@ -3,10 +3,11 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Link from "next/link"
+import { isOperationalRole } from "@/lib/roles"
 
 export default async function StaffSuppliersPage() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== "STAFF") redirect("/login")
+  if (!session || !isOperationalRole(session.user.role)) redirect("/login")
 
   const warehouseId = session.user.warehouseId
 

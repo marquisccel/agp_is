@@ -2,10 +2,11 @@ import { authOptions } from "@/lib/authOptions"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { isOperationalRole } from "@/lib/roles"
 
 export default async function DPListStaff() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== "STAFF") return null
+  if (!session || !isOperationalRole(session.user.role)) return null
 
   const warehouseId = session.user.warehouseId
   if (!warehouseId) return null

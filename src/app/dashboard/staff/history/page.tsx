@@ -2,17 +2,19 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { isOperationalRole } from "@/lib/roles"
 
 export default async function StaffHistoryPage() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== "STAFF") {
+  if (!session || !isOperationalRole(session.user.role)) {
     redirect("/login")
   }
 
   const userId = session.user.id
+  const warehouseId = session.user.warehouseId
 
   const purchases = await prisma.purchase.findMany({
-    where: { userIdStaff: userId },
+    where: session.user.role === "ADMIN" && warehouseId ? { warehouseId } : { userIdStaff: userId },
     orderBy: { createdAt: "desc" },
     include: { supplier: true, items: true }
   })
