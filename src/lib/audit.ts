@@ -5,8 +5,8 @@ export async function createAuditLog(params: {
   action: string
   table_name: string
   record_id: string
-  old_data?: any
-  new_data?: any
+  old_data?: unknown
+  new_data?: unknown
 }) {
   try {
     await prisma.auditLog.create({
