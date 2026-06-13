@@ -3,8 +3,14 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
-// Note: You need to import the next-auth handler or configure it. 
-// Assuming it's configured to return session properly based on Phase 1 setup.
+import { getErrorMessage } from "@/lib/errors"
+
+type DraftPurchaseItemInput = {
+  sku_name: string
+  spec?: string | null
+  berat_estimasi: number | string
+  harga_per_kg: number | string
+}
 
 export async function POST(req: Request) {
   try {
@@ -41,7 +47,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User is not assigned to a warehouse" }, { status: 403 })
     }
 
-    const totalLapakWeight = items.reduce((sum: number, item: any) => sum + (parseFloat(item.berat_estimasi) || 0), 0)
+    const draftItems = items as DraftPurchaseItemInput[]
+    const totalLapakWeight = draftItems.reduce((sum, item) => sum + (parseFloat(String(item.berat_estimasi)) || 0), 0)
 
     // Create Draft Purchase
     const purchase = await prisma.purchase.create({
@@ -65,13 +72,13 @@ export async function POST(req: Request) {
         berat_potongan_karung: parseFloat(berat_potongan_karung) || 0,
         harga_potongan_karung: parseFloat(harga_potongan_karung) || 0,
         items: {
-          create: items.map((item: any) => ({
+          create: draftItems.map((item) => ({
             sku_name: item.sku_name,
             spec: item.spec || null,
-            berat_lapak: parseFloat(item.berat_estimasi) || 0,
-            berat_final_item: parseFloat(item.berat_estimasi) || 0, // Default to estimate
-            harga_per_kg: parseFloat(item.harga_per_kg) || 0,
-            subtotal: (parseFloat(item.berat_estimasi) || 0) * (parseFloat(item.harga_per_kg) || 0),
+            berat_lapak: parseFloat(String(item.berat_estimasi)) || 0,
+            berat_final_item: parseFloat(String(item.berat_estimasi)) || 0,
+            harga_per_kg: parseFloat(String(item.harga_per_kg)) || 0,
+            subtotal: (parseFloat(String(item.berat_estimasi)) || 0) * (parseFloat(String(item.harga_per_kg)) || 0),
           })),
         },
       },
@@ -90,8 +97,9 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json(purchase, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
+    const message = getErrorMessage(error)
     console.error("Error creating draft purchase:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

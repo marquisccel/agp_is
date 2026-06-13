@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json(supplier, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating supplier:", error)
     return NextResponse.json({ error: "Gagal menyimpan data supplier" }, { status: 500 })
   }

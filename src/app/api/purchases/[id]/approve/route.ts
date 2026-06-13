@@ -3,6 +3,8 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { getErrorMessage } from "@/lib/errors"
+import type { Prisma } from "@prisma/client"
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,7 +29,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Purchase is not waiting for manager approval" }, { status: 400 })
     }
 
-    let updateData: any = {}
+    let updateData: Prisma.PurchaseUncheckedUpdateInput = {}
     if (action === "approve") {
       updateData = {
         status_approval: "approved",
@@ -65,8 +67,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     return NextResponse.json(updatedPurchase)
-  } catch (error: any) {
+  } catch (error) {
+    const message = getErrorMessage(error)
     console.error("Error approving purchase:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

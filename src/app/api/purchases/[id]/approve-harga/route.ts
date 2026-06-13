@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { getErrorMessage } from "@/lib/errors"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -46,8 +47,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     })
 
     return NextResponse.json(updatedPurchase)
-  } catch (error: any) {
+  } catch (error) {
+    const message = getErrorMessage(error)
     console.error("Error approving price:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

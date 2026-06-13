@@ -2,6 +2,7 @@ import { authOptions } from "@/lib/authOptions";
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
+import { getErrorMessage } from "@/lib/errors"
 
 export async function GET() {
   try {
@@ -47,8 +48,9 @@ export async function GET() {
     summary.sort((a, b) => b.remaining - a.remaining)
 
     return NextResponse.json(summary)
-  } catch (error: any) {
+  } catch (error) {
+    const message = getErrorMessage(error)
     console.error("Error fetching DP summary:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

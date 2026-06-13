@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { getErrorMessage } from "@/lib/errors"
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const file = formData.get("bukti") as File | null
 
     let buktiUrl = purchase.bukti_transfer
-    if (file && typeof (file as any).arrayBuffer === "function") {
+    if (file) {
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
       const mimeType = file.type || "image/jpeg"
@@ -40,9 +41,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     })
 
     return NextResponse.json(updated)
-  } catch (error: any) {
+  } catch (error) {
+    const message = getErrorMessage(error)
     console.error(error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
-
