@@ -357,6 +357,7 @@ export default function MasterDataClient({
               className="border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-cyan-500 bg-white text-slate-700"
             >
               <option value="all">Semua Role</option>
+              <option value="SUPERVISOR">Supervisor</option>
               <option value="ADMIN">Admin</option>
               <option value="STAFF">Staff</option>
             </select>
@@ -386,7 +387,9 @@ export default function MasterDataClient({
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
-                            u.role === "ADMIN" ? "bg-violet-100 text-violet-700" : "bg-cyan-100 text-cyan-700"
+                            u.role === "SUPERVISOR"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : u.role === "ADMIN" ? "bg-violet-100 text-violet-700" : "bg-cyan-100 text-cyan-700"
                           }`}>
                             {u.nama.charAt(0)}
                           </div>
@@ -396,9 +399,11 @@ export default function MasterDataClient({
                       <td className="px-5 py-3.5 text-slate-500 text-xs font-mono">{u.email}</td>
                       <td className="px-5 py-3.5">
                         <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                          u.role === "ADMIN"
-                            ? "bg-violet-50 text-violet-700 border border-violet-200"
-                            : "bg-cyan-50 text-cyan-700 border border-cyan-200"
+                          u.role === "SUPERVISOR"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : u.role === "ADMIN"
+                              ? "bg-violet-50 text-violet-700 border border-violet-200"
+                              : "bg-cyan-50 text-cyan-700 border border-cyan-200"
                         }`}>
                           {u.role}
                         </span>

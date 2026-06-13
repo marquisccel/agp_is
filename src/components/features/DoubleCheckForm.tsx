@@ -3,7 +3,15 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-export default function DoubleCheckForm({ purchase, availableDp }: { purchase: any, availableDp: number }) {
+export default function DoubleCheckForm({
+  purchase,
+  availableDp,
+  successRedirect = "/dashboard/admin",
+}: {
+  purchase: any
+  availableDp: number
+  successRedirect?: string
+}) {
   const router = useRouter()
   
   const staffLapakSum = purchase.berat_timbangan_lapak || purchase.items.reduce((sum: number, item: any) => sum + (item.berat_final_item || 0), 0)
@@ -106,7 +114,7 @@ export default function DoubleCheckForm({ purchase, availableDp }: { purchase: a
         throw new Error(data.error || "Gagal melakukan double check")
       }
 
-      router.push("/dashboard/admin")
+      router.push(successRedirect)
       router.refresh()
     } catch (err: any) {
       setError(err.message)

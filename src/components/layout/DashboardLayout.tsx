@@ -14,6 +14,7 @@ import {
   History,
   Package,
   PenLine,
+  ShieldCheck,
   Scale,
   Settings,
   Store,
@@ -131,6 +132,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       { name: "Transfer Pembayaran", href: "/dashboard/admin/transfer", icon: CreditCard },
       { name: "Manajemen Kasbon", href: "/dashboard/admin/dp", icon: WalletCards },
       { name: "Daftar Transaksi", href: "/dashboard/admin/history", icon: ClipboardList },
+    ] : []),
+    ...(role === "SUPERVISOR" ? [
+      { name: "Review Transaksi", href: "/dashboard/supervisor", icon: ShieldCheck },
+      { name: "Daftar Transaksi", href: "/dashboard/supervisor/history", icon: ClipboardList },
     ] : []),
     ...(role === "MANAGER" ? [
       { name: "Analytics", href: "/dashboard/manager", icon: BarChart3 },

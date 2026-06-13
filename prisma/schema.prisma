@@ -12,7 +12,7 @@ model User {
   nama        String
   email       String       @unique
   password    String
-  role        String       // 'MANAGER', 'ADMIN', 'STAFF'
+  role        String       // 'MANAGER', 'SUPERVISOR', 'ADMIN', 'STAFF'
   warehouseId String?
   warehouse   Warehouse?   @relation(fields: [warehouseId], references: [id])
   createdAt   DateTime     @default(now())

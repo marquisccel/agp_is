@@ -13,6 +13,8 @@ export default async function Home() {
 
   if (role === 'MANAGER') {
     redirect('/dashboard/manager')
+  } else if (role === 'SUPERVISOR') {
+    redirect('/dashboard/supervisor')
   } else if (role === 'ADMIN') {
     redirect('/dashboard/admin')
   } else if (role === 'STAFF') {

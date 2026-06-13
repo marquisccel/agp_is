@@ -41,6 +41,12 @@ npx prisma migrate dev
 npm run seed
 ```
 
+Seeded login accounts use `password123`. Available roles are Manager, Supervisor, Admin, and Staff. Example supervisor account:
+
+```text
+supervisor.kediri@example.com
+```
+
 6. Start the app:
 
 ```bash

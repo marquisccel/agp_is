@@ -26,7 +26,7 @@ const toNumber = (value: number | string | null | undefined) => parseFloat(Strin
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || session.user.role !== "ADMIN") {
+    if (!session || !session.user || !["ADMIN", "SUPERVISOR"].includes(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -63,6 +63,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     if (!currentPurchase) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    if (session.user.role === "SUPERVISOR" && currentPurchase.warehouseId !== session.user.warehouseId) {
+      return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
+    }
     if (currentPurchase.status_approval !== "menunggu_double_cek") {
       return NextResponse.json({ error: "Purchase is not in draft state" }, { status: 400 })
     }

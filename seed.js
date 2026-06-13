@@ -56,6 +56,17 @@ async function main() {
     data: { email: 'admin.malang@example.com', nama: 'Admin Malang', password, role: 'ADMIN', warehouseId: malang.id }
   });
 
+  // Supervisors - satu per gudang
+  await prisma.user.create({
+    data: { email: 'supervisor.kediri@example.com', nama: 'Supervisor Kediri', password, role: 'SUPERVISOR', warehouseId: kediri.id }
+  });
+  await prisma.user.create({
+    data: { email: 'supervisor.madiun@example.com', nama: 'Supervisor Madiun', password, role: 'SUPERVISOR', warehouseId: madiun.id }
+  });
+  await prisma.user.create({
+    data: { email: 'supervisor.malang@example.com', nama: 'Supervisor Malang', password, role: 'SUPERVISOR', warehouseId: malang.id }
+  });
+
   // Staffs - satu per gudang
   await prisma.user.create({
     data: { email: 'staff.kediri@example.com', nama: 'Staff Kediri', password, role: 'STAFF', warehouseId: kediri.id }
@@ -132,6 +143,11 @@ async function main() {
   console.log('  admin.kediri@example.com   | password123 | Gudang Kediri');
   console.log('  admin.madiun@example.com   | password123 | Gudang Madiun');
   console.log('  admin.malang@example.com   | password123 | Gudang Malang');
+  console.log('');
+  console.log('SUPERVISOR:');
+  console.log('  supervisor.kediri@example.com   | password123 | Gudang Kediri');
+  console.log('  supervisor.madiun@example.com   | password123 | Gudang Madiun');
+  console.log('  supervisor.malang@example.com   | password123 | Gudang Malang');
   console.log('');
   console.log('STAFF:');
   console.log('  staff.kediri@example.com   | password123 | Gudang Kediri');

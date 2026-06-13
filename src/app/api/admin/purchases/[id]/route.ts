@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 
-const ALLOWED_ROLES = ["ADMIN", "MANAGER"]
+const ALLOWED_ROLES = ["ADMIN", "SUPERVISOR", "MANAGER"]
 
 type EditablePurchaseItemInput = {
   sku_name: string
@@ -38,7 +38,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
     // Admin hanya bisa lihat transaksi warehousenya sendiri
     const userWarehouseId = session.user.warehouseId
-    if (role === "ADMIN" && userWarehouseId && purchase.warehouseId !== userWarehouseId) {
+    if (["ADMIN", "SUPERVISOR"].includes(role) && userWarehouseId && purchase.warehouseId !== userWarehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
 
@@ -80,7 +80,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
     // Admin hanya bisa edit warehousenya sendiri; Manager bisa semua
     const userWarehouseId = session.user.warehouseId
-    if (role === "ADMIN" && userWarehouseId && existing.warehouseId !== userWarehouseId) {
+    if (["ADMIN", "SUPERVISOR"].includes(role) && userWarehouseId && existing.warehouseId !== userWarehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
 

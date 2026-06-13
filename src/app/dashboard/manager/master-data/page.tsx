@@ -80,7 +80,7 @@ export default async function MasterDataPage() {
 
   // ── Users (staff & admin) ──
   const users = await prisma.user.findMany({
-    where: { role: { in: ["STAFF", "ADMIN"] } },
+    where: { role: { in: ["STAFF", "ADMIN", "SUPERVISOR"] } },
     select: {
       id: true, nama: true, email: true, role: true,
       warehouseId: true,
