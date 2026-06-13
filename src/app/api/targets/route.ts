@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || (session.user as any).role !== "MANAGER") {
+    if (!session || session.user.role !== "MANAGER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -59,7 +59,7 @@ export async function PUT(req: Request) {
     const targetBulan = bulan ? parseInt(bulan) : now.getMonth() + 1
     const targetTahun = tahun ? parseInt(tahun) : now.getFullYear()
 
-    const userId = (session.user as any).id as string | undefined
+    const userId = session.user.id as string | undefined
 
     // Helper: parse float safely
     const pf = (v: any) => (v !== undefined && v !== null && v !== "")

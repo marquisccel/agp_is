@@ -7,7 +7,7 @@ import { createAuditLog } from "@/lib/audit"
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || (session.user as any).role !== "ADMIN") {
+    if (!session || !session.user || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -114,7 +114,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         where: { id: purchaseId },
         data: {
           nomor_nota,
-          userIdAdmin: (session.user as any).id,
+          userIdAdmin: session.user.id,
           metode_pembayaran_terpilih,
           berat_timbangan_lapak,
           berat_timbangan_gudang,
@@ -181,7 +181,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     // 3. Audit Log
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: "DOUBLE_CHECK",
       table_name: "Purchase",
       record_id: purchaseId,

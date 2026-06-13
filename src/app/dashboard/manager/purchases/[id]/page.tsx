@@ -6,7 +6,7 @@ import ManagerPurchaseDetailClient from "@/components/features/ManagerPurchaseDe
 
 export default async function ManagerPurchaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "MANAGER") {
+  if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
 

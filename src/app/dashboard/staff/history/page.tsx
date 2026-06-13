@@ -5,11 +5,11 @@ import { redirect } from "next/navigation"
 
 export default async function StaffHistoryPage() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "STAFF") {
+  if (!session || session.user.role !== "STAFF") {
     redirect("/login")
   }
 
-  const userId = (session.user as any).id
+  const userId = session.user.id
 
   const purchases = await prisma.purchase.findMany({
     where: { userIdStaff: userId },

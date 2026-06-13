@@ -25,7 +25,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
     }
 
     // Admin hanya bisa lihat transaksi warehousenya sendiri
-    const userWarehouseId = (session.user as any).warehouseId
+    const userWarehouseId = session.user.warehouseId
     if (role === "ADMIN" && userWarehouseId && purchase.warehouseId !== userWarehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
@@ -66,7 +66,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     }
 
     // Admin hanya bisa edit warehousenya sendiri; Manager bisa semua
-    const userWarehouseId = (session.user as any).warehouseId
+    const userWarehouseId = session.user.warehouseId
     if (role === "ADMIN" && userWarehouseId && existing.warehouseId !== userWarehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
@@ -119,7 +119,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     })
 
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: "EDIT_PURCHASE",
       table_name: "Purchase",
       record_id: id,

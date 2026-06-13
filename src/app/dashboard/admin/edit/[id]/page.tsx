@@ -7,12 +7,15 @@ import Link from "next/link"
 
 export default async function EditTransaksiPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "ADMIN") {
+  if (!session || session.user.role !== "ADMIN") {
     redirect("/login")
   }
 
   const { id } = await params
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
+  if (!warehouseId) {
+    redirect("/login")
+  }
 
   const purchase = await prisma.purchase.findUnique({
     where: { id },
@@ -26,7 +29,7 @@ export default async function EditTransaksiPage({ params }: { params: Promise<{ 
   if (!purchase) return notFound()
 
   // Admin hanya bisa edit transaksi di warehouse-nya sendiri
-  if (warehouseId && purchase.warehouseId !== warehouseId) {
+  if (purchase.warehouseId !== warehouseId) {
     redirect("/dashboard/admin/history")
   }
 

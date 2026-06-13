@@ -32,7 +32,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // Log the audit event
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: "SETTLE_TERMIN",
       table_name: "Purchase",
       record_id: purchaseId,

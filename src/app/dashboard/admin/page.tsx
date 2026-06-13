@@ -7,11 +7,14 @@ import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "ADMIN") {
+  if (!session || session.user.role !== "ADMIN") {
     redirect("/login")
   }
 
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
+  if (!warehouseId) {
+    redirect("/login")
+  }
 
   const rawPendingTermins = await prisma.purchase.findMany({
     where: { 

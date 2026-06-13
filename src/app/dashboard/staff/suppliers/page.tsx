@@ -6,9 +6,9 @@ import Link from "next/link"
 
 export default async function StaffSuppliersPage() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "STAFF") redirect("/login")
+  if (!session || session.user.role !== "STAFF") redirect("/login")
 
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
 
   const suppliers = warehouseId
     ? await prisma.supplier.findMany({

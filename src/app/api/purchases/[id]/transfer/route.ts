@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !["ADMIN", "MANAGER"].includes((session.user as any).role)) {
+    if (!session || !["ADMIN", "MANAGER"].includes(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

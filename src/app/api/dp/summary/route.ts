@@ -10,8 +10,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const role = (session.user as any).role
-    const warehouseId = (session.user as any).warehouseId
+    const role = session.user.role
+    const warehouseId = session.user.warehouseId
 
     // Fetch suppliers belonging to the current warehouse (or all for MANAGER)
     const suppliers = await prisma.supplier.findMany({

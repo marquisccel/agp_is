@@ -5,14 +5,13 @@ import SupplierForm from "@/components/features/SupplierForm"
 
 export default async function NewSupplierPage() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "STAFF") return null
+  if (!session || session.user.role !== "STAFF") return null
 
-  const staffWarehouseId = (session.user as any).warehouseId
+  const staffWarehouseId = session.user.warehouseId
+  if (!staffWarehouseId) return null
 
   // Only fetch the staff's own warehouse
-  const warehouses = staffWarehouseId
-    ? await prisma.warehouse.findMany({ where: { id: staffWarehouseId } })
-    : []
+  const warehouses = await prisma.warehouse.findMany({ where: { id: staffWarehouseId } })
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

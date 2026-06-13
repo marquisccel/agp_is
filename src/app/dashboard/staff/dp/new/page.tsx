@@ -5,14 +5,15 @@ import DPRequestForm from "@/components/features/DPRequestForm"
 
 export default async function StaffNewDPRequestPage() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "STAFF") return null
+  if (!session || session.user.role !== "STAFF") return null
 
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
+  if (!warehouseId) return null
 
   // Fetch only suppliers that belong to this staff's warehouse
   const suppliers = await prisma.supplier.findMany({
     where: {
-      warehouseId: warehouseId ?? undefined
+      warehouseId
     },
     orderBy: { nama: "asc" }
   })

@@ -6,7 +6,7 @@ import ApprovalHargaForm from "@/components/features/ApprovalHargaForm"
 
 export default async function ApprovalHargaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "MANAGER") return null
+  if (!session || session.user.role !== "MANAGER") return null
 
   const resolvedParams = await params
   const purchase = await prisma.purchase.findUnique({

@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     }
 
     // Determine warehouseId from session user
-    const warehouseId = (session.user as any).warehouseId
+    const warehouseId = session.user.warehouseId
     if (!warehouseId) {
       return NextResponse.json({ error: "User is not assigned to a warehouse" }, { status: 403 })
     }
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       data: {
         warehouseId,
         supplierId,
-        userIdStaff: (session.user as any).id,
+        userIdStaff: session.user.id,
         metode_pembayaran_terpilih,
         berat_timbangan_lapak: totalLapakWeight,
         status_approval: "menunggu_double_cek",
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
 
     // Audit Log
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: "CREATE_DRAFT",
       table_name: "Purchase",
       record_id: purchase.id,

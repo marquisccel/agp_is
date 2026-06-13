@@ -10,11 +10,11 @@ import { isWorkingDay } from "@/lib/workingDays"
 
 export default async function StaffDashboard() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "STAFF") {
+  if (!session || session.user.role !== "STAFF") {
     redirect("/login")
   }
 
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
 
   // Only fetch suppliers that belong to this staff's warehouse
   const suppliers = await prisma.supplier.findMany({

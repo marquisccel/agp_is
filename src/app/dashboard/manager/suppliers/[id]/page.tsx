@@ -6,7 +6,7 @@ import ManagerSupplierDetailsClient from "@/components/features/ManagerSupplierD
 
 export default async function ManagerSupplierDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "MANAGER") {
+  if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
 

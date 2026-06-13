@@ -18,7 +18,7 @@ function escape(val: any): string {
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || (session.user as any).role !== "MANAGER") {
+    if (!session || session.user.role !== "MANAGER") {
       return new Response("Unauthorized", { status: 401 })
     }
 
@@ -91,7 +91,7 @@ export async function GET(req: Request) {
     // ==========================================
     csv += "LAPORAN UTAMA KINERJA DAN TRANSAKSI PET RECYCLE\r\n"
     csv += `Tanggal Ekspor;${new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}\r\n`
-    csv += `Diunduh Oleh;${(session.user as any).nama} (${(session.user as any).role})\r\n\r\n`
+    csv += `Diunduh Oleh;${session.user.name} (${session.user.role})\r\n\r\n`
 
     // ==========================================
     // SECTION 1: KINERJA TARGET VS REALISASI PER GUDANG

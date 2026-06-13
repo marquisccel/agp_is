@@ -7,7 +7,7 @@ import { redirect } from "next/navigation"
 
 export default async function DPApprovalManager() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "MANAGER") {
+  if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
 

@@ -7,7 +7,7 @@ import Link from "next/link"
 
 export default async function ManagerEditTransaksiPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "MANAGER") {
+  if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
 

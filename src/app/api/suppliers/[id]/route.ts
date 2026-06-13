@@ -10,7 +10,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const role = (session.user as any).role
+    const role = session.user.role
     if (!["STAFF", "MANAGER", "ADMIN"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
@@ -36,7 +36,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     // If STAFF, ensure supplier belongs to their warehouse
     if (role === "STAFF") {
-      const staffWarehouseId = (session.user as any).warehouseId
+      const staffWarehouseId = session.user.warehouseId
       const existing = await prisma.supplier.findUnique({ where: { id } })
       if (!existing || existing.warehouseId !== staffWarehouseId) {
         return NextResponse.json({ error: "Tidak memiliki akses ke supplier ini" }, { status: 403 })

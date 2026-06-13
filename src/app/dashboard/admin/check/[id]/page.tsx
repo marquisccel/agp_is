@@ -6,7 +6,7 @@ import DoubleCheckForm from "@/components/features/DoubleCheckForm"
 
 export default async function DoubleCheckPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "ADMIN") {
+  if (!session || session.user.role !== "ADMIN") {
     redirect("/login")
   }
 

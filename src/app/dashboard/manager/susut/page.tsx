@@ -13,7 +13,7 @@ export default async function ManagerSusutPage({
 }) {
   const { bulan: qBulan, tahun: qTahun } = await searchParams
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "MANAGER") {
+  if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
 

@@ -7,7 +7,7 @@ import { createAuditLog } from "@/lib/audit"
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || (session.user as any).role !== "MANAGER") {
+    if (!session || !session.user || session.user.role !== "MANAGER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -29,7 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       where: { id: purchaseId },
       data: {
         status_approval: newStatus,
-        approvedByUserId: (session.user as any).id,
+        approvedByUserId: session.user.id,
         approvedAt: new Date(),
         nomor_nota: nomor_nota || purchase.nomor_nota, // If somehow it already has one, keep it, otherwise set new if approved.
         ...(action === "reject" ? { rejection_reason: "Ditolak oleh Manager karena harga terlalu tinggi" } : {})
@@ -37,7 +37,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     })
 
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: action === "approve" ? "MANAGER_APPROVE_PRICE" : "MANAGER_REJECT_PRICE",
       table_name: "Purchase",
       record_id: purchaseId,

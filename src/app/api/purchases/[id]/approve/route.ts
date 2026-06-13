@@ -7,7 +7,7 @@ import { createAuditLog } from "@/lib/audit"
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || (session.user as any).role !== "MANAGER") {
+    if (!session || !session.user || session.user.role !== "MANAGER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -31,7 +31,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (action === "approve") {
       updateData = {
         status_approval: "approved",
-        approvedByUserId: (session.user as any).id,
+        approvedByUserId: session.user.id,
         approvedAt: new Date(),
         nomor_nota: `INV-${Date.now()}` // Generate Nota
       }
@@ -39,7 +39,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       updateData = {
         status_approval: "rejected",
         rejection_reason: rejection_reason || "Ditolak oleh Manager tanpa alasan",
-        approvedByUserId: (session.user as any).id,
+        approvedByUserId: session.user.id,
         approvedAt: new Date()
       }
       
@@ -56,7 +56,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: action === "approve" ? "MANAGER_APPROVE_PRICE" : "MANAGER_REJECT_PRICE",
       table_name: "Purchase",
       record_id: purchaseId,

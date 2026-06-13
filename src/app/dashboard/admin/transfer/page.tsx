@@ -6,11 +6,14 @@ import { redirect } from "next/navigation"
 
 export default async function AdminTransferPage() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "ADMIN") {
+  if (!session || session.user.role !== "ADMIN") {
     redirect("/login")
   }
 
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
+  if (!warehouseId) {
+    redirect("/login")
+  }
 
   const purchases = await prisma.purchase.findMany({
     where: {

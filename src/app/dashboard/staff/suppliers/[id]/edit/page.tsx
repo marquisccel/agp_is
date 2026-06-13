@@ -7,19 +7,18 @@ import Link from "next/link"
 
 export default async function EditSupplierPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "STAFF") redirect("/login")
+  if (!session || session.user.role !== "STAFF") redirect("/login")
 
   const { id } = await params
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
+  if (!warehouseId) redirect("/login")
 
   const supplier = await prisma.supplier.findUnique({ where: { id } })
 
   // Pastikan supplier milik gudang staff ini
   if (!supplier || supplier.warehouseId !== warehouseId) notFound()
 
-  const warehouses = warehouseId
-    ? await prisma.warehouse.findMany({ where: { id: warehouseId } })
-    : []
+  const warehouses = await prisma.warehouse.findMany({ where: { id: warehouseId } })
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

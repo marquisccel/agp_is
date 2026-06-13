@@ -21,7 +21,7 @@ export default async function ManagerReportsPage({
   searchParams: Promise<{ tahun?: string }>
 }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "MANAGER") {
+  if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
 
@@ -313,7 +313,7 @@ export default async function ManagerReportsPage({
             </div>
             <div className="h-16 border-b border-slate-300 border-dashed w-3/4 mx-auto" />
             <div className="text-xs font-bold text-center text-slate-700">
-              {(session.user as any).nama}
+              {session.user.name}
               <div className="text-[10px] text-slate-400 font-normal mt-0.5">Manager Operational PET</div>
             </div>
           </div>

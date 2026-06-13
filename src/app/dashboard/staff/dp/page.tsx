@@ -5,15 +5,16 @@ import Link from "next/link"
 
 export default async function DPListStaff() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== "STAFF") return null
+  if (!session || session.user.role !== "STAFF") return null
 
-  const warehouseId = (session.user as any).warehouseId
+  const warehouseId = session.user.warehouseId
+  if (!warehouseId) return null
 
   // Fetch only DPs for suppliers belonging to the staff's warehouse
   const dps = await prisma.downPayment.findMany({
     where: {
       supplier: {
-        warehouseId: warehouseId ?? undefined
+        warehouseId
       }
     },
     orderBy: { tanggal_permintaan: "desc" },

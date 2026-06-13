@@ -7,13 +7,13 @@ import { createAuditLog } from "@/lib/audit"
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || !["ADMIN", "MANAGER"].includes((session.user as any).role)) {
+    if (!session || !session.user || !["ADMIN", "MANAGER"].includes(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { id: dpId } = await params
     const { action, nominal_disetujui } = await req.json()
-    const role = (session.user as any).role
+    const role = session.user.role
 
     if (!action || !["approve", "reject", "forward"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
@@ -41,7 +41,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         status_approval: "approved",
         nominal_disetujui: finalNominal,
         sisa_dp: finalNominal,
-        approvedByUserId: (session.user as any).id,
+        approvedByUserId: session.user.id,
         tanggal_approval: new Date(),
         expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       }
@@ -53,7 +53,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: `DP_${action.toUpperCase()}`,
       table_name: "DownPayment",
       record_id: dpId,

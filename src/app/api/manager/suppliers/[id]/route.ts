@@ -7,7 +7,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
   try {
     const { id } = await context.params
     const session = await getServerSession(authOptions)
-    if (!session || (session.user as any).role !== "MANAGER") {
+    if (!session || session.user.role !== "MANAGER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     
@@ -42,7 +42,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     // Log the action
     await prisma.auditLog.create({
       data: {
-        userId: (session.user as any).id,
+        userId: session.user.id,
         action: "DELETE",
         table_name: "Supplier",
         record_id: id,

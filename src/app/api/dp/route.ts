@@ -7,7 +7,7 @@ import { createAuditLog } from "@/lib/audit"
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || !["STAFF", "ADMIN"].includes((session.user as any).role)) {
+    if (!session || !session.user || !["STAFF", "ADMIN"].includes(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     // Determine status approval: if Staff -> Admin needs to approve. If Admin and nominal > 2,000,000 -> Manager.
     let status = "menunggu_approval_admin"
-    const role = (session.user as any).role
+    const role = session.user.role
     if (role === "ADMIN") {
       if (nominal_diajukan > 2000000) {
         status = "menunggu_approval_manager"
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         ...(status === "approved" && {
           nominal_disetujui: nominal_diajukan,
           sisa_dp: nominal_diajukan,
-          approvedByUserId: (session.user as any).id,
+          approvedByUserId: session.user.id,
           tanggal_approval: new Date(),
           expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
         })
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     })
 
     await createAuditLog({
-      userId: (session.user as any).id,
+      userId: session.user.id,
       action: "REQUEST_DP",
       table_name: "DownPayment",
       record_id: dp.id,
