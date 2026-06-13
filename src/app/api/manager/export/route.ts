@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 
 // Helper to escape values for CSV
-function escape(val: any): string {
+function escape(val: unknown): string {
   if (val === null || val === undefined) return ""
   if (val instanceof Date) return val.toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
   let str = String(val).trim()
@@ -58,8 +57,6 @@ export async function GET(req: Request) {
 
     const monthStart = new Date(Date.UTC(selectedTahun, selectedBulan - 1, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
     const monthEnd = new Date(Date.UTC(selectedTahun, selectedBulan, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
-
-    const twelveMonthsAgo = new Date(Date.UTC(selectedTahun, selectedBulan - 12, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
 
     // 2. Fetch valid purchases
     const purchases = await prisma.purchase.findMany({
@@ -215,7 +212,7 @@ export async function GET(req: Request) {
         "Content-Disposition": `attachment; filename="Laporan_Manager_PET_${now.toISOString().split("T")[0]}.csv"`
       }
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error generating CSV export:", error)
     return new Response("Internal Server Error", { status: 500 })
   }

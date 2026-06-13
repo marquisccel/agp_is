@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const qBulan = searchParams.get("bulan")
     const qTahun = searchParams.get("tahun")
 
-    const where: any = {}
+    const where: { bulan?: number; tahun?: number } = {}
     if (qBulan) where.bulan = parseInt(qBulan)
     if (qTahun) where.tahun = parseInt(qTahun)
 
@@ -19,9 +19,10 @@ export async function GET(req: Request) {
       include: { warehouse: true }
     })
     return NextResponse.json(targets)
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error"
     console.error("[TARGETS GET]", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -59,10 +60,10 @@ export async function PUT(req: Request) {
     const targetBulan = bulan ? parseInt(bulan) : now.getMonth() + 1
     const targetTahun = tahun ? parseInt(tahun) : now.getFullYear()
 
-    const userId = session.user.id as string | undefined
+    const userId = session.user.id
 
     // Helper: parse float safely
-    const pf = (v: any) => (v !== undefined && v !== null && v !== "")
+    const pf = (v: unknown) => (v !== undefined && v !== null && v !== "")
       ? (parseFloat(String(v)) || 0) : 0
 
     const sharedData = {
@@ -116,8 +117,10 @@ export async function PUT(req: Request) {
 
     console.log("[TARGETS PUT] saved:", target.id)
     return NextResponse.json(target)
-  } catch (error: any) {
-    console.error("[TARGETS PUT] error:", error.message, error.stack)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error"
+    const stack = error instanceof Error ? error.stack : undefined
+    console.error("[TARGETS PUT] error:", message, stack)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
