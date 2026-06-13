@@ -59,7 +59,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     })
 
     return NextResponse.json(updated)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating supplier:", error)
     return NextResponse.json({ error: "Gagal mengupdate data supplier" }, { status: 500 })
   }
@@ -79,7 +79,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     return NextResponse.json(supplier)
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Gagal mengambil data supplier" }, { status: 500 })
   }
 }

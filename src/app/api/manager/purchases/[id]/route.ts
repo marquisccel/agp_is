@@ -29,7 +29,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     })
 
     return NextResponse.json({ message: "Transaksi berhasil dihapus" })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Delete Purchase Error:", error)
     return NextResponse.json({ error: "Gagal menghapus transaksi. Terjadi kesalahan pada server." }, { status: 500 })
   }

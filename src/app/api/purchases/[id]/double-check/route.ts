@@ -3,6 +3,25 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { getErrorMessage } from "@/lib/errors"
+
+type DoubleCheckItemInput = {
+  sku_name: string
+  spec?: string | null
+  berat_lapak?: number | string | null
+  berat_final_item?: number | string | null
+  harga_per_kg?: number | string | null
+  subtotal?: number | string | null
+}
+
+type ReturItemInput = {
+  sku_name: string
+  berat_retur?: number | string | null
+  potongan_nilai?: number | string | null
+  alasan?: string | null
+}
+
+const toNumber = (value: number | string | null | undefined) => parseFloat(String(value ?? "")) || 0
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -54,39 +73,44 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     let isPriceAboveStandard = false
 
     // Update items subtotal & check price standards
-    const updatedItems = items.map((item: any) => {
-      const lapakW = parseFloat(item.berat_lapak) || parseFloat(item.berat_final_item) || 0;
-      const gudangW = parseFloat(item.berat_final_item) || 0;
+    const purchaseItems = items as DoubleCheckItemInput[]
+    const updatedItems = purchaseItems.map((item) => {
+      const lapakW = toNumber(item.berat_lapak) || toNumber(item.berat_final_item);
+      const gudangW = toNumber(item.berat_final_item);
       const weightToUse = metode_pembayaran_terpilih === "TIMBANGAN_LAPAK" ? lapakW : gudangW;
       
-      const subtotal = weightToUse * (parseFloat(item.harga_per_kg) || 0)
+      const hargaPerKg = toNumber(item.harga_per_kg)
+      const subtotal = weightToUse * hargaPerKg
       total_nilai_sebelum_retur += subtotal
       
       const standard = currentPurchase.warehouse?.skuPrices.find(s => s.sku_name === item.sku_name)
-      if (standard && item.harga_per_kg > standard.max_price_per_kg) {
+      if (standard && hargaPerKg > standard.max_price_per_kg) {
         isPriceAboveStandard = true
       }
-      return { ...item, subtotal }
+      return { ...item, harga_per_kg: hargaPerKg, subtotal }
     })
 
     // Calculate Returns
     let total_potongan_retur = 0
     let total_berat_retur = 0
-    const returItemsData = returs?.map((r: any) => {
+    const returItems = (returs as ReturItemInput[] | undefined) ?? []
+    const returItemsData = returItems.map((r) => {
       // Calculate return value = (berat_retur * harga_per_kg of that SKU) + potongan_nilai
-      const relatedItem = updatedItems.find((i: any) => i.sku_name === r.sku_name)
+      const relatedItem = updatedItems.find((i) => i.sku_name === r.sku_name)
       const harga = relatedItem ? relatedItem.harga_per_kg : 0
+      const beratRetur = toNumber(r.berat_retur)
+      const potonganNilai = toNumber(r.potongan_nilai)
       
-      const potongan = (r.berat_retur * harga) + (r.potongan_nilai || 0)
+      const potongan = (beratRetur * harga) + potonganNilai
       total_potongan_retur += potongan
-      total_berat_retur += (r.berat_retur || 0)
+      total_berat_retur += beratRetur
       return {
         sku_name: r.sku_name,
-        berat_retur: r.berat_retur || 0,
-        potongan_nilai: r.potongan_nilai || 0,
+        berat_retur: beratRetur,
+        potongan_nilai: potonganNilai,
         alasan: r.alasan || "",
       }
-    }) || []
+    })
 
     const total_nilai_setelah_retur = total_nilai_sebelum_retur - total_potongan_retur
     const final_dp_used = dp_yang_digunakan || 0
@@ -142,13 +166,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           status_pelunasan,
           status_approval: newStatus,
           items: {
-            create: updatedItems.map((i: any) => ({
+            create: updatedItems.map((i) => ({
               sku_name: i.sku_name,
               spec: i.spec || null,
-              berat_lapak: parseFloat(i.berat_lapak) || parseFloat(i.berat_final_item) || 0,
-              berat_final_item: parseFloat(i.berat_final_item) || 0,
-              harga_per_kg: parseFloat(i.harga_per_kg) || 0,
-              subtotal: parseFloat(i.subtotal) || 0,
+              berat_lapak: toNumber(i.berat_lapak) || toNumber(i.berat_final_item),
+              berat_final_item: toNumber(i.berat_final_item),
+              harga_per_kg: toNumber(i.harga_per_kg),
+              subtotal: toNumber(i.subtotal),
             }))
           },
           returs: {
@@ -190,8 +214,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     return NextResponse.json(updatedPurchase)
-  } catch (error: any) {
+  } catch (error) {
+    const message = getErrorMessage(error)
     console.error("Error double checking purchase:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

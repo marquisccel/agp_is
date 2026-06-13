@@ -3,6 +3,11 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 
+type SkuPriceInput = {
+  sku_name: string
+  max_price_per_kg: number
+}
+
 export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,7 +23,7 @@ export async function PUT(req: Request) {
     }
 
     // Upsert each price
-    for (const p of prices) {
+    for (const p of prices as SkuPriceInput[]) {
       // Find existing
       const existing = await prisma.skuPriceStandard.findFirst({
         where: { warehouseId, sku_name: p.sku_name }
@@ -41,7 +46,7 @@ export async function PUT(req: Request) {
     }
 
     return NextResponse.json({ message: "Success" })
-  } catch (error: any) {
+  } catch (error) {
     console.error("SKU Prices Update Error:", error)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }

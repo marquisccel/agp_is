@@ -51,7 +51,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     })
 
     return NextResponse.json({ message: "Data Lapak berhasil dihapus" })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Delete Supplier Error:", error)
     return NextResponse.json({ error: "Gagal menghapus data lapak. Terjadi kesalahan pada server." }, { status: 500 })
   }
