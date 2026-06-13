@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
+import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
 
 type DoubleCheckItemInput = {
   sku_name: string
@@ -66,8 +67,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (session.user.role === "SUPERVISOR" && currentPurchase.warehouseId !== session.user.warehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
-    if (currentPurchase.status_approval !== "menunggu_double_cek") {
-      return NextResponse.json({ error: "Purchase is not in draft state" }, { status: 400 })
+    if (!PENDING_SUPERVISOR_STATUSES.includes(currentPurchase.status_approval)) {
+      return NextResponse.json({ error: "Purchase is not waiting for warehouse verification" }, { status: 400 })
     }
 
     const berat_final = metode_pembayaran_terpilih === "TIMBANGAN_GUDANG" ? berat_timbangan_gudang : berat_timbangan_lapak
@@ -209,7 +210,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     // 3. Audit Log
     await createAuditLog({
       userId: session.user.id,
-      action: "DOUBLE_CHECK",
+      action: session.user.role === "SUPERVISOR" ? "SUPERVISOR_VERIFY_PURCHASE" : "DOUBLE_CHECK",
       table_name: "Purchase",
       record_id: purchaseId,
       old_data: currentPurchase,

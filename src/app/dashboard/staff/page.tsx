@@ -7,6 +7,7 @@ import RemainingKasbonList from "@/components/features/RemainingKasbonList"
 import { fmtTon } from "@/lib/format"
 import { redirect } from "next/navigation"
 import { isWorkingDay } from "@/lib/workingDays"
+import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 
 export default async function StaffDashboard() {
   const session = await getServerSession(authOptions)
@@ -57,17 +58,17 @@ export default async function StaffDashboard() {
 
   const todayAgg = warehouseId ? await prisma.purchaseItem.aggregate({
     _sum: { berat_final_item: true },
-    where: { purchase: { warehouseId, status_approval: { in: ["menunggu_double_cek", "menunggu_approval_harga", "approved", "sudah_transfer"] }, createdAt: { gte: todayStart, lt: todayEnd } } }
+    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, createdAt: { gte: todayStart, lt: todayEnd } } }
   }) : null
 
   const weekAgg = warehouseId ? await prisma.purchaseItem.aggregate({
     _sum: { berat_final_item: true },
-    where: { purchase: { warehouseId, status_approval: { in: ["menunggu_double_cek", "menunggu_approval_harga", "approved", "sudah_transfer"] }, createdAt: { gte: weekStart, lt: weekEnd } } }
+    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, createdAt: { gte: weekStart, lt: weekEnd } } }
   }) : null
 
   const monthAgg = warehouseId ? await prisma.purchaseItem.aggregate({
     _sum: { berat_final_item: true },
-    where: { purchase: { warehouseId, status_approval: { in: ["menunggu_double_cek", "menunggu_approval_harga", "approved", "sudah_transfer"] }, createdAt: { gte: monthStart, lt: monthEnd } } }
+    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, createdAt: { gte: monthStart, lt: monthEnd } } }
   }) : null
 
   const beratHariIni   = todayAgg?._sum.berat_final_item || 0
@@ -271,7 +272,7 @@ export default async function StaffDashboard() {
       {/* Input Form */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
         <h2 className="text-xl font-bold text-slate-800 mb-1">Input Transaksi Baru</h2>
-        <p className="text-slate-500 text-sm mb-6">Data akan disimpan sebagai Draft untuk divalidasi oleh Admin.</p>
+        <p className="text-slate-500 text-sm mb-6">Data akan disimpan sebagai draft untuk diverifikasi oleh Supervisor gudang.</p>
         <PurchaseForm suppliers={suppliers} namaGudang={namaGudang} />
       </div>
     </div>

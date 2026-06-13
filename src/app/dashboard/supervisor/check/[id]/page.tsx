@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import DoubleCheckForm from "@/components/features/DoubleCheckForm"
+import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
 
 export default async function SupervisorCheckPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -25,7 +26,7 @@ export default async function SupervisorCheckPage({ params }: { params: Promise<
     },
   })
 
-  if (!purchase || purchase.status_approval !== "menunggu_double_cek" || purchase.warehouseId !== warehouseId) {
+  if (!purchase || !PENDING_SUPERVISOR_STATUSES.includes(purchase.status_approval) || purchase.warehouseId !== warehouseId) {
     return notFound()
   }
 
@@ -39,7 +40,7 @@ export default async function SupervisorCheckPage({ params }: { params: Promise<
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Review Transaksi</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Verifikasi Penerimaan</h2>
           <p className="text-slate-500 text-sm mt-1">Nomor Draft: {purchase.id.split("-")[0]} - Supplier: <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span></p>
         </div>
         <div className="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700">

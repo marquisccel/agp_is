@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import DoubleCheckForm from "@/components/features/DoubleCheckForm"
+import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
 
 export default async function DoubleCheckPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -20,7 +21,7 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
     }
   })
 
-  if (!purchase || purchase.status_approval !== "menunggu_double_cek") {
+  if (!purchase || !PENDING_SUPERVISOR_STATUSES.includes(purchase.status_approval)) {
     return notFound()
   }
 

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { authOptions } from "@/lib/authOptions"
 import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
+import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -39,7 +40,7 @@ export default async function AdminDashboard() {
 
   const drafts = await prisma.purchase.findMany({
     where: { 
-      status_approval: "menunggu_double_cek",
+      status_approval: { in: PENDING_SUPERVISOR_STATUSES },
       warehouseId: warehouseId 
     },
     include: {

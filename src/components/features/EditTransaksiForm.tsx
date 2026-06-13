@@ -45,6 +45,7 @@ interface Supplier {
 const SKU_OPTIONS = ["PET Clear", "PET Biru", "PET Hijau", "PET Kuning", "PET Mix", "HDPE", "PP", "Galon"]
 const SPEC_OPTIONS = ["Gabyuk", "Grading"]
 const STATUS_LABELS: Record<string, string> = {
+  menunggu_verifikasi_supervisor: "Menunggu Verifikasi Supervisor",
   menunggu_double_cek: "Menunggu Double Cek",
   menunggu_approval_harga: "Menunggu Approval Harga",
   approved: "Disetujui",

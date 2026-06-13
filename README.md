@@ -47,6 +47,12 @@ Seeded login accounts use `password123`. Available roles are Manager, Supervisor
 supervisor.kediri@example.com
 ```
 
+Current purchase verification flow:
+
+```text
+Staff draft -> Supervisor warehouse verification -> Manager approval when needed -> Admin transfer
+```
+
 6. Start the app:
 
 ```bash

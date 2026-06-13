@@ -602,7 +602,7 @@ export default function DoubleCheckForm({
           Batal
         </button>
         <button type="submit" disabled={loading} className="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-600 to-blue-600 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all disabled:opacity-70">
-          {loading ? "Menyimpan..." : "Simpan Double Check"}
+          {loading ? "Menyimpan..." : "Simpan Verifikasi"}
         </button>
       </div>
     </form>

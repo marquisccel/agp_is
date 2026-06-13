@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         userIdStaff: session.user.id,
         metode_pembayaran_terpilih,
         berat_timbangan_lapak: totalLapakWeight,
-        status_approval: "menunggu_double_cek",
+        status_approval: "menunggu_verifikasi_supervisor",
         potongan_sampah: parseFloat(potongan_sampah) || 0,
         berat_potongan_sampah: parseFloat(berat_potongan_sampah) || 0,
         harga_potongan_sampah: parseFloat(harga_potongan_sampah) || 0,

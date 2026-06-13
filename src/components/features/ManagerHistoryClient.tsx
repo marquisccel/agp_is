@@ -93,6 +93,7 @@ export default function ManagerHistoryClient({
   })
 
   const statusMap: Record<string, { label: string, cls: string }> = {
+    menunggu_verifikasi_supervisor: { label: "Menunggu Verifikasi Supervisor", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
     menunggu_double_cek: { label: '🕐 Menunggu Cek', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
     menunggu_approval_harga: { label: '📋 Menunggu Approve', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
     approved: { label: '✓ Disetujui', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -126,6 +127,7 @@ export default function ManagerHistoryClient({
             className="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all text-slate-700 appearance-none bg-white"
           >
             <option value="all">Semua Status</option>
+            <option value="menunggu_verifikasi_supervisor">Menunggu Verifikasi Supervisor</option>
             <option value="menunggu_double_cek">🕐 Menunggu Double Cek</option>
             <option value="menunggu_approval_harga">📋 Menunggu Approval Harga</option>
             <option value="approved">✓ Disetujui (Menunggu Transfer)</option>

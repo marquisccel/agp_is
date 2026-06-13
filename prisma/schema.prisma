@@ -107,7 +107,7 @@ model Purchase {
   nominal_belum_lunas        Float?    @default(0)
   status_pelunasan           String?   @default("LUNAS") // "BELUM_LUNAS" | "LUNAS"
   
-  status_approval            String    // 'menunggu_double_cek', 'menunggu_approval_harga', 'approved', 'sudah_transfer', 'rejected', 'dibatalkan'
+  status_approval            String    // 'menunggu_verifikasi_supervisor', 'menunggu_double_cek', 'menunggu_approval_harga', 'approved', 'sudah_transfer', 'rejected', 'dibatalkan'
   rejection_reason           String?
   bukti_transfer             String?
   tanggal_transfer           DateTime?

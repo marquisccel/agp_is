@@ -137,6 +137,11 @@ export default function ManagerPurchaseDetailClient({
 
   // Status mapping
   const statusMap: Record<string, { label: string; cls: string; desc: string }> = {
+    menunggu_verifikasi_supervisor: {
+      label: "Menunggu Verifikasi Supervisor",
+      cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      desc: "Menunggu verifikasi penerimaan barang dari Supervisor gudang."
+    },
     menunggu_double_cek: {
       label: "🕐 Menunggu Cek",
       cls: "bg-amber-50 text-amber-700 border-amber-200",
@@ -523,7 +528,7 @@ export default function ManagerPurchaseDetailClient({
                 <span className="font-bold text-slate-800">{purchase.staff.nama}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Admin Double Check</span>
+                <span className="text-slate-500 font-medium">Verifikasi Gudang</span>
                 <span className="font-bold text-slate-800">{purchase.admin?.nama || "—"}</span>
               </div>
               <div className="flex items-center justify-between">

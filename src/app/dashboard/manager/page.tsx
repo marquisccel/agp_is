@@ -12,6 +12,7 @@ import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 import MonthYearFilter from "@/components/features/MonthYearFilter"
 import { isWorkingDay } from "@/lib/workingDays"
+import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 
 export default async function ManagerDashboard({
   searchParams
@@ -82,7 +83,7 @@ export default async function ManagerDashboard({
     _sum: { berat_final_item: true },
     where: {
       purchase: {
-        status_approval: { in: ["menunggu_double_cek", "menunggu_approval_harga", "approved", "sudah_transfer"] },
+        status_approval: { in: ACTIVE_PURCHASE_STATUSES },
         createdAt: { gte: monthStart, lt: monthEnd }
       }
     }
@@ -121,7 +122,7 @@ export default async function ManagerDashboard({
   // ──────────────────────────────────────────
   const validPurchases = await prisma.purchase.findMany({
     where: {
-      status_approval: { in: ["menunggu_double_cek", "menunggu_approval_harga", "approved", "sudah_transfer"] },
+      status_approval: { in: ACTIVE_PURCHASE_STATUSES },
       createdAt: { gte: twelveMonthsAgo, lt: monthEnd }
     },
     include: {

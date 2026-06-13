@@ -175,7 +175,7 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
           <div className="text-center text-slate-400 text-sm py-12">
             <div className="text-4xl mb-3">⚖️</div>
             <p>Belum ada data timbangan lapak vs gudang untuk periode ini.</p>
-            <p className="text-xs mt-1">Data muncul setelah transaksi melewati proses double-check admin.</p>
+            <p className="text-xs mt-1">Data muncul setelah transaksi melewati proses verifikasi gudang.</p>
           </div>
         ) : (
           <div className="space-y-4">

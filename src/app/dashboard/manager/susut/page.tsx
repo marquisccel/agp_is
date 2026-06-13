@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import SusutLebihAnalytics from "@/components/features/SusutLebihAnalytics"
 import MonthYearFilter from "@/components/features/MonthYearFilter"
 import Link from "next/link"
+import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 
 export default async function ManagerSusutPage({
   searchParams
@@ -30,7 +31,7 @@ export default async function ManagerSusutPage({
   const warehouses = await prisma.warehouse.findMany({ orderBy: { nama: "asc" } })
   const validPurchases = await prisma.purchase.findMany({
     where: {
-      status_approval: { in: ["menunggu_double_cek", "menunggu_approval_harga", "approved", "sudah_transfer"] },
+      status_approval: { in: ACTIVE_PURCHASE_STATUSES },
       createdAt: { gte: monthStart, lt: monthEnd }
     },
     include: {
