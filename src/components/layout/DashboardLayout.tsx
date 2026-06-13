@@ -27,6 +27,12 @@ type NavItem = {
   name: string
   href: string
   icon: LucideIcon
+  exact?: boolean
+}
+
+function getPanelLabel(role: string) {
+  if (isOperationalRole(role)) return "OPERASIONAL GUDANG"
+  return role
 }
 
 function SidebarContent({
@@ -48,12 +54,14 @@ function SidebarContent({
         <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
           PET Recycle
         </h1>
-        <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{role} PANEL</p>
+        <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{getPanelLabel(role)} PANEL</p>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href || (item.href !== "/dashboard/manager" && pathname.startsWith(item.href))
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${item.href}/`)
 
           return (
             <Link key={item.href} href={item.href} onClick={onNavigate}>
@@ -122,18 +130,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems: NavItem[] = [
     ...(isOperationalRole(role) ? [
-      { name: "Input Pembelian", href: "/dashboard/staff", icon: Package },
+      { name: "Input Pembelian", href: "/dashboard/staff", icon: Package, exact: true },
       { name: "Data Supplier", href: "/dashboard/staff/suppliers", icon: Store },
       { name: "Pengajuan Kasbon", href: "/dashboard/staff/dp", icon: WalletCards },
       { name: "Daftar Transaksi", href: "/dashboard/staff/history", icon: ClipboardList },
       { name: "Transfer Pembayaran", href: "/dashboard/admin/transfer", icon: CreditCard },
     ] : []),
     ...(role === "SUPERVISOR" ? [
-      { name: "Review Transaksi", href: "/dashboard/supervisor", icon: ShieldCheck },
+      { name: "Review Transaksi", href: "/dashboard/supervisor", icon: ShieldCheck, exact: true },
       { name: "Daftar Transaksi", href: "/dashboard/supervisor/history", icon: ClipboardList },
     ] : []),
     ...(role === "MANAGER" ? [
-      { name: "Analytics", href: "/dashboard/manager", icon: BarChart3 },
+      { name: "Analytics", href: "/dashboard/manager", icon: BarChart3, exact: true },
       { name: "Analisis Susut", href: "/dashboard/manager/susut", icon: Scale },
       { name: "Rekap DP", href: "/dashboard/manager/dp", icon: WalletCards },
       { name: "Approval Harga", href: "/dashboard/manager/approval-harga", icon: PenLine },
@@ -199,7 +207,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-semibold text-slate-800 truncate">{currentPageName}</h2>
-            <p className="text-[10px] text-slate-400 truncate hidden sm:block">{session.user.name} - {role}</p>
+            <p className="text-[10px] text-slate-400 truncate hidden sm:block">{session.user.name} - {getPanelLabel(role)}</p>
           </div>
 
           <div className="hidden sm:flex flex-col items-end flex-shrink-0">
