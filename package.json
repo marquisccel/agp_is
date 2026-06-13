@@ -1,5 +1,5 @@
 {
-  "name": "pet-final",
+  "name": "agp-is",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "seed": "node seed.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {

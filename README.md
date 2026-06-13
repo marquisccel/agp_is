@@ -1,11 +1,57 @@
-// prisma.config.ts
-import "dotenv/config";
-import { defineConfig } from "prisma/config';
+# AGP IS
 
-export default defineConfig({
-  schema: "prisma/schema.prisma",
-  datasource: {
-    // Gunakan URL yang mengarah ke file database SQLite Anda
-    url: "file:./dev.db",
-  },
-});
+AGP IS (Agrapana Greenworks Polymer Information System) is an internal information system for PET purchasing operations across warehouses. The current scope focuses on purchasing, supplier management, warehouse targets, approval workflows, transfer tracking, and management dashboards.
+
+## Tech Stack
+
+- Next.js 16 App Router
+- React 19
+- Prisma ORM
+- PostgreSQL
+- NextAuth v4
+- Tailwind CSS v4
+- Recharts
+
+## Local Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Copy environment variables:
+
+```bash
+cp .env.example .env
+```
+
+3. Set `DATABASE_URL` and `NEXTAUTH_SECRET` in `.env`.
+
+4. Generate Prisma Client and run migrations:
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+5. Seed initial data when needed:
+
+```bash
+npm run seed
+```
+
+6. Start the app:
+
+```bash
+npm run dev
+```
+
+## Verification
+
+```bash
+npm run build
+npm run lint
+```
+
+`npm run lint` is currently part of the stabilization work and may still surface legacy issues until the cleanup is complete.

@@ -30,8 +30,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (keep the example committed)
 .env*
+!.env.example
+
+# local databases and generated runtime assets
+*.db
+*.db-journal
+/public/uploads/
 
 # vercel
 .vercel
