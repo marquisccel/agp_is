@@ -61,13 +61,14 @@ function aggregateAll(dataMap: Record<string, WarehouseData>): WarehouseData {
       labelMap[entry.label] = (labelMap[entry.label] ?? 0) + entry.weight
     }
   }
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"]
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
   const yearlyData = Object.entries(labelMap)
     .map(([label, weight]) => ({ label, weight }))
     .sort((a, b) => {
       const parseLabel = (l: string) => {
         const [mon, yr] = l.split(" ")
-        const mIdx = months.findIndex(m => l.startsWith(m))
+        const normalizedMonth = mon.replace(".", "").toLowerCase()
+        const mIdx = months.findIndex(m => m.toLowerCase() === normalizedMonth)
         return parseInt(yr, 10) * 12 + (mIdx >= 0 ? mIdx : 0)
       }
       return parseLabel(a.label) - parseLabel(b.label)
