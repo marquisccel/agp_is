@@ -2,10 +2,9 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { ArrowRight, BarChart3, ClipboardCheck, LockKeyhole, Mail, ShieldCheck, Warehouse } from "lucide-react"
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -31,64 +30,153 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300 hover:shadow-cyan-500/20">
-        <div className="p-8">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">PET Recycle</h1>
-            <p className="mt-2 text-sm text-slate-500">Sistem Manajemen dan Monitoring Pembelian</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-500 border border-red-200">
-                {error}
+    <div className="min-h-screen bg-[#f5f5f7] text-slate-900">
+      <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-[minmax(0,1fr)_540px]">
+        <section className="relative hidden overflow-hidden bg-white/72 backdrop-blur-2xl lg:flex lg:flex-col">
+          <div className="absolute inset-y-0 right-0 w-px bg-slate-200" />
+          <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-12 py-10 xl:px-16">
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-sm font-bold text-teal-300 shadow-sm">
+                AG
               </div>
-            )}
-            
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-colors"
-                placeholder="admin@example.com"
-              />
+              <div>
+                <p className="text-base font-black leading-none text-slate-950">Agrapana Greenworks Polymer</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Information System</p>
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-colors"
-                placeholder="••••••••"
-              />
+            <div className="flex flex-1 items-center py-12">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50/80 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-teal-700 shadow-sm">
+                  <ShieldCheck className="h-4 w-4" />
+                  Sistem Informasi Gudang Botol
+                </div>
+                <h1 className="mt-8 max-w-2xl text-6xl font-black leading-[0.96] tracking-[-0.06em] text-slate-950">
+                  Kendali pembelian PET dalam satu ruang operasional.
+                </h1>
+                <p className="mt-6 max-w-xl text-lg leading-8 text-slate-500">
+                  Pantau input pembelian, verifikasi gudang, approval harga, target collection center,
+                  dan aktivitas supplier dengan alur kerja yang lebih tertata.
+                </p>
+
+                <div className="mt-12 grid max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-[28px] border border-slate-200/80 bg-slate-200/80 shadow-[0_22px_70px_rgba(15,23,42,0.07)]">
+                  <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
+                    <Warehouse className="h-5 w-5 text-teal-700" />
+                    <p className="mt-4 text-sm font-black text-slate-950">Input</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Pembelian, supplier, dan nota.</p>
+                  </div>
+                  <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
+                    <ClipboardCheck className="h-5 w-5 text-teal-700" />
+                    <p className="mt-4 text-sm font-black text-slate-950">Validasi</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Supervisor dan approval manager.</p>
+                  </div>
+                  <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
+                    <BarChart3 className="h-5 w-5 text-teal-700" />
+                    <p className="mt-4 text-sm font-black text-slate-950">Analitik</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Target, performa, dan risiko.</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full rounded-lg bg-cyan-600 px-4 py-3 text-white font-semibold shadow hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Memproses..." : "Masuk"}
-            </button>
-          </form>
-          
-          <div className="mt-8 text-center text-xs text-slate-400">
-            &copy; {new Date().getFullYear()} PET Recycle Management. All rights reserved.
+            <div className="flex items-center justify-between border-t border-slate-200 pt-6 text-xs text-slate-500">
+              <span>Internal access only</span>
+              <span>&copy; {new Date().getFullYear()} Agrapana Greenworks Polymer</span>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f5f5f7] px-4 py-8 sm:px-6 lg:px-10">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,122,115,0.16),transparent_42%),radial-gradient(circle_at_100%_80%,rgba(56,189,248,0.14),transparent_36%)]" />
+          <div className="w-full max-w-[420px]">
+            <div className="mb-8 lg:hidden">
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-sm font-bold text-teal-300">
+                  AG
+                </div>
+                <div>
+                  <p className="text-base font-black leading-none text-slate-950">Agrapana Greenworks Polymer</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Information System</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative mb-7">
+              <p className="text-xs font-bold uppercase tracking-wide text-teal-700">Secure workspace</p>
+              <h1 className="mt-3 text-4xl font-black leading-none tracking-[-0.055em] text-slate-950">Masuk ke Information System</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Gunakan akun terdaftar untuk membuka panel sesuai role operasional.
+              </p>
+            </div>
+
+            <div className="glass-panel rounded-[30px] p-6 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {error && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                    {error}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700" htmlFor="email">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-teal-500/12"
+                      placeholder="nama@agp.local"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700" htmlFor="password">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-teal-500/12"
+                      placeholder="Masukkan password"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="premium-button inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-700 focus:outline-none focus:ring-3 focus:ring-teal-500/25 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isLoading && <span className="h-4 w-4 rounded-full border-2 border-white/35 border-t-white animate-spin" />}
+                  {isLoading ? "Memproses..." : "Masuk"}
+                  {!isLoading && <ArrowRight className="h-4 w-4" />}
+                </button>
+              </form>
+
+              <div className="mt-6 border-t border-slate-100 pt-5">
+                <div className="flex items-start gap-3 text-xs leading-5 text-slate-500">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+                  <p>Akses hanya untuk staff, supervisor, dan manager yang terdaftar di sistem.</p>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-5 text-center text-xs text-slate-400 lg:hidden">
+              &copy; {new Date().getFullYear()} Agrapana Greenworks Polymer
+            </p>
+          </div>
+        </main>
       </div>
     </div>
   )

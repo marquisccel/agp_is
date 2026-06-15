@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import AdminHistoryClient from "@/components/features/AdminHistoryClient"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function SupervisorHistoryPage() {
   const session = await getServerSession(authOptions)
@@ -36,10 +37,11 @@ export default async function SupervisorHistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Riwayat &amp; Daftar Transaksi</h2>
-        <p className="text-slate-500 text-sm mt-1">Daftar lengkap transaksi pembelian PET di gudang supervisi Anda.</p>
-      </div>
+      <PageHeader
+        eyebrow="Supervisor archive"
+        title="Riwayat & Daftar Transaksi"
+        description="Daftar lengkap transaksi pembelian PET di gudang supervisi Anda."
+      />
 
       <AdminHistoryClient initialPurchases={formattedPurchases as any} basePath="/dashboard/supervisor" />
     </div>

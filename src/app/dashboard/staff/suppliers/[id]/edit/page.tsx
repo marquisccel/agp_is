@@ -5,6 +5,7 @@ import { redirect, notFound } from "next/navigation"
 import SupplierForm from "@/components/features/SupplierForm"
 import Link from "next/link"
 import { isOperationalRole } from "@/lib/roles"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function EditSupplierPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -23,23 +24,18 @@ export default async function EditSupplierPage({ params }: { params: Promise<{ i
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard/staff/suppliers"
-          className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors"
-          title="Kembali"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Edit Supplier</h2>
-          <p className="text-slate-500 text-sm mt-0.5">Perbarui data <strong>{supplier.nama}</strong></p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Supplier registry"
+        title="Edit Supplier"
+        description={<>Perbarui data <span className="font-semibold text-slate-700">{supplier.nama}</span>.</>}
+        actions={
+          <Link href="/dashboard/staff/suppliers" className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+            Kembali
+          </Link>
+        }
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+      <div className="workflow-card p-6 md:p-8">
         <SupplierForm
           warehouses={warehouses}
           defaultWarehouseId={warehouseId}

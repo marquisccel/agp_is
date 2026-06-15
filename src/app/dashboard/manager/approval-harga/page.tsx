@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function ApprovalHargaList() {
   const session = await getServerSession(authOptions)
@@ -22,22 +23,21 @@ export default async function ApprovalHargaList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Approval Harga</h2>
-          <p className="text-slate-500 text-sm mt-1">Daftar transaksi yang melebihi standar harga maksimum.</p>
-        </div>
-        <Link href="/dashboard/manager">
-          <button className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
+      <PageHeader
+        eyebrow="Manager approval"
+        title="Approval Harga"
+        description="Daftar transaksi yang melebihi standar harga maksimum."
+        actions={(
+          <Link href="/dashboard/manager" className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
             Kembali ke Dashboard
-          </button>
-        </Link>
-      </div>
+          </Link>
+        )}
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="interactive-surface overflow-hidden border border-slate-200/80">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
+            <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
               <tr>
                 <th className="px-6 py-4">Gudang / Tanggal</th>
                 <th className="px-6 py-4">Supplier</th>
@@ -54,20 +54,20 @@ export default async function ApprovalHargaList() {
                 </tr>
               ) : (
                 pendingApprovals.map((draft) => (
-                  <tr key={draft.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={draft.id} className="premium-row">
                     <td className="px-6 py-4">
-                      <div className="font-medium text-slate-900">{draft.warehouse.nama}</div>
+                      <div className="font-bold text-slate-900">{draft.warehouse.nama}</div>
                       <div className="text-xs text-slate-400 mt-1">{new Date(draft.updatedAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}</div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-700">
+                    <td className="px-6 py-4 font-bold text-slate-700">
                       {draft.supplier.nama}
                     </td>
-                    <td className="px-6 py-4 font-mono font-medium text-slate-800">
+                    <td className="px-6 py-4 font-mono font-black text-slate-950">
                       Rp {(draft.total_nilai_setelah_retur || 0).toLocaleString('id-ID')}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Link href={`/dashboard/manager/approval-harga/${draft.id}`}>
-                        <button className="bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all">
+                        <button className="premium-button rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 hover:bg-orange-100">
                           Review Transaksi
                         </button>
                       </Link>

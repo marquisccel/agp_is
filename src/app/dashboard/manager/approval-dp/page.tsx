@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import DPApprovalActions from "@/components/features/DPApprovalActions"
 import { redirect } from "next/navigation"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function DPApprovalManager() {
   const session = await getServerSession(authOptions)
@@ -20,22 +21,21 @@ export default async function DPApprovalManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Approval Kasbon (DP)</h2>
-          <p className="text-slate-500 text-sm mt-1">Daftar pengajuan kasbon di atas Rp 2.000.000 yang memerlukan persetujuan.</p>
-        </div>
-        <Link href="/dashboard/manager">
-          <button className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
+      <PageHeader
+        eyebrow="Manager approval"
+        title="Approval Kasbon (DP)"
+        description="Daftar pengajuan kasbon di atas Rp 2.000.000 yang memerlukan persetujuan."
+        actions={(
+          <Link href="/dashboard/manager" className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
             Kembali ke Dashboard
-          </button>
-        </Link>
-      </div>
+          </Link>
+        )}
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="interactive-surface overflow-hidden border border-slate-200/80">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
+            <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
               <tr>
                 <th className="px-6 py-4">Tanggal Pengajuan</th>
                 <th className="px-6 py-4">Supplier</th>
@@ -52,19 +52,19 @@ export default async function DPApprovalManager() {
                 </tr>
               ) : (
                 dps.map((dp) => (
-                  <tr key={dp.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4 font-medium text-slate-900">
+                  <tr key={dp.id} className="premium-row group">
+                    <td className="px-6 py-4 font-bold text-slate-900">
                       {new Date(dp.tanggal_permintaan).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-700">
+                    <td className="px-6 py-4 font-bold text-slate-700">
                       <div>{dp.supplier.nama}</div>
                       {dp.keterangan && (
-                        <div className="text-xs text-slate-500 mt-1.5 italic font-normal bg-slate-50 p-2 rounded-lg border border-slate-100 max-w-xs">
+                        <div className="mt-1.5 max-w-xs rounded-xl border border-slate-200/70 bg-white/70 p-2 text-xs font-normal italic text-slate-500">
                           Note: "{dp.keterangan}"
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-mono font-medium text-indigo-600 text-lg">
+                    <td className="px-6 py-4 font-mono text-lg font-black text-slate-950">
                       Rp {dp.nominal_diajukan.toLocaleString('id-ID')}
                     </td>
                     <td className="px-6 py-4 text-center">

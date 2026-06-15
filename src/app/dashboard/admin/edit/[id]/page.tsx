@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import EditTransaksiForm from "@/components/features/EditTransaksiForm"
-import Link from "next/link"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function EditTransaksiPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -23,20 +23,18 @@ export default async function EditTransaksiPage({ params }: { params: Promise<{ 
       supplier: true,
       items: true,
       staff: true,
-    }
+    },
   })
 
   if (!purchase) return notFound()
 
-  // Admin hanya bisa edit transaksi di warehouse-nya sendiri
   if (purchase.warehouseId !== warehouseId) {
     redirect("/dashboard/admin/history")
   }
 
-  // Fetch all suppliers for this warehouse (for dropdown)
   const suppliers = await prisma.supplier.findMany({
     where: { warehouseId },
-    orderBy: { nama: "asc" }
+    orderBy: { nama: "asc" },
   })
 
   const purchaseSerialized = {
@@ -50,34 +48,26 @@ export default async function EditTransaksiPage({ params }: { params: Promise<{ 
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
-            <Link href="/dashboard/admin/history" className="hover:text-cyan-600 transition-colors">
-              Riwayat Transaksi
-            </Link>
-            <span>/</span>
-            <span className="text-slate-600 font-semibold">Edit Transaksi</span>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800">Edit Transaksi</h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Supplier: <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>
-            &nbsp;•&nbsp;
-            Nota: <span className="font-mono text-slate-600">{purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}</span>
-            &nbsp;•&nbsp;
-            Staff: <span className="font-semibold text-slate-600">{purchase.staff.nama}</span>
-          </p>
-        </div>
-        <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-xl text-xs font-semibold">
-          ⚠ Perubahan akan tercatat di audit log
-        </div>
-      </div>
-
-      <EditTransaksiForm
-        purchase={purchaseSerialized as any}
-        suppliers={suppliers}
+      <PageHeader
+        eyebrow="Transaction editor"
+        title="Edit Transaksi"
+        description={
+          <>
+            <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>
+            {" · "}
+            <span className="font-mono text-slate-600">{purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}</span>
+            {" · "}
+            <span className="font-semibold text-slate-600">{purchase.staff.nama}</span>
+          </>
+        }
+        actions={
+          <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">
+            Audit log aktif
+          </span>
+        }
       />
+
+      <EditTransaksiForm purchase={purchaseSerialized as any} suppliers={suppliers} />
     </div>
   )
 }

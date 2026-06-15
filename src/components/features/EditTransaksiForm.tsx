@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 
 interface PurchaseItem {
   id?: string
@@ -44,6 +45,14 @@ interface Supplier {
 
 const SKU_OPTIONS = ["PET Clear", "PET Biru", "PET Hijau", "PET Kuning", "PET Mix", "HDPE", "PP", "Galon"]
 const SPEC_OPTIONS = ["Gabyuk", "Grading"]
+const METODE_OPTIONS = [
+  { value: "TIMBANGAN_GUDANG", label: "Timbangan Gudang" },
+  { value: "TIMBANGAN_LAPAK", label: "Timbangan Lapak" },
+]
+const SPEC_SELECT_OPTIONS = [
+  { value: "", label: "Pilih spec" },
+  ...SPEC_OPTIONS.map(spec => ({ value: spec, label: spec })),
+]
 const STATUS_LABELS: Record<string, string> = {
   menunggu_verifikasi_supervisor: "Menunggu Verifikasi Supervisor",
   menunggu_double_cek: "Menunggu Double Cek",
@@ -71,6 +80,7 @@ export default function EditTransaksiForm({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const supplierOptions = suppliers.map(s => ({ value: s.id, label: s.nama }))
 
   // Basic fields
   const [nomor_nota, setNomorNota] = useState(initialPurchase.nomor_nota || "")
@@ -167,14 +177,14 @@ export default function EditTransaksiForm({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="premium-workflow space-y-6">
       {/* Status badge */}
       <div className="flex items-center gap-3">
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status saat ini:</span>
         <span className="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-lg text-xs font-bold">
           {STATUS_LABELS[initialPurchase.status_approval] || initialPurchase.status_approval}
         </span>
-        <span className="text-xs text-slate-400">• Perubahan akan disimpan tanpa mengubah status</span>
+        <span className="text-xs text-slate-400">Perubahan akan disimpan tanpa mengubah status</span>
       </div>
 
       {/* Basic Info */}
@@ -196,28 +206,25 @@ export default function EditTransaksiForm({
           {/* Supplier */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 mb-1.5">Lapak / Supplier</label>
-            <select
+            <ElegantSelect
               value={supplierId}
-              onChange={e => setSupplierId(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400 transition-all bg-white"
-            >
-              {suppliers.map(s => (
-                <option key={s.id} value={s.id}>{s.nama}</option>
-              ))}
-            </select>
+              options={supplierOptions}
+              onChange={setSupplierId}
+              ariaLabel="Pilih lapak atau supplier"
+              className="w-full"
+            />
           </div>
 
           {/* Metode */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 mb-1.5">Metode Pembayaran</label>
-            <select
+            <ElegantSelect
               value={metode}
-              onChange={e => setMetode(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400 transition-all bg-white"
-            >
-              <option value="TIMBANGAN_GUDANG">Timbangan Gudang</option>
-              <option value="TIMBANGAN_LAPAK">Timbangan Lapak</option>
-            </select>
+              options={METODE_OPTIONS}
+              onChange={setMetode}
+              ariaLabel="Pilih metode pembayaran"
+              className="w-full"
+            />
           </div>
 
           {/* Berat Lapak */}
@@ -285,14 +292,13 @@ export default function EditTransaksiForm({
                     </datalist>
                   </td>
                   <td className="px-4 py-2">
-                    <select
+                    <ElegantSelect
                       value={item.spec || ""}
-                      onChange={e => updateItem(idx, "spec", e.target.value || null)}
-                      className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
-                    >
-                      <option value="">— Pilih —</option>
-                      {SPEC_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                      options={SPEC_SELECT_OPTIONS}
+                      onChange={(value) => updateItem(idx, "spec", value || null)}
+                      ariaLabel="Pilih spec item"
+                      className="min-w-[120px]"
+                    />
                   </td>
                   <td className="px-4 py-2">
                     <input
@@ -384,13 +390,13 @@ export default function EditTransaksiForm({
       </div>
 
       {/* Grand Total */}
-      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-6 text-white">
+      <div className="workflow-summary p-5 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <p className="text-cyan-100 text-xs font-semibold uppercase tracking-wider">Total Nilai Setelah Potongan</p>
-            <p className="text-3xl font-extrabold mt-1">{fmtRp(totalAfterCuts)}</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">Transaction total</p>
+            <p className="mt-1 text-3xl font-extrabold text-slate-950">{fmtRp(totalAfterCuts)}</p>
           </div>
-          <div className="text-right text-xs text-cyan-200 space-y-0.5">
+          <div className="text-left text-xs font-medium text-slate-500 sm:text-right space-y-0.5">
             <p>Sebelum potongan: {fmtRp(totalBeforeCuts)}</p>
             <p>Total potongan: − {fmtRp(hargaPotSampah + hargaPotSusut + hargaPotAir + hargaPotKarung)}</p>
           </div>
@@ -405,7 +411,7 @@ export default function EditTransaksiForm({
       )}
       {success && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm font-medium">
-          ✓ Transaksi berhasil diperbarui! Mengarahkan kembali...
+          Transaksi berhasil diperbarui. Mengarahkan kembali...
         </div>
       )}
 
@@ -415,12 +421,12 @@ export default function EditTransaksiForm({
           onClick={() => router.push(backUrl)}
           className="border border-slate-200 text-slate-600 hover:bg-slate-50 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all"
         >
-          ← Kembali
+          Kembali
         </button>
         <button
           onClick={handleSave}
           disabled={saving || success}
-          className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2"
+          className="premium-button flex items-center gap-2 rounded-xl bg-slate-950 px-8 py-2.5 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50"
         >
           {saving ? (
             <>
@@ -430,7 +436,7 @@ export default function EditTransaksiForm({
               </svg>
               Menyimpan...
             </>
-          ) : "💾 Simpan Perubahan"}
+          ) : "Simpan Perubahan"}
         </button>
       </div>
     </div>

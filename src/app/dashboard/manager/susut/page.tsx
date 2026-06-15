@@ -6,6 +6,7 @@ import SusutLebihAnalytics from "@/components/features/SusutLebihAnalytics"
 import MonthYearFilter from "@/components/features/MonthYearFilter"
 import Link from "next/link"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function ManagerSusutPage({
   searchParams
@@ -65,7 +66,7 @@ export default async function ManagerSusutPage({
       susutLebihMap[sid] = {
         nama: p.supplier?.nama || "Unknown",
         warehouseId: p.warehouseId,
-        warehouseName: wh?.nama || "—",
+        warehouseName: wh?.nama || "-",
         totalLapak: 0,
         totalGudang: 0,
         totalSusut: 0,
@@ -138,24 +139,22 @@ export default async function ManagerSusutPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <h2 className="text-2xl font-bold text-slate-800">Analisis Penyusutan Timbangan</h2>
+      <PageHeader
+        eyebrow="Weight control"
+        title="Analisis Penyusutan Timbangan"
+        description="Pantau susut dan lebih timbangan per lapak, per SKU, dan per Collection Center."
+        actions={(
+          <>
             <MonthYearFilter selectedBulan={selectedBulan} selectedTahun={selectedTahun} />
-          </div>
-          <p className="text-slate-500 text-sm mt-1">
-            Pantau dan analisis detail susut &amp; lebih timbangan per lapak dan per SKU.
-          </p>
-        </div>
-        <Link
-          href="/dashboard/manager"
-          className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all"
-        >
-          ← Dashboard
-        </Link>
-      </div>
+            <Link
+              href="/dashboard/manager"
+              className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+            >
+              Kembali ke Dashboard
+            </Link>
+          </>
+        )}
+      />
 
       <SusutLebihAnalytics
         lapakData={lapakSusutData}

@@ -32,18 +32,19 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
         fontFamily: "Arial, sans-serif",
         width: "100%",
         maxWidth: 400,
-        padding: 16,
-        borderRadius: 12,
-        border: "1px solid #e2e8f0",
+        padding: 18,
+        borderRadius: 28,
+        border: "1px solid #edf0f4",
+        boxShadow: "0 18px 50px rgba(15,23,42,0.08)",
         boxSizing: "border-box",
       }}
     >
       {/* Header */}
-      <div style={{ textAlign: "center", borderBottom: "2px solid #0891b2", paddingBottom: 14, marginBottom: 16 }}>
-        <div style={{ fontSize: 9, fontWeight: 700, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+      <div style={{ textAlign: "left", paddingBottom: 14, marginBottom: 16 }}>
+        <div style={{ fontSize: 9, fontWeight: 800, color: "#007a73", textTransform: "uppercase", letterSpacing: "0.12em" }}>
           Nota Pembelian PET Final
         </div>
-        <div style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", marginTop: 2 }}>
+        <div style={{ fontSize: 20, fontWeight: 900, color: "#020617", marginTop: 2, letterSpacing: "-0.04em", lineHeight: 1.1 }}>
           {purchase.warehouse?.nama || "—"}
         </div>
         <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>
@@ -78,14 +79,14 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
       </table>
 
       {/* Items */}
-      <div style={{ backgroundColor: "#f8fafc", borderRadius: 8, overflow: "hidden", marginBottom: 14 }}>
-        <table style={{ width: "100%", fontSize: 10, borderCollapse: "collapse" }}>
+      <div style={{ marginBottom: 14 }}>
+        <table style={{ width: "100%", fontSize: 10, borderCollapse: "separate", borderSpacing: "0 6px" }}>
           <thead>
-            <tr style={{ backgroundColor: "#0f172a", color: "#ffffff" }}>
-              <th style={{ textAlign: "left", padding: "7px 6px" }}>SKU</th>
-              <th style={{ textAlign: "right", padding: "7px 6px" }}>Berat</th>
-              <th style={{ textAlign: "right", padding: "7px 6px" }}>Harga</th>
-              <th style={{ textAlign: "right", padding: "7px 6px" }}>Subtotal</th>
+            <tr>
+              <th style={{ textAlign: "left", padding: "0 4px 4px", color: "#94a3b8", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>SKU</th>
+              <th style={{ textAlign: "right", padding: "0 4px 4px", color: "#94a3b8", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>Berat</th>
+              <th style={{ textAlign: "right", padding: "0 4px 4px", color: "#94a3b8", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>Harga</th>
+              <th style={{ textAlign: "right", padding: "0 4px 4px", color: "#94a3b8", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>Subtotal</th>
             </tr>
           </thead>
           <tbody>
@@ -93,15 +94,15 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
               const berat = purchase.metode_pembayaran_terpilih === "TIMBANGAN_LAPAK"
                 ? (item.berat_lapak ?? item.berat_final_item) : item.berat_final_item
               return (
-                <tr key={i} style={{ borderBottom: "1px solid #e2e8f0", backgroundColor: i % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
-                  <td style={{ padding: "6px 6px", fontWeight: 600, color: "#0f172a" }}>
+                <tr key={i} style={{ backgroundColor: "#f8fafc" }}>
+                  <td style={{ padding: "9px 8px", fontWeight: 700, color: "#0f172a", borderTopLeftRadius: 12, borderBottomLeftRadius: 12 }}>
                     {item.sku_name}{item.spec ? ` (${item.spec})` : ""}
                   </td>
-                  <td style={{ padding: "6px 6px", textAlign: "right", color: "#475569", whiteSpace: "nowrap" }}>{fmtKg(berat)}</td>
-                  <td style={{ padding: "6px 6px", textAlign: "right", color: "#475569", whiteSpace: "nowrap" }}>
+                  <td style={{ padding: "9px 6px", textAlign: "right", color: "#475569", whiteSpace: "nowrap" }}>{fmtKg(berat)}</td>
+                  <td style={{ padding: "9px 6px", textAlign: "right", color: "#475569", whiteSpace: "nowrap" }}>
                     {fmtRp(item.harga_per_kg)}/kg
                   </td>
-                  <td style={{ padding: "6px 6px", textAlign: "right", fontWeight: 700, color: "#0f172a", whiteSpace: "nowrap" }}>
+                  <td style={{ padding: "9px 8px", textAlign: "right", fontWeight: 800, color: "#0f172a", whiteSpace: "nowrap", borderTopRightRadius: 12, borderBottomRightRadius: 12 }}>
                     {fmtRp(item.subtotal)}
                   </td>
                 </tr>
@@ -146,11 +147,11 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
         {/* Grand total */}
         <div style={{
           display: "flex", justifyContent: "space-between",
-          marginTop: 10, paddingTop: 10, borderTop: "2px solid #0891b2",
-          backgroundColor: "#f0f9ff", padding: "10px 12px", borderRadius: 8, marginLeft: -12, marginRight: -12
+          marginTop: 10, paddingTop: 10, borderTop: "1px solid #e2e8f0",
+          backgroundColor: "#f8fafc", padding: "12px 14px", borderRadius: 18, marginLeft: -12, marginRight: -12
         }}>
           <span style={{ fontSize: 13, fontWeight: 900, color: "#0f172a" }}>TOTAL DIBAYAR</span>
-          <span style={{ fontSize: 15, fontWeight: 900, color: "#0891b2" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
+          <span style={{ fontSize: 16, fontWeight: 900, color: "#007a73" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
         </div>
 
         {/* Pelunasan info */}
@@ -308,7 +309,7 @@ export default function NotaViewerClient({
         <button
           onClick={handleDownloadJpg}
           disabled={jpgLoading}
-          className="w-full flex items-center justify-center gap-2.5 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-cyan-500/25 hover:from-cyan-500 hover:to-blue-500 transition-all disabled:opacity-60"
+          className="premium-button flex w-full items-center justify-center gap-2.5 rounded-2xl bg-slate-950 py-3.5 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60"
         >
           {jpgLoading ? (
             <>

@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import ManagerSuppliersClient from "@/components/features/ManagerSuppliersClient"
 import { redirect } from "next/navigation"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function ManagerSuppliersPage() {
   const session = await getServerSession(authOptions)
@@ -48,7 +49,12 @@ export default async function ManagerSuppliersPage() {
   }))
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Supplier performance"
+        title="Data Lapak"
+        description="Pantau kualitas, volume, harga, dan kelengkapan data lapak dengan ritme visual yang konsisten."
+      />
       <ManagerSuppliersClient
         suppliers={serializedSuppliers as any}
         warehouses={warehouses}
@@ -57,4 +63,3 @@ export default async function ManagerSuppliersPage() {
     </div>
   )
 }
-

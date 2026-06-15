@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/authOptions"
 import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function SupervisorDashboard() {
   const session = await getServerSession(authOptions)
@@ -54,19 +55,18 @@ export default async function SupervisorDashboard() {
   return (
     <div className="space-y-6">
       <PendingTerminAlerts initialAlerts={pendingTermins} />
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Review Transaksi Gudang</h2>
-          <p className="text-slate-500 text-sm mt-1">Validasi draft pembelian dari staff sebelum masuk alur approval lanjutan.</p>
-        </div>
-        <Link href="/dashboard/supervisor/history">
-          <button className="bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all">
+      <PageHeader
+        eyebrow="Supervisor workspace"
+        title="Review Transaksi Gudang"
+        description="Validasi draft pembelian dari staff sebelum masuk alur approval lanjutan."
+        actions={(
+          <Link href="/dashboard/supervisor/history" className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors">
             Daftar Transaksi
-          </button>
-        </Link>
-      </div>
+          </Link>
+        )}
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import TransferList from "@/components/features/TransferList"
 import { redirect } from "next/navigation"
 import { isOperationalRole } from "@/lib/roles"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function AdminTransferPage() {
   const session = await getServerSession(authOptions)
@@ -27,10 +28,11 @@ export default async function AdminTransferPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Status Transfer Pembayaran</h2>
-        <p className="text-slate-500 text-sm mt-1">Upload bukti transfer untuk transaksi yang sudah disetujui.</p>
-      </div>
+      <PageHeader
+        eyebrow="Payment control"
+        title="Transfer Pembayaran"
+        description="Upload dan pantau bukti transfer untuk transaksi yang sudah disetujui."
+      />
       <TransferList purchases={purchases} />
     </div>
   )

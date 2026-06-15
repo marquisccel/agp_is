@@ -24,6 +24,7 @@ import {
   AlertTriangle
 } from "lucide-react"
 import { fmtKg, fmtRp, fmtTon, fmtPct } from "@/lib/format"
+import PageHeader from "@/components/ui/PageHeader"
 
 interface PurchaseItem {
   id: string
@@ -222,107 +223,87 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   // Status map badges
   const statusMap: Record<string, { label: string; cls: string }> = {
     menunggu_verifikasi_supervisor: { label: "Menunggu Verifikasi Supervisor", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    menunggu_double_cek: { label: "🕐 Menunggu Cek", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    menunggu_approval_harga: { label: "📋 Menunggu Approve", cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    approved: { label: "✓ Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-    sudah_transfer: { label: "💸 Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    rejected: { label: "✗ Ditolak", cls: "bg-red-50 text-red-700 border-red-200" },
-    dibatalkan: { label: "⊘ Dibatalkan", cls: "bg-slate-50 text-slate-500 border-slate-200" }
+    menunggu_double_cek: { label: "Menunggu Cek", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    menunggu_approval_harga: { label: "Menunggu Approval", cls: "bg-orange-50 text-orange-700 border-orange-200" },
+    approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
+    sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    rejected: { label: "Ditolak", cls: "bg-red-50 text-red-700 border-red-200" },
+    dibatalkan: { label: "Dibatalkan", cls: "bg-slate-50 text-slate-500 border-slate-200" }
   }
 
   const dpStatusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_approval_admin: { label: "🕐 Menunggu Admin", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    menunggu_approval_manager: { label: "📋 Menunggu Manager", cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    approved: { label: "✓ Approved", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    rejected: { label: "✗ Rejected", cls: "bg-red-50 text-red-700 border-red-200" }
+    menunggu_approval_admin: { label: "Menunggu Admin", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    menunggu_approval_manager: { label: "Menunggu Manager", cls: "bg-orange-50 text-orange-700 border-orange-200" },
+    approved: { label: "Approved", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    rejected: { label: "Rejected", cls: "bg-red-50 text-red-700 border-red-200" }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Breadcrumbs & Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
-            <Link href="/dashboard/manager" className="hover:text-cyan-600 transition-colors">
-              Manager
-            </Link>
-            <ChevronRight className="w-3 h-3" />
-            <Link href="/dashboard/manager/suppliers" className="hover:text-cyan-600 transition-colors">
-              Database Lapak
-            </Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-slate-600 font-semibold">{supplier.nama}</span>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            Detail Lapak: {supplier.nama}
-            <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-cyan-50 text-cyan-600 uppercase tracking-wider shadow-inner">
-              CC {supplier.warehouse?.nama.replace(/^Gudang\s+/i, "") || "CC"}
-            </span>
-          </h2>
-        </div>
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm self-start md:self-auto"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Kembali
-        </button>
-      </div>
+    <div className="premium-workflow space-y-6">
+      <PageHeader
+        eyebrow="Supplier detail"
+        title={`Detail Lapak ${supplier.nama}`}
+        description={`Collection Center ${supplier.warehouse?.nama.replace(/^Gudang\s+/i, "") || "CC"}`}
+        actions={
+          <button
+            onClick={() => router.back()}
+            className="premium-button flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Kembali
+          </button>
+        }
+      />
 
       {/* Profile & Info Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Info */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4 lg:col-span-2">
-          <h3 className="text-base font-bold text-slate-800 border-b border-slate-50 pb-2 flex items-center gap-2">
-            <User className="w-4 h-4 text-cyan-600" />
-            Profil Lapak &amp; Kontak
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-slate-400 text-xs block">Nama Lengkap / Lapak</span>
-              <span className="font-bold text-slate-800 mt-0.5 block">{supplier.nama}</span>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="workflow-card overflow-hidden p-0 lg:col-span-2">
+          <div className="border-b border-slate-100 px-6 py-5">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Profil lapak</p>
+            <h3 className="mt-1 text-lg font-black text-slate-950">{supplier.nama}</h3>
+            <p className="mt-1 text-sm text-slate-500">Kontak, target, dan jadwal ambilan supplier dalam satu panel.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-px bg-slate-100 text-sm md:grid-cols-2">
+            <div className="bg-white/90 p-5">
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Collection Center</span>
+              <span className="mt-1 block font-bold text-slate-950">{supplier.warehouse?.nama || "-"}</span>
             </div>
-            <div>
-              <span className="text-slate-400 text-xs block">Collection Center Utama</span>
-              <span className="font-semibold text-slate-700 mt-0.5 block">{supplier.warehouse?.nama || "—"}</span>
+            <div className="bg-white/90 p-5">
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Kontak WhatsApp</span>
+              <span className="mt-1 block font-bold text-slate-950">{supplier.kontak_wa || "Belum ada kontak"}</span>
             </div>
-            <div>
-              <span className="text-slate-400 text-xs block">Target Bulanan</span>
-              <span className="font-bold text-slate-800 mt-0.5 block">
-                {supplier.target_bulanan_kg > 0 ? fmtTon(supplier.target_bulanan_kg) : "—"}
+            <div className="bg-white/90 p-5">
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Target Bulanan</span>
+              <span className="mt-1 block font-bold text-slate-950">
+                {supplier.target_bulanan_kg > 0 ? fmtTon(supplier.target_bulanan_kg) : "-"}
                 {supplier.target_bulanan_kg > 0 && (
-                  <span className="text-xs text-slate-500 font-medium ml-1">
-                    ({fmtKg(supplier.target_bulanan_kg)})
-                  </span>
+                  <span className="ml-1 text-xs font-medium text-slate-500">({fmtKg(supplier.target_bulanan_kg)})</span>
                 )}
               </span>
             </div>
-            <div>
-              <span className="text-slate-400 text-xs block">Jadwal Ambilan</span>
-              <span className="font-semibold text-slate-700 mt-0.5 block">
-                {supplier.frekuensi_ambilan_mingguan}x seminggu
-                {supplier.hari_ambilan ? ` (${supplier.hari_ambilan})` : ""}
+            <div className="bg-white/90 p-5">
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Jadwal Ambilan</span>
+              <span className="mt-1 block font-bold text-slate-950">
+                {supplier.frekuensi_ambilan_mingguan}x seminggu{supplier.hari_ambilan ? ` (${supplier.hari_ambilan})` : ""}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 px-6 py-5">
             {supplier.kontak_wa ? (
               <a
                 href={getWaLink(supplier.kontak_wa)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-emerald-100/50"
+                className="premium-button flex items-center justify-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100"
               >
-                <MessageCircle className="w-4 h-4 shrink-0" />
-                Chat WhatsApp ({supplier.kontak_wa})
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                Chat WhatsApp
               </a>
             ) : (
-              <button
-                disabled
-                className="flex items-center justify-center gap-1.5 bg-slate-50 text-slate-400 px-4 py-2 rounded-xl text-xs font-bold border border-slate-100 cursor-not-allowed"
-              >
-                <MessageCircle className="w-4 h-4 shrink-0" />
+              <button disabled className="flex cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-400">
+                <MessageCircle className="h-4 w-4 shrink-0" />
                 Tidak Ada Kontak WA
               </button>
             )}
@@ -336,70 +317,70 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-600 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-cyan-100/50"
+              className="premium-button flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
             >
-              <MapPin className="w-4 h-4 shrink-0" />
+              <MapPin className="h-4 w-4 shrink-0" />
               Lokasi Maps
             </a>
           </div>
         </div>
 
-        {/* Bank Account Info */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
-          <h3 className="text-base font-bold text-slate-800 border-b border-slate-50 pb-2 flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-cyan-600" />
-            Informasi Rekening
-          </h3>
+        <div className="workflow-card space-y-4 p-6">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Rekening</p>
+            <h3 className="mt-1 text-lg font-black text-slate-950">Informasi Pembayaran</h3>
+          </div>
           {supplier.nomor_rekening ? (
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3 relative overflow-hidden">
-              <div className="absolute right-0 bottom-0 w-16 h-16 bg-cyan-500/5 rounded-full translate-x-4 translate-y-4" />
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Bank</span>
-                <p className="font-extrabold text-slate-800 text-base">{supplier.nama_bank}</p>
+            <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 p-5 text-white">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(20,184,166,0.24),transparent_36%)]" />
+              <div className="relative space-y-4">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Bank</span>
+                  <p className="text-base font-extrabold text-white">{supplier.nama_bank}</p>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nomor Rekening</span>
+                  <p className="font-mono text-xl font-bold tracking-tight text-white">{supplier.nomor_rekening}</p>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Atas Nama</span>
+                  <p className="text-sm font-semibold text-slate-200">{supplier.atas_nama || "-"}</p>
+                </div>
+                <button
+                  onClick={() => handleCopy(supplier.nomor_rekening || "")}
+                  className="premium-button flex w-full items-center justify-center gap-2 rounded-xl bg-white py-2 text-xs font-bold text-slate-950 hover:bg-slate-100"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-500" />
+                      Berhasil Disalin
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5 text-slate-500" />
+                      Salin Nomor Rekening
+                    </>
+                  )}
+                </button>
               </div>
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Nomor Rekening</span>
-                <p className="font-mono font-bold text-slate-700 text-lg">{supplier.nomor_rekening}</p>
-              </div>
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Atas Nama</span>
-                <p className="font-semibold text-slate-600 text-sm">{supplier.atas_nama || "—"}</p>
-              </div>
-              <button
-                onClick={() => handleCopy(supplier.nomor_rekening || "")}
-                className="w-full mt-2 flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 py-2 rounded-xl text-xs font-bold transition-all shadow-sm"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    Berhasil Disalin!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-slate-400" />
-                    Salin Nomor Rekening
-                  </>
-                )}
-              </button>
             </div>
           ) : (
-            <div className="bg-slate-50 rounded-2xl p-6 text-center border border-dashed border-slate-200">
-              <CreditCard className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-xs text-slate-500 italic">Data bank belum dilengkapi oleh admin.</p>
+            <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+              <CreditCard className="mx-auto mb-2 h-8 w-8 text-slate-300" />
+              <p className="text-xs italic text-slate-500">Data bank belum dilengkapi oleh admin.</p>
             </div>
           )}
         </div>
       </div>
-
       {/* Monthly Performance Dashboard Card */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-50 pb-3">
+      <div className="workflow-card space-y-5 p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-              <Award className="w-5 h-5 text-indigo-600" />
-              Rapor Kinerja Lapak Bulan Ini ({namaBulanIndo} {currentYearNum})
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Performance report</p>
+            <h3 className="mt-1 text-lg font-black text-slate-950">
+              Rapor Kinerja Bulan Ini
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-sm text-slate-500 mt-1">
               Evaluasi kinerja berjalan untuk bulan aktif berdasarkan data timbangan lapak vs CC.
             </p>
           </div>
@@ -431,10 +412,10 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Indicator 1: Kuantitas (Volume) */}
-            <div className="bg-slate-50/70 border border-slate-100 p-4 rounded-2xl space-y-2.5">
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-cyan-600" />
+                  <TrendingUp className="w-4 h-4 text-teal-600" />
                   Kuantitas (Volume)
                 </span>
                 <span className="text-xs font-extrabold text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded">
@@ -442,7 +423,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 </span>
               </div>
               <div className="space-y-1.5">
-                <p className="text-2xl font-black text-slate-800 font-mono">
+                <p className="text-2xl font-black text-slate-950 font-mono">
                   {fmtKg(mGudangWeight)}
                   <span className="text-xs text-slate-405 block font-semibold font-sans mt-0.5">({fmtTon(mGudangWeight)}) dikirim</span>
                 </p>
@@ -468,7 +449,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             </div>
 
             {/* Indicator 2: Kualitas (Susut Timbangan) */}
-            <div className="bg-slate-50/70 border border-slate-100 p-4 rounded-2xl space-y-2.5">
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
                   <Activity className="w-4 h-4 text-indigo-600" />
@@ -495,7 +476,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             </div>
 
             {/* Indicator 3: Harga Beli Rata-rata */}
-            <div className="bg-slate-50/70 border border-slate-100 p-4 rounded-2xl space-y-2.5">
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
                   <CreditCard className="w-4 h-4 text-violet-600" />
@@ -576,7 +557,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/30"
             }`}
           >
-            📋 Riwayat Pembelian ({supplier.purchases.length})
+            Riwayat Pembelian ({supplier.purchases.length})
           </button>
           <button
             onClick={() => setActiveTab("dp")}
@@ -586,7 +567,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/30"
             }`}
           >
-            💸 Saldo &amp; Kasbon DP ({supplier.downPayments.length})
+            Saldo &amp; Kasbon DP ({supplier.downPayments.length})
           </button>
         </div>
 

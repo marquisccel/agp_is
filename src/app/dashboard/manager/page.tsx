@@ -14,6 +14,78 @@ import MonthYearFilter from "@/components/features/MonthYearFilter"
 import { isWorkingDay } from "@/lib/workingDays"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 
+const formatActivityAction = (action: string) => {
+  const actionMap: Record<string, { label: string; description: string; tone: string }> = {
+    CREATE_DRAFT: {
+      label: "Draft transaksi dibuat",
+      description: "membuat draft transaksi pembelian baru",
+      tone: "bg-sky-50 text-sky-700 border-sky-100",
+    },
+    SUPERVISOR_VERIFY_PURCHASE: {
+      label: "Pembelian diverifikasi",
+      description: "memverifikasi transaksi pembelian",
+      tone: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    },
+    MANAGER_APPROVE_PRICE: {
+      label: "Harga disetujui",
+      description: "menyetujui harga pembelian",
+      tone: "bg-teal-50 text-teal-700 border-teal-100",
+    },
+    MANAGER_REJECT_PRICE: {
+      label: "Harga ditolak",
+      description: "menolak pengajuan harga pembelian",
+      tone: "bg-rose-50 text-rose-700 border-rose-100",
+    },
+    APPROVE_DP: {
+      label: "DP disetujui",
+      description: "menyetujui pengajuan DP supplier",
+      tone: "bg-violet-50 text-violet-700 border-violet-100",
+    },
+    REJECT_DP: {
+      label: "DP ditolak",
+      description: "menolak pengajuan DP supplier",
+      tone: "bg-rose-50 text-rose-700 border-rose-100",
+    },
+  }
+
+  if (actionMap[action]) return actionMap[action]
+
+  const readable = action
+    .toLowerCase()
+    .split("_")
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+
+  return {
+    label: readable || "Aktivitas sistem",
+    description: "memperbarui data operasional",
+    tone: "bg-slate-50 text-slate-700 border-slate-100",
+  }
+}
+
+const formatActivityScope = (tableName: string) => {
+  const scopeMap: Record<string, string> = {
+    Purchase: "Transaksi pembelian",
+    PurchaseItem: "Item pembelian",
+    DownPayment: "DP supplier",
+    Supplier: "Data supplier",
+    Warehouse: "Collection Center",
+    WarehouseTarget: "Target gudang",
+  }
+
+  return scopeMap[tableName] || "Operasional"
+}
+
+const getGreeting = (date: Date) => {
+  const hour = date.getUTCHours()
+
+  if (hour >= 4 && hour < 11) return "Selamat pagi"
+  if (hour >= 11 && hour < 15) return "Selamat siang"
+  if (hour >= 15 && hour < 18) return "Selamat sore"
+  return "Selamat malam"
+}
+
 export default async function ManagerDashboard({
   searchParams
 }: {
@@ -24,6 +96,7 @@ export default async function ManagerDashboard({
   if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
+  const displayName = session.user.name || "Manager"
 
   // ──────────────────────────────────────────
   // Date calculations (scoped from query filters)
@@ -53,6 +126,16 @@ export default async function ManagerDashboard({
   const monthStart = new Date(Date.UTC(selectedTahun, selectedBulan - 1, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
   const monthEnd   = new Date(Date.UTC(selectedTahun, selectedBulan, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
   const twelveMonthsAgo = new Date(Date.UTC(selectedTahun, selectedBulan - 12, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
+  const calendarAnchor =
+    selectedTahun * 12 + selectedBulan >= now.getUTCFullYear() * 12 + (now.getUTCMonth() + 1)
+      ? { bulan: selectedBulan, tahun: selectedTahun }
+      : { bulan: now.getUTCMonth() + 1, tahun: now.getUTCFullYear() }
+  const calendarStart = new Date(Date.UTC(calendarAnchor.tahun, calendarAnchor.bulan - 12, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
+  const calendarEnd = new Date(Date.UTC(calendarAnchor.tahun, calendarAnchor.bulan, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
+  const trendMonths = Array.from({ length: 12 }, (_, idx) => {
+    const d = new Date(Date.UTC(selectedTahun, selectedBulan - 12 + idx, 1))
+    return { bulan: d.getUTCMonth() + 1, tahun: d.getUTCFullYear() }
+  })
 
   // Cek apakah hari ini adalah hari kerja (hanya untuk current month view)
   const todayDateObj = new Date(Date.UTC(localYear, localMonth, localDate))
@@ -116,6 +199,27 @@ export default async function ManagerDashboard({
       tahun: selectedTahun,
     }
   })
+  const latestTargets = await prisma.warehouseTarget.findMany({
+    orderBy: [
+      { tahun: "desc" },
+      { bulan: "desc" },
+      { updatedAt: "desc" },
+    ],
+  })
+  const latestTargetMap = new Map<string, (typeof latestTargets)[number]>()
+  for (const target of latestTargets) {
+    if (!latestTargetMap.has(target.warehouseId)) {
+      latestTargetMap.set(target.warehouseId, target)
+    }
+  }
+  const trendTargets = await prisma.warehouseTarget.findMany({
+    where: {
+      OR: trendMonths.map(({ bulan, tahun }) => ({ bulan, tahun }))
+    }
+  })
+  const trendTargetMap = new Map(
+    trendTargets.map(t => [`${t.warehouseId}-${t.tahun}-${t.bulan}`, t])
+  )
 
   // ──────────────────────────────────────────
   // 5. Valid purchases (12 months) for all analytics
@@ -132,6 +236,17 @@ export default async function ManagerDashboard({
     }
   })
 
+  const calendarPurchases = await prisma.purchase.findMany({
+    where: {
+      status_approval: { in: ACTIVE_PURCHASE_STATUSES },
+      createdAt: { gte: calendarStart, lt: calendarEnd }
+    },
+    include: {
+      items: true,
+      warehouse: true
+    }
+  })
+
   // ──────────────────────────────────────────
   // 6. Build ManagerAnalytics dataMap AND Expense Metrics
   // ──────────────────────────────────────────
@@ -141,6 +256,8 @@ export default async function ManagerDashboard({
 
   for (const w of warehouses) {
     const target    = targets.find(t => t.warehouseId === w.id)
+    const fallbackTarget = latestTargetMap.get(w.id)
+    const displayTarget = target || fallbackTarget
     const wPurchases = validPurchases.filter(p => p.warehouseId === w.id)
 
     // Pengeluaran (Expenses) calculation
@@ -158,14 +275,15 @@ export default async function ManagerDashboard({
     const actual_mingguan = wPurchases.filter(p => p.createdAt >= weekStart && p.createdAt < weekEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
     const actual_bulanan  = wPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
 
-    const yearlyData: { label: string; weight: number }[] = []
+    const yearlyData: { label: string; weight: number; target: number | null }[] = []
     for (let i = 11; i >= 0; i--) {
       const d      = new Date(selectedTahun, selectedBulan - 1 - i, 1)
       const label  = d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" })
       const mStart = new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
       const mEnd   = new Date(Date.UTC(d.getFullYear(), d.getMonth() + 1, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
       const weight = wPurchases.filter(p => p.createdAt >= mStart && p.createdAt < mEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
-      yearlyData.push({ label, weight })
+      const monthlyTarget = trendTargetMap.get(`${w.id}-${d.getFullYear()}-${d.getMonth() + 1}`)?.target_bulanan_kg || 0
+      yearlyData.push({ label, weight, target: monthlyTarget > 0 ? monthlyTarget : null })
     }
 
     // ── Per-day data for the selected month ──────────────────
@@ -175,7 +293,7 @@ export default async function ManagerDashboard({
       const dStart = new Date(Date.UTC(selectedTahun, selectedBulan - 1, d, 0, 0, 0) - 7 * 60 * 60 * 1000)
       const dEnd   = new Date(dStart.getTime() + 24 * 60 * 60 * 1000)
       const weight = wPurchases.filter(p => p.createdAt >= dStart && p.createdAt < dEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
-      dailyData.push({ label: `${d}`, weight, target: target?.target_harian_kg || 0 })
+      dailyData.push({ label: `${d}`, weight, target: displayTarget?.target_harian_kg || 0 })
     }
 
     // ── Per-week data (last 8 weeks) ──────────────────────────
@@ -186,15 +304,15 @@ export default async function ManagerDashboard({
       const wkLabel = new Date(wkStart.getTime() + 7 * 60 * 60 * 1000) // shift back to WIB for display
       const wNum = `${wkLabel.getUTCDate()}/${wkLabel.getUTCMonth() + 1}`
       const weight = wPurchases.filter(p => p.createdAt >= wkStart && p.createdAt < wkEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
-      weeklyData.push({ label: `Mg ${wNum}`, weight, target: target?.target_mingguan_kg || 0 })
+      weeklyData.push({ label: `Mg ${wNum}`, weight, target: displayTarget?.target_mingguan_kg || 0 })
     }
 
     dataMap[w.id] = {
       id: w.id,
       nama: w.nama,
-      target_harian: target?.target_harian_kg || 0,
-      target_mingguan: target?.target_mingguan_kg || 0,
-      target_bulanan: target?.target_bulanan_kg || 0,
+      target_harian: displayTarget?.target_harian_kg || 0,
+      target_mingguan: displayTarget?.target_mingguan_kg || 0,
+      target_bulanan: displayTarget?.target_bulanan_kg || 0,
       actual_harian,
       actual_mingguan,
       actual_bulanan,
@@ -211,7 +329,7 @@ export default async function ManagerDashboard({
   // ──────────────────────────────────────────
   const calendarMap: Record<string, { totalKg: number; totalTransaksi: number; warehouses: Record<string, number> }> = {}
 
-  for (const purchase of monthlyPurchases) {
+  for (const purchase of calendarPurchases) {
     const localDateObj = new Date(purchase.createdAt.getTime() + 7 * 60 * 60 * 1000)
     const dateKey = localDateObj.toISOString().slice(0, 10)
     if (!calendarMap[dateKey]) {
@@ -233,7 +351,7 @@ export default async function ManagerDashboard({
   }))
 
   // Global sum harian target (for calendar indicator)
-  const totalTargetHarian = targets.reduce((s, t) => s + t.target_harian_kg, 0)
+  const totalTargetHarian = Object.values(dataMap).reduce((s, d: any) => s + (d.target_harian || 0), 0)
 
   // ──────────────────────────────────────────
   // 8. Top 10 Lapak per warehouse (selected month)
@@ -581,79 +699,122 @@ export default async function ManagerDashboard({
         </div>
       )}
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <h2 className="text-2xl font-bold text-slate-800">Analitik &amp; Overview</h2>
-            <MonthYearFilter selectedBulan={selectedBulan} selectedTahun={selectedTahun} />
+      <section className="page-hero border border-white/70 p-7 md:p-9">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="min-w-0">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-700">
+              Agrapana Greenworks Polymer Information System
+            </p>
+            <h2 className="mt-3 max-w-4xl whitespace-nowrap text-3xl font-semibold leading-none tracking-[-0.04em] text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
+              {getGreeting(now)}, <span className="font-black">{displayName}</span>.
+            </h2>
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
+              Pantau tonase, target, approval, dan risiko seluruh Collection Center dalam satu tampilan kerja.
+            </p>
           </div>
-          <p className="text-slate-500 text-sm mt-1">Pantau performa pembelian PET recycle secara real-time.</p>
+          <div className="w-full rounded-[26px] border border-slate-200/80 bg-white/72 p-4 shadow-sm backdrop-blur-xl xl:w-[540px]">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Periode Laporan</p>
+                <p className="mt-1 text-xs text-slate-400">Kontrol data dashboard</p>
+              </div>
+              <MonthYearFilter selectedBulan={selectedBulan} selectedTahun={selectedTahun} />
+            </div>
+            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+              <Link
+                href="/dashboard/manager/reports"
+                className="premium-button bg-slate-950 text-white hover:bg-slate-800 px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 group whitespace-nowrap"
+              >
+                Rekap Laporan
+              </Link>
+              <Link
+                href="/dashboard/manager/sku-prices"
+                className="premium-button bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300 hover:bg-slate-50 px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 group whitespace-nowrap"
+              >
+                Harga Standar SKU
+              </Link>
+              <a
+                href={`/api/manager/export?bulan=${selectedBulan}&tahun=${selectedTahun}`}
+                className="premium-button bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300 hover:bg-slate-50 px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 group whitespace-nowrap"
+              >
+                Export Excel
+              </a>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          <Link
-            href="/dashboard/manager/reports"
-            className="flex-1 md:flex-initial bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-500 hover:to-blue-500 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-cyan-500/10 transition-all flex items-center justify-center gap-2 group"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-100 group-hover:text-white">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-            Rekap Laporan
-          </Link>
-          <Link
-            href="/dashboard/manager/sku-prices"
-            className="flex-1 md:flex-initial bg-white border border-slate-200 text-slate-700 hover:text-cyan-700 hover:border-cyan-200 hover:bg-cyan-50 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 group"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 group-hover:text-cyan-500">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            Harga Standar SKU
-          </Link>
-          <a
-            href={`/api/manager/export?bulan=${selectedBulan}&tahun=${selectedTahun}`}
-            className="flex-1 md:flex-initial bg-white border border-slate-200 text-slate-700 hover:text-cyan-700 hover:border-cyan-200 hover:bg-cyan-50 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 group"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 group-hover:text-cyan-500">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" x2="12" y1="15" y2="3"/>
-            </svg>
-            Export Laporan Excel
-          </a>
-        </div>
-      </div>
+      </section>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-6 shadow-lg shadow-blue-500/20 text-white relative overflow-hidden">
-          <div className="relative z-10">
-            <h3 className="text-cyan-100 font-medium text-sm uppercase tracking-wider mb-1">Total Tonase (Seluruh Gudang)</h3>
-            <div className="text-4xl font-extrabold">{totalTonase.toFixed(2)} <span className="text-xl font-medium text-cyan-200">Ton</span></div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="premium-metric group relative isolate overflow-hidden rounded-[28px] border border-teal-900/10 bg-gradient-to-br from-[#05736c] via-[#08796f] to-[#0b5c72] p-5 text-white shadow-[0_18px_48px_rgba(6,95,70,0.16)] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-950/20">
+          <div className="absolute inset-0 -z-10 bg-[linear-gradient(115deg,rgba(255,255,255,0.22),transparent_36%),radial-gradient(circle_at_88%_10%,rgba(255,255,255,0.32),transparent_28%)] opacity-70 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 group-hover:opacity-100" />
+          <div className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent opacity-70 transition-opacity duration-700 group-hover:opacity-100" />
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-[11px] font-black uppercase tracking-[0.16em] text-teal-50/80">Total Tonase Bulan Ini</h3>
+              <p className="mt-1 text-xs text-teal-50/72">Akumulasi seluruh Collection Center</p>
+            </div>
+            <span className="rounded-full border border-white/20 bg-white/20 px-2.5 py-1 text-[10px] font-black text-teal-50 shadow-sm backdrop-blur transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/25">Live</span>
           </div>
-          <div className="absolute right-0 bottom-0 opacity-10">
-            <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M4 14V20H20V14H4ZM2 14C2 12.8954 2.89543 12 4 12H20C21.1046 12 22 12.8954 22 14V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V14ZM4 4V10H20V4H4ZM2 4C2 2.89543 2.89543 2 4 2H20C21.1046 2 22 2.89543 22 4V10C22 11.1046 21.1046 12 20 12H4C2.89543 12 2 11.1046 2 10V4Z"/></svg>
+          <div className="premium-number inline-flex origin-left items-end gap-2 will-change-transform">
+            <span className="text-4xl font-black leading-none tracking-[-0.06em] text-white">{totalTonase.toFixed(2)}</span>
+            <span className="mb-1 text-sm font-bold text-teal-50/75">Ton</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="text-slate-500 font-medium text-sm uppercase tracking-wider mb-1">Menunggu Approval Harga</h3>
-          <div className="flex items-end gap-3">
-            <div className="text-4xl font-extrabold text-orange-600">{waitingApprovalHarga}</div>
-            <Link href="/dashboard/manager/approval-harga" className="text-sm font-medium mb-1 border-b border-orange-200 text-orange-500 pb-0.5 cursor-pointer hover:text-orange-700 transition-colors">
-              Lihat detail →
+        <div className="interactive-surface group relative overflow-hidden rounded-[28px] border border-slate-200/80 p-5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-amber-200/90">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,251,235,0.95),rgba(255,255,255,0)_58%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="relative mb-3 flex items-start gap-3">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 ring-1 ring-amber-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 9v4" />
+                  <path d="M12 17h.01" />
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold uppercase text-slate-500">Approval Harga</h3>
+                <p className="mt-1 text-xs text-slate-400">Transaksi menunggu keputusan harga</p>
+              </div>
+            </div>
+          </div>
+          <div className="relative flex items-end justify-between gap-3">
+            <div>
+              <div className="premium-number inline-block origin-left text-3xl font-black text-slate-950 will-change-transform">{waitingApprovalHarga}</div>
+              <p className="mt-1 text-xs font-semibold text-slate-400">item pending</p>
+            </div>
+            <Link href="/dashboard/manager/approval-harga" className="premium-button mb-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-800">
+              Lihat detail
             </Link>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="text-slate-500 font-medium text-sm uppercase tracking-wider mb-1">Menunggu Approval DP</h3>
-          <div className="flex items-end gap-3">
-            <div className="text-4xl font-extrabold text-indigo-600">{waitingApprovalDP}</div>
-            <Link href="/dashboard/manager/approval-dp" className="text-sm font-medium mb-1 border-b border-indigo-200 text-indigo-500 pb-0.5 cursor-pointer hover:text-indigo-700 transition-colors">
-              Lihat detail →
+        <div className="interactive-surface group relative overflow-hidden rounded-[28px] border border-slate-200/80 p-5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-sky-200/90">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(239,246,255,0.95),rgba(255,255,255,0)_58%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="relative mb-3 flex items-start gap-3">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 7h-9" />
+                  <path d="M14 17H5" />
+                  <circle cx="17" cy="17" r="3" />
+                  <circle cx="7" cy="7" r="3" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold uppercase text-slate-500">Approval DP</h3>
+                <p className="mt-1 text-xs text-slate-400">Pengajuan kasbon menunggu validasi</p>
+              </div>
+            </div>
+          </div>
+          <div className="relative flex items-end justify-between gap-3">
+            <div>
+              <div className="premium-number inline-block origin-left text-3xl font-black text-slate-950 will-change-transform">{waitingApprovalDP}</div>
+              <p className="mt-1 text-xs font-semibold text-slate-400">item pending</p>
+            </div>
+            <Link href="/dashboard/manager/approval-dp" className="premium-button mb-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-sky-200 hover:bg-sky-50 hover:text-sky-800">
+              Lihat detail
             </Link>
           </div>
         </div>
@@ -668,7 +829,13 @@ export default async function ManagerDashboard({
 
       {/* Calendar + Top Lapak (side by side on large screens) */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <ManagerCalendar calendarData={calendarData} targetHarian={totalTargetHarian} />
+        <ManagerCalendar
+          key={`${selectedTahun}-${selectedBulan}`}
+          calendarData={calendarData}
+          targetHarian={totalTargetHarian}
+          selectedBulan={selectedBulan}
+          selectedTahun={selectedTahun}
+        />
         <div className="space-y-4">
           {/* Placeholder so Top Lapak fills the right column on xl */}
         </div>
@@ -691,28 +858,50 @@ export default async function ManagerDashboard({
       />
 
       {/* Recent Activities */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-6 border-b border-slate-100">
-          <h3 className="text-lg font-bold text-slate-800">Aktivitas Terbaru</h3>
-          <p className="text-xs text-slate-500">Log audit seluruh gudang</p>
+      <div className="interactive-surface overflow-hidden border border-slate-200/80">
+        <div className="border-b border-slate-100 bg-slate-50/60 p-5">
+          <span className="text-xs font-bold uppercase text-teal-700">Operational feed</span>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h3 className="text-base font-bold text-slate-950">Aktivitas Terbaru</h3>
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-500">{recentLogs.length} aktivitas</span>
+          </div>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Aktivitas paling baru dan jejak operasional terakhir.</p>
         </div>
-        <div className="p-2 max-h-[300px] overflow-auto">
+        <div className="p-5">
           {recentLogs.length === 0 ? (
-            <div className="p-4 text-center text-slate-400 text-sm">Belum ada aktivitas.</div>
+            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-400">Belum ada aktivitas.</div>
           ) : (
-            <ul className="space-y-1">
-              {recentLogs.map(log => (
-                <li key={log.id} className="p-4 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-xs font-bold text-cyan-600 bg-cyan-50 px-2 py-0.5 rounded uppercase">{log.action}</span>
-                    <span className="text-[10px] text-slate-400">{new Date(log.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}</span>
+            <div className="overflow-hidden rounded-lg border border-slate-200">
+              <div className="hidden grid-cols-[220px_minmax(0,1fr)_180px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-bold uppercase text-slate-500 sm:grid">
+                <span>Aktivitas</span>
+                <span>Detail</span>
+                <span />
+              </div>
+              <ul className="max-h-[320px] divide-y divide-slate-100 overflow-auto bg-white">
+              {recentLogs.map(log => {
+                const activity = formatActivityAction(log.action)
+                const scope = formatActivityScope(log.table_name)
+
+                return (
+                <li key={log.id} className="grid gap-3 px-4 py-4 transition-colors hover:bg-slate-50/70 sm:grid-cols-[220px_minmax(0,1fr)_180px] sm:items-center">
+                  <div className="min-w-0">
+                    <span className={`inline-flex w-fit items-center rounded-md border px-2.5 py-1 text-[11px] font-bold ${activity.tone}`}>
+                      {activity.label}
+                    </span>
+                    <p className="mt-2 text-xs font-semibold text-slate-400 sm:hidden">{scope}</p>
                   </div>
-                  <p className="text-sm text-slate-700">
-                    <span className="font-semibold">{log.user.nama}</span> melakukan perubahan pada <span className="font-mono text-xs">{log.table_name}</span>.
-                  </p>
+                  <div className="min-w-0">
+                    <p className="text-sm leading-6 text-slate-700">
+                      <span className="font-bold text-slate-950">{log.user.nama}</span> {activity.description}.
+                    </p>
+                    <p className="mt-1 hidden text-xs font-semibold text-slate-400 sm:block">{scope}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-400 sm:text-right">{new Date(log.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })}</span>
                 </li>
-              ))}
-            </ul>
+                )
+              })}
+              </ul>
+            </div>
           )}
         </div>
       </div>

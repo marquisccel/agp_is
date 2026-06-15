@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { createPortal } from "react-dom"
 import { fmtKg, fmtAngka, fmtPct } from "@/lib/format"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 
 interface SkuSusutDetail {
   skuName: string
@@ -83,50 +85,57 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
     ? (filteredSummary.totalSusut / filteredSummary.totalLapak) * 100 : 0
   const filteredLebihPct = filteredSummary.totalLapak > 0
     ? (filteredSummary.totalLebih / filteredSummary.totalLapak) * 100 : 0
+  const warehouseOptions = [
+    { value: "all", label: "Semua Gudang" },
+    ...warehouseNames.map(w => ({ value: w.id, label: w.nama })),
+  ]
+  const sortOptions: { value: "susut" | "lebih" | "volume"; label: string }[] = [
+    { value: "susut", label: "Susut Terbesar" },
+    { value: "lebih", label: "Lebih Terbesar" },
+    { value: "volume", label: "Volume Terbesar" },
+  ]
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-slate-100">
+      <div className="p-5 border-b border-slate-100">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-bold text-slate-800">Analisis Susut & Lebih Timbangan per Lapak</h3>
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-slate-900">Analisis Susut &amp; Lebih Timbangan per Lapak</h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Selisih timbangan lapak vs timbangan gudang — susut berarti gudang lebih kecil dari lapak
+              Selisih timbangan lapak vs timbangan gudang - susut berarti gudang lebih kecil dari lapak
             </p>
           </div>
           {/* Warehouse filter */}
-          <select
+          <ElegantSelect
             value={selectedWarehouseId}
-            onChange={e => setSelectedWarehouseId(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none text-sm font-semibold text-slate-700 cursor-pointer"
-          >
-            <option value="all">Semua Gudang</option>
-            {warehouseNames.map(w => (
-              <option key={w.id} value={w.id}>{w.nama}</option>
-            ))}
-          </select>
+            options={warehouseOptions}
+            onChange={setSelectedWarehouseId}
+            ariaLabel="Pilih gudang susut"
+            className="w-full sm:w-44"
+            menuClassName="sm:w-52"
+          />
         </div>
       </div>
 
       {/* Global Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-slate-100">
-        <div className="bg-slate-50 rounded-xl p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-5 border-b border-slate-100">
+        <div className="bg-slate-50 rounded-lg p-4">
           <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Total Lapak</p>
           <p className="text-xl font-extrabold text-slate-800">{fmtKg(filteredSummary.totalLapak)}</p>
           <p className="text-xs text-slate-400 mt-0.5">Timbangan lapak</p>
         </div>
-        <div className="bg-slate-50 rounded-xl p-4">
+        <div className="bg-slate-50 rounded-lg p-4">
           <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Total Gudang</p>
           <p className="text-xl font-extrabold text-slate-800">{fmtKg(filteredSummary.totalGudang)}</p>
           <p className="text-xs text-slate-400 mt-0.5">Timbangan gudang</p>
         </div>
-        <div className="bg-rose-50 rounded-xl p-4 border border-rose-100">
+        <div className="bg-rose-50 rounded-lg p-4 border border-rose-100">
           <p className="text-xs text-rose-500 font-semibold uppercase tracking-wider mb-1">Total Susut</p>
           <p className="text-xl font-extrabold text-rose-700">{fmtKg(filteredSummary.totalSusut)}</p>
           <p className="text-xs text-rose-400 mt-0.5 font-semibold">{fmtPct(filteredSusutPct)} dari lapak</p>
         </div>
-        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+        <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
           <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wider mb-1">Total Lebih</p>
           <p className="text-xl font-extrabold text-emerald-700">{fmtKg(filteredSummary.totalLebih)}</p>
           <p className="text-xs text-emerald-500 mt-0.5 font-semibold">{fmtPct(filteredLebihPct)} dari lapak</p>
@@ -134,22 +143,22 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
       </div>
 
       {/* Controls */}
-      <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-3 items-center justify-between">
+      <div className="px-5 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Show mode toggle */}
-        <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
+        <div className="flex w-full overflow-x-auto bg-slate-100 rounded-lg p-1 gap-1 sm:w-auto">
           {([
-            { key: "semua", label: "Semua Lapak", icon: "📋" },
-            { key: "susut", label: "Ada Susut", icon: "📉" },
-            { key: "lebih", label: "Ada Lebih", icon: "📈" },
+            { key: "semua", label: "Semua Lapak" },
+            { key: "susut", label: "Ada Susut" },
+            { key: "lebih", label: "Ada Lebih" },
           ] as const).map(m => (
             <button
               key={m.key}
               onClick={() => setShowMode(m.key)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex shrink-0 items-center gap-1 px-3 py-2 rounded-md text-xs font-bold transition-all ${
                 showMode === m.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              <span>{m.icon}</span> {m.label}
+              {m.label}
             </button>
           ))}
         </div>
@@ -157,23 +166,21 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
         {/* Sort */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400 font-semibold">Urutkan:</span>
-          <select
+          <ElegantSelect
             value={sortBy}
-            onChange={e => setSortBy(e.target.value as any)}
-            className="border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-cyan-500 outline-none cursor-pointer"
-          >
-            <option value="susut">Susut Terbesar</option>
-            <option value="lebih">Lebih Terbesar</option>
-            <option value="volume">Volume Terbesar</option>
-          </select>
+            options={sortOptions}
+            onChange={setSortBy}
+            ariaLabel="Urutkan analisis susut"
+            className="w-44"
+            menuClassName="w-48"
+          />
         </div>
       </div>
 
       {/* Table */}
-      <div className="p-6">
+      <div className="p-5">
         {sorted.length === 0 ? (
           <div className="text-center text-slate-400 text-sm py-12">
-            <div className="text-4xl mb-3">⚖️</div>
             <p>Belum ada data timbangan lapak vs gudang untuk periode ini.</p>
             <p className="text-xs mt-1">Data muncul setelah transaksi melewati proses verifikasi gudang.</p>
           </div>
@@ -187,15 +194,15 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
               return (
                 <div
                   key={row.supplierId}
-                  className="bg-white hover:bg-slate-50/50 rounded-2xl p-5 border border-slate-100 shadow-sm transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 group"
+                  className="interactive-surface bg-white hover:bg-slate-50/50 rounded-lg p-4 border border-slate-200 shadow-sm transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4 group"
                 >
                   {/* Info Lapak */}
-                  <div className="flex items-start gap-3 lg:w-1/4">
+                  <div className="flex items-start gap-3 lg:w-1/4 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center font-extrabold text-sm shrink-0 shadow-inner">
                       {idx + 1}
                     </div>
-                    <div>
-                      <div className="font-extrabold text-slate-800 text-base flex items-center gap-2 flex-wrap">
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
                         {row.namaLapak}
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100/50">
                           {row.transaksi}x Transaksi
@@ -208,7 +215,7 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
                   </div>
 
                   {/* Rincian Timbangan */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 flex-1">
                     {/* Lapak */}
                     <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100/50">
                       <span className="text-[10px] text-slate-400 font-semibold uppercase block">Timbang Lapak</span>
@@ -230,7 +237,7 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
                           <span className="text-[9px] font-bold text-rose-500">({fmtPct(row.pctSusut)})</span>
                         </div>
                       ) : (
-                        <span className="text-slate-300 text-xs block mt-1.5">—</span>
+                        <span className="text-slate-300 text-xs block mt-1.5">-</span>
                       )}
                     </div>
 
@@ -243,7 +250,7 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
                           <span className="text-[9px] font-bold text-emerald-550 text-emerald-600">({fmtPct(row.pctLebih)})</span>
                         </div>
                       ) : (
-                        <span className="text-slate-300 text-xs block mt-1.5">—</span>
+                        <span className="text-slate-300 text-xs block mt-1.5">-</span>
                       )}
                     </div>
                   </div>
@@ -252,9 +259,9 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
                   <div className="flex items-center justify-end lg:w-40 shrink-0">
                     <button
                       onClick={() => setSelectedLapak(row)}
-                      className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-slate-950/10 flex items-center justify-center gap-1.5"
+                      className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 font-bold px-4 py-2.5 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-1.5"
                     >
-                      🔍 Cek Detail Susut
+                      Cek Detail
                     </button>
                   </div>
                 </div>
@@ -265,11 +272,11 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
       </div>
 
       {/* Modal Detail Susut per Lapak */}
-      {selectedLapak && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all duration-300 animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[85vh] shadow-2xl flex flex-col overflow-hidden animate-in scale-in duration-200">
+      {typeof document !== "undefined" && selectedLapak && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in scale-in duration-200">
             {/* Header */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between gap-3 bg-slate-50">
               <div>
                 <h3 className="text-lg font-bold text-slate-800">Detail Susut &amp; Lebih: {selectedLapak.namaLapak}</h3>
                 <p className="text-xs text-slate-500 mt-1">
@@ -277,6 +284,8 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
                 </p>
               </div>
               <button
+                type="button"
+                aria-label="Tutup detail susut"
                 onClick={() => setSelectedLapak(null)}
                 className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-200/50 rounded-xl transition-all"
               >
@@ -287,12 +296,12 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
             </div>
 
             {/* Content */}
-            <div className="p-6 overflow-y-auto space-y-6 max-h-[60vh] scrollbar-thin scrollbar-thumb-slate-200">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-6 max-h-[64vh] scrollbar-thin scrollbar-thumb-slate-200">
               {selectedLapak.detailTransaksi && selectedLapak.detailTransaksi.length > 0 ? (
                 selectedLapak.detailTransaksi.map((tx) => {
                   const hasShrinkage = tx.selisih < 0
                   return (
-                    <div key={tx.purchaseId} className="border border-slate-100 rounded-2xl p-4 bg-slate-50/50 space-y-3">
+                    <div key={tx.purchaseId} className="border border-slate-100 rounded-lg p-4 bg-slate-50/50 space-y-3">
                       {/* Tx Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
                         <div>
@@ -305,7 +314,7 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
                         </div>
                         <div className="flex gap-2">
                           <span className="text-xs font-mono font-medium px-2 py-0.5 bg-slate-100 rounded text-slate-600 flex items-center">
-                            Lapak: {tx.beratLapak.toFixed(1)} kg · Gudang: {tx.beratGudang.toFixed(1)} kg
+                            Lapak: {tx.beratLapak.toFixed(1)} kg / Gudang: {tx.beratGudang.toFixed(1)} kg
                           </span>
                           <span className={`text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg border ${tx.selisih < 0 ? "bg-rose-50 text-rose-600 border-rose-100" : tx.selisih > 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-100 text-slate-650"}`}>
                             {tx.selisih === 0 ? "Sesuai" : tx.selisih < 0 ? `Susut: ${tx.selisih.toFixed(1)} kg` : `Lebih: +${tx.selisih.toFixed(1)} kg`}
@@ -334,7 +343,7 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
                                   <td className="px-4 py-2.5 text-right font-mono font-bold text-slate-800">{sku.beratGudang.toFixed(1)} kg</td>
                                   <td className="px-4 py-2.5 text-right font-mono whitespace-nowrap">
                                     {sDiff === 0 ? (
-                                      <span className="text-emerald-600 font-bold">✓ 0 kg</span>
+                                      <span className="text-emerald-600 font-bold">0 kg</span>
                                     ) : (
                                       <span className={`font-bold ${sDiff < 0 ? "text-rose-600" : "text-cyan-600"}`}>
                                         {sDiff < 0 ? `${sDiff.toFixed(1)} kg` : `+${sDiff.toFixed(1)} kg`}
@@ -356,16 +365,18 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+            <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
               <button
+                type="button"
                 onClick={() => setSelectedLapak(null)}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-slate-900/10"
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-lg text-xs transition-all shadow-md shadow-slate-900/10"
               >
                 Tutup
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

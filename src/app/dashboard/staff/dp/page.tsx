@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { isOperationalRole } from "@/lib/roles"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function DPListStaff() {
   const session = await getServerSession(authOptions)
@@ -24,19 +25,21 @@ export default async function DPListStaff() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Daftar Pengajuan Kasbon (DP)</h2>
-          <p className="text-slate-500 text-sm mt-1">Kelola dan pantau status pengajuan kasbon supplier Anda.</p>
-        </div>
-        <Link href="/dashboard/staff/dp/new">
-          <button className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all">
-            + Pengajuan Kasbon Baru
-          </button>
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Cash advance"
+        title="Daftar Pengajuan Kasbon (DP)"
+        description="Kelola dan pantau status pengajuan kasbon supplier Anda."
+        actions={(
+          <Link
+            href="/dashboard/staff/dp/new"
+            className="bg-slate-950 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-slate-800 transition-colors"
+          >
+            Pengajuan Kasbon Baru
+          </Link>
+        )}
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">

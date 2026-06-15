@@ -22,6 +22,7 @@ import {
   Image as ImageIcon
 } from "lucide-react"
 import { fmtKg, fmtRp } from "@/lib/format"
+import PageHeader from "@/components/ui/PageHeader"
 
 interface PurchaseItem {
   id: string
@@ -143,32 +144,32 @@ export default function ManagerPurchaseDetailClient({
       desc: "Menunggu verifikasi penerimaan barang dari Supervisor gudang."
     },
     menunggu_double_cek: {
-      label: "🕐 Menunggu Cek",
+      label: "Menunggu Cek",
       cls: "bg-amber-50 text-amber-700 border-amber-200",
       desc: "Menunggu pemeriksaan ulang (double check) dari Admin."
     },
     menunggu_approval_harga: {
-      label: "📋 Menunggu Approve",
+      label: "Menunggu Approval",
       cls: "bg-orange-50 text-orange-700 border-orange-200",
       desc: "Menunggu persetujuan harga dari Manager."
     },
     approved: {
-      label: "✓ Disetujui",
+      label: "Disetujui",
       cls: "bg-blue-50 text-blue-700 border-blue-200",
       desc: "Telah disetujui manager. Menunggu transfer pembayaran dari Admin."
     },
     sudah_transfer: {
-      label: "💸 Sudah Ditransfer",
+      label: "Sudah Ditransfer",
       cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
       desc: "Pembayaran telah ditransfer oleh Admin ke rekening supplier."
     },
     rejected: {
-      label: "✗ Ditolak",
+      label: "Ditolak",
       cls: "bg-red-50 text-red-700 border-red-200",
       desc: "Transaksi ditolak oleh Manager / Admin."
     },
     dibatalkan: {
-      label: "⊘ Dibatalkan",
+      label: "Dibatalkan",
       cls: "bg-slate-50 text-slate-500 border-slate-200",
       desc: "Transaksi dibatalkan."
     }
@@ -200,47 +201,36 @@ export default function ManagerPurchaseDetailClient({
   const methodLabel = purchase.metode_pembayaran_terpilih === "TIMBANGAN_GUDANG" ? "Timbangan Gudang (CC)" : "Timbangan Lapak (Supplier)"
 
   return (
-    <div className="space-y-6">
-      {/* Header with Nav */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
-            <Link href="/dashboard/manager" className="hover:text-cyan-600 transition-colors">
-              Manager
-            </Link>
-            <span>/</span>
-            <Link href="/dashboard/manager/history" className="hover:text-cyan-600 transition-colors">
-              Riwayat Transaksi
-            </Link>
-            <span>/</span>
-            <span className="text-slate-600 font-semibold">Detail Transaksi</span>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800">
-            Transaksi: {purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}
-          </h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Gudang: <span className="font-semibold text-slate-700">{purchase.warehouse.nama}</span>
-            &nbsp;•&nbsp;
-            Tanggal: <span className="font-semibold text-slate-700">
+    <div className="premium-workflow space-y-6">
+      <PageHeader
+        eyebrow="Transaction detail"
+        title={`Transaksi ${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}`}
+        description={
+          <>
+            <span className="font-semibold text-slate-700">{purchase.warehouse.nama}</span>
+            {" · "}
+            <span className="font-semibold text-slate-700">
               {new Date(purchase.tanggal).toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" })}
             </span>
-          </p>
-        </div>
-        <div className="flex gap-2">
+          </>
+        }
+        actions={
+          <>
           <Link href={`/dashboard/manager/edit/${purchase.id}`}>
-            <button className="bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <button className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
               Edit Transaksi
             </button>
           </Link>
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm"
+            className="premium-button flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
           >
             <ArrowLeft className="w-4 h-4" />
             Kembali
           </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Alert status description */}
       <div className={`p-4 rounded-xl border flex gap-3 items-start ${s.cls}`}>
@@ -267,7 +257,7 @@ export default function ManagerPurchaseDetailClient({
         {/* Left Columns - Lapak Info, Items Table */}
         <div className="lg:col-span-2 space-y-6">
           {/* Supplier Info */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="workflow-card grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-3">
                 <User className="w-3.5 h-3.5 text-slate-400" />
@@ -306,7 +296,7 @@ export default function ManagerPurchaseDetailClient({
           </div>
 
           {/* Items Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+          <div className="workflow-card space-y-4 p-6">
             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
               <FileText className="w-5 h-5 text-cyan-600" />
               Rincian Item (SKU)
@@ -394,7 +384,7 @@ export default function ManagerPurchaseDetailClient({
 
           {/* Retur Items List if Any */}
           {purchase.returs.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+            <div className="workflow-card space-y-4 p-6">
               <h3 className="text-base font-bold text-rose-700 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-rose-600" />
                 Retur Barang (Pengembalian)

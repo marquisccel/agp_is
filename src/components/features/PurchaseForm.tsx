@@ -2,11 +2,25 @@
 
 import { useState, type FormEvent } from "react"
 import dynamic from "next/dynamic"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
 
 const skuList = ["Bening", "BM", "Mix", "Warna", "Tutup HD", "Kotor", "Grade B", "Bocil", "Grade C", "Saos Kecap", "Galon", "PK", "Karung"]
+const METODE_BAYAR_OPTIONS = [
+  { value: "TIMBANGAN_GUDANG", label: "Timbangan Gudang" },
+  { value: "TIMBANGAN_LAPAK", label: "Timbangan Lapak" },
+]
+const SKU_OPTIONS = [
+  { value: "", label: "Pilih SKU" },
+  ...skuList.map(sku => ({ value: sku, label: sku })),
+]
+const SPEC_OPTIONS = [
+  { value: "", label: "Pilih spec" },
+  { value: "Grading", label: "Grading" },
+  { value: "Gabyuk", label: "Gabyuk" },
+]
 
 interface Item {
   sku_name: string
@@ -161,7 +175,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
         <NotaDraft data={notaData} onClose={() => setNotaData(null)} />
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="premium-workflow space-y-6">
         {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">{error}</div>}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -234,14 +248,13 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
           {/* Metode Bayar */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700">Metode Timbangan</label>
-            <select
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 transition-all outline-none"
+            <ElegantSelect
               value={metodeBayar}
-              onChange={(e) => setMetodeBayar(e.target.value)}
-            >
-              <option value="TIMBANGAN_GUDANG">Timbangan Gudang</option>
-              <option value="TIMBANGAN_LAPAK">Timbangan Lapak</option>
-            </select>
+              options={METODE_BAYAR_OPTIONS}
+              onChange={setMetodeBayar}
+              ariaLabel="Pilih metode timbangan"
+              className="w-full"
+            />
           </div>
         </div>
 
@@ -254,27 +267,23 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
               <div key={idx} className="flex flex-wrap md:flex-nowrap gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <div className="w-full md:flex-1 space-y-1">
                   <label className="text-xs font-medium text-slate-500">Jenis SKU</label>
-                  <select
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 outline-none"
+                  <ElegantSelect
                     value={item.sku_name}
-                    onChange={(e) => updateItem(idx, "sku_name", e.target.value)}
-                    required
-                  >
-                    <option value="">Pilih...</option>
-                    {skuList.map((sku) => <option key={sku} value={sku}>{sku}</option>)}
-                  </select>
+                    options={SKU_OPTIONS}
+                    onChange={(value) => updateItem(idx, "sku_name", value)}
+                    ariaLabel="Pilih SKU"
+                    className="w-full"
+                  />
                 </div>
                 <div className="w-full md:w-28 space-y-1">
                   <label className="text-xs font-medium text-slate-500">Spec</label>
-                  <select
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 outline-none"
+                  <ElegantSelect
                     value={item.spec}
-                    onChange={(e) => updateItem(idx, "spec", e.target.value)}
-                  >
-                    <option value="">— Pilih —</option>
-                    <option value="Grading">Grading</option>
-                    <option value="Gabyuk">Gabyuk</option>
-                  </select>
+                    options={SPEC_OPTIONS}
+                    onChange={(value) => updateItem(idx, "spec", value)}
+                    ariaLabel="Pilih spec SKU"
+                    className="w-full"
+                  />
                 </div>
                 <div className="w-full md:w-1/4 space-y-1">
                   <label className="text-xs font-medium text-slate-500">Berat Lapak (KG)</label>
@@ -508,7 +517,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:from-cyan-500 hover:to-blue-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="premium-button flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3.5 font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? (
               <>

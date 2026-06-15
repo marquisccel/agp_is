@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 
 export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers: any[], role?: string }) {
   const router = useRouter()
@@ -10,6 +11,10 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
   const [keterangan, setKeterangan] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const supplierOptions = [
+    { value: "", label: "Pilih supplier" },
+    ...suppliers.map(s => ({ value: s.id as string, label: `${s.nama} - Target ${s.target_bulanan_kg} kg` })),
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,17 +53,13 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
 
       <div>
         <label className="block text-sm font-semibold text-slate-700 mb-2">Pilih Supplier</label>
-        <select
-          required
+        <ElegantSelect
           value={supplierId}
-          onChange={(e) => setSupplierId(e.target.value)}
-          className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-        >
-          <option value="">-- Pilih Supplier --</option>
-          {suppliers.map(s => (
-            <option key={s.id} value={s.id}>{s.nama} - (Target: {s.target_bulanan_kg} kg)</option>
-          ))}
-        </select>
+          options={supplierOptions}
+          onChange={setSupplierId}
+          ariaLabel="Pilih supplier"
+          className="w-full"
+        />
       </div>
 
       <div>
@@ -102,7 +103,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
         <button
           type="submit"
           disabled={loading}
-          className="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all disabled:opacity-70"
+          className="premium-button rounded-xl bg-slate-950 px-8 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-70"
         >
           {loading ? "Memproses..." : "Ajukan Kasbon"}
         </button>

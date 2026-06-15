@@ -9,6 +9,7 @@ import { redirect } from "next/navigation"
 import { isWorkingDay } from "@/lib/workingDays"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 import { isOperationalRole } from "@/lib/roles"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function StaffDashboard() {
   const session = await getServerSession(authOptions)
@@ -139,10 +140,16 @@ export default async function StaffDashboard() {
         </div>
       )}
 
+      <PageHeader
+        eyebrow="Operational input"
+        title="Input Pembelian PET"
+        description={`Kelola transaksi pembelian dan target harian untuk ${namaGudang}.`}
+      />
+
       {/* Target Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Harian */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
           <div className="flex justify-between items-start mb-3">
             <div>
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Hari Ini</p>
@@ -188,7 +195,7 @@ export default async function StaffDashboard() {
         </div>
 
         {/* Mingguan */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
           <div className="flex justify-between items-start mb-3">
             <div>
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Minggu Ini</p>
@@ -224,7 +231,7 @@ export default async function StaffDashboard() {
         </div>
 
         {/* Bulanan */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
           <div className="flex justify-between items-start mb-3">
             <div>
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Bulan Ini</p>
@@ -271,7 +278,7 @@ export default async function StaffDashboard() {
       <RemainingKasbonList />
 
       {/* Input Form */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+      <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
         <h2 className="text-xl font-bold text-slate-800 mb-1">Input Transaksi Baru</h2>
         <p className="text-slate-500 text-sm mb-6">Data akan disimpan sebagai draft untuk diverifikasi oleh Supervisor gudang.</p>
         <PurchaseForm suppliers={suppliers} namaGudang={namaGudang} />

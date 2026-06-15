@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/authOptions"
 import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -54,20 +55,19 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       <PendingTerminAlerts initialAlerts={pendingTermins} />
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Double Check Transaksi</h2>
-          <p className="text-slate-500 text-sm mt-1">Daftar draft pembelian yang menunggu validasi berat dan retur.</p>
-        </div>
-        <Link href="/dashboard/admin/dp">
-          <button className="bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-2">
+      <PageHeader
+        eyebrow="Operational workspace"
+        title="Double Check Transaksi"
+        description="Daftar draft pembelian yang menunggu validasi berat dan retur."
+        actions={(
+          <Link href="/dashboard/admin/dp" className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
             Manajemen Kasbon
-          </button>
-        </Link>
-      </div>
+          </Link>
+        )}
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">

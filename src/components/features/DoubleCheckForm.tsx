@@ -2,6 +2,20 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import ElegantSelect from "@/components/ui/ElegantSelect"
+
+const METODE_BAYAR_OPTIONS = [
+  { value: "TIMBANGAN_GUDANG", label: "Timbangan Gudang" },
+  { value: "TIMBANGAN_LAPAK", label: "Timbangan Lapak" },
+]
+
+const PAYMENT_PERCENTAGE_OPTIONS = [
+  { value: 100, label: "Full Pembayaran (100% - Lunas)" },
+  { value: 90, label: "Termin 90% + 10% Pelunasan" },
+  { value: 80, label: "Termin 80% + 20% Pelunasan" },
+  { value: 75, label: "Termin 75% + 25% Pelunasan" },
+  { value: 50, label: "Termin 50% + 50% Pelunasan" },
+]
 
 export default function DoubleCheckForm({
   purchase,
@@ -142,7 +156,7 @@ export default function DoubleCheckForm({
   const nominalBelumLunas = Math.round(totalAkhirDibayar * ((100 - persentasePembayaran) / 100))
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="premium-workflow space-y-8">
       {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -152,28 +166,23 @@ export default function DoubleCheckForm({
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-semibold text-slate-700">Metode Pembayaran Final</label>
-                <select
-                  className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                <ElegantSelect
                   value={metodeBayar}
-                  onChange={e => setMetodeBayar(e.target.value)}
-                >
-                  <option value="TIMBANGAN_GUDANG">Timbangan Gudang</option>
-                  <option value="TIMBANGAN_LAPAK">Timbangan Lapak</option>
-                </select>
+                  options={METODE_BAYAR_OPTIONS}
+                  onChange={setMetodeBayar}
+                  ariaLabel="Pilih metode pembayaran final"
+                  className="mt-1 w-full"
+                />
               </div>
               <div>
                 <label className="text-sm font-semibold text-slate-700">Persentase Pembayaran (Termin)</label>
-                <select
-                  className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-cyan-500 outline-none font-semibold text-slate-800"
+                <ElegantSelect
                   value={persentasePembayaran}
-                  onChange={e => setPersentasePembayaran(parseFloat(e.target.value))}
-                >
-                  <option value={100}>Full Pembayaran (100% - Lunas)</option>
-                  <option value={90}>Termin 90% + 10% Pelunasan</option>
-                  <option value={80}>Termin 80% + 20% Pelunasan</option>
-                  <option value={75}>Termin 75% + 25% Pelunasan</option>
-                  <option value={50}>Termin 50% + 50% Pelunasan</option>
-                </select>
+                  options={PAYMENT_PERCENTAGE_OPTIONS}
+                  onChange={setPersentasePembayaran}
+                  ariaLabel="Pilih persentase pembayaran"
+                  className="mt-1 w-full"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -220,7 +229,7 @@ export default function DoubleCheckForm({
                   </div>
                   <div className={`mt-2 text-xs py-2 px-3 rounded-lg border text-center font-semibold ${(timbanganGudang - timbanganLapak) === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : (timbanganGudang - timbanganLapak) < 0 ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-cyan-50 text-cyan-700 border-cyan-100'}`}>
                     {(timbanganGudang - timbanganLapak) === 0 
-                      ? "✓ Timbangan lapak staff dan timbangan gudang sinkron sempurna" 
+                      ? "Timbangan lapak staff dan timbangan gudang sinkron sempurna" 
                       : (timbanganGudang - timbanganLapak) < 0 
                         ? `⚠️ Terdapat penyusutan timbangan gudang sebesar ${Math.abs(timbanganGudang - timbanganLapak).toFixed(2)} KG dibanding timbangan lapak staff` 
                         : `📈 Timbangan gudang bertambah sebesar ${(timbanganGudang - timbanganLapak).toFixed(2)} KG dibanding timbangan lapak staff`}
@@ -260,7 +269,7 @@ export default function DoubleCheckForm({
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
-                          ✓ Sinkron
+                          Sinkron
                         </span>
                       )}
                     </div>
@@ -332,10 +341,13 @@ export default function DoubleCheckForm({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs font-medium text-slate-500">SKU (Barang Dikembalikan)</label>
-                        <select className="w-full border-slate-200 rounded-lg p-2 text-sm mt-1" value={retur.sku_name} onChange={e => updateRetur(idx, 'sku_name', e.target.value)}>
-                          <option value="">Pilih...</option>
-                          {items.map((i: any) => <option key={i.sku_name} value={i.sku_name}>{i.sku_name}</option>)}
-                        </select>
+                        <ElegantSelect
+                          value={retur.sku_name}
+                          options={[{ value: "", label: "Pilih SKU" }, ...items.map((i: any) => ({ value: i.sku_name as string, label: i.sku_name }))]}
+                          onChange={(value) => updateRetur(idx, 'sku_name', value)}
+                          ariaLabel="Pilih SKU retur"
+                          className="mt-1 w-full"
+                        />
                       </div>
                       <div>
                         <label className="text-xs font-medium text-slate-500">Alasan Retur</label>
@@ -546,34 +558,40 @@ export default function DoubleCheckForm({
       </div>
 
       {/* Ringkasan Pembayaran Final */}
-      <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-6 rounded-2xl border border-cyan-100/60 shadow-sm space-y-4 animate-in fade-in duration-300">
-        <h3 className="font-bold text-slate-800 text-base md:text-lg">Rincian Perhitungan Pembayaran</h3>
+      <div className="workflow-summary p-5 md:p-6 space-y-5 animate-in fade-in duration-300">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Payment summary</p>
+            <h3 className="mt-1 text-base font-bold text-slate-950 md:text-lg">Rincian Perhitungan Pembayaran</h3>
+          </div>
+          <p className="text-xs font-medium text-slate-500">Nilai bersih setelah retur, potongan, dan DP.</p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white/80 p-3.5 rounded-xl border border-slate-100">
+          <div className="workflow-stat p-3.5">
             <span className="text-xs font-semibold block text-slate-500">Subtotal Kotor ({metodeBayar === 'TIMBANGAN_LAPAK' ? 'Lapak' : 'Gudang'})</span>
             <span className="text-base font-bold text-slate-800">Rp {totalKotor.toLocaleString('id-ID')}</span>
           </div>
-          <div className="bg-white/80 p-3.5 rounded-xl border border-slate-100">
+          <div className="workflow-stat p-3.5">
             <span className="text-xs font-semibold block text-slate-500">Total Potongan Retur</span>
             <span className="text-base font-bold text-rose-600">-Rp {totalRetur.toLocaleString('id-ID')}</span>
           </div>
-          <div className="bg-white/80 p-3.5 rounded-xl border border-slate-100">
+          <div className="workflow-stat p-3.5">
             <span className="text-xs font-semibold block text-slate-500">Potongan Spesifik (Sampah, Susut, Air, Karung)</span>
             <span className="text-base font-bold text-rose-600">-Rp {totalDeductions.toLocaleString('id-ID')}</span>
           </div>
-          <div className="bg-white/80 p-3.5 rounded-xl border border-slate-100">
+          <div className="workflow-stat p-3.5">
             <span className="text-xs font-semibold block text-slate-500">Potongan DP Terpakai</span>
             <span className="text-base font-bold text-blue-600">-Rp {dpDigunakan.toLocaleString('id-ID')}</span>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row justify-between items-center pt-4 border-t border-cyan-100/80 gap-3">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end pt-4 border-t border-slate-200 gap-4">
           <div>
             <span className="text-xs font-semibold text-slate-500 block">Total Net Payout (Sebelum DP)</span>
             <span className="text-base font-bold text-slate-700">Rp {totalNetPayout.toLocaleString('id-ID')}</span>
           </div>
-          <div className="text-right">
+          <div className="md:text-right">
             <span className="text-xs font-bold text-slate-500 block uppercase tracking-wider">Total Akhir Dibayar ke Supplier</span>
-            <span className="text-2xl font-extrabold text-cyan-600">Rp {totalAkhirDibayar.toLocaleString('id-ID')}</span>
+            <span className="text-2xl font-extrabold text-teal-700">Rp {totalAkhirDibayar.toLocaleString('id-ID')}</span>
           </div>
         </div>
 
@@ -601,7 +619,7 @@ export default function DoubleCheckForm({
         <button type="button" onClick={() => router.back()} className="px-6 py-3 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
           Batal
         </button>
-        <button type="submit" disabled={loading} className="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-600 to-blue-600 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all disabled:opacity-70">
+        <button type="submit" disabled={loading} className="premium-button rounded-xl bg-slate-950 px-8 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-70">
           {loading ? "Menyimpan..." : "Simpan Verifikasi"}
         </button>
       </div>

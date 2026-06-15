@@ -1,8 +1,9 @@
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "@/lib/authOptions"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import ApprovalHargaForm from "@/components/features/ApprovalHargaForm"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function ApprovalHargaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -17,9 +18,9 @@ export default async function ApprovalHargaDetailPage({ params }: { params: Prom
       staff: true,
       admin: true,
       warehouse: {
-        include: { skuPrices: true }
-      }
-    }
+        include: { skuPrices: true },
+      },
+    },
   })
 
   if (!purchase || purchase.status_approval !== "menunggu_approval_harga") {
@@ -28,14 +29,19 @@ export default async function ApprovalHargaDetailPage({ params }: { params: Prom
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Review Harga Pembelian</h2>
-          <p className="text-slate-500 text-sm mt-1">Gudang: <span className="font-semibold text-slate-700">{purchase.warehouse.nama}</span> • Supplier: <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span></p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Price approval"
+        title="Review Harga Pembelian"
+        description={
+          <>
+            <span className="font-semibold text-slate-700">{purchase.warehouse.nama}</span>
+            {" · "}
+            <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>
+          </>
+        }
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div className="workflow-card p-5 md:p-6">
         <ApprovalHargaForm purchase={purchase} />
       </div>
     </div>

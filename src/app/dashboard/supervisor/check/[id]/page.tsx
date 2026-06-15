@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import DoubleCheckForm from "@/components/features/DoubleCheckForm"
 import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function SupervisorCheckPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -38,17 +39,18 @@ export default async function SupervisorCheckPage({ params }: { params: Promise<
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Verifikasi Penerimaan</h2>
-          <p className="text-slate-500 text-sm mt-1">Nomor Draft: {purchase.id.split("-")[0]} - Supplier: <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span></p>
-        </div>
-        <div className="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700">
-          Staff: {purchase.staff.nama}
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Receiving control"
+        title="Verifikasi Penerimaan"
+        description={<>Draft {purchase.id.split("-")[0]} untuk <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>.</>}
+        actions={
+          <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+            Staff: {purchase.staff.nama}
+          </span>
+        }
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div className="workflow-card p-5 md:p-6">
         <DoubleCheckForm purchase={purchase} availableDp={availableDp} successRedirect="/dashboard/supervisor" />
       </div>
     </div>

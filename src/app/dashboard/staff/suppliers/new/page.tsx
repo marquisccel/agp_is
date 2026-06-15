@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import SupplierForm from "@/components/features/SupplierForm"
 import { isOperationalRole } from "@/lib/roles"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function NewSupplierPage() {
   const session = await getServerSession(authOptions)
@@ -16,12 +17,13 @@ export default async function NewSupplierPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Tambah Data Supplier</h2>
-        <p className="text-slate-500 text-sm mt-1">Input data Master Supplier baru untuk gudang Anda.</p>
-      </div>
+      <PageHeader
+        eyebrow="Supplier registry"
+        title="Tambah Data Supplier"
+        description="Lengkapi profil lapak baru agar siap digunakan pada transaksi pembelian."
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+      <div className="workflow-card p-6 md:p-8">
         <SupplierForm
           warehouses={warehouses}
           defaultWarehouseId={staffWarehouseId}

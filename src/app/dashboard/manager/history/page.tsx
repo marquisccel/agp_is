@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import ManagerHistoryClient from "@/components/features/ManagerHistoryClient"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function ManagerHistoryPage() {
   const session = await getServerSession(authOptions)
@@ -44,12 +45,11 @@ export default async function ManagerHistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Riwayat &amp; Daftar Transaksi Global</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Pantau dan filter seluruh transaksi pembelian PET di semua Collection Center.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Transaction ledger"
+        title="Daftar Transaksi"
+        description="Pantau dan filter seluruh transaksi pembelian PET di semua Collection Center dengan status yang mudah dipindai."
+      />
 
       <ManagerHistoryClient 
         initialPurchases={formattedPurchases as any} 

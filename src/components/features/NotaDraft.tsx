@@ -44,16 +44,16 @@ function NotaContent({ data }: { data: NotaData }) {
   const totalEstimasiSetelahPotongan = Math.max(totalEstimasi - totalDeductions, 0)
 
   return (
-    <div style={{ backgroundColor: "#ffffff", fontFamily: "Arial, sans-serif", border: "1px solid #e2e8f0", borderRadius: 12, padding: "20px 16px", width: "100%", maxWidth: "400px", margin: "0 auto", boxSizing: "border-box" }}>
+    <div style={{ backgroundColor: "#ffffff", fontFamily: "Arial, sans-serif", border: "1px solid #edf0f4", borderRadius: 28, padding: "22px 18px", width: "100%", maxWidth: "400px", margin: "0 auto", boxSizing: "border-box", boxShadow: "0 18px 50px rgba(15,23,42,0.08)" }}>
       {/* Header */}
-      <div style={{ textAlign: "center", paddingBottom: 16, marginBottom: 16, borderBottom: "2px solid #1e293b" }}>
-        <div style={{ fontSize: 9, fontWeight: 700, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>
+      <div style={{ textAlign: "left", paddingBottom: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 9, fontWeight: 800, color: "#007a73", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>
           Nota Timbangan — Draft
         </div>
-        <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        <div style={{ fontSize: 20, fontWeight: 900, color: "#020617", letterSpacing: "-0.04em", lineHeight: 1.1 }}>
           {data.gudangNama}
         </div>
-        <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4 }}>
+        <div style={{ fontSize: 10, color: "#64748b", marginTop: 8 }}>
           DOKUMEN DRAFT — Belum Final
         </div>
       </div>
@@ -77,31 +77,31 @@ function NotaContent({ data }: { data: NotaData }) {
       </table>
 
       {/* Items Table */}
-      <table style={{ width: "100%", fontSize: 9.5, borderCollapse: "collapse", marginBottom: 14 }}>
+      <table style={{ width: "100%", fontSize: 9.5, borderCollapse: "separate", borderSpacing: "0 6px", marginBottom: 14 }}>
         <thead>
-          <tr style={{ backgroundColor: "#f1f5f9" }}>
-            <th style={{ textAlign: "left", padding: "6px 4px", fontWeight: 700, color: "#475569" }}>SKU</th>
-            <th style={{ textAlign: "right", padding: "6px 4px", fontWeight: 700, color: "#475569" }}>Berat</th>
-            <th style={{ textAlign: "right", padding: "6px 4px", fontWeight: 700, color: "#475569" }}>Harga</th>
-            <th style={{ textAlign: "right", padding: "6px 4px", fontWeight: 700, color: "#475569" }}>Subtotal</th>
+          <tr>
+            <th style={{ textAlign: "left", padding: "0 4px 4px", fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>SKU</th>
+            <th style={{ textAlign: "right", padding: "0 4px 4px", fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>Berat</th>
+            <th style={{ textAlign: "right", padding: "0 4px 4px", fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>Harga</th>
+            <th style={{ textAlign: "right", padding: "0 4px 4px", fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>Subtotal</th>
           </tr>
         </thead>
         <tbody>
           {data.items.map((item, i) => (
-            <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <td style={{ padding: "6px 4px", fontWeight: 600, color: "#1e293b" }}>
+            <tr key={i} style={{ backgroundColor: "#f8fafc" }}>
+              <td style={{ padding: "9px 8px", fontWeight: 700, color: "#0f172a", borderTopLeftRadius: 12, borderBottomLeftRadius: 12 }}>
                 {item.sku_name}{item.spec ? ` (${item.spec})` : ""}
               </td>
-              <td style={{ padding: "6px 4px", textAlign: "right", color: "#334155" }}>{fmtAngka(item.berat_estimasi)} KG</td>
-              <td style={{ padding: "6px 4px", textAlign: "right", color: "#334155" }}>{formatRp(item.harga_per_kg)}</td>
-              <td style={{ padding: "6px 4px", textAlign: "right", fontWeight: 700, color: "#1e293b" }}>{formatRp(item.berat_estimasi * item.harga_per_kg)}</td>
+              <td style={{ padding: "9px 6px", textAlign: "right", color: "#334155" }}>{fmtAngka(item.berat_estimasi)} KG</td>
+              <td style={{ padding: "9px 6px", textAlign: "right", color: "#334155" }}>{formatRp(item.harga_per_kg)}</td>
+              <td style={{ padding: "9px 8px", textAlign: "right", fontWeight: 800, color: "#0f172a", borderTopRightRadius: 12, borderBottomRightRadius: 12 }}>{formatRp(item.berat_estimasi * item.harga_per_kg)}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
       {/* Totals Box */}
-      <div style={{ backgroundColor: "#f8fafc", borderRadius: 8, padding: "12px 14px", fontSize: 11 }}>
+      <div style={{ backgroundColor: "#f8fafc", borderRadius: 18, padding: "14px 16px", fontSize: 11, border: "1px solid #eef2f7" }}>
         <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", marginBottom: 6 }}>
           <span>Total Berat Estimasi</span>
           <span style={{ fontWeight: 700, color: "#1e293b" }}>{fmtAngka(totalBerat)} KG</span>
@@ -274,7 +274,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
           </p>
           <button
             onClick={onClose}
-            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold py-3 rounded-xl hover:from-cyan-500 hover:to-blue-500 transition-all shadow-md shadow-cyan-500/20"
+            className="premium-button w-full rounded-xl bg-slate-950 py-3 font-bold text-white hover:bg-slate-800"
           >
             Selesai
           </button>
@@ -337,7 +337,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold text-sm hover:from-cyan-500 hover:to-blue-500 transition-all shadow-md shadow-cyan-500/20 disabled:opacity-60"
+                className="premium-button flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60"
               >
                 {downloading ? (
                   <>

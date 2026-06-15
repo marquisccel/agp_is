@@ -3,6 +3,9 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import ReportYearSelect from "@/components/features/ReportYearSelect"
+import PageHeader from "@/components/ui/PageHeader"
+import PrintButton from "@/components/ui/PrintButton"
 
 // Helper formatters
 function fmtRp(n: number) {
@@ -123,50 +126,27 @@ export default async function ManagerReportsPage({
 
   return (
     <div className="space-y-6 print:p-0 print:space-y-4">
-      {/* Header section (hidden on print) */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Rekap Laporan Performa</h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Analisis performa realisasi target bulanan dan tahunan seluruh CC.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          {/* Year selector form */}
-          <form method="GET" className="flex items-center gap-2 flex-1 sm:flex-initial">
-            <select
-              name="tahun"
-              defaultValue={selectedTahun}
-              // @ts-ignore
-              onChange={e => e.target.form.submit()}
-              className="w-full sm:w-auto border border-slate-200 rounded-xl px-4 py-2 bg-white text-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-cyan-500"
-            >
-              {Array.from({ length: 5 }, (_, i) => {
-                const y = now.getFullYear() - 2 + i
-                return (
-                  <option key={y} value={y}>
-                    Tahun {y}
-                  </option>
-                )
-              })}
-            </select>
-          </form>
-
-          <button
-            // @ts-ignore
-            onClick={() => window.print()}
-            className="bg-white border border-slate-200 text-slate-700 hover:text-cyan-700 hover:border-cyan-200 hover:bg-cyan-50 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Cetak Laporan
-          </button>
-
-          <Link href="/dashboard/manager">
-            <button className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all">
-              ← Dashboard
-            </button>
-          </Link>
-        </div>
+      <div className="print:hidden">
+        <PageHeader
+          eyebrow="Executive report"
+          title="Rekap Laporan Performa"
+          description="Analisis performa realisasi target bulanan dan tahunan seluruh Collection Center."
+          actions={(
+            <>
+              <ReportYearSelect
+                selectedTahun={selectedTahun}
+                years={Array.from({ length: 5 }, (_, i) => now.getFullYear() - 2 + i)}
+              />
+              <PrintButton />
+              <Link
+                href="/dashboard/manager"
+                className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
+              >
+                Kembali ke Dashboard
+              </Link>
+            </>
+          )}
+        />
       </div>
 
       {/* Print Title Header (Visible on print only) */}

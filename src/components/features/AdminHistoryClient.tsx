@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Search, Filter, Calendar, User, Tag, ArrowRight } from "lucide-react"
+import { ArrowRight, Filter, Search, Tag, User } from "lucide-react"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 
 interface PurchaseItem {
   id: string
@@ -52,88 +53,92 @@ export default function AdminHistoryClient({
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedSupplier, setSelectedSupplier] = useState("all")
 
-  // Unique suppliers for filter dropdown
-  const suppliers = Array.from(new Set(initialPurchases.map(p => p.supplier.id)))
-    .map(id => initialPurchases.find(p => p.supplier.id === id)?.supplier)
+  const statusOptions = [
+    { value: "all", label: "Semua Status" },
+    { value: "menunggu_verifikasi_supervisor", label: "Menunggu Verifikasi Supervisor" },
+    { value: "menunggu_double_cek", label: "Menunggu Double Cek" },
+    { value: "menunggu_approval_harga", label: "Menunggu Approval Harga" },
+    { value: "approved", label: "Disetujui (Menunggu Transfer)" },
+    { value: "sudah_transfer", label: "Sudah Ditransfer" },
+    { value: "rejected", label: "Ditolak" },
+    { value: "dibatalkan", label: "Dibatalkan" },
+  ]
+
+  const suppliers = Array.from(new Set(initialPurchases.map((p) => p.supplier.id)))
+    .map((id) => initialPurchases.find((p) => p.supplier.id === id)?.supplier)
     .filter(Boolean) as Supplier[]
 
-  // Filter purchases
-  const filteredPurchases = initialPurchases.filter(p => {
-    const matchesSearch = 
-      p.supplier.nama.toLowerCase().includes(search.toLowerCase()) ||
-      (p.nomor_nota && p.nomor_nota.toLowerCase().includes(search.toLowerCase())) ||
-      p.id.toLowerCase().includes(search.toLowerCase()) ||
-      p.staff.nama.toLowerCase().includes(search.toLowerCase())
+  const supplierOptions = [
+    { value: "all", label: "Semua Supplier" },
+    ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.nama })),
+  ]
 
-    const matchesStatus = selectedStatus === "all" || p.status_approval === selectedStatus
-    const matchesSupplier = selectedSupplier === "all" || p.supplier.id === selectedSupplier
+  const filteredPurchases = initialPurchases.filter((purchase) => {
+    const query = search.toLowerCase()
+    const matchesSearch =
+      purchase.supplier.nama.toLowerCase().includes(query) ||
+      (purchase.nomor_nota && purchase.nomor_nota.toLowerCase().includes(query)) ||
+      purchase.id.toLowerCase().includes(query) ||
+      purchase.staff.nama.toLowerCase().includes(query)
+
+    const matchesStatus = selectedStatus === "all" || purchase.status_approval === selectedStatus
+    const matchesSupplier = selectedSupplier === "all" || purchase.supplier.id === selectedSupplier
 
     return matchesSearch && matchesStatus && matchesSupplier
   })
 
-  const statusMap: Record<string, { label: string, cls: string }> = {
+  const statusMap: Record<string, { label: string; cls: string }> = {
     menunggu_verifikasi_supervisor: { label: "Menunggu Verifikasi Supervisor", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    menunggu_double_cek: { label: '🕐 Menunggu Cek', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-    menunggu_approval_harga: { label: '📋 Menunggu Approve', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
-    approved: { label: '✓ Disetujui', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
-    sudah_transfer: { label: '💸 Sudah Transfer', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    rejected: { label: '✗ Ditolak', cls: 'bg-red-50 text-red-700 border-red-200' },
-    dibatalkan: { label: '⊘ Dibatalkan', cls: 'bg-slate-50 text-slate-500 border-slate-200' },
+    menunggu_double_cek: { label: "Menunggu Cek", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    menunggu_approval_harga: { label: "Menunggu Approval", cls: "bg-orange-50 text-orange-700 border-orange-200" },
+    approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
+    sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    rejected: { label: "Ditolak", cls: "bg-red-50 text-red-700 border-red-200" },
+    dibatalkan: { label: "Dibatalkan", cls: "bg-slate-50 text-slate-500 border-slate-200" },
   }
 
   return (
     <div className="space-y-6">
-      {/* Filters Card */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Search */}
+      <div className="interactive-surface bg-white rounded-lg p-5 shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
           <input
             type="text"
             placeholder="Cari supplier, no. nota, staff..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all text-slate-800"
+            onChange={(event) => setSearch(event.target.value)}
+            className="w-full border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-300 text-sm transition-all text-slate-800"
           />
         </div>
 
-        {/* Status Filter */}
         <div className="relative">
           <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <select
-            value={selectedStatus}
-            onChange={e => setSelectedStatus(e.target.value)}
-            className="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all text-slate-700 appearance-none bg-white"
-          >
-            <option value="all">Semua Status</option>
-            <option value="menunggu_verifikasi_supervisor">Menunggu Verifikasi Supervisor</option>
-            <option value="menunggu_double_cek">🕐 Menunggu Double Cek</option>
-            <option value="menunggu_approval_harga">📋 Menunggu Approval Harga</option>
-            <option value="approved">✓ Disetujui (Menunggu Transfer)</option>
-            <option value="sudah_transfer">💸 Sudah Ditransfer</option>
-            <option value="rejected">✗ Ditolak</option>
-            <option value="dibatalkan">⊘ Dibatalkan</option>
-          </select>
+          <div className="pl-8">
+            <ElegantSelect
+              value={selectedStatus}
+              options={statusOptions}
+              onChange={setSelectedStatus}
+              ariaLabel="Filter status transaksi"
+              className="w-full"
+            />
+          </div>
         </div>
 
-        {/* Supplier Filter */}
         <div className="relative">
           <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <select
-            value={selectedSupplier}
-            onChange={e => setSelectedSupplier(e.target.value)}
-            className="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all text-slate-700 appearance-none bg-white"
-          >
-            <option value="all">Semua Supplier</option>
-            {suppliers.map(sup => (
-              <option key={sup.id} value={sup.id}>{sup.nama}</option>
-            ))}
-          </select>
+          <div className="pl-8">
+            <ElegantSelect
+              value={selectedSupplier}
+              options={supplierOptions}
+              onChange={setSelectedSupplier}
+              ariaLabel="Filter supplier transaksi"
+              className="w-full"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Main Table Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
@@ -154,74 +159,60 @@ export default function AdminHistoryClient({
                   </td>
                 </tr>
               ) : (
-                filteredPurchases.map((p) => {
-                  const totalBerat = p.items.reduce((s, i) => s + (i.berat_final_item || 0), 0)
-                  const totalNilai = p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
-                  const s = statusMap[p.status_approval] ?? { label: p.status_approval, cls: 'bg-slate-50 text-slate-600 border-slate-200' }
+                filteredPurchases.map((purchase) => {
+                  const totalBerat = purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
+                  const totalNilai = purchase.total_dibayar ?? purchase.total_nilai_setelah_retur ?? purchase.total_nilai_sebelum_retur ?? 0
+                  const status = statusMap[purchase.status_approval] ?? { label: purchase.status_approval, cls: "bg-slate-50 text-slate-600 border-slate-200" }
 
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50/30 transition-colors">
-                      {/* Tanggal & No Nota */}
+                    <tr key={purchase.id} className="hover:bg-slate-50/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-semibold text-slate-900">
-                          {new Date(p.createdAt).toLocaleDateString('id-ID', { dateStyle: 'medium', timeZone: 'Asia/Jakarta' })}
+                          {new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}
                         </div>
                         <div className="text-xs text-slate-400 mt-1 font-mono">
-                          {p.nomor_nota || `#${p.id.split("-")[0]}`}
+                          {purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}
                         </div>
                       </td>
-
-                      {/* Supplier & Staff */}
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-800">{p.supplier.nama}</div>
+                        <div className="font-bold text-slate-800">{purchase.supplier.nama}</div>
                         <div className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                           <User className="w-3 h-3 text-slate-400" />
-                          <span>Staff: {p.staff.nama}</span>
+                          <span>Staff: {purchase.staff.nama}</span>
                         </div>
                       </td>
-
-                      {/* Items & Weight */}
                       <td className="px-6 py-4">
                         <div className="font-semibold text-slate-800">{totalBerat.toFixed(1)} KG</div>
                         <div className="text-xs text-slate-400 mt-0.5">
-                          {p.items.length} jenis item ({p.items.map(i => i.sku_name).slice(0, 2).join(", ")}{p.items.length > 2 ? "..." : ""})
+                          {purchase.items.length} jenis item ({purchase.items.map((item) => item.sku_name).slice(0, 2).join(", ")}{purchase.items.length > 2 ? "..." : ""})
                         </div>
                       </td>
-
-                      {/* Total Nilai */}
                       <td className="px-6 py-4 font-mono font-bold text-slate-800">
                         {formatRp(totalNilai)}
                       </td>
-
-                      {/* Status */}
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border inline-block ${s.cls}`}>
-                          {s.label}
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border inline-block ${status.cls}`}>
+                          {status.label}
                         </span>
                       </td>
-
-                      {/* Action */}
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2 flex-wrap">
-                          {p.status_approval === "menunggu_verifikasi_supervisor" || p.status_approval === "menunggu_double_cek" ? (
-                            <Link href={`${basePath}/check/${p.id}`}>
+                          {purchase.status_approval === "menunggu_verifikasi_supervisor" || purchase.status_approval === "menunggu_double_cek" ? (
+                            <Link href={`${basePath}/check/${purchase.id}`}>
                               <button className="bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1">
                                 Cek <ArrowRight className="w-3.5 h-3.5" />
                               </button>
                             </Link>
-                          ) : p.status_approval === "approved" || p.status_approval === "sudah_transfer" ? (
-                            <Link href={`/nota/${p.id}`} target="_blank">
+                          ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
+                            <Link href={`/nota/${purchase.id}`} target="_blank">
                               <button className="bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all">
                                 Nota
                               </button>
                             </Link>
                           ) : null}
-                          {/* Edit button — always available */}
-                          <Link href={`${basePath}/edit/${p.id}`}>
-                            <button className="bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                              </svg>
+
+                          <Link href={`${basePath}/edit/${purchase.id}`}>
+                            <button className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-1">
                               Edit
                             </button>
                           </Link>

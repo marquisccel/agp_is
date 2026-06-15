@@ -36,7 +36,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
     (purchase.berat_timbangan_gudang || 0) - (purchase.berat_timbangan_lapak || 0)
 
   return (
-    <div className="space-y-6">
+    <div className="premium-workflow space-y-6">
       {error && (
         <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
           {error}
@@ -89,7 +89,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
                     <td className="px-3 py-3 text-slate-700 font-mono font-bold text-sm">{gudangW.toFixed(2)}</td>
                     <td className="px-3 py-3">
                       {diff === 0 ? (
-                        <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold">✓ Sama</span>
+                        <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold">Sama</span>
                       ) : (
                         <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${diff < 0 ? "text-rose-600 bg-rose-50" : "text-cyan-600 bg-cyan-50"}`}>
                           {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
@@ -159,7 +159,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
                   <div className="text-center">
                     <div className="text-[10px] text-slate-400 font-medium mb-1">Selisih</div>
                     {diff === 0 ? (
-                      <div className="text-xs text-emerald-600 font-bold">✓ Sama</div>
+                      <div className="text-xs text-emerald-600 font-bold">Sama</div>
                     ) : (
                       <div className={`text-xs font-bold font-mono ${diff < 0 ? "text-rose-600" : "text-cyan-600"}`}>
                         {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
@@ -235,7 +235,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
         </div>
         <div className={`text-xs py-2.5 px-4 rounded-xl border font-semibold text-center ${selisihTotal === 0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : selisihTotal < 0 ? "bg-rose-50 text-rose-700 border-rose-100" : "bg-cyan-50 text-cyan-700 border-cyan-100"}`}>
           {selisihTotal === 0
-            ? "✓ Hasil timbangan staff (lapak) dan admin (gudang) sesuai sempurna."
+            ? "Hasil timbangan staff (lapak) dan admin (gudang) sesuai sempurna."
             : selisihTotal < 0
               ? `⚠ Penyusutan timbangan gudang: ${Math.abs(selisihTotal).toFixed(2)} KG (${purchase.berat_timbangan_lapak > 0 ? Math.abs((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`
               : `ℹ Timbangan gudang bertambah: +${selisihTotal.toFixed(2)} KG (+${purchase.berat_timbangan_lapak > 0 ? ((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`}
@@ -263,7 +263,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
             disabled={loading}
             className="flex-1 px-5 py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all disabled:opacity-70"
           >
-            {loading ? "Memproses..." : "✓ Setujui Harga"}
+            {loading ? "Memproses..." : "Setujui Harga"}
           </button>
         </div>
       </div>

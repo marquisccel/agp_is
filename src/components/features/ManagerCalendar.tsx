@@ -127,6 +127,9 @@ const MONTHS_ID = [
 ]
 const DAYS_ID = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"]
 
+const toDateKey = (year: number, monthIndex: number, day: number) =>
+  `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+
 // ─────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────
@@ -140,6 +143,8 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
   useEffect(() => {
     if (selectedTahun !== undefined) setViewYear(selectedTahun)
     if (selectedBulan !== undefined) setViewMonth(selectedBulan - 1)
+    setSelectedDay(null)
+    setHoveredKey(null)
   }, [selectedBulan, selectedTahun])
 
   const dataMap = useMemo(() => {
@@ -153,7 +158,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
     const first = new Date(viewYear, viewMonth, 1)
     const last  = new Date(viewYear, viewMonth + 1, 0)
     for (let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)) {
-      const key = d.toISOString().slice(0, 10)
+      const key = toDateKey(d.getFullYear(), d.getMonth(), d.getDate())
       if (dataMap[key]) max = Math.max(max, dataMap[key].totalKg)
     }
     return max
@@ -193,33 +198,33 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
       {/* ── Header ── */}
-      <div className="p-6 border-b border-slate-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-slate-800">Kalender Aktivitas</h3>
+      <div className="p-5 border-b border-slate-100">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-slate-900">Kalender Aktivitas</h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Hijau = volume pembelian · <span className="text-red-400 font-medium">Merah = libur nasional</span>
+              Hijau = volume pembelian / <span className="text-red-400 font-medium">Merah = libur nasional</span>
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto">
             <button
               onClick={prevMonth}
               className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition-colors text-lg font-bold"
-            >‹</button>
-            <span className="text-sm font-bold text-slate-700 min-w-[140px] text-center">
+            >&lt;</button>
+            <span className="min-w-0 flex-1 text-center text-sm font-bold text-slate-700 sm:min-w-[140px]">
               {MONTHS_ID[viewMonth]} {viewYear}
             </span>
             <button
               onClick={nextMonth}
               className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition-colors text-lg font-bold"
-            >›</button>
+            >&gt;</button>
           </div>
         </div>
       </div>
 
-      <div className="p-5">
+      <div className="p-4 sm:p-5">
         {/* ── Day Headers ── */}
         <div className="grid grid-cols-7 mb-2">
           {DAYS_ID.map((d, i) => (
@@ -242,7 +247,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
             // Compute column = day of week: idx % 7
             // But we need the actual day of week for this date
             const colIdx   = idx % 7  // 0=Sun, 6=Sat
-            const key      = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+            const key      = toDateKey(viewYear, viewMonth, day)
             const activity = dataMap[key]
             const kg       = activity?.totalKg || 0
             const isToday  = key === todayKey
@@ -292,8 +297,8 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
                   onMouseEnter={() => setHoveredKey(key)}
                   onMouseLeave={() => setHoveredKey(null)}
                   className={`
-                    w-full aspect-square rounded-lg flex flex-col items-center justify-center
-                    text-xs font-medium transition-all duration-150
+                    w-full aspect-square rounded-md sm:rounded-lg flex flex-col items-center justify-center
+                    text-[11px] sm:text-xs font-medium transition-all duration-150
                     ${cellBg} ${todayRing} ${selRing} ${cursor} ${shadow}
                   `}
                 >
@@ -314,7 +319,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
 
                   {/* Volume mini label */}
                   {kg > 0 && (
-                    <span className="text-[8px] leading-tight mt-0.5 opacity-85 font-semibold">
+                    <span className="hidden text-[8px] leading-tight mt-0.5 opacity-85 font-semibold sm:inline">
                       {fmtKgId(kg)}
                     </span>
                   )}
@@ -329,7 +334,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
                 {holiday && isHovered && !isSelected && (
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
                     <div className="bg-red-600 text-white text-[10px] font-semibold px-2 py-1 rounded-lg shadow-lg whitespace-nowrap max-w-[140px] text-center leading-tight">
-                      🎌 {holiday}
+                      {holiday}
                     </div>
                     <div className="w-2 h-2 bg-red-600 rotate-45 mx-auto -mt-1" />
                   </div>
@@ -355,11 +360,11 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-5 rounded bg-red-50 border border-red-200 flex items-center justify-center">
-              <span className="text-red-500 font-bold text-[10px] leading-none">•</span>
+              <span className="text-red-500 font-bold text-[10px] leading-none">*</span>
             </div>
             <span>Libur Nasional</span>
           </div>
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5 sm:ml-auto">
             <div className="w-4 h-4 rounded border-2 border-cyan-500" />
             <span>Hari ini</span>
           </div>
@@ -377,7 +382,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
                 </p>
                 {HARI_LIBUR[selectedDay.date] && (
                   <p className="text-xs font-semibold text-red-500 mt-0.5">
-                    🎌 {HARI_LIBUR[selectedDay.date]}
+                    {HARI_LIBUR[selectedDay.date]}
                   </p>
                 )}
                 {selectedDay.totalTransaksi > 0 && (
@@ -406,8 +411,8 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
             {selectedDay.warehouses.length > 0 && (
               <div className="space-y-2 mt-2">
                 {selectedDay.warehouses.map(w => (
-                  <div key={w.nama} className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 w-24 shrink-0">Gudang {w.nama}</span>
+                  <div key={w.nama} className="grid grid-cols-1 gap-1 sm:flex sm:items-center sm:gap-2">
+                    <span className="text-xs text-slate-500 sm:w-24 sm:shrink-0">Gudang {w.nama}</span>
                     <div className="flex-1 bg-white rounded-full h-2 overflow-hidden shadow-inner">
                       <div
                         className="h-full bg-gradient-to-r from-cyan-400 to-indigo-500 rounded-full transition-all"
@@ -416,7 +421,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
                         }}
                       />
                     </div>
-                    <span className="text-xs font-semibold text-slate-700 w-24 text-right shrink-0">
+                    <span className="text-xs font-semibold text-slate-700 sm:w-24 sm:text-right sm:shrink-0">
                       {fmtKgId(w.kg)}
                     </span>
                   </div>

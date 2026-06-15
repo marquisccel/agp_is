@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import DPRequestForm from "@/components/features/DPRequestForm"
 import { isOperationalRole } from "@/lib/roles"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function StaffNewDPRequestPage() {
   const session = await getServerSession(authOptions)
@@ -21,12 +22,13 @@ export default async function StaffNewDPRequestPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Pengajuan Kasbon Baru</h2>
-        <p className="text-slate-500 text-sm mt-1">Isi formulir di bawah untuk mengajukan kasbon (DP) bagi Supplier di gudang Anda.</p>
-      </div>
+      <PageHeader
+        eyebrow="Cashflow request"
+        title="Pengajuan Kasbon Baru"
+        description="Ajukan kasbon supplier untuk gudang Anda dengan alur validasi yang rapi."
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+      <div className="workflow-card p-6 md:p-8">
         <DPRequestForm suppliers={suppliers} role={session.user.role} />
       </div>
     </div>

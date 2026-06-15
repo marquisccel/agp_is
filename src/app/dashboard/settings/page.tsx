@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { User, Lock, Globe, Save, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
+import PageHeader from "@/components/ui/PageHeader"
 
 const LANGUAGES = [
   { code: "id", label: "Bahasa Indonesia", flag: "🇮🇩" },
@@ -112,16 +113,14 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Pengaturan Akun</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Kelola profil, keamanan, dan preferensi akun Anda.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Account settings"
+        title="Pengaturan Akun"
+        description="Kelola profil, keamanan, dan preferensi akun Anda."
+      />
 
       {/* Profile Card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
           <div className="w-9 h-9 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600">
             <User className="w-5 h-5" />
@@ -135,7 +134,7 @@ export default function SettingsPage() {
         <div className="p-6 space-y-5">
           {/* Avatar preview */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-cyan-500/20">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-950 text-2xl font-extrabold text-white shadow-sm">
               {nama.charAt(0).toUpperCase() || "U"}
             </div>
             <div>
@@ -180,10 +179,10 @@ export default function SettingsPage() {
           <button
             onClick={handleProfileSave}
             disabled={profileStatus === "saving"}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            className={`premium-button flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold ${
               profileStatus === "success"
                 ? "bg-emerald-500 text-white"
-                : "bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-500 hover:to-blue-500 shadow-md shadow-cyan-500/20"
+                : "bg-slate-950 text-white hover:bg-slate-800"
             } disabled:opacity-60`}
           >
             {profileStatus === "saving" ? (
@@ -198,7 +197,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Password Card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
           <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
             <Lock className="w-5 h-5" />
@@ -321,7 +320,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Language Card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
           <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600">
             <Globe className="w-5 h-5" />

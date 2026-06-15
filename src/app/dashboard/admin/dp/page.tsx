@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import DPApprovalActions from "@/components/features/DPApprovalActions"
 import { redirect } from "next/navigation"
+import PageHeader from "@/components/ui/PageHeader"
 
 export default async function DPListAdmin() {
   const session = await getServerSession(authOptions)
@@ -28,14 +29,13 @@ export default async function DPListAdmin() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Manajemen Kasbon (DP)</h2>
-          <p className="text-slate-500 text-sm mt-1">Review dan kelola pengajuan kasbon dari Staff untuk Supplier.</p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Cash advance control"
+        title="Manajemen Kasbon (DP)"
+        description="Review dan kelola pengajuan kasbon supplier dari staff gudang."
+      />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">

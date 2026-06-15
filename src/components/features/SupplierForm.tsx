@@ -2,8 +2,33 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 
 const KNOWN_BANKS = ["BCA","BNI","BRI","BSI","BTN","Mandiri","CIMB Niaga","Danamon","Permata","Panin","OCBC NISP","Maybank","Mega","Muamalat","Jago","SeaBank","Jenius","Gopay","OVO","Dana"]
+const BANK_OPTIONS = [
+  { value: "", label: "Pilih bank" },
+  { value: "BCA", label: "BCA" },
+  { value: "BNI", label: "BNI" },
+  { value: "BRI", label: "BRI" },
+  { value: "BSI", label: "BSI (Bank Syariah Indonesia)" },
+  { value: "BTN", label: "BTN" },
+  { value: "Mandiri", label: "Mandiri" },
+  { value: "CIMB Niaga", label: "CIMB Niaga" },
+  { value: "Danamon", label: "Danamon" },
+  { value: "Permata", label: "Permata" },
+  { value: "Panin", label: "Panin" },
+  { value: "OCBC NISP", label: "OCBC NISP" },
+  { value: "Maybank", label: "Maybank" },
+  { value: "Mega", label: "Bank Mega" },
+  { value: "Muamalat", label: "Bank Muamalat" },
+  { value: "Jago", label: "Bank Jago" },
+  { value: "SeaBank", label: "SeaBank" },
+  { value: "Jenius", label: "Jenius (BTPN)" },
+  { value: "Gopay", label: "GoPay" },
+  { value: "OVO", label: "OVO" },
+  { value: "Dana", label: "DANA" },
+  { value: "Lainnya", label: "Lainnya" },
+]
 
 function resolveBank(val: string | null | undefined): { bank: string; lainnya: string } {
   if (!val) return { bank: "", lainnya: "" }
@@ -42,6 +67,10 @@ export default function SupplierForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const warehouseOptions = [
+    { value: "", label: "Pilih lokasi gudang" },
+    ...warehouses.map(w => ({ value: w.id as string, label: `Collection Center ${w.nama.replace(/^Gudang\s+/i, "")}` })),
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,7 +104,7 @@ export default function SupplierForm({
         throw new Error(data.error || (isEdit ? "Gagal mengupdate supplier" : "Gagal menyimpan supplier"))
       }
 
-      setSuccess(isEdit ? "Data Supplier berhasil diupdate! ✓" : "Data Supplier berhasil ditambahkan!")
+      setSuccess(isEdit ? "Data supplier berhasil diupdate." : "Data supplier berhasil ditambahkan.")
       if (isEdit) {
         router.refresh()
         return
@@ -100,14 +129,14 @@ export default function SupplierForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="premium-workflow space-y-5">
       {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">{error}</div>}
       {success && (
         <div className="p-3 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 text-sm font-medium flex items-center gap-2">
-          ✓ {success}
+          {success}
           {isEdit && (
             <button type="button" onClick={() => router.back()} className="ml-auto text-xs underline text-emerald-600 hover:text-emerald-800">
-              ← Kembali
+              Kembali
             </button>
           )}
         </div>
@@ -136,19 +165,13 @@ export default function SupplierForm({
       ) : (
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700">Opsi Gudang <span className="text-red-500">*</span></label>
-          <select
-            required
+          <ElegantSelect
             value={warehouseId}
-            onChange={(e) => setWarehouseId(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-          >
-            <option value="">-- Pilih Lokasi Gudang --</option>
-            {warehouses.map(w => (
-              <option key={w.id} value={w.id}>
-                Collection Center {w.nama.replace(/^Gudang\s+/i, '')}
-              </option>
-            ))}
-          </select>
+            options={warehouseOptions}
+            onChange={setWarehouseId}
+            ariaLabel="Pilih lokasi gudang"
+            className="w-full"
+          />
         </div>
       )}
 
@@ -177,34 +200,13 @@ export default function SupplierForm({
 
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700">Nama Bank (Opsional)</label>
-          <select
+          <ElegantSelect
             value={namaBank}
-            onChange={(e) => setNamaBank(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-          >
-            <option value="">-- Pilih Bank --</option>
-            <option value="BCA">BCA</option>
-            <option value="BNI">BNI</option>
-            <option value="BRI">BRI</option>
-            <option value="BSI">BSI (Bank Syariah Indonesia)</option>
-            <option value="BTN">BTN</option>
-            <option value="Mandiri">Mandiri</option>
-            <option value="CIMB Niaga">CIMB Niaga</option>
-            <option value="Danamon">Danamon</option>
-            <option value="Permata">Permata</option>
-            <option value="Panin">Panin</option>
-            <option value="OCBC NISP">OCBC NISP</option>
-            <option value="Maybank">Maybank</option>
-            <option value="Mega">Bank Mega</option>
-            <option value="Muamalat">Bank Muamalat</option>
-            <option value="Jago">Bank Jago</option>
-            <option value="SeaBank">SeaBank</option>
-            <option value="Jenius">Jenius (BTPN)</option>
-            <option value="Gopay">GoPay</option>
-            <option value="OVO">OVO</option>
-            <option value="Dana">DANA</option>
-            <option value="Lainnya">Lainnya</option>
-          </select>
+            options={BANK_OPTIONS}
+            onChange={setNamaBank}
+            ariaLabel="Pilih nama bank"
+            className="w-full"
+          />
           {namaBank === "Lainnya" && (
             <div className="mt-2 animate-in slide-in-from-top-2 duration-200">
               <input
@@ -310,13 +312,13 @@ export default function SupplierForm({
             onClick={() => router.back()}
             className="px-5 py-3 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm"
           >
-            ← Batal
+            Batal
           </button>
         )}
         <button
           type="submit"
           disabled={loading}
-          className="ml-auto px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-600 to-blue-600 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all disabled:opacity-70"
+          className="premium-button ml-auto rounded-xl bg-slate-950 px-6 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-70"
         >
           {loading ? "Menyimpan..." : isEdit ? "Update Supplier" : "Simpan Supplier"}
         </button>

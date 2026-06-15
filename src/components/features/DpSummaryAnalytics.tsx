@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { fmtRp } from "@/lib/format"
-import { Wallet, CreditCard, ChevronRight, User, Warehouse as WarehouseIcon } from "lucide-react"
+import { Wallet, CreditCard, ChevronRight } from "lucide-react"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 
 interface DpSupplierRow {
   supplierId: string
@@ -32,120 +33,122 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames }: DpSummary
   const totalApproved = filtered.reduce((s, d) => s + d.totalDp, 0)
   const totalUsed = filtered.reduce((s, d) => s + d.totalUsed, 0)
   const totalRemaining = filtered.reduce((s, d) => s + d.sisaDp, 0)
+  const warehouseOptions = [
+    { value: "all", label: "Semua Gudang" },
+    ...warehouseNames.map(w => ({ value: w.id, label: w.nama })),
+  ]
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="interactive-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-violet-50/50 to-indigo-50/50">
+      <div className="border-b border-slate-100 bg-slate-50/60 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-indigo-600" />
+          <div className="min-w-0">
+            <span className="text-xs font-bold uppercase text-teal-700">Cashflow control</span>
+            <h3 className="mt-1 flex items-center gap-2 text-base font-bold text-slate-950">
+              <Wallet className="h-5 w-5 text-teal-700" />
               Rekap Saldo DP &amp; Kasbon per Lapak
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="mt-1 text-xs leading-5 text-slate-500">
               Pantau total dana uang muka (down payment) disetujui, terpakai, dan sisa saldo aktif supplier.
             </p>
           </div>
           {/* Warehouse filter */}
-          <select
+          <ElegantSelect
             value={selectedWarehouseId}
-            onChange={e => setSelectedWarehouseId(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2 bg-white hover:bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-semibold text-slate-700 cursor-pointer shadow-sm transition-all"
-          >
-            <option value="all">Semua Gudang</option>
-            {warehouseNames.map(w => (
-              <option key={w.id} value={w.id}>{w.nama}</option>
-            ))}
-          </select>
+            options={warehouseOptions}
+            onChange={setSelectedWarehouseId}
+            ariaLabel="Pilih gudang DP"
+            className="w-full sm:w-44"
+            menuClassName="sm:w-52"
+          />
         </div>
       </div>
 
       {/* Global Summary Card Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 border-b border-slate-100">
+      <div className="grid grid-cols-1 gap-3 border-b border-slate-100 p-4 sm:p-5 md:grid-cols-3">
         {/* Metric 1: Total Approved DP */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+        <div className="interactive-surface flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
             <CreditCard className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total DP Disetujui</p>
-            <p className="text-lg font-extrabold text-slate-800 font-mono mt-0.5">{fmtRp(totalApproved)}</p>
+            <p className="text-[10px] text-slate-400 font-semibold uppercase">Total DP Disetujui</p>
+            <p className="text-base font-bold text-slate-900 font-mono mt-0.5 break-all">{fmtRp(totalApproved)}</p>
           </div>
         </div>
 
         {/* Metric 2: Total Used DP */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+        <div className="interactive-surface flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
             <Wallet className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total DP Terpakai</p>
-            <p className="text-lg font-extrabold text-slate-800 font-mono mt-0.5">{fmtRp(totalUsed)}</p>
+            <p className="text-[10px] text-slate-400 font-semibold uppercase">Total DP Terpakai</p>
+            <p className="text-base font-bold text-slate-900 font-mono mt-0.5 break-all">{fmtRp(totalUsed)}</p>
           </div>
         </div>
 
         {/* Metric 3: Total Remaining DP */}
-        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3 rounded-lg border border-emerald-100 bg-emerald-50/70 p-4 shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
             <Wallet className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wider">Sisa Saldo DP Aktif</p>
-            <p className="text-lg font-extrabold text-emerald-700 font-mono mt-0.5">{fmtRp(totalRemaining)}</p>
+            <p className="text-[10px] text-emerald-600 font-semibold uppercase">Sisa Saldo DP Aktif</p>
+            <p className="text-base font-bold text-emerald-700 font-mono mt-0.5 break-all">{fmtRp(totalRemaining)}</p>
           </div>
         </div>
       </div>
 
       {/* List Card Section (No Horizontal Scroll) */}
-      <div className="p-6 space-y-4">
+      <div className="space-y-4 p-4 sm:p-6">
         {filtered.length === 0 ? (
           <div className="text-center text-slate-400 text-sm py-12 border border-dashed border-slate-200 rounded-2xl">
-            <div className="text-4xl mb-3">💸</div>
             <p className="font-semibold">Belum ada data DP / Kasbon disetujui.</p>
             <p className="text-xs mt-1">Data saldo akan terisi setelah manager menyetujui pengajuan DP lapak.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="divide-y divide-slate-100">
             {filtered.map((row, idx) => (
               <div
                 key={row.supplierId}
-                className="bg-white hover:bg-slate-50/50 rounded-2xl p-5 border border-slate-100 shadow-sm transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 group"
+                className="group flex flex-col justify-between gap-4 py-4 transition-colors hover:bg-slate-50 lg:flex-row lg:items-center"
               >
                 {/* Supplier Info */}
-                <div className="flex items-start gap-3 lg:w-1/4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center font-extrabold text-sm shrink-0 shadow-inner">
+                <div className="flex items-start gap-3 lg:w-1/4 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-600">
                     {idx + 1}
                   </div>
-                  <div>
-                    <div className="font-extrabold text-slate-800 text-base flex items-center gap-2 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
                       {row.namaLapak}
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100/50">
                         {row.transaksiDp}x DP disetujui
                       </span>
                     </div>
-                    <span className="text-xs text-slate-400 mt-1 block">
+                    <span className="mt-1 block text-xs text-slate-400">
                       CC: <span className="font-bold text-slate-600">{row.warehouseName}</span>
                     </span>
                   </div>
                 </div>
 
                 {/* Timbangan / DP values */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
                   {/* Total DP */}
-                  <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100/50">
+                  <div className="rounded-lg bg-slate-50 p-3">
                     <span className="text-[10px] text-slate-400 font-semibold uppercase block">Total DP Disetujui</span>
                     <span className="font-mono text-slate-700 font-bold text-sm block mt-1">{fmtRp(row.totalDp)}</span>
                   </div>
 
                   {/* DP Terpakai */}
-                  <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100/50">
+                  <div className="rounded-lg bg-slate-50 p-3">
                     <span className="text-[10px] text-slate-400 font-semibold uppercase block">Total Terpakai</span>
                     <span className="font-mono text-slate-600 font-semibold text-sm block mt-1">{fmtRp(row.totalUsed)}</span>
                   </div>
 
                   {/* Sisa DP */}
-                  <div className="bg-emerald-50/50 rounded-xl p-3 border border-emerald-100">
+                  <div className="rounded-lg bg-emerald-50 p-3">
                     <span className="text-[10px] text-emerald-600 font-semibold uppercase block">Sisa DP Aktif</span>
                     <span className="font-mono text-emerald-700 font-extrabold text-sm block mt-1">{fmtRp(row.sisaDp)}</span>
                   </div>
@@ -155,7 +158,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames }: DpSummary
                 <div className="flex items-center justify-end lg:w-40 shrink-0">
                   <a
                     href={`/dashboard/manager/suppliers/${row.supplierId}`}
-                    className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-slate-950/10 flex items-center justify-center gap-1"
+                    className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 font-bold px-4 py-2.5 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-1"
                   >
                     Detail Lapak
                     <ChevronRight className="w-3.5 h-3.5" />
