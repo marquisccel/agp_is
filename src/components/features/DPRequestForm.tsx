@@ -11,9 +11,13 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
   const [keterangan, setKeterangan] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const selectedSupplier = suppliers.find((supplier) => supplier.id === supplierId)
   const supplierOptions = [
     { value: "", label: "Pilih supplier" },
-    ...suppliers.map(s => ({ value: s.id as string, label: `${s.nama} - Target ${s.target_bulanan_kg} kg` })),
+    ...suppliers.map(s => ({
+      value: s.id as string,
+      label: `${s.nama} - ${s.transactionStatus === "GREEN" ? "Hijau" : "Merah"} - Target ${s.target_bulanan_kg} kg`,
+    })),
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,6 +64,23 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
           ariaLabel="Pilih supplier"
           className="w-full"
         />
+        {selectedSupplier && (
+          <div className="mt-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-slate-900">{selectedSupplier.nama}</span>
+              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+                selectedSupplier.transactionStatus === "GREEN"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
+              }`}>
+                {selectedSupplier.transactionStatus === "GREEN" ? "Status hijau" : "Status merah"}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-slate-500">
+              Target {Number(selectedSupplier.target_bulanan_kg || 0).toLocaleString("id-ID")} kg per bulan
+            </div>
+          </div>
+        )}
       </div>
 
       <div>

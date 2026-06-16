@@ -60,6 +60,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
   const filteredSuppliers = suppliers.filter(s =>
     s.nama.toLowerCase().includes(searchQuery.toLowerCase())
   )
+  const selectedSupplier = suppliers.find((supplier) => supplier.id === supplierId)
   const [beratPotonganSampah, setBeratPotonganSampah] = useState<number>(0)
   const [hargaPotonganSampah, setHargaPotonganSampah] = useState<number>(0)
   const [beratPotonganSusut, setBeratPotonganSusut] = useState<number>(0)
@@ -121,12 +122,10 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
       }
 
       const saved = await res.json()
-      const supplierObj = suppliers.find(s => s.id === supplierId)
-
       // Show nota popup
       setNotaData({
-        supplierNama: supplierObj?.nama || "—",
-        supplierKontakWa: supplierObj?.kontak_wa || null,
+        supplierNama: selectedSupplier?.nama || "—",
+        supplierKontakWa: selectedSupplier?.kontak_wa || null,
         gudangNama: namaGudang,
         items,
         tanggal: new Date().toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" }),
@@ -224,8 +223,22 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
                             setIsOpen(false)
                           }}
                         >
-                          <span>{s.nama}</span>
-                          {s.kontak_wa && <span className="text-[10px] text-slate-400 font-normal">{s.kontak_wa}</span>}
+                          <span className="min-w-0">
+                            <span className="block truncate">{s.nama}</span>
+                            <span className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-normal">
+                              <span className={`rounded-full border px-2 py-0.5 ${
+                                s.transactionStatus === "GREEN"
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                  : "border-rose-200 bg-rose-50 text-rose-700"
+                              }`}>
+                                {s.transactionStatus === "GREEN" ? "Hijau" : "Merah"}
+                              </span>
+                              <span className="text-slate-400">
+                                Target {Number(s.target_bulanan_kg || 0).toLocaleString("id-ID")} kg
+                              </span>
+                            </span>
+                          </span>
+                          {s.kontak_wa && <span className="ml-3 text-[10px] text-slate-400 font-normal">{s.kontak_wa}</span>}
                         </button>
                       ))
                     )}
@@ -234,6 +247,24 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
               )}
             </div>
             <input type="hidden" name="supplierId" value={supplierId} required />
+            {selectedSupplier && (
+              <div className="mt-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-slate-900">{selectedSupplier.nama}</span>
+                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+                    selectedSupplier.transactionStatus === "GREEN"
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-rose-200 bg-rose-50 text-rose-700"
+                  }`}>
+                    {selectedSupplier.transactionStatus === "GREEN" ? "Status hijau" : "Status merah"}
+                  </span>
+                </div>
+                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                  {selectedSupplier.kontak_wa ? <span>WA {selectedSupplier.kontak_wa}</span> : <span>Kontak belum diisi</span>}
+                  <span>Target {Number(selectedSupplier.target_bulanan_kg || 0).toLocaleString("id-ID")} kg/bulan</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Gudang — read-only, from session */}
