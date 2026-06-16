@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -40,11 +41,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const locationPayload = buildSupplierLocationPayload({ link, latitude, longitude })
 
+    const existing = await prisma.supplier.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "Supplier tidak ditemukan" }, { status: 404 })
+    }
+
     // If STAFF, ensure supplier belongs to their warehouse
     if (role === "STAFF") {
       const staffWarehouseId = session.user.warehouseId
-      const existing = await prisma.supplier.findUnique({ where: { id } })
-      if (!existing || existing.warehouseId !== staffWarehouseId) {
+      if (existing.warehouseId !== staffWarehouseId) {
         return NextResponse.json({ error: "Tidak memiliki akses ke supplier ini" }, { status: 403 })
       }
     }
@@ -66,6 +71,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         hari_ambilan: hari_ambilan || null,
       },
     })
+
+    if (existing.transactionStatus !== updated.transactionStatus) {
+      await createAuditLog({
+        userId: session.user.id,
+        action: "SUPPLIER_STATUS_MANUAL_UPDATE",
+        table_name: "Supplier",
+        record_id: updated.id,
+        old_data: {
+          nama: existing.nama,
+          transactionStatus: existing.transactionStatus,
+        },
+        new_data: {
+          nama: updated.nama,
+          transactionStatus: updated.transactionStatus,
+          changedByRole: role,
+        },
+      })
+    }
 
     return NextResponse.json(updated)
   } catch (error) {

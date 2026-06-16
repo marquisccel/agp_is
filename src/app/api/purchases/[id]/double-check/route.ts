@@ -206,7 +206,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       }
 
       if (newStatus === "approved") {
-        await markSupplierGreen(tx, currentPurchase.supplierId)
+        await markSupplierGreen(tx, {
+          supplierId: currentPurchase.supplierId,
+          userId: session.user.id,
+          trigger: session.user.role === "SUPERVISOR" ? "supervisor_verify_purchase" : "admin_double_check_purchase",
+          purchaseId,
+        })
       }
 
       return purchase

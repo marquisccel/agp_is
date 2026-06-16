@@ -66,6 +66,18 @@ interface DownPayment {
   keterangan: string | null
 }
 
+interface SupplierAuditLog {
+  id: string
+  action: string
+  old_data: string | null
+  new_data: string | null
+  createdAt: string
+  user: {
+    nama: string
+    role: string
+  }
+}
+
 interface Supplier {
   id: string
   nama: string
@@ -85,6 +97,36 @@ interface Supplier {
   } | null
   purchases: Purchase[]
   downPayments: DownPayment[]
+  auditLogs: SupplierAuditLog[]
+}
+
+function safeParseAuditData(value: string) {
+  try {
+    return JSON.parse(value) as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
+function resolveAuditStatusLabel(value: unknown) {
+  if (value === "GREEN") return "Hijau"
+  if (value === "RED") return "Merah"
+  return "Belum diketahui"
+}
+
+function resolveAuditTriggerLabel(value: unknown) {
+  switch (value) {
+    case "supervisor_verify_purchase":
+      return "Aktif otomatis saat supervisor menyetujui verifikasi"
+    case "admin_double_check_purchase":
+      return "Aktif otomatis saat admin menyelesaikan double check"
+    case "manager_approve_purchase":
+      return "Aktif otomatis saat manager menyetujui transaksi"
+    case "manager_approve_harga":
+      return "Aktif otomatis saat manager menyetujui harga"
+    default:
+      return null
+  }
 }
 
 export default function ManagerSupplierDetailsClient({ supplier }: { supplier: Supplier }) {
@@ -92,6 +134,16 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   const [copied, setCopied] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"transaksi" | "dp">("transaksi")
+
+  const parsedAuditLogs = supplier.auditLogs.map((log) => {
+    const oldData = log.old_data ? safeParseAuditData(log.old_data) : null
+    const newData = log.new_data ? safeParseAuditData(log.new_data) : null
+    return {
+      ...log,
+      oldData,
+      newData,
+    }
+  })
 
   // Copy bank info helper
   const handleCopy = (text: string) => {
@@ -467,6 +519,77 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
               <MapPin className="h-4 w-4" />
               Buka link Maps
             </a>
+          </div>
+        )}
+      </div>
+
+      <div className="workflow-card overflow-hidden p-0">
+        <div className="border-b border-slate-100 px-6 py-5">
+          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Status history</p>
+          <h3 className="mt-1 text-lg font-black text-slate-950">Riwayat Perubahan Status Supplier</h3>
+          <p className="mt-1 text-sm text-slate-500">Jejak perubahan manual dan aktivasi otomatis setelah transaksi valid pertama.</p>
+        </div>
+
+        {parsedAuditLogs.length > 0 ? (
+          <div className="divide-y divide-slate-100">
+            {parsedAuditLogs.map((log) => {
+              const fromStatus = resolveAuditStatusLabel(log.oldData?.transactionStatus)
+              const toStatus = resolveAuditStatusLabel(log.newData?.transactionStatus)
+              const trigger = resolveAuditTriggerLabel(log.newData?.trigger)
+
+              return (
+                <div key={log.id} className="grid gap-4 px-6 py-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
+                        log.action === "SUPPLIER_STATUS_AUTO_GREEN"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : "border-slate-200 bg-slate-50 text-slate-700"
+                      }`}>
+                        {log.action === "SUPPLIER_STATUS_AUTO_GREEN" ? "Auto hijau" : "Update manual"}
+                      </span>
+                      <span className="text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
+                        {log.user.role}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm font-bold text-slate-950">
+                      {log.user.nama} mengubah status dari{" "}
+                      <span className="text-slate-500">{fromStatus}</span>{" "}
+                      ke{" "}
+                      <span className={toStatus === "Hijau" ? "text-emerald-700" : "text-rose-600"}>{toStatus}</span>
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+                      {trigger ? <span>{trigger}</span> : null}
+                      {log.newData?.purchaseId ? <span>Trigger transaksi: {String(log.newData.purchaseId).slice(0, 8)}</span> : null}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                    <p className="font-semibold text-slate-800">
+                      {new Date(log.createdAt).toLocaleDateString("id-ID", {
+                        dateStyle: "medium",
+                        timeZone: "Asia/Jakarta",
+                      })}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {new Date(log.createdAt).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZone: "Asia/Jakarta",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="px-6 py-10 text-center">
+            <Activity className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+            <p className="text-sm font-semibold text-slate-700">Belum ada perubahan status tercatat</p>
+            <p className="mt-1 text-sm text-slate-500">Riwayat akan muncul saat status supplier diubah manual atau saat supplier otomatis aktif karena transaksi valid.</p>
           </div>
         )}
       </div>

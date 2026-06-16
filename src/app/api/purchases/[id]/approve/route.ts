@@ -60,7 +60,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       })
 
       if (action === "approve") {
-        await markSupplierGreen(tx, currentPurchase.supplierId)
+        await markSupplierGreen(tx, {
+          supplierId: currentPurchase.supplierId,
+          userId: session.user.id,
+          trigger: "manager_approve_purchase",
+          purchaseId,
+        })
       }
 
       return purchase

@@ -39,6 +39,28 @@ export default async function ManagerSupplierDetailPage({ params }: { params: Pr
     return notFound()
   }
 
+  const auditLogs = await prisma.auditLog.findMany({
+    where: {
+      table_name: "Supplier",
+      record_id: id,
+      action: {
+        in: ["SUPPLIER_STATUS_MANUAL_UPDATE", "SUPPLIER_STATUS_AUTO_GREEN"],
+      },
+    },
+    include: {
+      user: {
+        select: {
+          nama: true,
+          role: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 10,
+  })
+
   // Serialize all Date objects to ISO strings
   const serializedSupplier = {
     ...supplier,
@@ -55,7 +77,11 @@ export default async function ManagerSupplierDetailPage({ params }: { params: Pr
       tanggal_permintaan: dp.tanggal_permintaan.toISOString(),
       tanggal_approval: dp.tanggal_approval?.toISOString() ?? null,
       expired_at: dp.expired_at?.toISOString() ?? null,
-    }))
+    })),
+    auditLogs: auditLogs.map((log) => ({
+      ...log,
+      createdAt: log.createdAt.toISOString(),
+    })),
   }
 
   return (

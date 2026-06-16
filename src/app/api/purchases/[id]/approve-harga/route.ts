@@ -40,7 +40,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       })
 
       if (action === "approve") {
-        await markSupplierGreen(tx, purchase.supplierId)
+        await markSupplierGreen(tx, {
+          supplierId: purchase.supplierId,
+          userId: session.user.id,
+          trigger: "manager_approve_harga",
+          purchaseId,
+        })
       }
 
       return updated
