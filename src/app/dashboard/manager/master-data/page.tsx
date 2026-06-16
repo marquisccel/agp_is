@@ -52,6 +52,10 @@ export default async function MasterDataPage() {
       id: supplier.id,
       nama: supplier.nama,
       kontak_wa: supplier.kontak_wa,
+      link: supplier.link,
+      latitude: supplier.latitude,
+      longitude: supplier.longitude,
+      transactionStatus: supplier.transactionStatus,
       target_bulanan_kg: supplier.target_bulanan_kg,
       warehouseId: supplier.warehouseId,
       warehouse: supplier.warehouse,
@@ -113,6 +117,9 @@ export default async function MasterDataPage() {
           totalKg: totalKgAll._sum.berat_final_item ?? 0,
           totalSuppliers: suppliers.length,
           totalWarehouses: warehouses.length,
+          totalGreenSuppliers: suppliers.filter((supplier) => supplier.transactionStatus === "GREEN").length,
+          totalRedSuppliers: suppliers.filter((supplier) => supplier.transactionStatus === "RED").length,
+          totalMapReadySuppliers: suppliers.filter((supplier) => supplier.latitude !== null && supplier.longitude !== null).length,
         }}
       />
     </div>

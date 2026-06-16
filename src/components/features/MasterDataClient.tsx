@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { Boxes, Building2, CheckCircle2, CircleDollarSign, Database, Package, Search, Users } from "lucide-react"
+import Link from "next/link"
+import { Boxes, Building2, CheckCircle2, CircleDollarSign, Database, MapPin, Package, Search, Users } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 
 interface Warehouse { id: string; nama: string; lokasi: string }
@@ -10,6 +11,10 @@ interface SupplierStat {
   id: string
   nama: string
   kontak_wa: string | null
+  link: string | null
+  latitude: number | null
+  longitude: number | null
+  transactionStatus: string
   target_bulanan_kg: number
   warehouseId: string | null
   warehouse: { id: string; nama: string } | null
@@ -40,9 +45,13 @@ interface GlobalStats {
   totalKg: number
   totalSuppliers: number
   totalWarehouses: number
+  totalGreenSuppliers: number
+  totalRedSuppliers: number
+  totalMapReadySuppliers: number
 }
 
 type Tab = "overview" | "lapak" | "pengguna" | "harga-sku"
+type SupplierStatusFilter = "all" | "GREEN" | "RED"
 
 function fmtRp(n: number) {
   if (n >= 1_000_000_000) return `Rp ${(n / 1_000_000_000).toFixed(1)}M`
@@ -76,6 +85,7 @@ export default function MasterDataClient({
   const [activeTab, setActiveTab] = useState<Tab>("overview")
   const [searchLapak, setSearchLapak] = useState("")
   const [filterWarehouse, setFilterWarehouse] = useState("all")
+  const [filterSupplierStatus, setFilterSupplierStatus] = useState<SupplierStatusFilter>("all")
   const [searchUser, setSearchUser] = useState("")
   const [filterRole, setFilterRole] = useState("all")
   const [filterSkuWarehouse, setFilterSkuWarehouse] = useState("all")
@@ -91,7 +101,8 @@ export default function MasterDataClient({
     const matchSearch = supplier.nama.toLowerCase().includes(searchLapak.toLowerCase()) ||
       (supplier.kontak_wa || "").includes(searchLapak)
     const matchWarehouse = filterWarehouse === "all" || supplier.warehouseId === filterWarehouse
-    return matchSearch && matchWarehouse
+    const matchStatus = filterSupplierStatus === "all" || supplier.transactionStatus === filterSupplierStatus
+    return matchSearch && matchWarehouse && matchStatus
   }).sort((a, b) => b.totalKg - a.totalKg)
 
   const filteredUsers = users.filter((user) => {
@@ -138,6 +149,9 @@ export default function MasterDataClient({
               value={globalStats.totalPurchases > 0 ? `${((globalStats.totalCompleted / globalStats.totalPurchases) * 100).toFixed(0)}%` : "0%"}
               sub="Transaksi selesai"
             />
+            <StatCard icon={<Users />} label="Supplier Hijau" value={globalStats.totalGreenSuppliers.toLocaleString("id-ID")} sub="Sudah transaksi valid" />
+            <StatCard icon={<Users />} label="Supplier Merah" value={globalStats.totalRedSuppliers.toLocaleString("id-ID")} sub="Perlu aktivasi" />
+            <StatCard icon={<MapPin />} label="Lokasi Siap" value={globalStats.totalMapReadySuppliers.toLocaleString("id-ID")} sub="Koordinat tersedia" />
           </div>
 
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
@@ -217,6 +231,17 @@ export default function MasterDataClient({
                 ...warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.nama })),
               ]}
             />
+            <ElegantSelect
+              value={filterSupplierStatus}
+              onChange={(value) => setFilterSupplierStatus(value as SupplierStatusFilter)}
+              ariaLabel="Filter status supplier"
+              className="w-full sm:w-56"
+              options={[
+                { value: "all", label: "Semua Status" },
+                { value: "GREEN", label: "Hijau - aktif" },
+                { value: "RED", label: "Merah - belum aktif" },
+              ]}
+            />
           </FilterBar>
 
           <p className="px-1 text-xs text-slate-500">
@@ -231,7 +256,23 @@ export default function MasterDataClient({
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="truncate text-base font-black text-slate-950">{supplier.nama}</p>
-                    <p className="mt-1 text-xs text-slate-500">{supplier.warehouse?.nama || "-"}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <p className="text-xs text-slate-500">{supplier.warehouse?.nama || "-"}</p>
+                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
+                        supplier.transactionStatus === "GREEN"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : "border-rose-200 bg-rose-50 text-rose-700"
+                      }`}>
+                        {supplier.transactionStatus === "GREEN" ? "Hijau" : "Merah"}
+                      </span>
+                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
+                        supplier.latitude !== null && supplier.longitude !== null
+                          ? "border-sky-200 bg-sky-50 text-sky-700"
+                          : "border-slate-200 bg-slate-50 text-slate-500"
+                      }`}>
+                        {supplier.latitude !== null && supplier.longitude !== null ? "Map Ready" : "Belum Ada Koordinat"}
+                      </span>
+                    </div>
                   </div>
                   <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white">#{idx + 1}</span>
                 </div>
@@ -243,7 +284,12 @@ export default function MasterDataClient({
                 </div>
                 <div className="mt-4 flex flex-wrap justify-between gap-2 border-t border-slate-200/70 pt-4 text-xs text-slate-500">
                   <span>{supplier.kontak_wa ? `WA ${supplier.kontak_wa}` : "Kontak belum tersedia"}</span>
-                  <span>Terakhir: {fmtDate(supplier.lastPurchase)}</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span>Terakhir: {fmtDate(supplier.lastPurchase)}</span>
+                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="font-bold text-teal-700 hover:text-teal-800">
+                      Detail lapak
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
