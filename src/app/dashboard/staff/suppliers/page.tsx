@@ -6,18 +6,32 @@ import Link from "next/link"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 
-export default async function StaffSuppliersPage() {
+export default async function StaffSuppliersPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ status?: string }>
+}) {
   const session = await getServerSession(authOptions)
   if (!session || !isOperationalRole(session.user.role)) redirect("/login")
 
   const warehouseId = session.user.warehouseId
+  const resolvedSearchParams = searchParams ? await searchParams : undefined
+  const selectedStatus =
+    resolvedSearchParams?.status === "GREEN" || resolvedSearchParams?.status === "RED"
+      ? resolvedSearchParams.status
+      : "all"
 
-  const suppliers = warehouseId
+  const allSuppliers = warehouseId
     ? await prisma.supplier.findMany({
         where: { warehouseId },
         orderBy: { nama: "asc" },
       })
     : []
+  const suppliers = selectedStatus === "all"
+    ? allSuppliers
+    : allSuppliers.filter((supplier) => supplier.transactionStatus === selectedStatus)
+  const greenCount = allSuppliers.filter((supplier) => supplier.transactionStatus === "GREEN").length
+  const redCount = allSuppliers.filter((supplier) => supplier.transactionStatus === "RED").length
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -35,15 +49,55 @@ export default async function StaffSuppliersPage() {
         )}
       />
 
+      {allSuppliers.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/dashboard/staff/suppliers"
+            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
+              selectedStatus === "all" ? "bg-slate-950 text-white" : "border border-slate-200 bg-white text-slate-600"
+            }`}
+          >
+            Semua Status {allSuppliers.length}
+          </Link>
+          <Link
+            href="/dashboard/staff/suppliers?status=GREEN"
+            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
+              selectedStatus === "GREEN" ? "bg-emerald-600 text-white" : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            Hijau {greenCount}
+          </Link>
+          <Link
+            href="/dashboard/staff/suppliers?status=RED"
+            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
+              selectedStatus === "RED" ? "bg-rose-600 text-white" : "border border-rose-200 bg-rose-50 text-rose-700"
+            }`}
+          >
+            Merah {redCount}
+          </Link>
+        </div>
+      )}
+
       {suppliers.length === 0 ? (
         <div className="interactive-surface bg-white rounded-lg border border-dashed border-slate-200 p-12 text-center">
-          <p className="text-slate-400 text-sm">Belum ada supplier terdaftar.</p>
-          <Link
-            href="/dashboard/staff/suppliers/new"
-            className="mt-4 inline-block text-teal-700 text-sm font-semibold hover:underline"
-          >
-            Tambah supplier pertama
-          </Link>
+          <p className="text-slate-400 text-sm">
+            {allSuppliers.length === 0 ? "Belum ada supplier terdaftar." : "Tidak ada supplier pada status yang dipilih."}
+          </p>
+          {allSuppliers.length === 0 ? (
+            <Link
+              href="/dashboard/staff/suppliers/new"
+              className="mt-4 inline-block text-teal-700 text-sm font-semibold hover:underline"
+            >
+              Tambah supplier pertama
+            </Link>
+          ) : (
+            <Link
+              href="/dashboard/staff/suppliers"
+              className="mt-4 inline-block text-teal-700 text-sm font-semibold hover:underline"
+            >
+              Lihat semua supplier
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

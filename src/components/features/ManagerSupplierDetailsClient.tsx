@@ -400,6 +400,64 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           )}
         </div>
       </div>
+
+      <div className="workflow-card overflow-hidden p-0">
+        <div className="border-b border-slate-100 px-6 py-5">
+          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Location preview</p>
+          <h3 className="mt-1 text-lg font-black text-slate-950">Titik Lapak</h3>
+          <p className="mt-1 text-sm text-slate-500">Preview peta akan tampil ketika koordinat sudah diisi. Link Maps tetap tersedia sebagai fallback.</p>
+        </div>
+
+        {supplier.latitude !== null && supplier.longitude !== null ? (
+          <div className="grid gap-px bg-slate-100 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <div className="bg-white p-3">
+              <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+                <iframe
+                  title={`Peta ${supplier.nama}`}
+                  src={`https://maps.google.com/maps?q=${supplier.latitude},${supplier.longitude}&z=15&output=embed`}
+                  className="h-[320px] w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            </div>
+            <div className="space-y-4 bg-white p-6">
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Latitude</span>
+                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{supplier.latitude}</span>
+              </div>
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Longitude</span>
+                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{supplier.longitude}</span>
+              </div>
+              <a
+                href={mapHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="premium-button flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
+              >
+                <MapPin className="h-4 w-4" />
+                Buka di Google Maps
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="px-6 py-10 text-center">
+            <MapPin className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+            <p className="text-sm font-semibold text-slate-700">Koordinat belum tersedia</p>
+            <p className="mt-1 text-sm text-slate-500">Isi `latitude` dan `longitude` di data supplier untuk menampilkan preview peta langsung di sini.</p>
+            <a
+              href={mapHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="premium-button mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            >
+              <MapPin className="h-4 w-4" />
+              Buka link Maps
+            </a>
+          </div>
+        )}
+      </div>
       {/* Monthly Performance Dashboard Card */}
       <div className="workflow-card space-y-5 p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">

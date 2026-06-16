@@ -77,6 +77,7 @@ interface Warehouse {
 }
 
 type GradeFilter = "all" | "A" | "B" | "C" | "active"
+type SupplierStatusFilter = "all" | "GREEN" | "RED"
 
 const MONTHS: { value: number | "all"; label: string }[] = [
   { value: "all", label: "Semua Bulan" },
@@ -108,6 +109,7 @@ export default function ManagerSuppliersClient({
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<GradeFilter>("all")
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<SupplierStatusFilter>("all")
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
   const [selectedMonth, setSelectedMonth] = useState<number | "all">(currentMonth)
@@ -262,9 +264,13 @@ export default function ManagerSuppliersClient({
   const gradeACount = baseFilteredSuppliers.filter((supplier) => supplier.performance.grade === "A").length
   const gradeBCount = baseFilteredSuppliers.filter((supplier) => supplier.performance.grade === "B").length
   const gradeCCount = baseFilteredSuppliers.filter((supplier) => supplier.performance.grade === "C").length
+  const greenSupplierCount = baseFilteredSuppliers.filter((supplier) => supplier.transactionStatus === "GREEN").length
+  const redSupplierCount = baseFilteredSuppliers.filter((supplier) => supplier.transactionStatus === "RED").length
   const totalWeightFiltered = baseFilteredSuppliers.reduce((sum, supplier) => sum + supplier.performance.totalGudangWeight, 0)
 
   const filteredSuppliers = baseFilteredSuppliers.filter((supplier) => {
+    if (selectedStatusFilter === "GREEN" && supplier.transactionStatus !== "GREEN") return false
+    if (selectedStatusFilter === "RED" && supplier.transactionStatus !== "RED") return false
     if (selectedGradeFilter === "A") return supplier.performance.grade === "A"
     if (selectedGradeFilter === "B") return supplier.performance.grade === "B"
     if (selectedGradeFilter === "C") return supplier.performance.grade === "C"
@@ -324,6 +330,33 @@ export default function ManagerSuppliersClient({
             )
           })}
         </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setSelectedStatusFilter("all")}
+            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
+              selectedStatusFilter === "all" ? "bg-slate-950 text-white" : "border border-slate-200 bg-white text-slate-600"
+            }`}
+          >
+            Semua Status
+          </button>
+          <button
+            onClick={() => setSelectedStatusFilter("GREEN")}
+            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
+              selectedStatusFilter === "GREEN" ? "bg-emerald-600 text-white" : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            Hijau {greenSupplierCount}
+          </button>
+          <button
+            onClick={() => setSelectedStatusFilter("RED")}
+            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
+              selectedStatusFilter === "RED" ? "bg-rose-600 text-white" : "border border-rose-200 bg-rose-50 text-rose-700"
+            }`}
+          >
+            Merah {redSupplierCount}
+          </button>
+        </div>
       </section>
 
       <section className="interactive-surface border border-slate-200/80 p-5">
@@ -381,12 +414,18 @@ export default function ManagerSuppliersClient({
           </div>
         </div>
 
-        {selectedGradeFilter !== "all" && (
+        {(selectedGradeFilter !== "all" || selectedStatusFilter !== "all") && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm text-slate-600">
             <span>
               Menampilkan <strong className="text-slate-950">{filteredSuppliers.length} lapak</strong> sesuai filter performa.
             </span>
-            <button onClick={() => setSelectedGradeFilter("all")} className="font-black text-slate-950 hover:text-teal-700">
+            <button
+              onClick={() => {
+                setSelectedGradeFilter("all")
+                setSelectedStatusFilter("all")
+              }}
+              className="font-black text-slate-950 hover:text-teal-700"
+            >
               Bersihkan filter
             </button>
           </div>
@@ -395,7 +434,7 @@ export default function ManagerSuppliersClient({
 
       {filteredSuppliers.length > 0 ? (
         <div
-          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedMonth}-${selectedYear}-${searchQuery}`}
+          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedMonth}-${selectedYear}-${searchQuery}`}
           className="grid grid-cols-1 gap-4 xl:grid-cols-2 soft-enter"
         >
           {filteredSuppliers.map((supplier) => {
@@ -500,7 +539,7 @@ export default function ManagerSuppliersClient({
         </div>
       ) : (
         <div
-          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedMonth}-${selectedYear}-${searchQuery}-empty`}
+          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedMonth}-${selectedYear}-${searchQuery}-empty`}
           className="interactive-surface border border-dashed border-slate-200/90 p-12 text-center soft-enter"
         >
           <Users className="mx-auto mb-3 h-10 w-10 text-slate-300" />
