@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import MasterDataClient from "@/components/features/MasterDataClient"
 import PageHeader from "@/components/ui/PageHeader"
+import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 export default async function MasterDataPage() {
   const session = await getServerSession(authOptions)
@@ -119,7 +120,7 @@ export default async function MasterDataPage() {
           totalWarehouses: warehouses.length,
           totalGreenSuppliers: suppliers.filter((supplier) => supplier.transactionStatus === "GREEN").length,
           totalRedSuppliers: suppliers.filter((supplier) => supplier.transactionStatus === "RED").length,
-          totalMapReadySuppliers: suppliers.filter((supplier) => supplier.latitude !== null && supplier.longitude !== null).length,
+          totalMapReadySuppliers: suppliers.filter((supplier) => hasResolvedSupplierCoordinates(supplier)).length,
         }}
       />
     </div>

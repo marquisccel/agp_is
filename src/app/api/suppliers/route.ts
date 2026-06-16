@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 
 export async function POST(req: Request) {
   try {
@@ -30,13 +31,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nama Supplier dan Gudang wajib diisi" }, { status: 400 })
     }
 
+    const locationPayload = buildSupplierLocationPayload({ link, latitude, longitude })
+
     const supplier = await prisma.supplier.create({
       data: {
         nama,
         kontak_wa,
-        link,
-        latitude: latitude !== "" && latitude !== null && latitude !== undefined ? parseFloat(latitude) : null,
-        longitude: longitude !== "" && longitude !== null && longitude !== undefined ? parseFloat(longitude) : null,
+        link: locationPayload.link,
+        latitude: locationPayload.latitude,
+        longitude: locationPayload.longitude,
         transactionStatus: transactionStatus === "GREEN" ? "GREEN" : "RED",
         nama_bank,
         nomor_rekening,

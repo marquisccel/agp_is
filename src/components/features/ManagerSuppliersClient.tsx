@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
+import { hasResolvedSupplierCoordinates, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 
 interface SkuPriceStandard {
   id: string
@@ -126,6 +127,10 @@ export default function ManagerSuppliersClient({
   const [locationLongitude, setLocationLongitude] = useState("")
   const [savingLocation, setSavingLocation] = useState(false)
   const [locationError, setLocationError] = useState("")
+  const inferredLocation =
+    locationLatitude === "" && locationLongitude === ""
+      ? parseCoordinatesFromMapLink(locationLink)
+      : null
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hati-hati! Apakah Anda yakin ingin menghapus data lapak ini? Lapak tidak bisa dihapus jika memiliki riwayat transaksi/kasbon.")) return
@@ -213,14 +218,16 @@ export default function ManagerSuppliersClient({
         throw new Error(data.error || "Gagal menyimpan lokasi supplier")
       }
 
+      const savedSupplier = await res.json()
+
       setSuppliers((current) =>
         current.map((item) =>
           item.id === editingLocationSupplierId
             ? {
                 ...item,
-                link: locationLink || null,
-                latitude: locationLatitude !== "" ? Number(locationLatitude) : null,
-                longitude: locationLongitude !== "" ? Number(locationLongitude) : null,
+                link: savedSupplier.link,
+                latitude: savedSupplier.latitude,
+                longitude: savedSupplier.longitude,
               }
             : item
         )
@@ -544,11 +551,11 @@ export default function ManagerSuppliersClient({
                         Grade {perf.grade} - {perf.gradeLabel}
                       </span>
                       <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
-                        supplier.latitude !== null && supplier.longitude !== null
+                        hasResolvedSupplierCoordinates(supplier)
                           ? "border-sky-200 bg-sky-50 text-sky-700"
                           : "border-slate-200 bg-slate-50 text-slate-500"
                       }`}>
-                        {supplier.latitude !== null && supplier.longitude !== null ? "Map Ready" : "Lokasi belum lengkap"}
+                        {hasResolvedSupplierCoordinates(supplier) ? "Map Ready" : "Lokasi belum lengkap"}
                       </span>
                     </div>
                     <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-400">Collection Center {cleanedCity}</p>
@@ -702,6 +709,15 @@ export default function ManagerSuppliersClient({
             {locationError && (
               <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
                 {locationError}
+              </div>
+            )}
+
+            {inferredLocation && (
+              <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+                <p className="font-semibold">Koordinat terdeteksi otomatis dari link Maps.</p>
+                <p className="mt-1 text-xs font-medium text-sky-700">
+                  Latitude {inferredLocation.latitude}, longitude {inferredLocation.longitude}. Simpan lokasi untuk langsung mengaktifkan preview peta.
+                </p>
               </div>
             )}
 

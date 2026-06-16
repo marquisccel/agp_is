@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { fmtKg, fmtRp, fmtTon, fmtPct } from "@/lib/format"
 import PageHeader from "@/components/ui/PageHeader"
+import { getSupplierMapHref, resolveSupplierCoordinates } from "@/lib/supplierLocation"
 
 interface PurchaseItem {
   id: string
@@ -241,12 +242,11 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
     rejected: { label: "Rejected", cls: "bg-red-50 text-red-700 border-red-200" }
   }
 
-  const mapHref = supplier.latitude !== null && supplier.longitude !== null
-    ? `https://www.google.com/maps/search/?api=1&query=${supplier.latitude},${supplier.longitude}`
-    : supplier.link ||
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        supplier.nama + " " + (supplier.warehouse?.nama || "")
-      )}`
+  const resolvedCoordinates = resolveSupplierCoordinates(supplier)
+  const mapHref = getSupplierMapHref({
+    ...supplier,
+    warehouseName: supplier.warehouse?.nama || null,
+  })
 
   return (
     <div className="premium-workflow space-y-6">
@@ -310,15 +310,21 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             <div className="bg-white/90 p-5">
               <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Koordinat</span>
               <span className="mt-1 block font-bold text-slate-950">
-                {supplier.latitude !== null && supplier.longitude !== null
-                  ? `${supplier.latitude}, ${supplier.longitude}`
+                {resolvedCoordinates
+                  ? `${resolvedCoordinates.latitude}, ${resolvedCoordinates.longitude}`
                   : "Belum diisi"}
               </span>
             </div>
             <div className="bg-white/90 p-5">
               <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Sumber Peta</span>
               <span className="mt-1 block font-bold text-slate-950">
-                {supplier.latitude !== null && supplier.longitude !== null ? "Koordinat GPS" : supplier.link ? "Link Google Maps" : "Belum ada lokasi"}
+                {resolvedCoordinates?.source === "manual"
+                  ? "Koordinat GPS"
+                  : resolvedCoordinates?.source === "link"
+                    ? "Koordinat terdeteksi dari link"
+                    : supplier.link
+                      ? "Link Google Maps"
+                      : "Belum ada lokasi"}
               </span>
             </div>
           </div>
@@ -408,13 +414,13 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           <p className="mt-1 text-sm text-slate-500">Preview peta akan tampil ketika koordinat sudah diisi. Link Maps tetap tersedia sebagai fallback.</p>
         </div>
 
-        {supplier.latitude !== null && supplier.longitude !== null ? (
+        {resolvedCoordinates ? (
           <div className="grid gap-px bg-slate-100 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="bg-white p-3">
               <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
                 <iframe
                   title={`Peta ${supplier.nama}`}
-                  src={`https://maps.google.com/maps?q=${supplier.latitude},${supplier.longitude}&z=15&output=embed`}
+                  src={`https://maps.google.com/maps?q=${resolvedCoordinates.latitude},${resolvedCoordinates.longitude}&z=15&output=embed`}
                   className="h-[320px] w-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -424,11 +430,17 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             <div className="space-y-4 bg-white p-6">
               <div>
                 <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Latitude</span>
-                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{supplier.latitude}</span>
+                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.latitude}</span>
               </div>
               <div>
                 <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Longitude</span>
-                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{supplier.longitude}</span>
+                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.longitude}</span>
+              </div>
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Sumber</span>
+                <span className="mt-1 block text-sm font-bold text-slate-950">
+                  {resolvedCoordinates.source === "manual" ? "Field latitude/longitude" : "Terbaca dari link Maps"}
+                </span>
               </div>
               <a
                 href={mapHref}
@@ -445,7 +457,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           <div className="px-6 py-10 text-center">
             <MapPin className="mx-auto mb-3 h-10 w-10 text-slate-300" />
             <p className="text-sm font-semibold text-slate-700">Koordinat belum tersedia</p>
-            <p className="mt-1 text-sm text-slate-500">Isi `latitude` dan `longitude` di data supplier untuk menampilkan preview peta langsung di sini.</p>
+            <p className="mt-1 text-sm text-slate-500">Isi `latitude` dan `longitude`, atau gunakan link Maps yang menyimpan koordinat agar preview peta langsung tampil di sini.</p>
             <a
               href={mapHref}
               target="_blank"

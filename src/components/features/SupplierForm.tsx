@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 
 const KNOWN_BANKS = ["BCA","BNI","BRI","BSI","BTN","Mandiri","CIMB Niaga","Danamon","Permata","Panin","OCBC NISP","Maybank","Mega","Muamalat","Jago","SeaBank","Jenius","Gopay","OVO","Dana"]
 const BANK_OPTIONS = [
@@ -74,6 +75,10 @@ export default function SupplierForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const inferredCoordinates =
+    latitude === "" && longitude === ""
+      ? parseCoordinatesFromMapLink(link)
+      : null
   const warehouseOptions = [
     { value: "", label: "Pilih lokasi gudang" },
     ...warehouses.map(w => ({ value: w.id as string, label: `Collection Center ${w.nama.replace(/^Gudang\s+/i, "")}` })),
@@ -209,6 +214,11 @@ export default function SupplierForm({
             className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
             placeholder="https://maps.google.com/..."
           />
+          {inferredCoordinates && (
+            <p className="text-xs font-medium text-sky-700">
+              Koordinat terdeteksi otomatis dari link ini: {inferredCoordinates.latitude}, {inferredCoordinates.longitude}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">

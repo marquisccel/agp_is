@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -37,6 +38,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Nama Supplier wajib diisi" }, { status: 400 })
     }
 
+    const locationPayload = buildSupplierLocationPayload({ link, latitude, longitude })
+
     // If STAFF, ensure supplier belongs to their warehouse
     if (role === "STAFF") {
       const staffWarehouseId = session.user.warehouseId
@@ -51,9 +54,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data: {
         nama,
         kontak_wa: kontak_wa || null,
-        link: link || null,
-        latitude: latitude !== "" && latitude !== null && latitude !== undefined ? parseFloat(latitude) : null,
-        longitude: longitude !== "" && longitude !== null && longitude !== undefined ? parseFloat(longitude) : null,
+        link: locationPayload.link,
+        latitude: locationPayload.latitude,
+        longitude: locationPayload.longitude,
         transactionStatus: transactionStatus === "GREEN" ? "GREEN" : "RED",
         nama_bank: nama_bank || null,
         nomor_rekening: nomor_rekening || null,

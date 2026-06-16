@@ -5,6 +5,7 @@ import type { ReactNode } from "react"
 import Link from "next/link"
 import { Boxes, Building2, CheckCircle2, CircleDollarSign, Database, MapPin, Package, Search, Users } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 interface Warehouse { id: string; nama: string; lokasi: string }
 interface SupplierStat {
@@ -266,11 +267,11 @@ export default function MasterDataClient({
                         {supplier.transactionStatus === "GREEN" ? "Hijau" : "Merah"}
                       </span>
                       <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
-                        supplier.latitude !== null && supplier.longitude !== null
+                        hasResolvedSupplierCoordinates(supplier)
                           ? "border-sky-200 bg-sky-50 text-sky-700"
                           : "border-slate-200 bg-slate-50 text-slate-500"
                       }`}>
-                        {supplier.latitude !== null && supplier.longitude !== null ? "Map Ready" : "Belum Ada Koordinat"}
+                        {hasResolvedSupplierCoordinates(supplier) ? "Map Ready" : "Belum Ada Koordinat"}
                       </span>
                     </div>
                   </div>
