@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import type { Prisma } from "@prisma/client"
+import { markSupplierGreen } from "@/lib/supplierStatus"
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -52,9 +53,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       }
     }
 
-    const updatedPurchase = await prisma.purchase.update({
-      where: { id: purchaseId },
-      data: updateData
+    const updatedPurchase = await prisma.$transaction(async (tx) => {
+      const purchase = await tx.purchase.update({
+        where: { id: purchaseId },
+        data: updateData
+      })
+
+      if (action === "approve") {
+        await markSupplierGreen(tx, currentPurchase.supplierId)
+      }
+
+      return purchase
     })
 
     await createAuditLog({

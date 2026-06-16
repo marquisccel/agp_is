@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
+import { markSupplierGreen } from "@/lib/supplierStatus"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -26,15 +27,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const newStatus = action === "approve" ? "approved" : "dibatalkan"
     const nomor_nota = action === "approve" ? `INV-${Date.now()}` : null
 
-    const updatedPurchase = await prisma.purchase.update({
-      where: { id: purchaseId },
-      data: {
-        status_approval: newStatus,
-        approvedByUserId: session.user.id,
-        approvedAt: new Date(),
-        nomor_nota: nomor_nota || purchase.nomor_nota, // If somehow it already has one, keep it, otherwise set new if approved.
-        ...(action === "reject" ? { rejection_reason: "Ditolak oleh Manager karena harga terlalu tinggi" } : {})
+    const updatedPurchase = await prisma.$transaction(async (tx) => {
+      const updated = await tx.purchase.update({
+        where: { id: purchaseId },
+        data: {
+          status_approval: newStatus,
+          approvedByUserId: session.user.id,
+          approvedAt: new Date(),
+          nomor_nota: nomor_nota || purchase.nomor_nota,
+          ...(action === "reject" ? { rejection_reason: "Ditolak oleh Manager karena harga terlalu tinggi" } : {})
+        }
+      })
+
+      if (action === "approve") {
+        await markSupplierGreen(tx, purchase.supplierId)
       }
+
+      return updated
     })
 
     await createAuditLog({

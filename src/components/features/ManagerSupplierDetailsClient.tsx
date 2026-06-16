@@ -70,6 +70,9 @@ interface Supplier {
   nama: string
   kontak_wa: string | null
   link: string | null
+  latitude: number | null
+  longitude: number | null
+  transactionStatus: string
   nama_bank: string | null
   nomor_rekening: string | null
   atas_nama: string | null
@@ -238,6 +241,13 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
     rejected: { label: "Rejected", cls: "bg-red-50 text-red-700 border-red-200" }
   }
 
+  const mapHref = supplier.latitude !== null && supplier.longitude !== null
+    ? `https://www.google.com/maps/search/?api=1&query=${supplier.latitude},${supplier.longitude}`
+    : supplier.link ||
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        supplier.nama + " " + (supplier.warehouse?.nama || "")
+      )}`
+
   return (
     <div className="premium-workflow space-y-6">
       <PageHeader
@@ -260,7 +270,16 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         <div className="workflow-card overflow-hidden p-0 lg:col-span-2">
           <div className="border-b border-slate-100 px-6 py-5">
             <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Profil lapak</p>
-            <h3 className="mt-1 text-lg font-black text-slate-950">{supplier.nama}</h3>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-black text-slate-950">{supplier.nama}</h3>
+              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
+                supplier.transactionStatus === "GREEN"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
+              }`}>
+                {supplier.transactionStatus === "GREEN" ? "Supplier aktif" : "Belum aktif"}
+              </span>
+            </div>
             <p className="mt-1 text-sm text-slate-500">Kontak, target, dan jadwal ambilan supplier dalam satu panel.</p>
           </div>
 
@@ -288,6 +307,20 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 {supplier.frekuensi_ambilan_mingguan}x seminggu{supplier.hari_ambilan ? ` (${supplier.hari_ambilan})` : ""}
               </span>
             </div>
+            <div className="bg-white/90 p-5">
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Koordinat</span>
+              <span className="mt-1 block font-bold text-slate-950">
+                {supplier.latitude !== null && supplier.longitude !== null
+                  ? `${supplier.latitude}, ${supplier.longitude}`
+                  : "Belum diisi"}
+              </span>
+            </div>
+            <div className="bg-white/90 p-5">
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Sumber Peta</span>
+              <span className="mt-1 block font-bold text-slate-950">
+                {supplier.latitude !== null && supplier.longitude !== null ? "Koordinat GPS" : supplier.link ? "Link Google Maps" : "Belum ada lokasi"}
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-3 px-6 py-5">
@@ -309,12 +342,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             )}
 
             <a
-              href={
-                supplier.link ||
-                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  supplier.nama + " " + (supplier.warehouse?.nama || "")
-                )}`
-              }
+              href={mapHref}
               target="_blank"
               rel="noopener noreferrer"
               className="premium-button flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"

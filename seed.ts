@@ -76,7 +76,13 @@ async function main() {
     data: { nama: 'Supplier B (Bambang)', kontak_wa: '081298765432', target_bulanan_kg: 10000, warehouseId: madiun.id }
   });
   await prisma.supplier.create({
-    data: { nama: 'Supplier C (Cahyo)', kontak_wa: '082112345678', target_bulanan_kg: 7000, warehouseId: kediri.id }
+    data: {
+      nama: 'Supplier C (Cahyo)',
+      kontak_wa: '082112345678',
+      link: 'https://goo.gl/maps/yDTfNa8FcHa1cJXT8?g_st=aw',
+      target_bulanan_kg: 7000,
+      warehouseId: kediri.id,
+    }
   });
   await prisma.supplier.create({
     data: { nama: 'Supplier D (Dian)', kontak_wa: '082198765432', target_bulanan_kg: 8000, warehouseId: malang.id }

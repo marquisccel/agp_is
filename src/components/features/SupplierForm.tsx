@@ -29,6 +29,10 @@ const BANK_OPTIONS = [
   { value: "Dana", label: "DANA" },
   { value: "Lainnya", label: "Lainnya" },
 ]
+const TRANSACTION_STATUS_OPTIONS = [
+  { value: "RED", label: "Merah - belum aktif" },
+  { value: "GREEN", label: "Hijau - aktif" },
+]
 
 function resolveBank(val: string | null | undefined): { bank: string; lainnya: string } {
   if (!val) return { bank: "", lainnya: "" }
@@ -56,6 +60,9 @@ export default function SupplierForm({
   const [nama, setNama] = useState(initialData?.nama || "")
   const [kontakWa, setKontakWa] = useState(initialData?.kontak_wa || "")
   const [link, setLink] = useState(initialData?.link || "")
+  const [latitude, setLatitude] = useState(initialData?.latitude?.toString() || "")
+  const [longitude, setLongitude] = useState(initialData?.longitude?.toString() || "")
+  const [transactionStatus, setTransactionStatus] = useState(initialData?.transactionStatus || "RED")
   const [namaBank, setNamaBank] = useState(initBank)
   const [namaBankLainnya, setNamaBankLainnya] = useState(initBankLainnya)
   const [nomorRekening, setNomorRekening] = useState(initialData?.nomor_rekening || "")
@@ -89,6 +96,9 @@ export default function SupplierForm({
           nama,
           kontak_wa: kontakWa,
           link,
+          latitude,
+          longitude,
+          transactionStatus,
           nama_bank: namaBank === "Lainnya" ? namaBankLainnya : namaBank,
           nomor_rekening: nomorRekening,
           atas_nama: atasNama,
@@ -112,6 +122,9 @@ export default function SupplierForm({
       setNama("")
       setKontakWa("")
       setLink("")
+      setLatitude("")
+      setLongitude("")
+      setTransactionStatus("RED")
       setNamaBank("")
       setNamaBankLainnya("")
       setNomorRekening("")
@@ -199,6 +212,30 @@ export default function SupplierForm({
         </div>
 
         <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">Latitude (Opsional)</label>
+          <input
+            type="number"
+            step="any"
+            value={latitude}
+            onChange={(e) => setLatitude(e.target.value)}
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            placeholder="Contoh: -7.8165"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">Longitude (Opsional)</label>
+          <input
+            type="number"
+            step="any"
+            value={longitude}
+            onChange={(e) => setLongitude(e.target.value)}
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            placeholder="Contoh: 112.0111"
+          />
+        </div>
+
+        <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700">Nama Bank (Opsional)</label>
           <ElegantSelect
             value={namaBank}
@@ -242,6 +279,20 @@ export default function SupplierForm({
             className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
             placeholder="Contoh: Budi Santoso"
           />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">Status Transaksi Supplier</label>
+          <ElegantSelect
+            value={transactionStatus}
+            options={TRANSACTION_STATUS_OPTIONS}
+            onChange={setTransactionStatus}
+            ariaLabel="Pilih status transaksi supplier"
+            className="w-full"
+          />
+          <p className="text-xs text-slate-500">
+            Default merah. Status akan otomatis menjadi hijau saat transaksi valid pertama berhasil disetujui.
+          </p>
         </div>
 
 

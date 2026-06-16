@@ -10,7 +10,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { nama, kontak_wa, link, nama_bank, nomor_rekening, atas_nama, target_bulanan_kg, frekuensi_ambilan_mingguan, hari_ambilan, warehouseId } = await req.json()
+    const {
+      nama,
+      kontak_wa,
+      link,
+      latitude,
+      longitude,
+      transactionStatus,
+      nama_bank,
+      nomor_rekening,
+      atas_nama,
+      target_bulanan_kg,
+      frekuensi_ambilan_mingguan,
+      hari_ambilan,
+      warehouseId,
+    } = await req.json()
 
     if (!nama || !warehouseId) {
       return NextResponse.json({ error: "Nama Supplier dan Gudang wajib diisi" }, { status: 400 })
@@ -21,6 +35,9 @@ export async function POST(req: Request) {
         nama,
         kontak_wa,
         link,
+        latitude: latitude !== "" && latitude !== null && latitude !== undefined ? parseFloat(latitude) : null,
+        longitude: longitude !== "" && longitude !== null && longitude !== undefined ? parseFloat(longitude) : null,
+        transactionStatus: transactionStatus === "GREEN" ? "GREEN" : "RED",
         nama_bank,
         nomor_rekening,
         atas_nama,

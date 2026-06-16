@@ -42,6 +42,9 @@ model Supplier {
   nama              String
   kontak_wa         String?
   link              String?
+  latitude          Float?
+  longitude         Float?
+  transactionStatus String   @default("RED")
   nama_bank         String?
   nomor_rekening    String?
   atas_nama         String?

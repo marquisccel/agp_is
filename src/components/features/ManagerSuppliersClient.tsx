@@ -56,6 +56,9 @@ interface Supplier {
   nama: string
   kontak_wa: string | null
   link: string | null
+  latitude: number | null
+  longitude: number | null
+  transactionStatus: string
   nama_bank: string | null
   nomor_rekening: string | null
   atas_nama: string | null
@@ -408,6 +411,13 @@ export default function ManagerSuppliersClient({
                       <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="truncate text-lg font-black tracking-[-0.02em] text-slate-950 hover:text-teal-700">
                         {supplier.nama}
                       </Link>
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
+                        supplier.transactionStatus === "GREEN"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : "border-rose-200 bg-rose-50 text-rose-700"
+                      }`}>
+                        {supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}
+                      </span>
                       <span className={`rounded-full border px-2.5 py-1 text-xs font-black ${perf.gradeColor}`}>
                         Grade {perf.grade} - {perf.gradeLabel}
                       </span>

@@ -59,6 +59,11 @@ export default async function StaffSuppliersPage() {
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-slate-800 truncate">{supplier.nama}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                    <span className={`text-xs font-semibold ${
+                      supplier.transactionStatus === "GREEN" ? "text-emerald-700" : "text-rose-600"
+                    }`}>
+                      {supplier.transactionStatus === "GREEN" ? "Status hijau" : "Status merah"}
+                    </span>
                     {supplier.kontak_wa && (
                       <span className="text-xs text-slate-500">WA {supplier.kontak_wa}</span>
                     )}

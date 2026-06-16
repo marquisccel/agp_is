@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
+import { markSupplierGreen } from "@/lib/supplierStatus"
 
 type DoubleCheckItemInput = {
   sku_name: string
@@ -202,6 +203,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
             }
           })
         }
+      }
+
+      if (newStatus === "approved") {
+        await markSupplierGreen(tx, currentPurchase.supplierId)
       }
 
       return purchase
