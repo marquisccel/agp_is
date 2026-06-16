@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers: any[], role?: string }) {
   const router = useRouter()
@@ -75,9 +76,26 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
               }`}>
                 {selectedSupplier.transactionStatus === "GREEN" ? "Status hijau" : "Status merah"}
               </span>
+              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+                hasResolvedSupplierCoordinates(selectedSupplier)
+                  ? "border-sky-200 bg-sky-50 text-sky-700"
+                  : "border-slate-200 bg-slate-50 text-slate-500"
+              }`}>
+                {hasResolvedSupplierCoordinates(selectedSupplier) ? "Map ready" : "Lokasi belum lengkap"}
+              </span>
             </div>
-            <div className="mt-1 text-xs text-slate-500">
-              Target {Number(selectedSupplier.target_bulanan_kg || 0).toLocaleString("id-ID")} kg per bulan
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span>Target {Number(selectedSupplier.target_bulanan_kg || 0).toLocaleString("id-ID")} kg per bulan</span>
+              {(selectedSupplier.link || hasResolvedSupplierCoordinates(selectedSupplier)) && (
+                <a
+                  href={getSupplierMapHref({ ...selectedSupplier })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-sky-700 hover:text-sky-800"
+                >
+                  Buka Maps
+                </a>
+              )}
             </div>
           </div>
         )}
