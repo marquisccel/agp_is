@@ -9,6 +9,7 @@ import {
   Check,
   Copy,
   CreditCard,
+  MapPin,
   MessageCircle,
   Search,
   Trash2,
@@ -63,6 +64,8 @@ interface Supplier {
   nomor_rekening: string | null
   atas_nama: string | null
   target_bulanan_kg: number
+  frekuensi_ambilan_mingguan: number
+  hari_ambilan: string | null
   warehouseId: string | null
   warehouse: {
     id: string
@@ -98,7 +101,7 @@ const MONTHS: { value: number | "all"; label: string }[] = [
 const YEARS = [2025, 2026, 2027]
 
 export default function ManagerSuppliersClient({
-  suppliers,
+  suppliers: initialSuppliers,
   warehouses,
   skuPrices = [],
 }: {
@@ -106,6 +109,7 @@ export default function ManagerSuppliersClient({
   warehouses: Warehouse[]
   skuPrices: SkuPriceStandard[]
 }) {
+  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<GradeFilter>("all")
@@ -116,6 +120,12 @@ export default function ManagerSuppliersClient({
   const [selectedYear, setSelectedYear] = useState<number>(currentYear)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [editingLocationSupplierId, setEditingLocationSupplierId] = useState<string | null>(null)
+  const [locationLink, setLocationLink] = useState("")
+  const [locationLatitude, setLocationLatitude] = useState("")
+  const [locationLongitude, setLocationLongitude] = useState("")
+  const [savingLocation, setSavingLocation] = useState(false)
+  const [locationError, setLocationError] = useState("")
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hati-hati! Apakah Anda yakin ingin menghapus data lapak ini? Lapak tidak bisa dihapus jika memiliki riwayat transaksi/kasbon.")) return
@@ -148,6 +158,79 @@ export default function ManagerSuppliersClient({
     navigator.clipboard.writeText(text)
     setCopiedId(id)
     setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  const handleOpenLocationEditor = (supplier: Supplier) => {
+    setEditingLocationSupplierId(supplier.id)
+    setLocationLink(supplier.link || "")
+    setLocationLatitude(supplier.latitude !== null ? String(supplier.latitude) : "")
+    setLocationLongitude(supplier.longitude !== null ? String(supplier.longitude) : "")
+    setLocationError("")
+  }
+
+  const handleCloseLocationEditor = () => {
+    setEditingLocationSupplierId(null)
+    setLocationLink("")
+    setLocationLatitude("")
+    setLocationLongitude("")
+    setLocationError("")
+    setSavingLocation(false)
+  }
+
+  const handleSaveLocation = async () => {
+    if (!editingLocationSupplierId) return
+
+    setSavingLocation(true)
+    setLocationError("")
+
+    try {
+      const supplier = suppliers.find((item) => item.id === editingLocationSupplierId)
+      if (!supplier) {
+        throw new Error("Supplier tidak ditemukan")
+      }
+
+      const res = await fetch(`/api/suppliers/${editingLocationSupplierId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: supplier.nama,
+          kontak_wa: supplier.kontak_wa || "",
+          link: locationLink,
+          latitude: locationLatitude,
+          longitude: locationLongitude,
+          transactionStatus: supplier.transactionStatus,
+          nama_bank: supplier.nama_bank || "",
+          nomor_rekening: supplier.nomor_rekening || "",
+          atas_nama: supplier.atas_nama || "",
+          target_bulanan_kg: supplier.target_bulanan_kg,
+          frekuensi_ambilan_mingguan: supplier.frekuensi_ambilan_mingguan,
+          hari_ambilan: supplier.hari_ambilan || "",
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Gagal menyimpan lokasi supplier")
+      }
+
+      setSuppliers((current) =>
+        current.map((item) =>
+          item.id === editingLocationSupplierId
+            ? {
+                ...item,
+                link: locationLink || null,
+                latitude: locationLatitude !== "" ? Number(locationLatitude) : null,
+                longitude: locationLongitude !== "" ? Number(locationLongitude) : null,
+              }
+            : item
+        )
+      )
+
+      handleCloseLocationEditor()
+    } catch (error: any) {
+      setLocationError(error.message || "Gagal menyimpan lokasi supplier")
+      setSavingLocation(false)
+    }
   }
 
   const getSupplierPerformance = (supplier: Supplier) => {
@@ -460,6 +543,13 @@ export default function ManagerSuppliersClient({
                       <span className={`rounded-full border px-2.5 py-1 text-xs font-black ${perf.gradeColor}`}>
                         Grade {perf.grade} - {perf.gradeLabel}
                       </span>
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
+                        supplier.latitude !== null && supplier.longitude !== null
+                          ? "border-sky-200 bg-sky-50 text-sky-700"
+                          : "border-slate-200 bg-slate-50 text-slate-500"
+                      }`}>
+                        {supplier.latitude !== null && supplier.longitude !== null ? "Map Ready" : "Lokasi belum lengkap"}
+                      </span>
                     </div>
                     <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-400">Collection Center {cleanedCity}</p>
                   </div>
@@ -512,6 +602,13 @@ export default function ManagerSuppliersClient({
                     <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button rounded-xl bg-slate-950 px-4 py-2 text-xs font-black text-white hover:bg-slate-800">
                       Detail Lapak
                     </Link>
+                    <button
+                      onClick={() => handleOpenLocationEditor(supplier)}
+                      className="premium-button flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-700 hover:bg-slate-50"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Edit Lokasi
+                    </button>
                     {supplier.kontak_wa ? (
                       <a
                         href={getWaLink(supplier.kontak_wa)}
@@ -545,6 +642,85 @@ export default function ManagerSuppliersClient({
           <Users className="mx-auto mb-3 h-10 w-10 text-slate-300" />
           <h4 className="font-black text-slate-800">Lapak tidak ditemukan</h4>
           <p className="mt-1 text-sm text-slate-400">Tidak ada mitra yang cocok dengan filter atau kata kunci pencarian.</p>
+        </div>
+      )}
+
+      {editingLocationSupplierId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/20 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Quick edit lokasi</p>
+                <h3 className="mt-1 text-xl font-black text-slate-950">Perbarui Lokasi Supplier</h3>
+                <p className="mt-1 text-sm text-slate-500">Simpan link Maps dan koordinat tanpa meninggalkan daftar lapak.</p>
+              </div>
+              <button
+                onClick={handleCloseLocationEditor}
+                className="premium-button rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Tutup
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-semibold text-slate-700">Link Google Maps</label>
+                <input
+                  type="text"
+                  value={locationLink}
+                  onChange={(event) => setLocationLink(event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-cyan-500"
+                  placeholder="https://maps.google.com/..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Latitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={locationLatitude}
+                  onChange={(event) => setLocationLatitude(event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-cyan-500"
+                  placeholder="-7.8165"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Longitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={locationLongitude}
+                  onChange={(event) => setLocationLongitude(event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-cyan-500"
+                  placeholder="112.0111"
+                />
+              </div>
+            </div>
+
+            {locationError && (
+              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                {locationError}
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                onClick={handleCloseLocationEditor}
+                className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSaveLocation}
+                disabled={savingLocation}
+                className="premium-button rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60"
+              >
+                {savingLocation ? "Menyimpan..." : "Simpan Lokasi"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
