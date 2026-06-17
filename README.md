@@ -67,3 +67,7 @@ npm run lint
 ```
 
 `npm run lint` is currently part of the stabilization work and may still surface legacy issues until the cleanup is complete.
+
+## Phase Tracking
+
+- [Fase 2 - Supplier Status](docs/phase-2-supplier-status.md)

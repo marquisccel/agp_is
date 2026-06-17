@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 // Helper to escape values for CSV
 function escape(val: unknown): string {
@@ -188,12 +189,17 @@ export async function GET(req: Request) {
     // SECTION 4: DAFTAR SUPPLIER & TARGET BULANAN
     // ==========================================
     csv += "--- SECTION 4: DAFTAR SUPPLIER & TARGET BULANAN ---\r\n"
-    csv += "Nama Supplier;Gudang Terdaftar;Kontak WA;Nama Bank;No Rekening;Atas Nama;Target Bulanan (kg)\r\n"
+    csv += "Nama Supplier;Gudang Terdaftar;Status Transaksi;Kesiapan Lokasi;Link Maps;Latitude;Longitude;Kontak WA;Nama Bank;No Rekening;Atas Nama;Target Bulanan (kg)\r\n"
 
     for (const s of suppliers) {
       csv += [
         s.nama,
         s.warehouse?.nama || "—",
+        s.transactionStatus === "GREEN" ? "Hijau - aktif" : "Merah - belum aktif",
+        hasResolvedSupplierCoordinates(s) ? "Map Ready" : "Lokasi belum lengkap",
+        getSupplierMapHref({ ...s, warehouseName: s.warehouse?.nama || null }),
+        s.latitude ?? "—",
+        s.longitude ?? "—",
         s.kontak_wa || "—",
         s.nama_bank || "—",
         s.nomor_rekening || "—",
