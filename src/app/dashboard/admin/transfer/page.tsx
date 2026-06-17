@@ -51,18 +51,21 @@ export default async function AdminTransferPage() {
       value: pendingTransfer.length.toLocaleString("id-ID"),
       sub: formatRp(pendingTransfer.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
       tone: "amber",
+      description: "Perlu upload bukti",
     },
     {
       label: "Sudah Transfer",
       value: transferred.length.toLocaleString("id-ID"),
       sub: formatRp(transferred.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
       tone: "emerald",
+      description: "Bukti tersimpan",
     },
     {
       label: "Termin Belum Lunas",
       value: pendingTermin.length.toLocaleString("id-ID"),
       sub: formatRp(pendingTermin.reduce((sum, purchase) => sum + (purchase.nominal_belum_lunas || 0), 0)),
       tone: "slate",
+      description: "Butuh follow-up",
     },
   ]
 
@@ -75,20 +78,27 @@ export default async function AdminTransferPage() {
       />
       <div className="grid gap-3 md:grid-cols-3">
         {summaryCards.map((card) => (
-          <div key={card.label} className="interactive-surface border border-slate-200/80 bg-white/85 p-5">
+          <div
+            key={card.label}
+            className="interactive-surface group relative overflow-hidden border border-slate-200/80 bg-white/86 p-5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1"
+          >
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-400">{card.label}</p>
-                <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-slate-950">{card.value}</p>
+                <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-slate-950 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5">
+                  {card.value}
+                </p>
                 <p className="mt-1 text-sm font-bold text-slate-500">{card.sub}</p>
+                <p className="mt-3 text-xs font-semibold text-slate-400">{card.description}</p>
               </div>
               <span
-                className={`mt-1 h-2.5 w-2.5 rounded-full ${
+                className={`mt-1 h-2.5 w-2.5 rounded-full shadow-sm ${
                   card.tone === "amber"
-                    ? "bg-amber-500"
+                    ? "bg-amber-400 shadow-amber-400/40"
                     : card.tone === "emerald"
-                      ? "bg-emerald-500"
-                      : "bg-slate-400"
+                      ? "bg-emerald-500 shadow-emerald-500/40"
+                      : "bg-slate-400 shadow-slate-400/40"
                 }`}
               />
             </div>
