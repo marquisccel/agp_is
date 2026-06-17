@@ -60,6 +60,7 @@ export default function TransferList({ purchases }: { purchases: any[] }) {
         {purchases.map((p) => {
           const total = p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.items.reduce((s: number, i: any) => s + i.subtotal, 0)
           const isTransferred = p.status_approval === "sudah_transfer"
+          const isPendingTermin = p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0
 
           return (
             <div
@@ -73,6 +74,11 @@ export default function TransferList({ purchases }: { purchases: any[] }) {
                   <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${isTransferred ? "bg-emerald-100 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
                     {isTransferred ? "Sudah Transfer" : "Menunggu Transfer"}
                   </span>
+                  {isPendingTermin && (
+                    <span className="ml-2 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+                      Termin belum lunas {formatRp(p.nominal_belum_lunas || 0)}
+                    </span>
+                  )}
                   <div className="truncate text-lg font-bold text-slate-900">{p.supplier.nama}</div>
                   <div className="text-xs font-medium text-slate-400">
                     {new Date(p.createdAt).toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" })} · {p.items.length} jenis barang

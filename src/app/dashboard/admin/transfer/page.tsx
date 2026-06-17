@@ -6,6 +6,14 @@ import { redirect } from "next/navigation"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 
+function formatRp(value: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
 export default async function AdminTransferPage() {
   const session = await getServerSession(authOptions)
   if (!session || !isOperationalRole(session.user.role)) {
@@ -26,6 +34,38 @@ export default async function AdminTransferPage() {
     include: { supplier: true, items: true }
   })
 
+  const getPayableValue = (purchase: (typeof purchases)[number]) =>
+    purchase.total_dibayar ??
+    purchase.total_nilai_setelah_retur ??
+    purchase.items.reduce((sum, item) => sum + (item.subtotal || 0), 0)
+
+  const pendingTransfer = purchases.filter((purchase) => purchase.status_approval === "approved")
+  const transferred = purchases.filter((purchase) => purchase.status_approval === "sudah_transfer")
+  const pendingTermin = purchases.filter(
+    (purchase) => purchase.status_pelunasan === "BELUM_LUNAS" && (purchase.nominal_belum_lunas || 0) > 0
+  )
+
+  const summaryCards = [
+    {
+      label: "Menunggu Transfer",
+      value: pendingTransfer.length.toLocaleString("id-ID"),
+      sub: formatRp(pendingTransfer.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
+      tone: "amber",
+    },
+    {
+      label: "Sudah Transfer",
+      value: transferred.length.toLocaleString("id-ID"),
+      sub: formatRp(transferred.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
+      tone: "emerald",
+    },
+    {
+      label: "Termin Belum Lunas",
+      value: pendingTermin.length.toLocaleString("id-ID"),
+      sub: formatRp(pendingTermin.reduce((sum, purchase) => sum + (purchase.nominal_belum_lunas || 0), 0)),
+      tone: "slate",
+    },
+  ]
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -33,6 +73,28 @@ export default async function AdminTransferPage() {
         title="Transfer Pembayaran"
         description="Upload dan pantau bukti transfer untuk transaksi yang sudah disetujui."
       />
+      <div className="grid gap-3 md:grid-cols-3">
+        {summaryCards.map((card) => (
+          <div key={card.label} className="interactive-surface border border-slate-200/80 bg-white/85 p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-400">{card.label}</p>
+                <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-slate-950">{card.value}</p>
+                <p className="mt-1 text-sm font-bold text-slate-500">{card.sub}</p>
+              </div>
+              <span
+                className={`mt-1 h-2.5 w-2.5 rounded-full ${
+                  card.tone === "amber"
+                    ? "bg-amber-500"
+                    : card.tone === "emerald"
+                      ? "bg-emerald-500"
+                      : "bg-slate-400"
+                }`}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
       <TransferList purchases={purchases} />
     </div>
   )

@@ -13,7 +13,7 @@ Fase 3 memperkuat kontrol pembayaran setelah transaksi pembelian valid: transfer
 | Tracking Fase 3 | Done | Dokumen ini menjadi pegangan progres payment control. |
 | Audit upload bukti transfer | Done | Upload/ganti bukti transfer tercatat di `AuditLog`. |
 | Guard pelunasan termin | Done | Hanya role operasional terkait gudang atau manager yang boleh menandai lunas. |
-| Dashboard ringkas pembayaran | Planned | Ringkasan menunggu transfer, sudah transfer, dan termin belum lunas. |
+| Dashboard ringkas pembayaran | Done | Halaman transfer menampilkan ringkasan menunggu transfer, sudah transfer, dan termin belum lunas. |
 | Export payment control | Planned | Export manager perlu membawa tanggal transfer, status pelunasan, dan nominal belum lunas secara mudah dibaca. |
 | UX transfer pembayaran | Planned | Flow upload bukti transfer perlu lebih jelas untuk transaksi lunas/termin. |
 
@@ -23,7 +23,7 @@ Fase 3 memperkuat kontrol pembayaran setelah transaksi pembelian valid: transfer
 - Penggantian bukti transfer tercatat sebagai audit event yang berbeda. Done.
 - Pelunasan termin hanya dapat dilakukan oleh role yang berwenang. Done.
 - Manager dapat membaca histori pembayaran dari detail transaksi.
-- Admin/staff dapat membedakan transaksi menunggu transfer, sudah transfer, dan termin belum lunas.
+- Admin/staff dapat membedakan transaksi menunggu transfer, sudah transfer, dan termin belum lunas. Done.
 - Export manager memuat informasi payment control yang cukup untuk rekonsiliasi.
 
 ## Phase 4 Gate
