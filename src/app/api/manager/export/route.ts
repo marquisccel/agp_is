@@ -62,7 +62,8 @@ export async function GET(req: Request) {
     // 2. Fetch valid purchases
     const purchases = await prisma.purchase.findMany({
       where: {
-        status_approval: { in: ["approved", "sudah_transfer"] }
+        status_approval: { in: ["approved", "sudah_transfer"] },
+        createdAt: { gte: monthStart, lt: monthEnd }
       },
       include: {
         warehouse: true,
@@ -81,10 +82,9 @@ export async function GET(req: Request) {
       orderBy: { nama: "asc" }
     })
 
-    const periodPurchases = purchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd)
-    const transferredPurchases = periodPurchases.filter(p => p.status_approval === "sudah_transfer")
-    const pendingTransferPurchases = periodPurchases.filter(p => p.status_approval === "approved")
-    const openTerminPurchases = periodPurchases.filter(p => p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0)
+    const transferredPurchases = purchases.filter(p => p.status_approval === "sudah_transfer")
+    const pendingTransferPurchases = purchases.filter(p => p.status_approval === "approved")
+    const openTerminPurchases = purchases.filter(p => p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0)
     const missingProofPurchases = transferredPurchases.filter(p => !p.bukti_transfer)
     const periodAuditLogs = await prisma.auditLog.findMany({
       where: {
@@ -104,6 +104,7 @@ export async function GET(req: Request) {
     // TITLE HEADER
     // ==========================================
     csv += "LAPORAN UTAMA KINERJA DAN TRANSAKSI PET RECYCLE\r\n"
+    csv += `Periode Laporan;${selectedBulan}/${selectedTahun}\r\n`
     csv += `Tanggal Ekspor;${new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}\r\n`
     csv += `Diunduh Oleh;${session.user.name} (${session.user.role})\r\n\r\n`
 
@@ -236,7 +237,7 @@ export async function GET(req: Request) {
     csv += "Periode;Transaksi Valid;Sudah Transfer;Menunggu Transfer;Termin Belum Lunas;Nominal Termin Terbuka (Rp);Bukti Transfer Kosong\r\n"
     csv += [
       `${selectedBulan}/${selectedTahun}`,
-      periodPurchases.length,
+      purchases.length,
       transferredPurchases.length,
       pendingTransferPurchases.length,
       openTerminPurchases.length,
