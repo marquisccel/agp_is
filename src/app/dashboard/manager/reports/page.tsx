@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
-import { CheckCircle2, Clock3, FileWarning, ReceiptText } from "lucide-react"
+import { Activity, CheckCircle2, Clock3, Download, FileWarning, ReceiptText } from "lucide-react"
 import ReportYearSelect from "@/components/features/ReportYearSelect"
 import PageHeader from "@/components/ui/PageHeader"
 import PrintButton from "@/components/ui/PrintButton"
@@ -23,17 +23,21 @@ function fmtTon(n: number) {
 export default async function ManagerReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tahun?: string }>
+  searchParams: Promise<{ bulan?: string; tahun?: string }>
 }) {
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== "MANAGER") {
     redirect("/login")
   }
 
-  const { tahun: qTahun } = await searchParams
+  const { bulan: qBulan, tahun: qTahun } = await searchParams
   const nowUtc = new Date()
   const now = new Date(nowUtc.getTime() + 7 * 60 * 60 * 1000) // Shifted to GMT+7 (WIB)
+  const selectedBulan = qBulan ? parseInt(qBulan) : now.getUTCMonth() + 1
   const selectedTahun = qTahun ? parseInt(qTahun) : now.getUTCFullYear()
+  const selectedMonthStart = new Date(Date.UTC(selectedTahun, selectedBulan - 1, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
+  const selectedMonthEnd = new Date(Date.UTC(selectedTahun, selectedBulan, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
+  const selectedPeriodLabel = selectedMonthStart.toLocaleDateString("id-ID", { month: "long", year: "numeric", timeZone: "Asia/Jakarta" })
 
   // Date bounds for the entire selected year (WIB timezone start of year and next year)
   const yearStart = new Date(Date.UTC(selectedTahun, 0, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
@@ -59,6 +63,16 @@ export default async function ManagerReportsPage({
 
   // 3. Fetch warehouses
   const warehouses = await prisma.warehouse.findMany({ orderBy: { nama: "asc" } })
+  const periodAuditLogs = await prisma.auditLog.findMany({
+    where: {
+      createdAt: { gte: selectedMonthStart, lt: selectedMonthEnd },
+    },
+    include: {
+      user: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: 8,
+  })
 
   // 4. Calculate month-by-month performance (Months 1-12)
   const monthlyData = Array.from({ length: 12 }, (_, monthIdx) => {
@@ -100,25 +114,27 @@ export default async function ManagerReportsPage({
 
   // 5. YTD Aggregates
   const ytdKg = monthlyData.reduce((s, m) => s + m.totalKg, 0)
-  const ytdSpent = monthlyData.reduce((s, m) => s + m.totalSpent, 0)
-  const ytdAvgPrice = ytdKg > 0 ? ytdSpent / ytdKg : 0
-  const transferredPurchases = purchases.filter(p => p.status_approval === "sudah_transfer")
-  const pendingTransferPurchases = purchases.filter(p => p.status_approval === "approved")
-  const openTerminPurchases = purchases.filter(p => p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0)
-  const missingProofPurchases = purchases.filter(p => p.status_approval === "sudah_transfer" && !p.bukti_transfer)
-  const activeMonths = monthlyData.filter(m => m.totalKg > 0)
-  const bestMonth = [...monthlyData].sort((a, b) => b.totalKg - a.totalKg)[0]
+  const periodPurchases = purchases.filter(p => p.createdAt >= selectedMonthStart && p.createdAt < selectedMonthEnd)
+  const periodItems = periodPurchases.flatMap(p => p.items)
+  const periodKg = periodItems.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
+  const periodSpent = periodPurchases.reduce(
+    (sum, p) => sum + (p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0),
+    0
+  )
+  const periodAvgPrice = periodKg > 0 ? periodSpent / periodKg : 0
+  const periodTarget = targets
+    .filter(t => t.bulan === selectedBulan)
+    .reduce((sum, t) => sum + (t.target_bulanan_pet_final || t.target_bulanan_kg || 0), 0)
+  const periodAchievement = periodTarget > 0 ? (periodKg / periodTarget) * 100 : 0
+  const transferredPurchases = periodPurchases.filter(p => p.status_approval === "sudah_transfer")
+  const pendingTransferPurchases = periodPurchases.filter(p => p.status_approval === "approved")
+  const openTerminPurchases = periodPurchases.filter(p => p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0)
+  const missingProofPurchases = periodPurchases.filter(p => p.status_approval === "sudah_transfer" && !p.bukti_transfer)
   const reportIssueCount = pendingTransferPurchases.length + openTerminPurchases.length + missingProofPurchases.length
   const reportHealthLabel = reportIssueCount === 0 ? "Siap Review" : "Perlu Follow-up"
   const reportHealthDescription = reportIssueCount === 0
-    ? "Tidak ada isu transfer, termin, atau bukti pada data laporan tahun ini."
+    ? "Tidak ada isu transfer, termin, atau bukti pada periode ini."
     : `${pendingTransferPurchases.length} menunggu transfer, ${openTerminPurchases.length} termin terbuka, ${missingProofPurchases.length} bukti kosong.`
-
-  const monthsWithTargets = monthlyData.filter(m => m.totalTarget > 0)
-  const ytdAvgAchievement =
-    monthsWithTargets.length > 0
-      ? monthsWithTargets.reduce((s, m) => s + m.achievement, 0) / monthsWithTargets.length
-      : 0
 
   // 6. CC Year Contribution Breakdown
   const ccContributions = warehouses.map(w => {
@@ -147,9 +163,17 @@ export default async function ManagerReportsPage({
           actions={(
             <>
               <ReportYearSelect
+                selectedBulan={selectedBulan}
                 selectedTahun={selectedTahun}
                 years={Array.from({ length: 5 }, (_, i) => now.getFullYear() - 2 + i)}
               />
+              <Link
+                href={`/api/manager/export?bulan=${selectedBulan}&tahun=${selectedTahun}`}
+                className="premium-button flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </Link>
               <PrintButton />
               <Link
                 href="/dashboard/manager"
@@ -164,8 +188,8 @@ export default async function ManagerReportsPage({
 
       {/* Print Title Header (Visible on print only) */}
       <div className="hidden print:block text-center border-b-2 border-slate-800 pb-4 mb-6">
-        <h1 className="text-xl font-bold text-slate-900 uppercase">REKAPITULASI LAPORAN TAHUNAN PET RECYCLE</h1>
-        <p className="text-sm text-slate-600 mt-1">Periode Penilaian: Januari – Desember {selectedTahun}</p>
+        <h1 className="text-xl font-bold text-slate-900 uppercase">REKAPITULASI LAPORAN PET RECYCLE</h1>
+        <p className="text-sm text-slate-600 mt-1">Periode Penilaian: {selectedPeriodLabel}</p>
         <p className="text-xs text-slate-400 mt-0.5">Dicetak pada: {new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}</p>
       </div>
 
@@ -174,7 +198,7 @@ export default async function ManagerReportsPage({
         <div className="grid gap-px bg-slate-100 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(180px,1fr))]">
           <div className="bg-slate-950 p-6 text-white">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Executive overview</p>
-            <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Laporan {selectedTahun}</h3>
+            <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Laporan {selectedPeriodLabel}</h3>
             <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-slate-300">
               Ringkasan siap-review untuk performa tonase, target, pembayaran, dan kualitas data operasional.
             </p>
@@ -184,42 +208,42 @@ export default async function ManagerReportsPage({
             </div>
           </div>
 
-          <ExecutiveSignal label="Bulan Aktif" value={`${activeMonths.length}/12`} description="Bulan dengan transaksi tercatat" />
-          <ExecutiveSignal label="Bulan Terkuat" value={bestMonth?.totalKg ? bestMonth.namaBulan : "-"} description={bestMonth?.totalKg ? fmtTon(bestMonth.totalKg) : "Belum ada transaksi"} />
+          <ExecutiveSignal label="Tonase Periode" value={fmtTon(periodKg)} description={`${fmtKg(periodKg)} pada periode aktif`} />
+          <ExecutiveSignal label="Pencapaian Target" value={periodTarget > 0 ? `${periodAchievement.toFixed(1)}%` : "-"} description={periodTarget > 0 ? `${fmtKg(periodTarget)} target bulanan` : "Target belum diset"} />
           <ExecutiveSignal label="Health Note" value={reportIssueCount.toLocaleString("id-ID")} description={reportHealthDescription} />
         </div>
       </section>
 
       {/* YTD Aggregate Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 print:grid-cols-4 print:gap-3">
-        {/* Tonase YTD */}
+        {/* Tonase Periode */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tonase YTD</span>
-          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtTon(ytdKg)}</div>
-          <div className="text-xs text-slate-500 mt-1">{fmtKg(ytdKg)}</div>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tonase Periode</span>
+          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtTon(periodKg)}</div>
+          <div className="text-xs text-slate-500 mt-1">{fmtKg(periodKg)}</div>
         </div>
 
-        {/* Belanja YTD */}
+        {/* Belanja Periode */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Belanja YTD</span>
-          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtRp(ytdSpent)}</div>
-          <div className="text-xs text-slate-500 mt-1">Pengeluaran Pembelian PET</div>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Belanja Periode</span>
+          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtRp(periodSpent)}</div>
+          <div className="text-xs text-slate-500 mt-1">Pengeluaran bulan aktif</div>
         </div>
 
         {/* Avg Price */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Harga Rata-rata / kg</span>
-          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtRp(ytdAvgPrice)}</div>
-          <div className="text-xs text-slate-500 mt-1">Biaya Per-kilogram YTD</div>
+          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtRp(periodAvgPrice)}</div>
+          <div className="text-xs text-slate-500 mt-1">Biaya per-kilogram periode</div>
         </div>
 
-        {/* Avg Achievement */}
+        {/* Period Achievement */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rata-rata Target YTD</span>
-          <div className={`text-2xl font-black mt-1.5 ${ytdAvgAchievement >= 100 ? 'text-emerald-600' : 'text-cyan-600'}`}>
-            {ytdAvgAchievement.toFixed(1)}%
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target Periode</span>
+          <div className={`text-2xl font-black mt-1.5 ${periodAchievement >= 100 ? 'text-emerald-600' : 'text-cyan-600'}`}>
+            {periodTarget > 0 ? `${periodAchievement.toFixed(1)}%` : "-"}
           </div>
-          <div className="text-xs text-slate-500 mt-1">Pencapaian CC Terhadap Target</div>
+          <div className="text-xs text-slate-500 mt-1">{periodTarget > 0 ? `${fmtKg(periodTarget)} target` : "Target belum diset"}</div>
         </div>
       </div>
 
@@ -253,6 +277,47 @@ export default async function ManagerReportsPage({
           description={`${openTerminPurchases.length} termin, ${missingProofPurchases.length} bukti kosong`}
           tone={openTerminPurchases.length + missingProofPurchases.length > 0 ? "rose" : "slate"}
         />
+      </div>
+
+      {/* Period Audit Trail */}
+      <div className="interactive-surface overflow-hidden border border-slate-200/80 bg-white print:hidden">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-teal-700">Audit trail</p>
+            <h3 className="mt-1 text-base font-black text-slate-950">Aktivitas Periode {selectedPeriodLabel}</h3>
+            <p className="mt-1 text-xs font-medium text-slate-500">Jejak perubahan penting yang masuk ke periode laporan.</p>
+          </div>
+          <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-black text-slate-600">
+            {periodAuditLogs.length} aktivitas
+          </div>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {periodAuditLogs.length === 0 ? (
+            <div className="px-6 py-8 text-center text-sm font-medium text-slate-400">
+              Belum ada aktivitas audit pada periode ini.
+            </div>
+          ) : (
+            periodAuditLogs.map(log => (
+              <div key={log.id} className="grid gap-3 px-6 py-4 text-sm md:grid-cols-[minmax(180px,1fr)_minmax(180px,1.2fr)_minmax(140px,0.8fr)] md:items-center">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-500">
+                    <Activity className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="font-black text-slate-950">{formatAuditAction(log.action)}</p>
+                    <p className="mt-0.5 text-xs font-medium text-slate-400">{log.table_name}</p>
+                  </div>
+                </div>
+                <div className="text-xs font-semibold text-slate-500">
+                  {log.user.nama} <span className="text-slate-300">/</span> {log.user.role}
+                </div>
+                <div className="font-mono text-xs font-semibold text-slate-400 md:text-right">
+                  {log.createdAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" })}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Monthly Recap Table */}
@@ -367,6 +432,27 @@ export default async function ManagerReportsPage({
       </div>
     </div>
   )
+}
+
+function formatAuditAction(action: string) {
+  const labels: Record<string, string> = {
+    CREATE_DRAFT: "Draft transaksi dibuat",
+    EDIT_PURCHASE: "Transaksi diperbarui",
+    SUPERVISOR_VERIFY_PURCHASE: "Penerimaan diverifikasi supervisor",
+    ADMIN_DOUBLE_CHECK: "Double check admin selesai",
+    MANAGER_APPROVE_PRICE: "Harga disetujui manager",
+    MANAGER_REJECT_PRICE: "Harga ditolak manager",
+    UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
+    REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
+    SETTLE_TERMIN: "Termin ditandai lunas",
+    REQUEST_DP: "Pengajuan kasbon dibuat",
+    CREATE_DP_REQUEST: "Pengajuan kasbon dibuat",
+    APPROVE_DP: "Kasbon disetujui",
+    REJECT_DP: "Kasbon ditolak",
+    SUPPLIER_STATUS_UPDATE: "Status supplier diperbarui",
+  }
+
+  return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())
 }
 
 function ExecutiveSignal({

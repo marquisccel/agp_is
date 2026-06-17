@@ -16,6 +16,8 @@ Fase 4 membuat laporan manager lebih siap untuk review stakeholder: angka perfor
 | Export period consistency | Done | Detail transaksi, breakdown item, dan rekonsiliasi export dikunci ke bulan/tahun yang dipilih. |
 | Audit readability | Done | Aktivitas audit penting diterjemahkan ke label yang mudah dibaca pada export. |
 | Report UX polish | Done | Halaman laporan memiliki executive overview, health status, dan snapshot integritas yang lebih siap untuk review. |
+| Report period filter | Done | Halaman laporan bisa memilih bulan dan tahun; summary, audit, print header, dan export mengikuti periode aktif. |
+| Report audit trail | Done | Halaman laporan menampilkan aktivitas audit terbaru pada periode aktif. |
 
 ## Acceptance Checklist
 
@@ -24,6 +26,8 @@ Fase 4 membuat laporan manager lebih siap untuk review stakeholder: angka perfor
 - Export manager memuat audit activity untuk periode laporan. Done.
 - Export manager hanya membawa transaksi pada periode bulan/tahun yang dipilih. Done.
 - Halaman laporan punya ringkasan executive-ready sebelum tabel detail. Done.
+- Halaman laporan bisa difilter per bulan dan tahun. Done.
+- Manager bisa melihat audit trail periode langsung dari halaman laporan. Done.
 - Laporan tetap lolos lint dan production build.
 
 ## Phase 5 Gate

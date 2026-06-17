@@ -297,6 +297,7 @@ export async function GET(req: Request) {
 function formatAuditAction(action: string) {
   const labels: Record<string, string> = {
     CREATE_DRAFT: "Draft transaksi dibuat",
+    EDIT_PURCHASE: "Transaksi diperbarui",
     SUPERVISOR_VERIFY_PURCHASE: "Penerimaan diverifikasi supervisor",
     ADMIN_DOUBLE_CHECK: "Double check admin selesai",
     MANAGER_APPROVE_PRICE: "Harga disetujui manager",
@@ -304,6 +305,7 @@ function formatAuditAction(action: string) {
     UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
     REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
     SETTLE_TERMIN: "Termin ditandai lunas",
+    REQUEST_DP: "Pengajuan kasbon dibuat",
     CREATE_DP_REQUEST: "Pengajuan kasbon dibuat",
     APPROVE_DP: "Kasbon disetujui",
     REJECT_DP: "Kasbon ditolak",
