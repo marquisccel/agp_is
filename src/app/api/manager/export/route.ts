@@ -132,7 +132,7 @@ export async function GET(req: Request) {
     // SECTION 2: DETAIL TRANSAKSI PEMBELIAN
     // ==========================================
     csv += "--- SECTION 2: DETAIL TRANSAKSI PEMBELIAN ---\r\n"
-    csv += "No. Nota;Tanggal;Gudang;Supplier;Tipe Timbangan;Berat Estimasi Lapak (kg);Berat Final Gudang (kg);Berat Final (kg);Nilai Sebelum Retur (Rp);Potongan Retur (Rp);Potongan Karung (Rp);Nilai Setelah Retur (Rp);DP Terpakai (Rp);Total Dibayar (Rp);Status;Staff Input;Admin Review;Bukti Transfer;Tanggal Transfer\r\n"
+    csv += "No. Nota;Tanggal;Gudang;Supplier;Tipe Timbangan;Berat Estimasi Lapak (kg);Berat Final Gudang (kg);Berat Final (kg);Nilai Sebelum Retur (Rp);Potongan Retur (Rp);Potongan Karung (Rp);Nilai Setelah Retur (Rp);DP Terpakai (Rp);Total Dibayar (Rp);Status Transfer;Status Pelunasan;Persentase Pembayaran (%);Nominal Pembayaran Awal (Rp);Nominal Belum Lunas (Rp);Staff Input;Admin Review;Bukti Transfer;Tanggal Transfer\r\n"
 
     for (const p of purchases) {
       const itemsWeight = p.items.reduce((s, it) => s + (it.berat_final_item || 0), 0)
@@ -154,6 +154,10 @@ export async function GET(req: Request) {
         p.dp_yang_digunakan || 0,
         p.total_dibayar || 0,
         p.status_approval === "sudah_transfer" ? "SUDAH ditransfer" : "Disetujui (Belum Transfer)",
+        p.status_pelunasan || "LUNAS",
+        p.persentase_pembayaran ?? 100,
+        p.nominal_pembayaran_awal || 0,
+        p.nominal_belum_lunas || 0,
         p.staff?.nama || "—",
         p.admin?.nama || "—",
         p.bukti_transfer ? (p.bukti_transfer.startsWith("data:") ? p.bukti_transfer : `http://${req.headers.get("host") || "localhost:3000"}${p.bukti_transfer}`) : "—",
