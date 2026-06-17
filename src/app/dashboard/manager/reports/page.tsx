@@ -3,6 +3,8 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import type { ReactNode } from "react"
+import { CheckCircle2, Clock3, FileWarning, ReceiptText } from "lucide-react"
 import ReportYearSelect from "@/components/features/ReportYearSelect"
 import PageHeader from "@/components/ui/PageHeader"
 import PrintButton from "@/components/ui/PrintButton"
@@ -100,6 +102,10 @@ export default async function ManagerReportsPage({
   const ytdKg = monthlyData.reduce((s, m) => s + m.totalKg, 0)
   const ytdSpent = monthlyData.reduce((s, m) => s + m.totalSpent, 0)
   const ytdAvgPrice = ytdKg > 0 ? ytdSpent / ytdKg : 0
+  const transferredPurchases = purchases.filter(p => p.status_approval === "sudah_transfer")
+  const pendingTransferPurchases = purchases.filter(p => p.status_approval === "approved")
+  const openTerminPurchases = purchases.filter(p => p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0)
+  const missingProofPurchases = purchases.filter(p => p.status_approval === "sudah_transfer" && !p.bukti_transfer)
 
   const monthsWithTargets = monthlyData.filter(m => m.totalTarget > 0)
   const ytdAvgAchievement =
@@ -187,6 +193,38 @@ export default async function ManagerReportsPage({
           </div>
           <div className="text-xs text-slate-500 mt-1">Pencapaian CC Terhadap Target</div>
         </div>
+      </div>
+
+      {/* Report Integrity Snapshot */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4 print:grid-cols-4 print:gap-2">
+        <ReportIntegrityCard
+          icon={<ReceiptText className="h-4 w-4" />}
+          label="Transaksi Valid"
+          value={purchases.length.toLocaleString("id-ID")}
+          description="Approved dan sudah transfer"
+          tone="slate"
+        />
+        <ReportIntegrityCard
+          icon={<CheckCircle2 className="h-4 w-4" />}
+          label="Sudah Transfer"
+          value={transferredPurchases.length.toLocaleString("id-ID")}
+          description="Bukti pembayaran selesai"
+          tone="emerald"
+        />
+        <ReportIntegrityCard
+          icon={<Clock3 className="h-4 w-4" />}
+          label="Menunggu Transfer"
+          value={pendingTransferPurchases.length.toLocaleString("id-ID")}
+          description="Perlu follow-up admin"
+          tone={pendingTransferPurchases.length > 0 ? "amber" : "slate"}
+        />
+        <ReportIntegrityCard
+          icon={<FileWarning className="h-4 w-4" />}
+          label="Data Perlu Cek"
+          value={(openTerminPurchases.length + missingProofPurchases.length).toLocaleString("id-ID")}
+          description={`${openTerminPurchases.length} termin, ${missingProofPurchases.length} bukti kosong`}
+          tone={openTerminPurchases.length + missingProofPurchases.length > 0 ? "rose" : "slate"}
+        />
       </div>
 
       {/* Monthly Recap Table */}
@@ -298,6 +336,40 @@ export default async function ManagerReportsPage({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ReportIntegrityCard({
+  icon,
+  label,
+  value,
+  description,
+  tone,
+}: {
+  icon: ReactNode
+  label: string
+  value: string
+  description: string
+  tone: "slate" | "emerald" | "amber" | "rose"
+}) {
+  const toneClass = {
+    slate: "bg-white text-slate-500 border-slate-200",
+    emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    amber: "bg-amber-50 text-amber-700 border-amber-100",
+    rose: "bg-rose-50 text-rose-700 border-rose-100",
+  }[tone]
+
+  return (
+    <div className="interactive-surface flex items-center gap-4 border border-slate-200/80 bg-white p-4 print:shadow-none">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${toneClass}`}>
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</p>
+        <p className="mt-1 text-xl font-black tracking-[-0.03em] text-slate-950">{value}</p>
+        <p className="mt-0.5 truncate text-xs font-medium text-slate-500">{description}</p>
       </div>
     </div>
   )

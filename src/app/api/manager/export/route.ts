@@ -81,6 +81,22 @@ export async function GET(req: Request) {
       orderBy: { nama: "asc" }
     })
 
+    const periodPurchases = purchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd)
+    const transferredPurchases = periodPurchases.filter(p => p.status_approval === "sudah_transfer")
+    const pendingTransferPurchases = periodPurchases.filter(p => p.status_approval === "approved")
+    const openTerminPurchases = periodPurchases.filter(p => p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0)
+    const missingProofPurchases = transferredPurchases.filter(p => !p.bukti_transfer)
+    const periodAuditLogs = await prisma.auditLog.findMany({
+      where: {
+        createdAt: { gte: monthStart, lt: monthEnd }
+      },
+      include: {
+        user: true
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100
+    })
+
     // 4. Construct CSV Content
     let csv = "sep=;\r\n" // Force Excel to use semicolon separator
 
@@ -211,6 +227,55 @@ export async function GET(req: Request) {
         s.target_bulanan_kg || 0
       ].map(escape).join(";") + "\r\n"
     }
+    csv += "\r\n"
+
+    // ==========================================
+    // SECTION 5: REKONSILIASI PAYMENT CONTROL
+    // ==========================================
+    csv += "--- SECTION 5: REKONSILIASI PAYMENT CONTROL ---\r\n"
+    csv += "Periode;Transaksi Valid;Sudah Transfer;Menunggu Transfer;Termin Belum Lunas;Nominal Termin Terbuka (Rp);Bukti Transfer Kosong\r\n"
+    csv += [
+      `${selectedBulan}/${selectedTahun}`,
+      periodPurchases.length,
+      transferredPurchases.length,
+      pendingTransferPurchases.length,
+      openTerminPurchases.length,
+      openTerminPurchases.reduce((sum, p) => sum + (p.nominal_belum_lunas || 0), 0),
+      missingProofPurchases.length
+    ].map(escape).join(";") + "\r\n\r\n"
+
+    if (openTerminPurchases.length > 0) {
+      csv += "Daftar Termin Belum Lunas\r\n"
+      csv += "No. Nota;Tanggal;Gudang;Supplier;Total Dibayar (Rp);Nominal Belum Lunas (Rp);Persentase Pembayaran (%)\r\n"
+      for (const p of openTerminPurchases) {
+        csv += [
+          p.nomor_nota || p.id.slice(0, 8).toUpperCase(),
+          p.tanggal,
+          p.warehouse?.nama || "—",
+          p.supplier?.nama || "—",
+          p.total_dibayar || 0,
+          p.nominal_belum_lunas || 0,
+          p.persentase_pembayaran ?? 100
+        ].map(escape).join(";") + "\r\n"
+      }
+      csv += "\r\n"
+    }
+
+    // ==========================================
+    // SECTION 6: AUDIT ACTIVITY PERIODE
+    // ==========================================
+    csv += "--- SECTION 6: AUDIT ACTIVITY PERIODE ---\r\n"
+    csv += "Waktu;User;Role;Aktivitas;Tabel;Record ID\r\n"
+    for (const log of periodAuditLogs) {
+      csv += [
+        log.createdAt,
+        log.user?.nama || "—",
+        log.user?.role || "—",
+        formatAuditAction(log.action),
+        log.table_name,
+        log.record_id
+      ].map(escape).join(";") + "\r\n"
+    }
 
     // Add UTF-8 BOM so Excel opens with correct character encoding
     const BOM = "\uFEFF"
@@ -226,4 +291,23 @@ export async function GET(req: Request) {
     console.error("Error generating CSV export:", error)
     return new Response("Internal Server Error", { status: 500 })
   }
+}
+
+function formatAuditAction(action: string) {
+  const labels: Record<string, string> = {
+    CREATE_DRAFT: "Draft transaksi dibuat",
+    SUPERVISOR_VERIFY_PURCHASE: "Penerimaan diverifikasi supervisor",
+    ADMIN_DOUBLE_CHECK: "Double check admin selesai",
+    MANAGER_APPROVE_PRICE: "Harga disetujui manager",
+    MANAGER_REJECT_PRICE: "Harga ditolak manager",
+    UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
+    REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
+    SETTLE_TERMIN: "Termin ditandai lunas",
+    CREATE_DP_REQUEST: "Pengajuan kasbon dibuat",
+    APPROVE_DP: "Kasbon disetujui",
+    REJECT_DP: "Kasbon ditolak",
+    SUPPLIER_STATUS_UPDATE: "Status supplier diperbarui",
+  }
+
+  return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())
 }
