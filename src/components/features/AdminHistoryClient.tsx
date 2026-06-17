@@ -59,7 +59,7 @@ export default function AdminHistoryClient({
     { value: "menunggu_double_cek", label: "Menunggu Double Cek" },
     { value: "menunggu_approval_harga", label: "Menunggu Approval Harga" },
     { value: "approved", label: "Disetujui (Menunggu Transfer)" },
-    { value: "sudah_transfer", label: "Sudah Ditransfer" },
+    { value: "sudah_transfer", label: "Sudah Transfer" },
     { value: "rejected", label: "Ditolak" },
     { value: "dibatalkan", label: "Dibatalkan" },
   ]

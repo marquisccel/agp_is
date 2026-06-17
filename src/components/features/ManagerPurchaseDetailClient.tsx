@@ -159,7 +159,7 @@ export default function ManagerPurchaseDetailClient({
       desc: "Telah disetujui manager. Menunggu transfer pembayaran dari Admin."
     },
     sudah_transfer: {
-      label: "Sudah Ditransfer",
+      label: "Sudah Transfer",
       cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
       desc: "Pembayaran telah ditransfer oleh Admin ke rekening supplier."
     },
@@ -199,6 +199,24 @@ export default function ManagerPurchaseDetailClient({
 
   // Render method label
   const methodLabel = purchase.metode_pembayaran_terpilih === "TIMBANGAN_GUDANG" ? "Timbangan Gudang (CC)" : "Timbangan Lapak (Supplier)"
+  const netValue = purchase.total_nilai_setelah_retur || purchase.total_dibayar || 0
+  const payableValue = purchase.total_dibayar || netValue
+  const initialPayment = purchase.nominal_pembayaran_awal ?? payableValue
+  const remainingPayment = purchase.nominal_belum_lunas || 0
+  const paymentPercent = purchase.persentase_pembayaran ?? (remainingPayment > 0 && payableValue > 0 ? Math.round((initialPayment / payableValue) * 100) : 100)
+  const isTransferred = purchase.status_approval === "sudah_transfer"
+  const hasOpenTermin = purchase.status_pelunasan === "BELUM_LUNAS" && remainingPayment > 0
+  const isPendingTermin = isTransferred && hasOpenTermin
+  const displayedPaymentPercent = !isTransferred ? 0 : isPendingTermin ? paymentPercent : 100
+  const paymentStatusLabel = !isTransferred ? "Menunggu Transfer" : isPendingTermin ? "Termin Belum Lunas" : "Sudah Transfer"
+  const paymentStatusClass = isPendingTermin
+    ? "border-amber-200 bg-amber-50 text-amber-700"
+    : isTransferred
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : "border-slate-200 bg-slate-50 text-slate-600"
+  const paymentAuditLogs = auditLogs.filter(log =>
+    ["UPLOAD_TRANSFER_PROOF", "REPLACE_TRANSFER_PROOF", "SETTLE_TERMIN"].includes(log.action)
+  )
 
   return (
     <div className="premium-workflow space-y-6">
@@ -417,6 +435,63 @@ export default function ManagerPurchaseDetailClient({
 
         {/* Right Column - Financial Summary, Transaction actors, Audit logs */}
         <div className="space-y-6">
+          {/* Payment Control */}
+          <div className="interactive-surface overflow-hidden border border-slate-200/80 bg-white p-0">
+            <div className="bg-slate-950 p-5 text-white">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Payment control</p>
+                  <h3 className="mt-1 text-lg font-black">{paymentStatusLabel}</h3>
+                </div>
+                <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${paymentStatusClass}`}>
+                  {displayedPaymentPercent}%
+                </span>
+              </div>
+              <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${isPendingTermin ? "bg-amber-400" : "bg-emerald-400"}`}
+                  style={{ width: `${Math.min(100, Math.max(0, displayedPaymentPercent))}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-px bg-slate-100 text-xs md:grid-cols-2">
+              <PaymentMetric label="Total Tagihan" value={fmtRp(payableValue)} />
+              <PaymentMetric label="Dibayar Awal" value={fmtRp(initialPayment)} />
+              <PaymentMetric label="Sisa Termin" value={fmtRp(remainingPayment)} tone={isPendingTermin ? "amber" : "slate"} />
+              <PaymentMetric label="Tanggal Transfer" value={purchase.tanggal_transfer ? new Date(purchase.tanggal_transfer).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" }) : "-"} />
+            </div>
+
+            <div className="border-t border-slate-100 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black text-slate-900">Bukti transfer</p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    {purchase.bukti_transfer ? "Bukti pembayaran sudah tersimpan." : "Belum ada bukti transfer yang diunggah."}
+                  </p>
+                </div>
+                {purchase.bukti_transfer ? (
+                  <button
+                    onClick={() => setShowProof(!showProof)}
+                    className="premium-button rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-50"
+                  >
+                    {showProof ? "Tutup" : "Lihat bukti"}
+                  </button>
+                ) : (
+                  <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500">
+                    Pending
+                  </span>
+                )}
+              </div>
+              {showProof && purchase.bukti_transfer && (
+                <div className="mt-4 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={purchase.bukti_transfer} alt="Bukti Transfer" className="max-h-96 w-full object-contain" />
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Financial Summary */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
@@ -481,24 +556,24 @@ export default function ManagerPurchaseDetailClient({
             </div>
 
             {/* Payment Percentage Details */}
-            {purchase.persentase_pembayaran !== null && purchase.persentase_pembayaran < 100 && (
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs space-y-1 text-slate-700">
+            {(purchase.persentase_pembayaran !== null || remainingPayment > 0) && (
+              <div className={`${isPendingTermin ? "bg-amber-50 border-amber-100" : "bg-emerald-50 border-emerald-100"} border rounded-xl p-3 text-xs space-y-1 text-slate-700`}>
                 <div className="flex justify-between font-semibold">
                   <span>Skema Pembayaran</span>
-                  <span className="text-amber-800">{purchase.persentase_pembayaran}% Awal</span>
+                  <span className={isPendingTermin ? "text-amber-800" : "text-emerald-700"}>{paymentPercent}% Awal</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Dibayar Awal</span>
-                  <span className="font-mono">{fmtRp(purchase.nominal_pembayaran_awal || 0)}</span>
+                  <span className="font-mono">{fmtRp(initialPayment)}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
                   <span>Sisa Belum Lunas</span>
-                  <span className="font-mono text-rose-600">{fmtRp(purchase.nominal_belum_lunas || 0)}</span>
+                  <span className={`font-mono ${isPendingTermin ? "text-rose-600" : "text-emerald-600"}`}>{fmtRp(remainingPayment)}</span>
                 </div>
-                <div className="flex justify-between pt-1 border-t border-amber-200/50">
+                <div className={`flex justify-between pt-1 border-t ${isPendingTermin ? "border-amber-200/50" : "border-emerald-200/50"}`}>
                   <span>Status Pelunasan</span>
-                  <span className={`font-bold uppercase ${purchase.status_pelunasan === "LUNAS" ? "text-emerald-600" : "text-rose-600"}`}>
-                    {purchase.status_pelunasan || "BELUM_LUNAS"}
+                  <span className={`font-bold uppercase ${isPendingTermin ? "text-rose-600" : "text-emerald-600"}`}>
+                    {isPendingTermin ? "BELUM LUNAS" : "LUNAS"}
                   </span>
                 </div>
               </div>
@@ -532,35 +607,6 @@ export default function ManagerPurchaseDetailClient({
             </div>
           </div>
 
-          {/* Proof of Transfer Image if exists */}
-          {purchase.bukti_transfer && (
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-3">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-                <ImageIcon className="w-4 h-4 text-cyan-600" />
-                Bukti Transfer
-              </h3>
-              <button
-                onClick={() => setShowProof(!showProof)}
-                className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 py-2.5 rounded-xl text-xs font-bold transition-all border border-slate-200 flex items-center justify-center gap-2"
-              >
-                {showProof ? "Sembunyikan Bukti" : "Tampilkan Bukti Transfer"}
-              </button>
-              {showProof && (
-                <div className="border border-slate-100 rounded-xl overflow-hidden mt-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={purchase.bukti_transfer}
-                    alt="Bukti Transfer"
-                    className="w-full h-auto max-h-96 object-contain"
-                  />
-                  <div className="p-3 bg-slate-50 text-[10px] text-slate-400 font-mono text-center truncate">
-                    {purchase.bukti_transfer}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Audit Logs Timeline */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-50 pb-2">
@@ -569,11 +615,36 @@ export default function ManagerPurchaseDetailClient({
             </h3>
 
             {auditLogs.length > 0 ? (
-              <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
+              <div className="space-y-5">
+                {paymentAuditLogs.length > 0 && (
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">Riwayat pembayaran</p>
+                    <div className="mt-3 space-y-3">
+                      {paymentAuditLogs.map(log => (
+                        <div key={log.id} className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-xs font-black text-slate-900">{formatAuditAction(log.action)}</p>
+                            <p className="mt-0.5 text-[11px] font-medium text-slate-500">
+                              {log.user.nama} ({log.user.role})
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-right font-mono text-[10px] text-slate-400">
+                            {new Date(log.createdAt).toLocaleString("id-ID", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                              timeZone: "Asia/Jakarta"
+                            })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
                 {auditLogs.map(log => (
                   <div key={log.id} className="relative pl-6 space-y-1">
                     <div className="absolute left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-cyan-100 border-2 border-white ring-2 ring-cyan-500/10 flex items-center justify-center" />
-                    <div className="text-xs font-bold text-slate-800">{log.action}</div>
+                    <div className="text-xs font-bold text-slate-800">{formatAuditAction(log.action)}</div>
                     <div className="text-[10px] text-slate-400">
                       Oleh: <span className="font-semibold text-slate-600">{log.user.nama} ({log.user.role})</span>
                     </div>
@@ -586,6 +657,7 @@ export default function ManagerPurchaseDetailClient({
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
             ) : (
               <p className="text-xs text-slate-400 italic text-center py-4">Tidak ada riwayat perubahan terekam.</p>
@@ -595,4 +667,36 @@ export default function ManagerPurchaseDetailClient({
       </div>
     </div>
   )
+}
+
+function PaymentMetric({
+  label,
+  value,
+  tone = "slate",
+}: {
+  label: string
+  value: string
+  tone?: "slate" | "amber"
+}) {
+  return (
+    <div className="bg-white p-4">
+      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</p>
+      <p className={`mt-1 font-mono text-sm font-black ${tone === "amber" ? "text-amber-700" : "text-slate-950"}`}>{value}</p>
+    </div>
+  )
+}
+
+function formatAuditAction(action: string) {
+  const labels: Record<string, string> = {
+    UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
+    REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
+    SETTLE_TERMIN: "Termin ditandai lunas",
+    CREATE_DRAFT: "Draft transaksi dibuat",
+    SUPERVISOR_VERIFY_PURCHASE: "Penerimaan diverifikasi supervisor",
+    ADMIN_DOUBLE_CHECK: "Double check admin selesai",
+    MANAGER_APPROVE_PRICE: "Harga disetujui manager",
+    MANAGER_REJECT_PRICE: "Harga ditolak manager",
+  }
+
+  return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())
 }

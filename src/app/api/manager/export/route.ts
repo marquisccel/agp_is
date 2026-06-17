@@ -153,7 +153,7 @@ export async function GET(req: Request) {
         p.total_nilai_setelah_retur || 0,
         p.dp_yang_digunakan || 0,
         p.total_dibayar || 0,
-        p.status_approval === "sudah_transfer" ? "SUDAH ditransfer" : "Disetujui (Belum Transfer)",
+        p.status_approval === "sudah_transfer" ? "Sudah Transfer" : "Disetujui (Menunggu Transfer)",
         p.status_pelunasan || "LUNAS",
         p.persentase_pembayaran ?? 100,
         p.nominal_pembayaran_awal || 0,
