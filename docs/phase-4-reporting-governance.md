@@ -15,7 +15,7 @@ Fase 4 membuat laporan manager lebih siap untuk review stakeholder: angka perfor
 | Export reconciliation sections | Done | Export manager membawa ringkasan rekonsiliasi pembayaran dan audit activity. |
 | Export period consistency | Done | Detail transaksi, breakdown item, dan rekonsiliasi export dikunci ke bulan/tahun yang dipilih. |
 | Audit readability | Done | Aktivitas audit penting diterjemahkan ke label yang mudah dibaca pada export. |
-| Report UX polish | Planned | Halaman laporan perlu dibuat lebih executive-ready, clean, dan konsisten dengan Apple-style dashboard. |
+| Report UX polish | Done | Halaman laporan memiliki executive overview, health status, dan snapshot integritas yang lebih siap untuk review. |
 
 ## Acceptance Checklist
 
@@ -23,6 +23,7 @@ Fase 4 membuat laporan manager lebih siap untuk review stakeholder: angka perfor
 - Export manager memuat ringkasan rekonsiliasi pembayaran. Done.
 - Export manager memuat audit activity untuk periode laporan. Done.
 - Export manager hanya membawa transaksi pada periode bulan/tahun yang dipilih. Done.
+- Halaman laporan punya ringkasan executive-ready sebelum tabel detail. Done.
 - Laporan tetap lolos lint dan production build.
 
 ## Phase 5 Gate

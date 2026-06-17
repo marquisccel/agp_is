@@ -106,6 +106,13 @@ export default async function ManagerReportsPage({
   const pendingTransferPurchases = purchases.filter(p => p.status_approval === "approved")
   const openTerminPurchases = purchases.filter(p => p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0)
   const missingProofPurchases = purchases.filter(p => p.status_approval === "sudah_transfer" && !p.bukti_transfer)
+  const activeMonths = monthlyData.filter(m => m.totalKg > 0)
+  const bestMonth = [...monthlyData].sort((a, b) => b.totalKg - a.totalKg)[0]
+  const reportIssueCount = pendingTransferPurchases.length + openTerminPurchases.length + missingProofPurchases.length
+  const reportHealthLabel = reportIssueCount === 0 ? "Siap Review" : "Perlu Follow-up"
+  const reportHealthDescription = reportIssueCount === 0
+    ? "Tidak ada isu transfer, termin, atau bukti pada data laporan tahun ini."
+    : `${pendingTransferPurchases.length} menunggu transfer, ${openTerminPurchases.length} termin terbuka, ${missingProofPurchases.length} bukti kosong.`
 
   const monthsWithTargets = monthlyData.filter(m => m.totalTarget > 0)
   const ytdAvgAchievement =
@@ -161,6 +168,27 @@ export default async function ManagerReportsPage({
         <p className="text-sm text-slate-600 mt-1">Periode Penilaian: Januari – Desember {selectedTahun}</p>
         <p className="text-xs text-slate-400 mt-0.5">Dicetak pada: {new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}</p>
       </div>
+
+      {/* Executive Overview */}
+      <section className="interactive-surface overflow-hidden border border-slate-200/80 bg-white print:hidden">
+        <div className="grid gap-px bg-slate-100 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(180px,1fr))]">
+          <div className="bg-slate-950 p-6 text-white">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Executive overview</p>
+            <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Laporan {selectedTahun}</h3>
+            <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-slate-300">
+              Ringkasan siap-review untuk performa tonase, target, pembayaran, dan kualitas data operasional.
+            </p>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-black">
+              <span className={`h-2 w-2 rounded-full ${reportIssueCount === 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
+              {reportHealthLabel}
+            </div>
+          </div>
+
+          <ExecutiveSignal label="Bulan Aktif" value={`${activeMonths.length}/12`} description="Bulan dengan transaksi tercatat" />
+          <ExecutiveSignal label="Bulan Terkuat" value={bestMonth?.totalKg ? bestMonth.namaBulan : "-"} description={bestMonth?.totalKg ? fmtTon(bestMonth.totalKg) : "Belum ada transaksi"} />
+          <ExecutiveSignal label="Health Note" value={reportIssueCount.toLocaleString("id-ID")} description={reportHealthDescription} />
+        </div>
+      </section>
 
       {/* YTD Aggregate Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 print:grid-cols-4 print:gap-3">
@@ -337,6 +365,24 @@ export default async function ManagerReportsPage({
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function ExecutiveSignal({
+  label,
+  value,
+  description,
+}: {
+  label: string
+  value: string
+  description: string
+}) {
+  return (
+    <div className="bg-white p-6">
+      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">{label}</p>
+      <p className="mt-2 text-2xl font-black tracking-[-0.04em] text-slate-950">{value}</p>
+      <p className="mt-2 text-xs font-medium leading-5 text-slate-500">{description}</p>
     </div>
   )
 }
