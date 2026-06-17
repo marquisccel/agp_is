@@ -71,3 +71,4 @@ npm run lint
 ## Phase Tracking
 
 - [Fase 2 - Supplier Status](docs/phase-2-supplier-status.md)
+- [Fase 3 - Payment Control](docs/phase-3-payment-control.md)

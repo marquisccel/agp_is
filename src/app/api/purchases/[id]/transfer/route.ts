@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { isOperationalRole } from "@/lib/roles"
 
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const formData = await req.formData()
     const file = formData.get("bukti") as File | null
 
+    if (!file && !purchase.bukti_transfer) {
+      return NextResponse.json({ error: "Bukti transfer wajib diupload untuk transfer pertama." }, { status: 400 })
+    }
+
+    if (file && file.size > 2 * 1024 * 1024) {
+      return NextResponse.json({ error: "Ukuran bukti transfer maksimal 2 MB." }, { status: 400 })
+    }
+
     let buktiUrl = purchase.bukti_transfer
     if (file) {
       const bytes = await file.arrayBuffer()
@@ -42,6 +51,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         bukti_transfer: buktiUrl,
         tanggal_transfer: new Date()
       }
+    })
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: purchase.bukti_transfer ? "REPLACE_TRANSFER_PROOF" : "UPLOAD_TRANSFER_PROOF",
+      table_name: "Purchase",
+      record_id: purchaseId,
+      old_data: {
+        status_approval: purchase.status_approval,
+        bukti_transfer: purchase.bukti_transfer ? "available" : null,
+        tanggal_transfer: purchase.tanggal_transfer,
+      },
+      new_data: {
+        status_approval: updated.status_approval,
+        bukti_transfer: updated.bukti_transfer ? "available" : null,
+        tanggal_transfer: updated.tanggal_transfer,
+        changedByRole: session.user.role,
+      },
     })
 
     return NextResponse.json(updated)

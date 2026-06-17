@@ -4,11 +4,12 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
+import { isOperationalRole } from "@/lib/roles"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user) {
+    if (!session || (!isOperationalRole(session.user.role) && session.user.role !== "MANAGER")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -19,6 +20,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     if (!purchase) {
       return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
+    }
+
+    if (isOperationalRole(session.user.role) && purchase.warehouseId !== session.user.warehouseId) {
+      return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
+    }
+
+    if (purchase.status_pelunasan === "LUNAS") {
+      return NextResponse.json({ error: "Transaksi ini sudah lunas." }, { status: 400 })
+    }
+
+    if (!purchase.nominal_belum_lunas || purchase.nominal_belum_lunas <= 0) {
+      return NextResponse.json({ error: "Transaksi ini tidak memiliki nominal termin yang perlu dilunasi." }, { status: 400 })
     }
 
     // Update to LUNAS status
