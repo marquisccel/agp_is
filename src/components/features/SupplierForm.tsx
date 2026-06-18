@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import ElegantSelect from "@/components/ui/ElegantSelect"
-import { parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
+import { isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 
 const KNOWN_BANKS = ["BCA","BNI","BRI","BSI","BTN","Mandiri","CIMB Niaga","Danamon","Permata","Panin","OCBC NISP","Maybank","Mega","Muamalat","Jago","SeaBank","Jenius","Gopay","OVO","Dana"]
 const BANK_OPTIONS = [
@@ -79,6 +79,7 @@ export default function SupplierForm({
     latitude === "" && longitude === ""
       ? parseCoordinatesFromMapLink(link)
       : null
+  const needsManualCoordinates = isShortGoogleMapsLink(link) && !inferredCoordinates && latitude === "" && longitude === ""
   const warehouseOptions = [
     { value: "", label: "Pilih lokasi gudang" },
     ...warehouses.map(w => ({ value: w.id as string, label: `Collection Center ${w.nama.replace(/^Gudang\s+/i, "")}` })),
@@ -217,6 +218,11 @@ export default function SupplierForm({
           {inferredCoordinates && (
             <p className="text-xs font-medium text-sky-700">
               Koordinat terdeteksi otomatis dari link ini: {inferredCoordinates.latitude}, {inferredCoordinates.longitude}
+            </p>
+          )}
+          {needsManualCoordinates && (
+            <p className="rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
+              Link pendek Google Maps tidak menyimpan koordinat di URL. Isi latitude dan longitude agar preview peta aktif.
             </p>
           )}
         </div>

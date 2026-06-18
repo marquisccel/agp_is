@@ -2,6 +2,27 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
+
+function parseMonth(value: string | number | null | undefined, fallback: number) {
+  const month = value === null || value === undefined || value === ""
+    ? fallback
+    : positiveInteger(value, "Bulan")
+  if (month < 1 || month > 12) {
+    throw new Error("Bulan harus berada di rentang 1-12.")
+  }
+  return month
+}
+
+function parseYear(value: string | number | null | undefined, fallback: number) {
+  const year = value === null || value === undefined || value === ""
+    ? fallback
+    : positiveInteger(value, "Tahun")
+  if (year < 2000 || year > 2100) {
+    throw new Error("Tahun harus berada di rentang 2000-2100.")
+  }
+  return year
+}
 
 // GET all warehouse targets with monthly and yearly filter
 export async function GET(req: Request) {
@@ -11,8 +32,8 @@ export async function GET(req: Request) {
     const qTahun = searchParams.get("tahun")
 
     const where: { bulan?: number; tahun?: number } = {}
-    if (qBulan) where.bulan = parseInt(qBulan)
-    if (qTahun) where.tahun = parseInt(qTahun)
+    if (qBulan) where.bulan = parseMonth(qBulan, new Date().getMonth() + 1)
+    if (qTahun) where.tahun = parseYear(qTahun, new Date().getFullYear())
 
     const targets = await prisma.warehouseTarget.findMany({
       where,
@@ -22,7 +43,7 @@ export async function GET(req: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error"
     console.error("[TARGETS GET]", error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: message.includes("harus") ? 400 : 500 })
   }
 }
 
@@ -57,25 +78,24 @@ export async function PUT(req: Request) {
     }
 
     const now = new Date()
-    const targetBulan = bulan ? parseInt(bulan) : now.getMonth() + 1
-    const targetTahun = tahun ? parseInt(tahun) : now.getFullYear()
+    const targetBulan = parseMonth(bulan, now.getMonth() + 1)
+    const targetTahun = parseYear(tahun, now.getFullYear())
 
     const userId = session.user.id
 
-    // Helper: parse float safely
-    const pf = (v: unknown) => (v !== undefined && v !== null && v !== "")
-      ? (parseFloat(String(v)) || 0) : 0
+    const targetNumber = (v: number | string | null | undefined, fieldName: string) =>
+      nonNegativeNumber(v, fieldName)
 
     const sharedData = {
-      target_harian_kg: pf(target_harian_kg),
-      target_mingguan_kg: pf(target_mingguan_kg),
-      target_bulanan_kg: pf(target_bulanan_kg),
-      target_harian_pet_final: pf(target_harian_pet_final),
-      target_mingguan_pet_final: pf(target_mingguan_pet_final),
-      target_bulanan_pet_final: pf(target_bulanan_pet_final),
-      target_harian_bale_press: pf(target_harian_bale_press),
-      target_mingguan_bale_press: pf(target_mingguan_bale_press),
-      target_bulanan_bale_press: pf(target_bulanan_bale_press),
+      target_harian_kg: targetNumber(target_harian_kg, "Target harian"),
+      target_mingguan_kg: targetNumber(target_mingguan_kg, "Target mingguan"),
+      target_bulanan_kg: targetNumber(target_bulanan_kg, "Target bulanan"),
+      target_harian_pet_final: targetNumber(target_harian_pet_final, "Target harian PET Final"),
+      target_mingguan_pet_final: targetNumber(target_mingguan_pet_final, "Target mingguan PET Final"),
+      target_bulanan_pet_final: targetNumber(target_bulanan_pet_final, "Target bulanan PET Final"),
+      target_harian_bale_press: targetNumber(target_harian_bale_press, "Target harian Bale Press"),
+      target_mingguan_bale_press: targetNumber(target_mingguan_bale_press, "Target mingguan Bale Press"),
+      target_bulanan_bale_press: targetNumber(target_bulanan_bale_press, "Target bulanan Bale Press"),
       ...(userId ? { updatedByUserId: userId } : {}),
     }
 
@@ -121,6 +141,6 @@ export async function PUT(req: Request) {
     const message = error instanceof Error ? error.message : "Unknown error"
     const stack = error instanceof Error ? error.stack : undefined
     console.error("[TARGETS PUT] error:", message, stack)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: message.includes("harus") ? 400 : 500 })
   }
 }

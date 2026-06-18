@@ -5,6 +5,15 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { isOperationalRole } from "@/lib/roles"
+import { mkdir, writeFile } from "fs/promises"
+import path from "path"
+
+const ALLOWED_PROOF_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "application/pdf": "pdf",
+}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -37,11 +46,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     let buktiUrl = purchase.bukti_transfer
     if (file) {
+      const mimeType = file.type || "image/jpeg"
+      const extension = ALLOWED_PROOF_TYPES[mimeType]
+      if (!extension) {
+        return NextResponse.json({ error: "Format bukti transfer harus JPG, PNG, WEBP, atau PDF." }, { status: 400 })
+      }
+
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      const mimeType = file.type || "image/jpeg"
-      const base64 = buffer.toString("base64")
-      buktiUrl = `data:${mimeType};base64,${base64}`
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "transfer-proofs")
+      await mkdir(uploadDir, { recursive: true })
+
+      const fileName = `${purchaseId}-${Date.now()}.${extension}`
+      await writeFile(path.join(uploadDir, fileName), buffer)
+      buktiUrl = `/uploads/transfer-proofs/${fileName}`
     }
 
     const updated = await prisma.purchase.update({

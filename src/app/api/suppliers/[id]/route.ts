@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
+import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -46,13 +48,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Supplier tidak ditemukan" }, { status: 404 })
     }
 
-    // If STAFF, ensure supplier belongs to their warehouse
-    if (role === "STAFF") {
-      const staffWarehouseId = session.user.warehouseId
-      if (existing.warehouseId !== staffWarehouseId) {
+    // Staff/admin can only maintain suppliers in their own warehouse.
+    if (isOperationalRole(role)) {
+      if (existing.warehouseId !== session.user.warehouseId) {
         return NextResponse.json({ error: "Tidak memiliki akses ke supplier ini" }, { status: 403 })
       }
     }
+
+    const targetBulananKg = nonNegativeNumber(target_bulanan_kg, "Target bulanan supplier")
+    const frekuensiAmbilanMingguan = positiveInteger(
+      frekuensi_ambilan_mingguan,
+      "Frekuensi ambilan mingguan",
+      1
+    )
 
     const updated = await prisma.supplier.update({
       where: { id },
@@ -66,8 +74,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         nama_bank: nama_bank || null,
         nomor_rekening: nomor_rekening || null,
         atas_nama: atas_nama || null,
-        target_bulanan_kg: parseFloat(target_bulanan_kg) || 0,
-        frekuensi_ambilan_mingguan: parseInt(frekuensi_ambilan_mingguan) || 1,
+        target_bulanan_kg: targetBulananKg,
+        frekuensi_ambilan_mingguan: frekuensiAmbilanMingguan,
         hari_ambilan: hari_ambilan || null,
       },
     })

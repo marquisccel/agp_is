@@ -39,6 +39,11 @@ const LINK_PATTERNS = [
   /\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b/,
 ]
 
+export function isShortGoogleMapsLink(link: string | null | undefined) {
+  if (!link) return false
+  return /(?:maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(link.trim())
+}
+
 export function parseCoordinatesFromMapLink(link: string | null | undefined) {
   if (!link) return null
 

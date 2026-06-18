@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
+import { nonNegativeNumber, positiveNumber } from "@/lib/numberValidation"
+import { isOperationalRole } from "@/lib/roles"
 
 type DraftPurchaseItemInput = {
   sku_name: string
@@ -15,7 +17,7 @@ type DraftPurchaseItemInput = {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user) {
+    if (!session || !session.user || !isOperationalRole(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -48,7 +50,35 @@ export async function POST(req: Request) {
     }
 
     const draftItems = items as DraftPurchaseItemInput[]
-    const totalLapakWeight = draftItems.reduce((sum, item) => sum + (parseFloat(String(item.berat_estimasi)) || 0), 0)
+    const validatedItems = draftItems.map((item, index) => {
+      if (!item.sku_name || typeof item.sku_name !== "string") {
+        throw new Error(`SKU item ${index + 1} wajib diisi.`)
+      }
+
+      const beratEstimasi = positiveNumber(item.berat_estimasi, `Berat estimasi item ${index + 1}`)
+      const hargaPerKg = positiveNumber(item.harga_per_kg, `Harga/kg item ${index + 1}`)
+
+      return {
+        sku_name: item.sku_name,
+        spec: item.spec || null,
+        beratEstimasi,
+        hargaPerKg,
+        subtotal: beratEstimasi * hargaPerKg,
+      }
+    })
+    const totalLapakWeight = validatedItems.reduce((sum, item) => sum + item.beratEstimasi, 0)
+    const potonganSampah = nonNegativeNumber(potongan_sampah, "Potongan sampah")
+    const beratPotonganSampah = nonNegativeNumber(berat_potongan_sampah, "Berat potongan sampah")
+    const hargaPotonganSampah = nonNegativeNumber(harga_potongan_sampah, "Harga potongan sampah")
+    const potonganSusut = nonNegativeNumber(potongan_susut, "Potongan susut")
+    const beratPotonganSusut = nonNegativeNumber(berat_potongan_susut, "Berat potongan susut")
+    const hargaPotonganSusut = nonNegativeNumber(harga_potongan_susut, "Harga potongan susut")
+    const potonganAir = nonNegativeNumber(potongan_air, "Potongan air")
+    const beratPotonganAir = nonNegativeNumber(berat_potongan_air, "Berat potongan air")
+    const hargaPotonganAir = nonNegativeNumber(harga_potongan_air, "Harga potongan air")
+    const potonganKarung = nonNegativeNumber(potongan_karung, "Potongan karung")
+    const beratPotonganKarung = nonNegativeNumber(berat_potongan_karung, "Berat potongan karung")
+    const hargaPotonganKarung = nonNegativeNumber(harga_potongan_karung, "Harga potongan karung")
 
     // Create Draft Purchase
     const purchase = await prisma.purchase.create({
@@ -59,26 +89,26 @@ export async function POST(req: Request) {
         metode_pembayaran_terpilih,
         berat_timbangan_lapak: totalLapakWeight,
         status_approval: "menunggu_verifikasi_supervisor",
-        potongan_sampah: parseFloat(potongan_sampah) || 0,
-        berat_potongan_sampah: parseFloat(berat_potongan_sampah) || 0,
-        harga_potongan_sampah: parseFloat(harga_potongan_sampah) || 0,
-        potongan_susut: parseFloat(potongan_susut) || 0,
-        berat_potongan_susut: parseFloat(berat_potongan_susut) || 0,
-        harga_potongan_susut: parseFloat(harga_potongan_susut) || 0,
-        potongan_air: parseFloat(potongan_air) || 0,
-        berat_potongan_air: parseFloat(berat_potongan_air) || 0,
-        harga_potongan_air: parseFloat(harga_potongan_air) || 0,
-        potongan_karung: parseFloat(potongan_karung) || 0,
-        berat_potongan_karung: parseFloat(berat_potongan_karung) || 0,
-        harga_potongan_karung: parseFloat(harga_potongan_karung) || 0,
+        potongan_sampah: potonganSampah,
+        berat_potongan_sampah: beratPotonganSampah,
+        harga_potongan_sampah: hargaPotonganSampah,
+        potongan_susut: potonganSusut,
+        berat_potongan_susut: beratPotonganSusut,
+        harga_potongan_susut: hargaPotonganSusut,
+        potongan_air: potonganAir,
+        berat_potongan_air: beratPotonganAir,
+        harga_potongan_air: hargaPotonganAir,
+        potongan_karung: potonganKarung,
+        berat_potongan_karung: beratPotonganKarung,
+        harga_potongan_karung: hargaPotonganKarung,
         items: {
-          create: draftItems.map((item) => ({
+          create: validatedItems.map((item) => ({
             sku_name: item.sku_name,
             spec: item.spec || null,
-            berat_lapak: parseFloat(String(item.berat_estimasi)) || 0,
-            berat_final_item: parseFloat(String(item.berat_estimasi)) || 0,
-            harga_per_kg: parseFloat(String(item.harga_per_kg)) || 0,
-            subtotal: (parseFloat(String(item.berat_estimasi)) || 0) * (parseFloat(String(item.harga_per_kg)) || 0),
+            berat_lapak: item.beratEstimasi,
+            berat_final_item: item.beratEstimasi,
+            harga_per_kg: item.hargaPerKg,
+            subtotal: item.subtotal,
           })),
         },
       },

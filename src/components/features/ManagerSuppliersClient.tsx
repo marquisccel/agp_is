@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
-import { hasResolvedSupplierCoordinates, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
+import { hasResolvedSupplierCoordinates, isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 
 interface SkuPriceStandard {
   id: string
@@ -131,6 +131,8 @@ export default function ManagerSuppliersClient({
     locationLatitude === "" && locationLongitude === ""
       ? parseCoordinatesFromMapLink(locationLink)
       : null
+  const needsManualLocationCoordinates =
+    isShortGoogleMapsLink(locationLink) && !inferredLocation && locationLatitude === "" && locationLongitude === ""
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hati-hati! Apakah Anda yakin ingin menghapus data lapak ini? Lapak tidak bisa dihapus jika memiliki riwayat transaksi/kasbon.")) return
@@ -718,6 +720,11 @@ export default function ManagerSuppliersClient({
                 <p className="mt-1 text-xs font-medium text-sky-700">
                   Latitude {inferredLocation.latitude}, longitude {inferredLocation.longitude}. Simpan lokasi untuk langsung mengaktifkan preview peta.
                 </p>
+              </div>
+            )}
+            {needsManualLocationCoordinates && (
+              <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                Link pendek Google Maps tidak menyimpan koordinat di URL. Isi latitude dan longitude agar preview peta aktif.
               </div>
             )}
 

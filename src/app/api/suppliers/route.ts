@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
+import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 
 export async function POST(req: Request) {
@@ -31,7 +33,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nama Supplier dan Gudang wajib diisi" }, { status: 400 })
     }
 
+    if (!["STAFF", "ADMIN", "MANAGER"].includes(session.user.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    if (isOperationalRole(session.user.role) && session.user.warehouseId !== warehouseId) {
+      return NextResponse.json({ error: "Tidak memiliki akses ke gudang ini" }, { status: 403 })
+    }
+
     const locationPayload = buildSupplierLocationPayload({ link, latitude, longitude })
+    const targetBulananKg = nonNegativeNumber(target_bulanan_kg, "Target bulanan supplier")
+    const frekuensiAmbilanMingguan = positiveInteger(
+      frekuensi_ambilan_mingguan,
+      "Frekuensi ambilan mingguan",
+      1
+    )
 
     const supplier = await prisma.supplier.create({
       data: {
@@ -44,8 +60,8 @@ export async function POST(req: Request) {
         nama_bank,
         nomor_rekening,
         atas_nama,
-        target_bulanan_kg: parseFloat(target_bulanan_kg) || 0,
-        frekuensi_ambilan_mingguan: parseInt(frekuensi_ambilan_mingguan) || 1,
+        target_bulanan_kg: targetBulananKg,
+        frekuensi_ambilan_mingguan: frekuensiAmbilanMingguan,
         hari_ambilan: hari_ambilan || null,
         warehouseId
       }

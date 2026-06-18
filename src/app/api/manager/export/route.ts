@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { positiveInteger } from "@/lib/numberValidation"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 // Helper to escape values for CSV
@@ -13,6 +14,22 @@ function escape(val: unknown): string {
     return `"${str}"`
   }
   return str
+}
+
+function parseExportMonth(value: string | null, fallback: number) {
+  const month = value ? positiveInteger(value, "Bulan") : fallback
+  if (month < 1 || month > 12) {
+    throw new Error("Bulan harus berada di rentang 1-12.")
+  }
+  return month
+}
+
+function parseExportYear(value: string | null, fallback: number) {
+  const year = value ? positiveInteger(value, "Tahun") : fallback
+  if (year < 2000 || year > 2100) {
+    throw new Error("Tahun harus berada di rentang 2000-2100.")
+  }
+  return year
 }
 
 export async function GET(req: Request) {
@@ -28,8 +45,8 @@ export async function GET(req: Request) {
 
     const nowUtc = new Date()
     const now = new Date(nowUtc.getTime() + 7 * 60 * 60 * 1000) // Shifted to GMT+7 (WIB)
-    const selectedBulan = qBulan ? parseInt(qBulan) : now.getUTCMonth() + 1
-    const selectedTahun = qTahun ? parseInt(qTahun) : now.getUTCFullYear()
+    const selectedBulan = parseExportMonth(qBulan, now.getUTCMonth() + 1)
+    const selectedTahun = parseExportYear(qTahun, now.getUTCFullYear())
 
     // 1. Fetch Warehouses and Targets (filtered by selected month/year)
     const warehouses = await prisma.warehouse.findMany({ orderBy: { nama: "asc" } })
@@ -290,7 +307,8 @@ export async function GET(req: Request) {
     })
   } catch (error) {
     console.error("Error generating CSV export:", error)
-    return new Response("Internal Server Error", { status: 500 })
+    const message = error instanceof Error ? error.message : "Internal Server Error"
+    return new Response(message, { status: message.includes("harus") ? 400 : 500 })
   }
 }
 
