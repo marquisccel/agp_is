@@ -36,7 +36,7 @@ function formatRp(n: number) {
   return n.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })
 }
 
-// Renders the nota HTML using only inline styles — avoids html2canvas "lab" color bug from Tailwind
+// Renders the nota HTML using only inline styles to avoid html2canvas "lab" color bugs from Tailwind.
 function NotaContent({ data }: { data: NotaData }) {
   const totalEstimasi = data.items.reduce((sum, i) => sum + i.berat_estimasi * i.harga_per_kg, 0)
   const totalBerat = data.items.reduce((sum, i) => sum + i.berat_estimasi, 0)
@@ -48,13 +48,13 @@ function NotaContent({ data }: { data: NotaData }) {
       {/* Header */}
       <div style={{ textAlign: "left", paddingBottom: 16, marginBottom: 16 }}>
         <div style={{ fontSize: 9, fontWeight: 800, color: "#007a73", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>
-          Nota Timbangan — Draft
+          Nota Timbangan - Draft
         </div>
         <div style={{ fontSize: 20, fontWeight: 900, color: "#020617", letterSpacing: "-0.04em", lineHeight: 1.1 }}>
           {data.gudangNama}
         </div>
         <div style={{ fontSize: 10, color: "#64748b", marginTop: 8 }}>
-          DOKUMEN DRAFT — Belum Final
+          DOKUMEN DRAFT - Belum Final
         </div>
       </div>
 
@@ -236,7 +236,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
 
     const msg = [
       `*DRAFT NOTA TIMBANGAN LAPAK*`,
-      `${data.gudangNama} — ${data.tanggal}`,
+      `${data.gudangNama} - ${data.tanggal}`,
       `No. Draft: #${data.nomorDraft}`,
       ``,
       `*Detail:*`,
@@ -250,7 +250,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
       `*ESTIMASI TOTAL NET PAYOUT: ${formatRp(totalEstimasiSetelahPotongan)}*`,
       `_(Menunggu double check & approval harga)_`,
       ``,
-      `Terima kasih ✅`,
+      `Terima kasih`,
     ].filter(Boolean).join("\n")
 
     const waUrl = `https://wa.me/${nomor.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`
@@ -285,7 +285,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
 
   return (
     <>
-      {/* Hidden capture target — absolutely positioned off-screen, no Tailwind classes */}
+      {/* Hidden capture target, absolutely positioned off-screen with no Tailwind classes */}
       <div
         style={{
           position: "fixed",
@@ -376,7 +376,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
                 disabled={downloading}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-200 text-slate-500 font-semibold text-sm hover:bg-slate-50 hover:text-slate-700 transition-all disabled:opacity-50"
               >
-                Lewati — Simpan Tanpa Unduh
+                Lewati - Simpan Tanpa Unduh
               </button>
             </div>
           </div>

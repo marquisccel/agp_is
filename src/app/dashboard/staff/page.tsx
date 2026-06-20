@@ -41,7 +41,7 @@ export default async function StaffDashboard() {
   const todayStart = new Date(Date.UTC(localYear, localMonth, localDate, 0, 0, 0) - 7 * 60 * 60 * 1000)
   const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000)
 
-  // Calculate this week's range (Monday–Sunday)
+  // Calculate this week's range (Monday to Sunday)
   const dayOfWeek = now.getUTCDay() === 0 ? 6 : now.getUTCDay() - 1
   const weekStart = new Date(Date.UTC(localYear, localMonth, localDate - dayOfWeek, 0, 0, 0) - 7 * 60 * 60 * 1000)
   const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000)
@@ -111,7 +111,7 @@ export default async function StaffDashboard() {
             <p className="text-sm text-blue-700 font-medium mt-1">
               Hari ini adalah hari libur (Minggu atau libur nasional). Tidak ada target harian yang perlu dicapai.
             </p>
-            <p className="text-xs text-slate-600 mt-1.5">Selamat beristirahat! Target mingguan tetap berjalan 🌟</p>
+            <p className="text-xs text-slate-600 mt-1.5">Selamat beristirahat. Target mingguan tetap berjalan.</p>
           </div>
         </div>
       )}
@@ -133,7 +133,7 @@ export default async function StaffDashboard() {
                 Target harian hari ini belum tercapai! Kurang <strong className="font-extrabold">{fmtTon(kekuranganHarian)}</strong> lagi.
               </p>
               <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Harap maksimalkan pengambilan barang, koordinasi supplier, dan transaksi di hari esok agar target mingguan Anda (<strong className="font-bold text-slate-700">{fmtTon(targetMingguan)}</strong>) tetap aman dan tercapai tepat waktu. Mari maksimalkan ikhtiar besok! 💪🔥
+                Harap maksimalkan pengambilan barang, koordinasi supplier, dan transaksi di hari esok agar target mingguan Anda (<strong className="font-bold text-slate-700">{fmtTon(targetMingguan)}</strong>) tetap aman dan tercapai tepat waktu.
               </p>
             </div>
           </div>
@@ -157,10 +157,10 @@ export default async function StaffDashboard() {
             </div>
             {isWorkingToday ? (
               <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${progressHarian >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-50 text-amber-600'}`}>
-                {progressHarian >= 100 ? '✓ Tercapai' : `${progressHarian.toFixed(0)}%`}
+                {progressHarian >= 100 ? 'Tercapai' : `${progressHarian.toFixed(0)}%`}
               </span>
             ) : (
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">🏖️ Libur</span>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">Libur</span>
             )}
           </div>
 
@@ -168,7 +168,7 @@ export default async function StaffDashboard() {
             <>
               <div className="flex items-end gap-2 mb-3">
                 <span className="text-3xl font-extrabold text-slate-900">{fmtTon(beratHariIni)}</span>
-                <span className="text-slate-400 text-sm mb-1">/ {targetHarian > 0 ? fmtTon(targetHarian) : '—'}</span>
+                <span className="text-slate-400 text-sm mb-1">/ {targetHarian > 0 ? fmtTon(targetHarian) : '-'}</span>
               </div>
               {/* Progress bar */}
               <div className="w-full bg-slate-100 rounded-full h-2.5 mb-3">
@@ -180,17 +180,17 @@ export default async function StaffDashboard() {
               {targetHarian > 0 ? (
                 kekuranganHarian > 0 ? (
                   <p className="text-sm text-orange-600 font-medium">
-                    ⚠ Kurang <strong>{fmtTon(kekuranganHarian)}</strong> untuk capai target hari ini
+                    Kurang <strong>{fmtTon(kekuranganHarian)}</strong> untuk capai target hari ini
                   </p>
                 ) : (
-                  <p className="text-sm text-emerald-600 font-medium">🎉 Target harian sudah tercapai!</p>
+                  <p className="text-sm text-emerald-600 font-medium">Target harian sudah tercapai.</p>
                 )
               ) : (
                 <p className="text-xs text-slate-400 italic">Target belum diset oleh Manager</p>
               )}
             </>
           ) : (
-            <p className="text-sm text-blue-600 font-medium mt-4">🏖️ Tidak ada target hari ini (hari libur)</p>
+            <p className="text-sm text-blue-600 font-medium mt-4">Tidak ada target hari ini karena hari libur.</p>
           )}
         </div>
 
@@ -200,16 +200,16 @@ export default async function StaffDashboard() {
             <div>
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Minggu Ini</p>
               <p className="text-sm text-slate-400 mt-0.5">
-                {weekStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })} – {new Date(weekEnd.getTime()-1).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}
+                {weekStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })} - {new Date(weekEnd.getTime()-1).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}
               </p>
             </div>
             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${progressMingguan >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-violet-50 text-violet-600'}`}>
-              {progressMingguan >= 100 ? '✓ Tercapai' : `${progressMingguan.toFixed(0)}%`}
+              {progressMingguan >= 100 ? 'Tercapai' : `${progressMingguan.toFixed(0)}%`}
             </span>
           </div>
           <div className="flex items-end gap-2 mb-3">
             <span className="text-3xl font-extrabold text-slate-900">{fmtTon(beratMingguIni)}</span>
-            <span className="text-slate-400 text-sm mb-1">/ {targetMingguan > 0 ? fmtTon(targetMingguan) : '—'}</span>
+            <span className="text-slate-400 text-sm mb-1">/ {targetMingguan > 0 ? fmtTon(targetMingguan) : '-'}</span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-2.5 mb-3">
             <div
@@ -220,10 +220,10 @@ export default async function StaffDashboard() {
           {targetMingguan > 0 ? (
             kekuranganMingguan > 0 ? (
               <p className="text-sm text-violet-600 font-medium">
-                ⚠ Kurang <strong>{fmtTon(kekuranganMingguan)}</strong> untuk capai target minggu ini
+                Kurang <strong>{fmtTon(kekuranganMingguan)}</strong> untuk capai target minggu ini
               </p>
             ) : (
-              <p className="text-sm text-emerald-600 font-medium">🎉 Target mingguan sudah tercapai!</p>
+              <p className="text-sm text-emerald-600 font-medium">Target mingguan sudah tercapai.</p>
             )
           ) : (
             <p className="text-xs text-slate-400 italic">Target belum diset oleh Manager</p>
@@ -240,13 +240,13 @@ export default async function StaffDashboard() {
               </p>
             </div>
             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${progressBulanan >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-50 text-indigo-600'}`}>
-              {progressBulanan >= 100 ? '✓ Tercapai' : `${progressBulanan.toFixed(0)}%`}
+              {progressBulanan >= 100 ? 'Tercapai' : `${progressBulanan.toFixed(0)}%`}
             </span>
           </div>
 
           <div className="flex items-end gap-2 mb-3">
             <span className="text-3xl font-extrabold text-slate-900">{fmtTon(beratBulanIni)}</span>
-            <span className="text-slate-400 text-sm mb-1">/ {targetBulanan > 0 ? fmtTon(targetBulanan) : '—'}</span>
+            <span className="text-slate-400 text-sm mb-1">/ {targetBulanan > 0 ? fmtTon(targetBulanan) : '-'}</span>
           </div>
 
           {/* Progress bar */}
@@ -260,10 +260,10 @@ export default async function StaffDashboard() {
           {targetBulanan > 0 ? (
             kekuranganBulanan > 0 ? (
               <p className="text-sm text-red-600 font-medium">
-                ⚠ Kurang <strong>{fmtTon(kekuranganBulanan)}</strong> untuk capai target bulan ini
+                Kurang <strong>{fmtTon(kekuranganBulanan)}</strong> untuk capai target bulan ini
               </p>
             ) : (
-              <p className="text-sm text-emerald-600 font-medium">🎉 Target bulanan sudah tercapai!</p>
+              <p className="text-sm text-emerald-600 font-medium">Target bulanan sudah tercapai.</p>
             )
           ) : (
             <p className="text-xs text-slate-400 italic">Target belum diset oleh Manager</p>

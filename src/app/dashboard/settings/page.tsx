@@ -138,8 +138,8 @@ export default function SettingsPage() {
               {nama.charAt(0).toUpperCase() || "U"}
             </div>
             <div>
-              <p className="font-bold text-slate-800">{nama || "—"}</p>
-              <p className="text-xs text-slate-400">{email || "—"}</p>
+              <p className="font-bold text-slate-800">{nama || "-"}</p>
+              <p className="text-xs text-slate-400">{email || "-"}</p>
               <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-600 uppercase tracking-wider mt-1 inline-block">
                 {role}
               </span>
@@ -348,7 +348,7 @@ export default function SettingsPage() {
                     {lang.label}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {language === lang.code ? "✓ Aktif" : "Klik untuk memilih"}
+                    {language === lang.code ? "Aktif" : "Klik untuk memilih"}
                   </p>
                 </div>
               </button>

@@ -16,6 +16,8 @@ export default async function Home() {
     redirect('/dashboard/manager')
   } else if (role === 'SUPERVISOR') {
     redirect('/dashboard/supervisor')
+  } else if (role === 'ADMIN') {
+    redirect('/dashboard/admin')
   } else if (isOperationalRole(role)) {
     redirect('/dashboard/staff')
   }

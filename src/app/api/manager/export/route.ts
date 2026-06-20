@@ -175,9 +175,9 @@ export async function GET(req: Request) {
       csv += [
         p.nomor_nota || p.id.slice(0, 8).toUpperCase(),
         p.tanggal,
-        p.warehouse?.nama || "—",
-        p.supplier?.nama || "—",
-        p.metode_pembayaran_terpilih || "—",
+        p.warehouse?.nama || "-",
+        p.supplier?.nama || "-",
+        p.metode_pembayaran_terpilih || "-",
         p.berat_timbangan_lapak || 0,
         p.berat_timbangan_gudang || 0,
         p.berat_final || itemsWeight,
@@ -192,10 +192,10 @@ export async function GET(req: Request) {
         p.persentase_pembayaran ?? 100,
         p.nominal_pembayaran_awal || 0,
         p.nominal_belum_lunas || 0,
-        p.staff?.nama || "—",
-        p.admin?.nama || "—",
-        p.bukti_transfer ? (p.bukti_transfer.startsWith("data:") ? p.bukti_transfer : `http://${req.headers.get("host") || "localhost:3000"}${p.bukti_transfer}`) : "—",
-        p.tanggal_transfer || "—"
+        p.staff?.nama || "-",
+        p.admin?.nama || "-",
+        p.bukti_transfer ? (p.bukti_transfer.startsWith("data:") ? p.bukti_transfer : `http://${req.headers.get("host") || "localhost:3000"}${p.bukti_transfer}`) : "-",
+        p.tanggal_transfer || "-"
       ].map(escape).join(";") + "\r\n"
     }
     csv += "\r\n"
@@ -211,10 +211,10 @@ export async function GET(req: Request) {
         csv += [
           p.nomor_nota || p.id.slice(0, 8).toUpperCase(),
           p.tanggal,
-          p.warehouse?.nama || "—",
-          p.supplier?.nama || "—",
+          p.warehouse?.nama || "-",
+          p.supplier?.nama || "-",
           item.sku_name,
-          item.spec || "—",
+          item.spec || "-",
           item.berat_final_item,
           item.harga_per_kg,
           item.subtotal
@@ -232,16 +232,16 @@ export async function GET(req: Request) {
     for (const s of suppliers) {
       csv += [
         s.nama,
-        s.warehouse?.nama || "—",
+        s.warehouse?.nama || "-",
         s.transactionStatus === "GREEN" ? "Hijau - aktif" : "Merah - belum aktif",
         hasResolvedSupplierCoordinates(s) ? "Map Ready" : "Lokasi belum lengkap",
         getSupplierMapHref({ ...s, warehouseName: s.warehouse?.nama || null }),
-        s.latitude ?? "—",
-        s.longitude ?? "—",
-        s.kontak_wa || "—",
-        s.nama_bank || "—",
-        s.nomor_rekening || "—",
-        s.atas_nama || "—",
+        s.latitude ?? "-",
+        s.longitude ?? "-",
+        s.kontak_wa || "-",
+        s.nama_bank || "-",
+        s.nomor_rekening || "-",
+        s.atas_nama || "-",
         s.target_bulanan_kg || 0
       ].map(escape).join(";") + "\r\n"
     }
@@ -269,8 +269,8 @@ export async function GET(req: Request) {
         csv += [
           p.nomor_nota || p.id.slice(0, 8).toUpperCase(),
           p.tanggal,
-          p.warehouse?.nama || "—",
-          p.supplier?.nama || "—",
+          p.warehouse?.nama || "-",
+          p.supplier?.nama || "-",
           p.total_dibayar || 0,
           p.nominal_belum_lunas || 0,
           p.persentase_pembayaran ?? 100
@@ -287,8 +287,8 @@ export async function GET(req: Request) {
     for (const log of periodAuditLogs) {
       csv += [
         log.createdAt,
-        log.user?.nama || "—",
-        log.user?.role || "—",
+        log.user?.nama || "-",
+        log.user?.role || "-",
         formatAuditAction(log.action),
         log.table_name,
         log.record_id
@@ -327,6 +327,7 @@ function formatAuditAction(action: string) {
     CREATE_DP_REQUEST: "Pengajuan kasbon dibuat",
     APPROVE_DP: "Kasbon disetujui",
     REJECT_DP: "Kasbon ditolak",
+    FORWARD_DP: "Kasbon diteruskan ke manager",
     SUPPLIER_STATUS_UPDATE: "Status supplier diperbarui",
   }
 

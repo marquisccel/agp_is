@@ -45,7 +45,7 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
           Nota Pembelian PET Final
         </div>
         <div style={{ fontSize: 20, fontWeight: 900, color: "#020617", marginTop: 2, letterSpacing: "-0.04em", lineHeight: 1.1 }}>
-          {purchase.warehouse?.nama || "—"}
+          {purchase.warehouse?.nama || "-"}
         </div>
         <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>
           No. {purchase.nomor_nota || purchase.id.split("-")[0].toUpperCase()}
@@ -118,7 +118,7 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
           <div style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", marginBottom: 6 }}>Potongan / Retur</div>
           {returs.map((r: any, i: number) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, marginBottom: 3 }}>
-              <span style={{ color: "#64748b" }}>{r.sku_name} — {fmtKg(r.berat_retur)} ({r.alasan || "—"})</span>
+              <span style={{ color: "#64748b" }}>{r.sku_name} - {fmtKg(r.berat_retur)} ({r.alasan || "-"})</span>
               <span style={{ color: "#dc2626", fontWeight: 700 }}>-{fmtRp(r.potongan_nilai)}</span>
             </div>
           ))}
@@ -157,7 +157,7 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
         {/* Pelunasan info */}
         {purchase.status_pelunasan === "BELUM_LUNAS" && (
           <div style={{ marginTop: 10, padding: "8px 12px", backgroundColor: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, fontSize: 10 }}>
-            <div style={{ fontWeight: 700, color: "#92400e", marginBottom: 2 }}>⚠️ Pembayaran Bertahap</div>
+            <div style={{ fontWeight: 700, color: "#92400e", marginBottom: 2 }}>Pembayaran Bertahap</div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
               <span style={{ color: "#78716c" }}>Pembayaran Awal ({purchase.persentase_pembayaran || 80}%):</span>
               <span style={{ fontWeight: 700, color: "#0f172a" }}>{fmtRp(purchase.nominal_pembayaran_awal || 0)}</span>
@@ -259,8 +259,8 @@ export default function NotaViewerClient({
 
     const msg = [
       `*NOTA PEMBELIAN PET FINAL*`,
-      `${purchase.warehouse?.nama || ""} — ${tanggal}`,
-      `No. Nota: ${purchase.nomor_nota || "—"}`,
+      `${purchase.warehouse?.nama || ""} - ${tanggal}`,
+      `No. Nota: ${purchase.nomor_nota || "-"}`,
       ``,
       `*Detail:*`,
       itemLines,
@@ -277,7 +277,7 @@ export default function NotaViewerClient({
         ? `_(Pembayaran ${purchase.persentase_pembayaran || 80}% dahulu: ${fmtRp(purchase.nominal_pembayaran_awal || 0)}, sisa: ${fmtRp(purchase.nominal_belum_lunas || 0)})_`
         : `_(Lunas)_`,
       ``,
-      `Terima kasih ✅`,
+      `Terima kasih`,
     ].filter(val => val !== "").join("\n")
 
     const waUrl = `https://wa.me/${nomor.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`
@@ -370,7 +370,7 @@ export default function NotaViewerClient({
           onClick={() => window.history.back()}
           className="w-full py-3 text-slate-400 text-sm font-medium hover:text-slate-600 transition-colors"
         >
-          Lewati — Tutup halaman ini
+          Lewati - Tutup halaman ini
         </button>
       </div>
 

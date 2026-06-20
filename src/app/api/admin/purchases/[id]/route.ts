@@ -174,6 +174,9 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
   } catch (error) {
     const message = getErrorMessage(error)
     console.error("Edit Purchase Error:", error)
-    return NextResponse.json({ error: "Gagal mengedit transaksi: " + message }, { status: 500 })
+    return NextResponse.json(
+      { error: "Gagal mengedit transaksi: " + message },
+      { status: message.includes("harus") || message.includes("wajib") || message.includes("tidak boleh") ? 400 : 500 }
+    )
   }
 }

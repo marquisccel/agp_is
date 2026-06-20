@@ -304,7 +304,7 @@ export default function ManagerPurchaseDetailClient({
                     No. Rekening: <span className="font-mono font-bold text-slate-800">{purchase.supplier.nomor_rekening}</span>
                   </p>
                   <p>
-                    Atas Nama: <span className="font-semibold text-slate-700">{purchase.supplier.atas_nama || "—"}</span>
+                    Atas Nama: <span className="font-semibold text-slate-700">{purchase.supplier.atas_nama || "-"}</span>
                   </p>
                 </div>
               ) : (
@@ -594,11 +594,11 @@ export default function ManagerPurchaseDetailClient({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 font-medium">Verifikasi Gudang</span>
-                <span className="font-bold text-slate-800">{purchase.admin?.nama || "—"}</span>
+                <span className="font-bold text-slate-800">{purchase.admin?.nama || "-"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 font-medium">Manager Approval</span>
-                <span className="font-bold text-slate-800">{purchase.manager?.nama || "—"}</span>
+                <span className="font-bold text-slate-800">{purchase.manager?.nama || "-"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 font-medium">Metode Timbangan</span>

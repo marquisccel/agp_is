@@ -137,9 +137,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems: NavItem[] = [
     ...(isOperationalRole(role) ? [
+      ...(role === "ADMIN" ? [
+        { name: "Double Check", href: "/dashboard/admin", icon: ShieldCheck, exact: true },
+      ] : []),
       { name: "Input Pembelian", href: "/dashboard/staff", icon: Package, exact: true },
       { name: "Data Supplier", href: "/dashboard/staff/suppliers", icon: Store },
-      { name: "Pengajuan Kasbon", href: "/dashboard/staff/dp", icon: WalletCards },
+      ...(role === "ADMIN" ? [
+        { name: "Approval Kasbon", href: "/dashboard/admin/dp", icon: WalletCards },
+      ] : [
+        { name: "Pengajuan Kasbon", href: "/dashboard/staff/dp", icon: WalletCards },
+      ]),
       { name: "Daftar Transaksi", href: "/dashboard/staff/history", icon: ClipboardList },
       { name: "Transfer Pembayaran", href: "/dashboard/admin/transfer", icon: CreditCard },
     ] : []),

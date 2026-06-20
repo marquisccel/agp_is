@@ -1,6 +1,6 @@
 /**
  * workingDays.ts
- * Utility: menghitung hari kerja Indonesia (Senin–Sabtu, minus libur nasional)
+ * Utility: menghitung hari kerja Indonesia (Senin-Sabtu, minus libur nasional)
  * Hari Minggu dan hari libur nasional TIDAK dihitung sebagai hari kerja.
  */
 
@@ -82,17 +82,17 @@ const NATIONAL_HOLIDAYS: Set<string> = new Set([
   "2027-01-01", // Tahun Baru Masehi
   "2027-02-06", // Tahun Baru Imlek
   "2027-03-07", // Hari Suci Nyepi
-  "2027-03-09", // Idul Fitri (1 Syawal) — perkiraan
+  "2027-03-09", // Idul Fitri (1 Syawal) - perkiraan
   "2027-03-10", // Idul Fitri (2 Syawal)
   "2027-04-02", // Jumat Agung
   "2027-05-01", // Hari Buruh Internasional
-  "2027-05-17", // Idul Adha — perkiraan
+  "2027-05-17", // Idul Adha - perkiraan
   "2027-05-20", // Kenaikan Isa Almasih
   "2027-06-01", // Hari Lahir Pancasila
   "2027-06-06", // Tahun Baru Islam 1449H
   "2027-06-07", // Hari Raya Waisak
   "2027-08-17", // HUT Kemerdekaan RI
-  "2027-08-14", // Maulid Nabi — perkiraan
+  "2027-08-14", // Maulid Nabi - perkiraan
   "2027-12-25", // Natal
   "2027-12-26", // Cuti Bersama Natal
 ])
@@ -120,7 +120,7 @@ export function isNationalHoliday(date: Date): boolean {
 
 /**
  * Cek apakah tanggal tertentu adalah hari kerja
- * (Senin–Sabtu dan bukan libur nasional)
+ * (Senin-Sabtu dan bukan libur nasional)
  */
 export function isWorkingDay(date: Date): boolean {
   const { key, dayOfWeek } = getWibParts(date)
@@ -147,7 +147,7 @@ export function getWorkingDaysInMonth(year: number, month: number): number {
 
 /**
  * Hitung jumlah hari kerja dalam minggu yang mengandung tanggal tertentu
- * (Senin–Sabtu, minus libur nasional)
+ * (Senin-Sabtu, minus libur nasional)
  * @param mondayDate - Date objek yang menunjuk ke Senin awal minggu itu (UTC)
  * @returns Jumlah hari kerja dalam minggu itu
  */

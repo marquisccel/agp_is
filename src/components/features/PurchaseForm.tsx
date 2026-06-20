@@ -125,7 +125,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
       const saved = await res.json()
       // Show nota popup
       setNotaData({
-        supplierNama: selectedSupplier?.nama || "—",
+        supplierNama: selectedSupplier?.nama || "-",
         supplierKontakWa: selectedSupplier?.kontak_wa || null,
         gudangNama: namaGudang,
         items,
@@ -285,7 +285,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
             )}
           </div>
 
-          {/* Gudang — read-only, from session */}
+          {/* Gudang is read-only from session */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700">Gudang</label>
             <div className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-100 text-slate-600 font-medium flex items-center gap-2">
@@ -368,7 +368,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
             ))}
           </div>
 
-          {/* Tombol Tambah SKU — di bawah list agar tidak perlu scroll ke atas */}
+          {/* Tombol Tambah SKU di bawah list agar tidak perlu scroll ke atas */}
           <button
             type="button"
             onClick={addItem}

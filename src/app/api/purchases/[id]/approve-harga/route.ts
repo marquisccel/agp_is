@@ -16,6 +16,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { id: purchaseId } = await params
     const { action } = await req.json() // "approve" | "reject"
 
+    if (!["approve", "reject"].includes(action)) {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+    }
+
     const purchase = await prisma.purchase.findUnique({
       where: { id: purchaseId }
     })

@@ -239,7 +239,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   const mAvgPrice = mTotalItemWeight > 0 ? mTotalSubtotal / mTotalItemWeight : 0
 
   let mOpi = 0
-  let mGrade = "—"
+  let mGrade = "-"
   let mGradeLabel = "Belum Ada Data"
   let mGradeColor = "bg-slate-50 text-slate-400 border-slate-200"
   let mStars = 0
@@ -926,19 +926,19 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                               </div>
                             </td>
                             <td className="px-6 py-4 text-slate-500 text-xs max-w-xs truncate">
-                              {dp.keterangan || "—"}
+                              {dp.keterangan || "-"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right font-mono text-slate-600">
                               {fmtRp(dp.nominal_diajukan)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right font-mono font-semibold text-slate-700">
-                              {dp.nominal_disetujui ? fmtRp(dp.nominal_disetujui) : "—"}
+                              {dp.nominal_disetujui ? fmtRp(dp.nominal_disetujui) : "-"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right font-mono text-slate-600">
                               {fmtRp(dp.dp_used_amount)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right font-mono font-bold text-slate-800">
-                              {dp.sisa_dp !== null ? fmtRp(dp.sisa_dp) : "—"}
+                              {dp.sisa_dp !== null ? fmtRp(dp.sisa_dp) : "-"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border inline-block ${badge.cls}`}>

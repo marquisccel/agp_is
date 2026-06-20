@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import DPApprovalActions from "@/components/features/DPApprovalActions"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
+import Link from "next/link"
 
 export default async function DPListAdmin() {
   const session = await getServerSession(authOptions)
@@ -33,6 +34,14 @@ export default async function DPListAdmin() {
         eyebrow="Cash advance control"
         title="Manajemen Kasbon (DP)"
         description="Review dan kelola pengajuan kasbon supplier dari staff gudang."
+        actions={(
+          <Link
+            href="/dashboard/admin/dp/new"
+            className="bg-slate-950 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-slate-800 transition-colors"
+          >
+            Pengajuan Kasbon Baru
+          </Link>
+        )}
       />
 
       <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
@@ -85,7 +94,7 @@ export default async function DPListAdmin() {
                       {dp.status_approval === "menunggu_approval_admin" ? (
                         <DPApprovalActions dp={dp} role="ADMIN" />
                       ) : (
-                        <span className="text-slate-400 text-xs">—</span>
+                        <span className="text-slate-400 text-xs">-</span>
                       )}
                     </td>
                   </tr>

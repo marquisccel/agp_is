@@ -44,7 +44,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
         throw new Error(data.error || "Gagal mengajukan DP")
       }
 
-      router.push(role === "MANAGER" ? "/dashboard/manager/dp" : "/dashboard/staff/dp")
+      router.push(role === "MANAGER" ? "/dashboard/manager/dp" : role === "ADMIN" ? "/dashboard/admin/dp" : "/dashboard/staff/dp")
       router.refresh()
     } catch (err: any) {
       setError(err.message)

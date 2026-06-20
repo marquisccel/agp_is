@@ -49,7 +49,7 @@ export default function RemainingKasbonList() {
   if (error) {
     return (
       <div className="p-4 bg-red-50 text-red-600 rounded-2xl border border-red-100 text-sm">
-        ⚠️ {error}
+        Peringatan: {error}
       </div>
     )
   }

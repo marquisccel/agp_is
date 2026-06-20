@@ -43,13 +43,13 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
         </div>
       )}
 
-      {/* SKU Items — Card layout (mobile-first) */}
+      {/* SKU Items, card layout (mobile-first) */}
       <div>
         <h3 className="text-base font-bold text-slate-800 mb-3">
           Rincian Item &amp; Komparasi Timbangan per SKU
         </h3>
 
-        {/* Desktop table — hidden on small screens */}
+        {/* Desktop table, hidden on small screens */}
         <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
@@ -116,7 +116,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
           </table>
         </div>
 
-        {/* Mobile card layout — shown only on small screens */}
+        {/* Mobile card layout, shown only on small screens */}
         <div className="md:hidden space-y-3">
           {purchase.items.map((item: any) => {
             const standard = purchase.warehouse.skuPrices.find((s: any) => s.sku_name === item.sku_name)
@@ -142,7 +142,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
                     )}
                   </div>
                   {isOver && (
-                    <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-bold">⚠ OVER LIMIT</span>
+                    <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-bold">OVER LIMIT</span>
                   )}
                 </div>
 
@@ -237,7 +237,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
           {selisihTotal === 0
             ? "Hasil timbangan staff (lapak) dan admin (gudang) sesuai sempurna."
             : selisihTotal < 0
-              ? `⚠ Penyusutan timbangan gudang: ${Math.abs(selisihTotal).toFixed(2)} KG (${purchase.berat_timbangan_lapak > 0 ? Math.abs((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`
+              ? `Peringatan: penyusutan timbangan gudang ${Math.abs(selisihTotal).toFixed(2)} KG (${purchase.berat_timbangan_lapak > 0 ? Math.abs((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`
               : `ℹ Timbangan gudang bertambah: +${selisihTotal.toFixed(2)} KG (+${purchase.berat_timbangan_lapak > 0 ? ((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`}
         </div>
       </div>

@@ -46,6 +46,11 @@ const formatActivityAction = (action: string) => {
       description: "menolak pengajuan DP supplier",
       tone: "bg-rose-50 text-rose-700 border-rose-100",
     },
+    FORWARD_DP: {
+      label: "DP diteruskan",
+      description: "meneruskan pengajuan DP ke manager",
+      tone: "bg-orange-50 text-orange-700 border-orange-100",
+    },
   }
 
   if (actionMap[action]) return actionMap[action]
@@ -421,7 +426,7 @@ export default async function ManagerDashboard({
       susutLebihMap[sid] = {
         nama: p.supplier?.nama || "Unknown",
         warehouseId: p.warehouseId,
-        warehouseName: wh?.nama || "—",
+        warehouseName: wh?.nama || "-",
         totalLapak: 0,
         totalGudang: 0,
         totalSusut: 0,
@@ -523,7 +528,7 @@ export default async function ManagerDashboard({
     if (!dp.supplier) continue
     const sid = dp.supplierId
     const wId = dp.supplier.warehouseId || "none"
-    const wName = dp.supplier.warehouse?.nama || "—"
+    const wName = dp.supplier.warehouse?.nama || "-"
     
     if (!dpSummaryMap[sid]) {
       dpSummaryMap[sid] = {

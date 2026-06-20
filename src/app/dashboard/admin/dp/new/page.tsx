@@ -8,7 +8,11 @@ export default async function NewDPRequestPage() {
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== "ADMIN") return null
 
+  const warehouseId = session.user.warehouseId
+  if (!warehouseId) return null
+
   const suppliers = await prisma.supplier.findMany({
+    where: { warehouseId },
     orderBy: { nama: "asc" }
   })
 
@@ -21,7 +25,7 @@ export default async function NewDPRequestPage() {
       />
 
       <div className="workflow-card p-6 md:p-8">
-        <DPRequestForm suppliers={suppliers} />
+        <DPRequestForm suppliers={suppliers} role="ADMIN" />
       </div>
     </div>
   )

@@ -5,7 +5,7 @@
  * 5000.5     → "5.000,5"
  */
 
-/** Format angka bulat atau desimal — pisah ribuan pakai titik */
+/** Format angka bulat atau desimal, pisah ribuan pakai titik */
 export function fmtAngka(v: number, desimal = 0): string {
   return v.toLocaleString("id-ID", {
     minimumFractionDigits: desimal,
@@ -26,12 +26,12 @@ export function fmtTon(vInKg: number): string {
   return `${fmtAngka(ton, decimalPlaces)} ton`
 }
 
-/** Format Rupiah — Rp 5.000.000 */
+/** Format Rupiah, contoh Rp 5.000.000 */
 export function fmtRp(v: number): string {
   return `Rp ${fmtAngka(v)}`
 }
 
-/** Format Rupiah per kg — Rp 11.000/KG */
+/** Format Rupiah per kg, contoh Rp 11.000/KG */
 export function fmtRpPerKg(v: number): string {
   return `Rp ${fmtAngka(v)}/KG`
 }
@@ -40,4 +40,3 @@ export function fmtRpPerKg(v: number): string {
 export function fmtPct(v: number, desimal = 1): string {
   return `${fmtAngka(v, desimal)}%`
 }
-

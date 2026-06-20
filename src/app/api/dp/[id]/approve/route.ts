@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
+import { positiveNumber } from "@/lib/numberValidation"
 import type { Prisma } from "@prisma/client"
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -22,10 +23,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const currentDp = await prisma.downPayment.findUnique({
-      where: { id: dpId }
+      where: { id: dpId },
+      include: { supplier: true }
     })
 
     if (!currentDp) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+    if (role === "ADMIN" && currentDp.supplier.warehouseId !== session.user.warehouseId) {
+      return NextResponse.json({ error: "Tidak memiliki akses ke pengajuan kasbon ini" }, { status: 403 })
+    }
+
+    if (["approved", "rejected"].includes(currentDp.status_approval)) {
+      return NextResponse.json({ error: "Pengajuan kasbon ini sudah final." }, { status: 400 })
+    }
+
+    if (role === "ADMIN" && currentDp.status_approval !== "menunggu_approval_admin") {
+      return NextResponse.json({ error: "Pengajuan kasbon ini tidak berada di antrean admin." }, { status: 400 })
+    }
+
+    if (role === "MANAGER" && currentDp.status_approval !== "menunggu_approval_manager") {
+      return NextResponse.json({ error: "Pengajuan kasbon ini tidak berada di antrean manager." }, { status: 400 })
+    }
 
     let updateData: Prisma.DownPaymentUncheckedUpdateInput = {}
 
@@ -33,8 +51,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       updateData = { status_approval: "rejected" }
     } else if (action === "forward" && role === "ADMIN") {
       updateData = { status_approval: "menunggu_approval_manager" }
+    } else if (action === "forward") {
+      return NextResponse.json({ error: "Action tidak valid untuk role ini." }, { status: 403 })
     } else if (action === "approve") {
-      const finalNominal = nominal_disetujui || currentDp.nominal_diajukan
+      const finalNominal = nominal_disetujui === null || nominal_disetujui === undefined || nominal_disetujui === ""
+        ? currentDp.nominal_diajukan
+        : positiveNumber(nominal_disetujui, "Nominal disetujui")
+      if (finalNominal > currentDp.nominal_diajukan) {
+        return NextResponse.json({ error: "Nominal disetujui tidak boleh melebihi nominal diajukan." }, { status: 400 })
+      }
       if (role === "ADMIN" && finalNominal > 2000000) {
          return NextResponse.json({ error: "Admin cannot approve DP > 2,000,000" }, { status: 403 })
       }
@@ -56,7 +81,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     await createAuditLog({
       userId: session.user.id,
-      action: `DP_${action.toUpperCase()}`,
+      action: action === "approve" ? "APPROVE_DP" : action === "reject" ? "REJECT_DP" : "FORWARD_DP",
       table_name: "DownPayment",
       record_id: dpId,
       old_data: currentDp,
@@ -67,6 +92,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   } catch (error) {
     const message = getErrorMessage(error)
     console.error("Error approving DP:", error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: message.includes("harus") ? 400 : 500 })
   }
 }

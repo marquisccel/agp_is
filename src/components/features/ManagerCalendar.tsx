@@ -19,7 +19,7 @@ export function fmtKgId(v: number): string {
 }
 
 // ─────────────────────────────────────────────────────
-// Hari Libur Nasional Indonesia 2024 – 2027
+// Hari Libur Nasional Indonesia 2024-2027
 // ─────────────────────────────────────────────────────
 const HARI_LIBUR: Record<string, string> = {
   // ── 2024 ──
@@ -302,7 +302,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
                     ${cellBg} ${todayRing} ${selRing} ${cursor} ${shadow}
                   `}
                 >
-                  {/* Day number — red override for holidays/sunday when no activity */}
+                  {/* Day number with red override for holidays/sunday when no activity */}
                   <span
                     className={`text-xs font-extrabold leading-none ${
                       actColor

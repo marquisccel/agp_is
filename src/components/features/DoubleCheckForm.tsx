@@ -231,8 +231,8 @@ export default function DoubleCheckForm({
                     {(timbanganGudang - timbanganLapak) === 0 
                       ? "Timbangan lapak staff dan timbangan gudang sinkron sempurna" 
                       : (timbanganGudang - timbanganLapak) < 0 
-                        ? `⚠️ Terdapat penyusutan timbangan gudang sebesar ${Math.abs(timbanganGudang - timbanganLapak).toFixed(2)} KG dibanding timbangan lapak staff` 
-                        : `📈 Timbangan gudang bertambah sebesar ${(timbanganGudang - timbanganLapak).toFixed(2)} KG dibanding timbangan lapak staff`}
+                        ? `Peringatan: terdapat penyusutan timbangan gudang sebesar ${Math.abs(timbanganGudang - timbanganLapak).toFixed(2)} KG dibanding timbangan lapak staff`
+                        : `Timbangan gudang bertambah sebesar ${(timbanganGudang - timbanganLapak).toFixed(2)} KG dibanding timbangan lapak staff`}
                   </div>
                 </div>
               )}
@@ -265,7 +265,7 @@ export default function DoubleCheckForm({
                       {/* SKU Delta indicator */}
                       {diff !== 0 ? (
                         <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-lg flex items-center gap-1 ${diff < 0 ? 'bg-rose-50 text-rose-600' : 'bg-cyan-50 text-cyan-600'}`}>
-                          {diff < 0 ? `⚠️ Susut ${diff.toFixed(2)} KG (${((diff / lapakWeight) * 100).toFixed(1)}%)` : `📈 Bertambah +${diff.toFixed(2)} KG (+${((diff / lapakWeight) * 100).toFixed(1)}%)`}
+                          {diff < 0 ? `Susut ${diff.toFixed(2)} KG (${((diff / lapakWeight) * 100).toFixed(1)}%)` : `Bertambah +${diff.toFixed(2)} KG (+${((diff / lapakWeight) * 100).toFixed(1)}%)`}
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">

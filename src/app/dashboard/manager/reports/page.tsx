@@ -348,7 +348,7 @@ export default async function ManagerReportsPage({
                     <td className="py-3.5 px-6 text-right text-slate-700 font-mono print:py-2 print:px-4">{fmtRp(m.totalSpent)}</td>
                     <td className="py-3.5 px-6 text-right text-slate-500 font-mono print:py-2 print:px-4">{fmtRp(m.avgPrice)}</td>
                     <td className="py-3.5 px-6 text-right text-slate-500 font-mono print:py-2 print:px-4">
-                      {isTargetSet ? fmtKg(m.totalTarget) : "—"}
+                      {isTargetSet ? fmtKg(m.totalTarget) : "-"}
                     </td>
                     <td className="py-3.5 px-6 text-center print:py-2 print:px-4">
                       {isTargetSet ? (
@@ -362,7 +362,7 @@ export default async function ManagerReportsPage({
                           {m.achievement.toFixed(1)}%
                         </span>
                       ) : (
-                        <span className="text-slate-400 italic">—</span>
+                        <span className="text-slate-400 italic">-</span>
                       )}
                     </td>
                   </tr>
@@ -449,6 +449,7 @@ function formatAuditAction(action: string) {
     CREATE_DP_REQUEST: "Pengajuan kasbon dibuat",
     APPROVE_DP: "Kasbon disetujui",
     REJECT_DP: "Kasbon ditolak",
+    FORWARD_DP: "Kasbon diteruskan ke manager",
     SUPPLIER_STATUS_UPDATE: "Status supplier diperbarui",
   }
 
