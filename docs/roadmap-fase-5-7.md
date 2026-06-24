@@ -65,7 +65,21 @@ Tujuan: siap dibawa ke demo/staging dengan jaminan otomatis, bukan cuma verifika
 | `next/image` migration untuk preview upload | Open | 3 lokasi `<img>` (bukti transfer) - butuh uji visual sebelum migrasi karena dimensi gambar dinamis. |
 | Audit trail page khusus | Open | Saat ini audit trail hanya tampil di laporan & detail tertentu. Next upgrade: halaman khusus dengan filter tanggal/role/aksi/entity + export. |
 | Print/report PDF-grade | Open | Layout sudah period-aware; belum ada cover, section break, signature area rapi, print CSS, atau export PDF langsung. |
-| Deployment readiness | Open | Env production, database backup, migration checklist, private repo access, seed production strategy. Bukti transfer dikonfirmasi stakeholder tetap disimpan lokal (`docs/hardening-review-2026-06-18.md`), bukan gap yang perlu ditutup. |
+| Deployment readiness (umum) | Open | Migration checklist, private repo access, seed production strategy. Bukti transfer dikonfirmasi stakeholder tetap disimpan lokal (`docs/hardening-review-2026-06-18.md`), bukan gap yang perlu ditutup. |
+
+### Deployment Readiness - VPS (target hosting dikonfirmasi 2026-06-24)
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| Dockerfile untuk app Next.js | Open | `docker-compose.yml` saat ini cuma container Postgres (`docker-compose.yml`). Perlu multi-stage Dockerfile (`deps` -> `build` -> `runner`) untuk app, ditambahkan sebagai service baru di compose. |
+| Reverse proxy + TLS | Open | Domain ke VPS butuh reverse proxy (Caddy paling sederhana untuk auto-TLS Let's Encrypt, atau Nginx kalau mau lebih familiar) di depan container app. Pastikan port Postgres (5432) **tidak** diexpose ke publik, cuma 80/443 lewat proxy. |
+| CD ke VPS | Open | `.github/workflows/ci.yml` baru lint+build, belum deploy. Tambah job lanjutan: SSH ke VPS, `docker compose pull && docker compose up -d --build`, atau push image ke registry dulu (GHCR) baru pull di VPS - pilih salah satu pola, jangan build langsung di VPS tiap deploy kalau resource VPS kecil. |
+| Health-check endpoint | Open | Tambah `GET /api/health` (cek koneksi DB minimal) supaya `docker-compose` health check dan monitoring eksternal punya sesuatu untuk dicek, bukan cuma asumsi container "Up" = app sehat. |
+| Restart policy & process management | Partial | Service `db` di `docker-compose.yml` sudah `restart: unless-stopped`; service app baru (poin 1) harus pakai pola yang sama supaya auto-recover kalau VPS reboot/crash. |
+| Backup Postgres terjadwal | Open | Volume Docker ada tapi belum ada cron `pg_dump` + rotasi + (idealnya) salin ke storage di luar VPS itu sendiri, supaya kalau VPS-nya kena masalah, backup gak ikut hilang. |
+| Error/log monitoring | Open | Belum ada apa pun selain `console.error` lokal. Minimal: Sentry (free tier cukup untuk app sekecil ini) atau structured logging ke file + `journalctl`/`docker logs` yang gampang ditarik kalau ada insiden. |
+| Secrets management di VPS | Open | `.env.example` cukup untuk lokal; production butuh keputusan eksplisit: `.env` file di VPS dengan permission dikunci (`chmod 600`), bukan ikut masuk image Docker atau git. Dokumentasikan siapa yang pegang `NEXTAUTH_SECRET`/`DATABASE_URL` production. |
+| Firewall dasar VPS | Open | Pastikan cuma port 22 (SSH, idealnya key-only) dan 80/443 yang terbuka ke publik; semua port internal (Postgres, dll) cuma bisa diakses dari dalam network Docker/VPS. |
 
 ### Phase 8 Gate (UI/UX Premium Pass)
 
