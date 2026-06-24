@@ -56,7 +56,6 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json()
-    console.log("[TARGETS PUT] body:", JSON.stringify(body))
 
     const {
       warehouseId,
@@ -135,7 +134,6 @@ export async function PUT(req: Request) {
       })
     }
 
-    console.log("[TARGETS PUT] saved:", target.id)
     return NextResponse.json(target)
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error"
