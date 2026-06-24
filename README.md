@@ -139,7 +139,7 @@ STAFF:
   staff.malang@example.com  | password123 | Gudang Malang
 ```
 
-> Semua password seed sama: `password123`. Role yang tersedia saat ini adalah Manager, Admin, dan Staff. Staff dan Admin sementara diperlakukan sebagai satu role operasional gudang secara konsep (nama role lama tetap dipertahankan di kode untuk kompatibilitas). Role Supervisor sudah ada di alur approval dan di halaman dashboard, tapi **belum ada akun contoh untuk role ini di data seed saat ini** — kalau kamu perlu mencobanya, buat user baru dengan `role: "SUPERVISOR"` secara manual (lihat `seed.ts` sebagai referensi pola datanya).
+> Semua password seed sama: `password123`. Role yang tersedia adalah Manager, Admin, dan Staff. Setiap gudang punya 1 Admin yang menjalankan verifikasi, double check, dan edit nota; Staff dan Admin sementara diperlakukan sebagai satu role operasional gudang secara konsep (nama role lama tetap dipertahankan di kode untuk kompatibilitas). Role Supervisor sudah dihapus dari sistem dan digabung ke Admin.
 
 ### 7. Jalankan aplikasi
 
@@ -202,7 +202,7 @@ npm run lint
 ## Alur Verifikasi Pembelian Saat Ini
 
 ```text
-Staff input draft -> Supervisor verifikasi (per gudang) -> Manager approval (jika harga di atas standar) -> Admin transfer pembayaran
+Staff input draft -> Admin verifikasi + double check (per gudang) -> Manager approval (jika harga di atas standar) -> Admin transfer pembayaran
 ```
 
 ## Dokumentasi Per Fase

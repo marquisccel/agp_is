@@ -1,10 +1,12 @@
 # Roadmap Fase 5-7
 
-Last updated: 2026-06-24
+Last updated: 2026-06-24 (revisi setelah pertemuan kedua stakeholder)
 
 ## Objective
 
-Fase 0-4 sudah usable dan terdokumentasi (lihat `docs/phase-2-supplier-status.md`, `docs/phase-3-payment-control.md`, `docs/phase-4-reporting-governance.md`, dan `docs/hardening-review-2026-06-18.md`). Audit ulang per role (2026-06-24) mengonfirmasi: tidak ada mojibake, build dan typecheck bersih, ESLint 0 error/92 warning, dan tidak ada flow/menu yang broken di STAFF, ADMIN, SUPERVISOR, maupun MANAGER. Dokumen ini menetapkan urutan Fase 5-7 supaya sistem siap dibawa ke demo/staging/production dengan percaya diri, plus mencatat temuan kecil dari audit terakhir yang belum perlu jadi blocker tapi harus masuk tracking.
+Fase 0-4 sudah usable dan terdokumentasi (lihat `docs/phase-2-supplier-status.md`, `docs/phase-3-payment-control.md`, `docs/phase-4-reporting-governance.md`, dan `docs/hardening-review-2026-06-18.md`). Audit ulang per role (2026-06-24) mengonfirmasi: tidak ada mojibake, build dan typecheck bersih, ESLint 0 error/90 warning, dan tidak ada flow/menu yang broken di STAFF, ADMIN, maupun MANAGER. Dokumen ini menetapkan urutan Fase 5-7 supaya sistem siap dibawa ke demo/staging/production dengan percaya diri, plus mencatat temuan kecil dari audit terakhir yang belum perlu jadi blocker tapi harus masuk tracking.
+
+Update pertemuan kedua stakeholder (2026-06-24): sistem final di 3 role (STAFF, ADMIN, MANAGER). Role SUPERVISOR dihapus dan digabung ke ADMIN — setiap gudang punya 1 ADMIN yang menjalankan verifikasi, double check, dan edit nota. Bukti transfer dikonfirmasi tetap disimpan lokal (tidak perlu object storage). Perubahan ini sudah dieksekusi (lihat commit terkait), jadi item-item terkait SUPERVISOR di tabel Fase 5 di bawah sudah diperbarui mengikuti keputusan ini.
 
 ## Temuan Audit 2026-06-24 yang Dibawa ke Roadmap
 
@@ -23,16 +25,15 @@ Tujuan: sistem siap dipakai serius tanpa celah role/akses, sebelum data stakehol
 | Area | Status | Notes |
 | --- | --- | --- |
 | Role access matrix | Open | Dokumentasikan matrix role x route x aksi (view/create/edit/delete) sebagai satu tabel, verifikasi tiap baris terhadap `proxy.ts` dan guard di setiap API route. |
-| Cross-warehouse access audit | Open | Pastikan semua endpoint STAFF/ADMIN/SUPERVISOR konsisten scoped ke `warehouseId`, MANAGER konsisten lintas warehouse (pola yang sudah benar di `admin/purchases/[id]/route.ts` jadi referensi). |
+| Cross-warehouse access audit | Open | Pastikan semua endpoint STAFF/ADMIN konsisten scoped ke `warehouseId` (1 ADMIN per gudang), MANAGER konsisten lintas warehouse (pola yang sudah benar di `admin/purchases/[id]/route.ts` jadi referensi). |
 | Delete permission audit | Open | Cek ulang endpoint mana saja yang punya operasi delete/cancel dan siapa yang boleh memicunya - belum ada pass khusus untuk ini. |
 | Upload validation lanjutan | Partial | MIME + size guard untuk bukti transfer sudah ada (`docs/hardening-review-2026-06-18.md`); perlu cek apakah validasi yang sama berlaku di semua titik upload lain. |
 | Session safety | Open | Review `authOptions.ts` untuk expiry, rotasi token, dan perilaku saat role/warehouse user berubah di tengah sesi aktif. |
 | Role naming cleanup (opsional) | Open | ADMIN/STAFF secara konsep satu role operasional (`isOperationalRole()`), legacy naming masih dipakai untuk kompatibilitas. Tunda sampai stakeholder konfirmasi final sebelum rename ke istilah seperti `OPERATIONAL`. |
-| Supervisor scope decision | Open (menunggu stakeholder) | Masih menunggu konfirmasi: supervisor tetap per-gudang atau perlu opsi lintas-gudang. Keputusan ini menentukan banyak hal di permission matrix di atas, sebaiknya diselesaikan duluan. |
 
 ### Phase 6 Gate
 
-Fase 5 siap ditutup ketika role access matrix terdokumentasi dan terverifikasi, tidak ada endpoint yang lupa scope warehouse, dan keputusan supervisor scope sudah final.
+Fase 5 siap ditutup ketika role access matrix terdokumentasi dan terverifikasi, dan tidak ada endpoint yang lupa scope warehouse.
 
 ## Fase 6 - Data Quality & Import Tools
 
@@ -64,8 +65,7 @@ Tujuan: siap dibawa ke demo/staging dengan jaminan otomatis, bukan cuma verifika
 | `next/image` migration untuk preview upload | Open | 3 lokasi `<img>` (bukti transfer) - butuh uji visual sebelum migrasi karena dimensi gambar dinamis. |
 | Audit trail page khusus | Open | Saat ini audit trail hanya tampil di laporan & detail tertentu. Next upgrade: halaman khusus dengan filter tanggal/role/aksi/entity + export. |
 | Print/report PDF-grade | Open | Layout sudah period-aware; belum ada cover, section break, signature area rapi, print CSS, atau export PDF langsung. |
-| Deployment readiness | Open | Env production, database backup, migration checklist, private repo access, seed production strategy. Bukti transfer sudah disimpan sebagai file lokal (`docs/hardening-review-2026-06-18.md`) - production serius tetap butuh object storage. |
-| Satukan `seed.ts` dan `seed.js` | Open | Dua sumber seed legacy, residual decision dari hardening review 2026-06-18. |
+| Deployment readiness | Open | Env production, database backup, migration checklist, private repo access, seed production strategy. Bukti transfer dikonfirmasi stakeholder tetap disimpan lokal (`docs/hardening-review-2026-06-18.md`), bukan gap yang perlu ditutup. |
 
 ### Phase 8 Gate (UI/UX Premium Pass)
 
@@ -73,7 +73,7 @@ Fase 7 siap ditutup ketika ada minimal satu lapis test otomatis yang jalan di CI
 
 ## Rekomendasi Urutan
 
-1. **Fase 5** dulu - keputusan supervisor scope jadi prasyarat banyak hal lain, dan tanpa hardening akses, data stakeholder asli di Fase 6 jadi lebih berisiko.
+1. **Fase 5** dulu - role sudah final 3 (STAFF/ADMIN/MANAGER), jadi tinggal pastikan access matrix solid di atasnya. Tanpa hardening akses, data stakeholder asli di Fase 6 jadi lebih berisiko.
 2. **Fase 6** - begitu akses aman, baru aman memasukkan data lapak asli dan rekening tanpa khawatir kebocoran.
 3. **Fase 7** - testing otomatis dan deployment checklist butuh data dan akses yang sudah stabil supaya skenario test mewakili kondisi nyata.
 4. **UI/UX Premium Pass** terakhir - poles tampilan setelah workflow dan data sudah aman, supaya tidak poles ulang gara-gara ada perubahan struktural dari fase sebelumnya.
