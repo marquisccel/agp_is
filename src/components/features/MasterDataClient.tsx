@@ -150,8 +150,8 @@ export default function MasterDataClient({
               value={globalStats.totalPurchases > 0 ? `${((globalStats.totalCompleted / globalStats.totalPurchases) * 100).toFixed(0)}%` : "0%"}
               sub="Transaksi selesai"
             />
-            <StatCard icon={<Users />} label="Supplier Hijau" value={globalStats.totalGreenSuppliers.toLocaleString("id-ID")} sub="Sudah transaksi valid" />
-            <StatCard icon={<Users />} label="Supplier Merah" value={globalStats.totalRedSuppliers.toLocaleString("id-ID")} sub="Perlu aktivasi" />
+            <StatCard icon={<Users />} label="Lapak Hijau" value={globalStats.totalGreenSuppliers.toLocaleString("id-ID")} sub="Sudah transaksi valid" />
+            <StatCard icon={<Users />} label="Lapak Merah" value={globalStats.totalRedSuppliers.toLocaleString("id-ID")} sub="Perlu aktivasi" />
             <StatCard icon={<MapPin />} label="Lokasi Siap" value={globalStats.totalMapReadySuppliers.toLocaleString("id-ID")} sub="Koordinat tersedia" />
           </div>
 
@@ -192,7 +192,7 @@ export default function MasterDataClient({
 
             <section className="interactive-surface border border-slate-200/80 p-5">
               <h3 className="text-sm font-black text-slate-950">Top 5 Lapak by Tonase</h3>
-              <p className="mt-1 text-xs text-slate-500">Supplier dengan kontribusi volume terbesar.</p>
+              <p className="mt-1 text-xs text-slate-500">Lapak dengan kontribusi volume terbesar.</p>
               <div className="mt-5 space-y-3">
                 {[...suppliers].sort((a, b) => b.totalKg - a.totalKg).slice(0, 5).map((supplier, idx) => {
                   const maxKg = suppliers[0]?.totalKg || 1

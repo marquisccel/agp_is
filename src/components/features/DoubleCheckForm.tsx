@@ -30,7 +30,7 @@ export default function DoubleCheckForm({
   
   const staffLapakSum = purchase.berat_timbangan_lapak || purchase.items.reduce((sum: number, item: any) => sum + (item.berat_final_item || 0), 0)
 
-  const [timbanganLapak, setTimbanganLapak] = useState(staffLapakSum)
+  const [timbanganLapak] = useState(staffLapakSum)
   const [timbanganGudang, setTimbanganGudang] = useState(purchase.berat_timbangan_gudang || purchase.items.reduce((sum: number, item: any) => sum + (item.berat_final_item || 0), 0))
   const [metodeBayar, setMetodeBayar] = useState(purchase.metode_pembayaran_terpilih || "TIMBANGAN_GUDANG")
   const [persentasePembayaran, setPersentasePembayaran] = useState<number>(purchase.persentase_pembayaran || 100)
@@ -544,7 +544,7 @@ export default function DoubleCheckForm({
 
           <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
             <h3 className="text-lg font-bold text-blue-800 mb-2">Potongan DP</h3>
-            <p className="text-sm text-blue-600 mb-4">Sisa DP Supplier: <span className="font-bold font-mono">Rp {availableDp.toLocaleString('id-ID')}</span></p>
+            <p className="text-sm text-blue-600 mb-4">Sisa DP Lapak: <span className="font-bold font-mono">Rp {availableDp.toLocaleString('id-ID')}</span></p>
             <div>
               <label className="text-sm font-semibold text-slate-700">Gunakan DP (Rp)</label>
               <input
@@ -590,7 +590,7 @@ export default function DoubleCheckForm({
             <span className="text-base font-bold text-slate-700">Rp {totalNetPayout.toLocaleString('id-ID')}</span>
           </div>
           <div className="md:text-right">
-            <span className="text-xs font-bold text-slate-500 block uppercase tracking-wider">Total Akhir Dibayar ke Supplier</span>
+            <span className="text-xs font-bold text-slate-500 block uppercase tracking-wider">Total Akhir Dibayar ke Lapak</span>
             <span className="text-2xl font-extrabold text-teal-700">Rp {totalAkhirDibayar.toLocaleString('id-ID')}</span>
           </div>
         </div>

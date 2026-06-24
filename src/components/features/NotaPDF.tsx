@@ -43,7 +43,7 @@ export default function NotaPDF({ purchase, qrCodeUrl }: { purchase: any, qrCode
             <Text style={styles.value}>{new Date(purchase.approvedAt || purchase.createdAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Supplier:</Text>
+            <Text style={styles.label}>Lapak:</Text>
             <Text style={styles.value}>{purchase.supplier.nama}</Text>
           </View>
           <View style={styles.row}>
@@ -144,6 +144,7 @@ export default function NotaPDF({ purchase, qrCodeUrl }: { purchase: any, qrCode
         {/* QR Code */}
         {qrCodeUrl && (
           <View style={styles.qrContainer}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop, this isn't an HTML <img> */}
             <Image src={qrCodeUrl} style={styles.qrImage} />
             <Text style={styles.footerText}>Scan untuk verifikasi keaslian nota digital.</Text>
           </View>

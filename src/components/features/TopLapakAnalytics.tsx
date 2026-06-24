@@ -44,7 +44,7 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
       <div className="border-b border-slate-100 bg-slate-50/60 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="min-w-0">
-            <span className="text-xs font-bold uppercase text-teal-700">Supplier performance</span>
+            <span className="text-xs font-bold uppercase text-teal-700">Lapak performance</span>
             <h3 className="mt-1 text-base font-bold text-slate-950">Top 10 Lapak / Supplier</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">Peringkat supplier berdasarkan volume atau harga rata-rata per gudang.</p>
           </div>
@@ -129,7 +129,7 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
             <div className="overflow-hidden rounded-lg border border-slate-200">
               <div className="grid grid-cols-[64px_minmax(180px,1.5fr)_repeat(3,minmax(120px,1fr))] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-bold uppercase text-slate-500">
                 <span>Rank</span>
-                <span>Supplier</span>
+                <span>Lapak</span>
                 <span>{mode === "volume" ? "Volume" : "Harga avg"}</span>
                 <span>{mode === "volume" ? "Harga avg" : "Volume"}</span>
                 <span className="text-center">Transaksi</span>

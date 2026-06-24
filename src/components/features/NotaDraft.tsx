@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState } from "react"
 import { fmtAngka } from "@/lib/format"
 import { Download, X, CheckCircle } from "lucide-react"
 
@@ -70,7 +70,7 @@ function NotaContent({ data }: { data: NotaData }) {
             <td style={{ fontFamily: "monospace", fontWeight: 700, textAlign: "right", color: "#1e293b" }}>#{data.nomorDraft}</td>
           </tr>
           <tr>
-            <td style={{ color: "#64748b", paddingBottom: 3 }}>Supplier / Lapak</td>
+            <td style={{ color: "#64748b", paddingBottom: 3 }}>Lapak / Supplier</td>
             <td style={{ fontWeight: 700, textAlign: "right", color: "#1e293b" }}>{data.supplierNama}</td>
           </tr>
         </tbody>

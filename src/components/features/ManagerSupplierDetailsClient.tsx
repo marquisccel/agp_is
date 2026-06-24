@@ -12,18 +12,12 @@ import {
   MapPin,
   MessageCircle,
   Search,
-  Target,
-  User,
   Wallet,
   TrendingUp,
-  Warehouse as WarehouseIcon,
-  ChevronRight,
   Star,
-  Award,
   Activity,
-  AlertTriangle
 } from "lucide-react"
-import { fmtKg, fmtRp, fmtTon, fmtPct } from "@/lib/format"
+import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import PageHeader from "@/components/ui/PageHeader"
 import { getSupplierMapHref, resolveSupplierCoordinates } from "@/lib/supplierLocation"
 
@@ -182,11 +176,6 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   const now = new Date()
   const currentMonthNum = now.getMonth() + 1
   const currentYearNum = now.getFullYear()
-  const namaBulanIndo = [
-    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-  ][currentMonthNum - 1]
-
   const thisMonthPurchases = supplier.purchases.filter(p => {
     if (p.status_approval !== "approved" && p.status_approval !== "sudah_transfer") return false
     const pDate = new Date(p.createdAt)
@@ -303,7 +292,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   return (
     <div className="premium-workflow space-y-6">
       <PageHeader
-        eyebrow="Supplier detail"
+        eyebrow="Lapak detail"
         title={`Detail Lapak ${supplier.nama}`}
         description={`Collection Center ${supplier.warehouse?.nama.replace(/^Gudang\s+/i, "") || "CC"}`}
         actions={
@@ -526,7 +515,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
       <div className="workflow-card overflow-hidden p-0">
         <div className="border-b border-slate-100 px-6 py-5">
           <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Status history</p>
-          <h3 className="mt-1 text-lg font-black text-slate-950">Riwayat Perubahan Status Supplier</h3>
+          <h3 className="mt-1 text-lg font-black text-slate-950">Riwayat Perubahan Status Lapak</h3>
           <p className="mt-1 text-sm text-slate-500">Jejak perubahan manual dan aktivasi otomatis setelah transaksi valid pertama.</p>
         </div>
 

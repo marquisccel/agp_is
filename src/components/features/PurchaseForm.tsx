@@ -181,7 +181,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Supplier Search Dropdown */}
           <div className="space-y-2 relative">
-            <label className="text-sm font-semibold text-slate-700">Supplier / Lapak</label>
+            <label className="text-sm font-semibold text-slate-700">Lapak / Supplier</label>
             <div className="relative">
               <input
                 type="text"
@@ -211,7 +211,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any
                   
                   <div className="absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl z-20 divide-y divide-slate-50">
                     {filteredSuppliers.length === 0 ? (
-                      <div className="px-4 py-3 text-sm text-slate-400 italic">Supplier tidak ditemukan</div>
+                      <div className="px-4 py-3 text-sm text-slate-400 italic">Lapak tidak ditemukan</div>
                     ) : (
                       filteredSuppliers.map((s) => (
                         <button

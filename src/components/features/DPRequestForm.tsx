@@ -57,7 +57,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
       {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">{error}</div>}
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Pilih Supplier</label>
+        <label className="block text-sm font-semibold text-slate-700 mb-2">Pilih Lapak</label>
         <ElegantSelect
           value={supplierId}
           options={supplierOptions}

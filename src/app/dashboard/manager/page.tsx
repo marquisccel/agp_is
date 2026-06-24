@@ -38,12 +38,12 @@ const formatActivityAction = (action: string) => {
     },
     APPROVE_DP: {
       label: "DP disetujui",
-      description: "menyetujui pengajuan DP supplier",
+      description: "menyetujui pengajuan DP lapak",
       tone: "bg-violet-50 text-violet-700 border-violet-100",
     },
     REJECT_DP: {
       label: "DP ditolak",
-      description: "menolak pengajuan DP supplier",
+      description: "menolak pengajuan DP lapak",
       tone: "bg-rose-50 text-rose-700 border-rose-100",
     },
     FORWARD_DP: {
@@ -73,8 +73,8 @@ const formatActivityScope = (tableName: string) => {
   const scopeMap: Record<string, string> = {
     Purchase: "Transaksi pembelian",
     PurchaseItem: "Item pembelian",
-    DownPayment: "DP supplier",
-    Supplier: "Data supplier",
+    DownPayment: "DP lapak",
+    Supplier: "Data lapak",
     Warehouse: "Collection Center",
     WarehouseTarget: "Target gudang",
   }
@@ -160,7 +160,7 @@ export default async function ManagerDashboard({
     persentase_pembayaran: p.persentase_pembayaran ?? 80,
     nominal_belum_lunas: p.nominal_belum_lunas ?? 0,
     supplier: {
-      nama: p.supplier?.nama || "Supplier Terhapus"
+      nama: p.supplier?.nama || "Lapak Terhapus"
     }
   }))
 

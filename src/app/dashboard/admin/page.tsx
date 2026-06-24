@@ -35,7 +35,7 @@ export default async function AdminDashboard() {
     persentase_pembayaran: p.persentase_pembayaran ?? 80,
     nominal_belum_lunas: p.nominal_belum_lunas ?? 0,
     supplier: {
-      nama: p.supplier?.nama || "Supplier Terhapus"
+      nama: p.supplier?.nama || "Lapak Terhapus"
     }
   }))
 
@@ -73,7 +73,7 @@ export default async function AdminDashboard() {
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4">Tanggal / Staff</th>
-                <th className="px-6 py-4">Supplier</th>
+                <th className="px-6 py-4">Lapak</th>
                 <th className="px-6 py-4">Item (Estimasi)</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { createPortal } from "react-dom"
-import { fmtKg, fmtAngka, fmtPct } from "@/lib/format"
+import { fmtKg, fmtPct } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 
 interface SkuSusutDetail {
@@ -187,10 +187,6 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
         ) : (
           <div className="space-y-4">
             {sorted.map((row, idx) => {
-              const netSelisih = row.totalGudang - row.totalLapak
-              const isNetSusut = netSelisih < 0
-              const isNetLebih = netSelisih > 0
-
               return (
                 <div
                   key={row.supplierId}
@@ -299,7 +295,6 @@ export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames
             <div className="p-4 sm:p-6 overflow-y-auto space-y-6 max-h-[64vh] scrollbar-thin scrollbar-thumb-slate-200">
               {selectedLapak.detailTransaksi && selectedLapak.detailTransaksi.length > 0 ? (
                 selectedLapak.detailTransaksi.map((tx) => {
-                  const hasShrinkage = tx.selisih < 0
                   return (
                     <div key={tx.purchaseId} className="border border-slate-100 rounded-lg p-4 bg-slate-50/50 space-y-3">
                       {/* Tx Header */}

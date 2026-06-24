@@ -38,13 +38,11 @@ function getPanelLabel(role: string) {
 }
 
 function SidebarContent({
-  role,
   navItems,
   pathname,
   user,
   onNavigate,
 }: {
-  role: string
   navItems: NavItem[]
   pathname: string
   user: Session["user"]
@@ -141,7 +139,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Double Check", href: "/dashboard/admin", icon: ShieldCheck, exact: true },
       ] : []),
       { name: "Input Pembelian", href: "/dashboard/staff", icon: Package, exact: true },
-      { name: "Data Supplier", href: "/dashboard/staff/suppliers", icon: Store },
+      { name: "Data Lapak", href: "/dashboard/staff/suppliers", icon: Store },
       ...(role === "ADMIN" ? [
         { name: "Approval Kasbon", href: "/dashboard/admin/dp", icon: WalletCards },
       ] : [
@@ -182,7 +180,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <aside className="liquid-sidebar hidden lg:flex w-72 text-slate-950 border-r border-white/70 flex-col flex-shrink-0 z-40">
         <SidebarContent
-          role={role}
           navItems={navItems}
           pathname={pathname}
           user={session.user}
@@ -199,7 +196,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
         <SidebarContent
-          role={role}
           navItems={navItems}
           pathname={pathname}
           user={session.user}

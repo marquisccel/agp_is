@@ -162,7 +162,7 @@ export default function SupplierForm({
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">Nama Supplier <span className="text-red-500">*</span></label>
+        <label className="text-sm font-semibold text-slate-700">Nama Lapak <span className="text-red-500">*</span></label>
         <input
           type="text"
           required
@@ -298,7 +298,7 @@ export default function SupplierForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Status Transaksi Supplier</label>
+          <label className="text-sm font-semibold text-slate-700">Status Transaksi Lapak</label>
           <ElegantSelect
             value={transactionStatus}
             options={TRANSACTION_STATUS_OPTIONS}
@@ -387,7 +387,7 @@ export default function SupplierForm({
           disabled={loading}
           className="premium-button ml-auto rounded-xl bg-slate-950 px-6 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-70"
         >
-          {loading ? "Menyimpan..." : isEdit ? "Update Supplier" : "Simpan Supplier"}
+          {loading ? "Menyimpan..." : isEdit ? "Update Lapak" : "Simpan Lapak"}
         </button>
       </div>
     </form>

@@ -69,7 +69,7 @@ export default function AdminHistoryClient({
     .filter(Boolean) as Supplier[]
 
   const supplierOptions = [
-    { value: "all", label: "Semua Supplier" },
+    { value: "all", label: "Semua Lapak" },
     ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.nama })),
   ]
 

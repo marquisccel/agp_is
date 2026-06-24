@@ -48,15 +48,15 @@ export default async function StaffSuppliersPage({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Supplier directory"
-        title="Data Supplier"
-        description="Daftar supplier gudang Anda. Gunakan edit untuk memperbarui kontak, rekening, target, dan jadwal ambilan."
+        eyebrow="Lapak directory"
+        title="Data Lapak"
+        description="Daftar lapak gudang Anda. Gunakan edit untuk memperbarui kontak, rekening, target, dan jadwal ambilan."
         actions={(
           <Link
             href="/dashboard/staff/suppliers/new"
             className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-slate-950 shadow-sm hover:bg-slate-800 transition-colors"
           >
-            Tambah Supplier
+            Tambah Lapak
           </Link>
         )}
       />
@@ -122,21 +122,21 @@ export default async function StaffSuppliersPage({
       {filteredSuppliers.length === 0 ? (
         <div className="interactive-surface bg-white rounded-lg border border-dashed border-slate-200 p-12 text-center">
           <p className="text-slate-400 text-sm">
-            {allSuppliers.length === 0 ? "Belum ada supplier terdaftar." : "Tidak ada supplier pada kombinasi filter yang dipilih."}
+            {allSuppliers.length === 0 ? "Belum ada lapak terdaftar." : "Tidak ada lapak pada kombinasi filter yang dipilih."}
           </p>
           {allSuppliers.length === 0 ? (
             <Link
               href="/dashboard/staff/suppliers/new"
               className="mt-4 inline-block text-teal-700 text-sm font-semibold hover:underline"
             >
-              Tambah supplier pertama
+              Tambah lapak pertama
             </Link>
           ) : (
             <Link
               href="/dashboard/staff/suppliers"
               className="mt-4 inline-block text-teal-700 text-sm font-semibold hover:underline"
             >
-              Lihat semua supplier
+              Lihat semua lapak
             </Link>
           )}
         </div>

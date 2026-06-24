@@ -18,8 +18,7 @@ export default function DownloadNotaButton({ purchase, qrCodeUrl }: { purchase: 
       document={<NotaPDF purchase={purchase} qrCodeUrl={qrCodeUrl} />}
       fileName={`Nota-${purchase.nomor_nota || purchase.id}.pdf`}
     >
-      {/* @ts-ignore */}
-      {({ blob, url, loading, error }) =>
+      {({ loading }: { loading: boolean }) =>
         loading ? (
           <button className="px-6 py-3 bg-cyan-100 text-cyan-600 rounded-xl font-medium animate-pulse cursor-wait">
             Menyiapkan PDF...

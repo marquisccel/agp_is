@@ -38,7 +38,7 @@ export default async function DPApprovalManager() {
             <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
               <tr>
                 <th className="px-6 py-4">Tanggal Pengajuan</th>
-                <th className="px-6 py-4">Supplier</th>
+                <th className="px-6 py-4">Lapak</th>
                 <th className="px-6 py-4">Nominal Diajukan</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>
@@ -60,7 +60,7 @@ export default async function DPApprovalManager() {
                       <div>{dp.supplier.nama}</div>
                       {dp.keterangan && (
                         <div className="mt-1.5 max-w-xs rounded-xl border border-slate-200/70 bg-white/70 p-2 text-xs font-normal italic text-slate-500">
-                          Note: "{dp.keterangan}"
+                          Note: &ldquo;{dp.keterangan}&rdquo;
                         </div>
                       )}
                     </td>

@@ -5,23 +5,18 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
-  Calendar,
   CheckCircle,
   Clock,
   CreditCard,
   DollarSign,
   FileText,
-  Info,
-  Scale,
   Shield,
-  Tag,
   User,
   XCircle,
   AlertCircle,
   Activity,
-  Image as ImageIcon
 } from "lucide-react"
-import { fmtKg, fmtRp } from "@/lib/format"
+import { fmtRp } from "@/lib/format"
 import PageHeader from "@/components/ui/PageHeader"
 
 interface PurchaseItem {
@@ -198,7 +193,7 @@ export default function ManagerPurchaseDetailClient({
   }
 
   // Render method label
-  const methodLabel = purchase.metode_pembayaran_terpilih === "TIMBANGAN_GUDANG" ? "Timbangan Gudang (CC)" : "Timbangan Lapak (Supplier)"
+  const methodLabel = purchase.metode_pembayaran_terpilih === "TIMBANGAN_GUDANG" ? "Timbangan Gudang (CC)" : "Timbangan Lapak"
   const netValue = purchase.total_nilai_setelah_retur || purchase.total_dibayar || 0
   const payableValue = purchase.total_dibayar || netValue
   const initialPayment = purchase.nominal_pembayaran_awal ?? payableValue
@@ -279,7 +274,7 @@ export default function ManagerPurchaseDetailClient({
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-3">
                 <User className="w-3.5 h-3.5 text-slate-400" />
-                Mitra Lapak (Supplier)
+                Mitra Lapak
               </h3>
               <Link
                 href={`/dashboard/manager/suppliers/${purchase.supplier.id}`}

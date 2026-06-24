@@ -18,8 +18,8 @@ export default async function NewSupplierPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Supplier registry"
-        title="Tambah Data Supplier"
+        eyebrow="Lapak registry"
+        title="Tambah Data Lapak"
         description="Lengkapi profil lapak baru agar siap digunakan pada transaksi pembelian."
       />
 

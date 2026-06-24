@@ -40,7 +40,7 @@ export default async function ApprovalHargaList() {
             <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
               <tr>
                 <th className="px-6 py-4">Gudang / Tanggal</th>
-                <th className="px-6 py-4">Supplier</th>
+                <th className="px-6 py-4">Lapak</th>
                 <th className="px-6 py-4">Total Nilai</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>

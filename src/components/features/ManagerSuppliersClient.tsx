@@ -193,7 +193,7 @@ export default function ManagerSuppliersClient({
     try {
       const supplier = suppliers.find((item) => item.id === editingLocationSupplierId)
       if (!supplier) {
-        throw new Error("Supplier tidak ditemukan")
+        throw new Error("Lapak tidak ditemukan")
       }
 
       const res = await fetch(`/api/suppliers/${editingLocationSupplierId}`, {
@@ -382,8 +382,8 @@ export default function ManagerSuppliersClient({
       <section className="interactive-surface border border-slate-200/80 p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">Supplier intelligence</p>
-            <h3 className="mt-2 text-xl font-black tracking-[-0.02em] text-slate-950">Kinerja Lapak dan Supplier</h3>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">Lapak intelligence</p>
+            <h3 className="mt-2 text-xl font-black tracking-[-0.02em] text-slate-950">Kinerja Lapak</h3>
             <p className="mt-1 text-sm leading-6 text-slate-500">
               Filter performa berdasarkan gudang, periode, grade, dan kata kunci tanpa kehilangan konteks operasional.
             </p>
@@ -660,7 +660,7 @@ export default function ManagerSuppliersClient({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Quick edit lokasi</p>
-                <h3 className="mt-1 text-xl font-black text-slate-950">Perbarui Lokasi Supplier</h3>
+                <h3 className="mt-1 text-xl font-black text-slate-950">Perbarui Lokasi Lapak</h3>
                 <p className="mt-1 text-sm text-slate-500">Simpan link Maps dan koordinat tanpa meninggalkan daftar lapak.</p>
               </div>
               <button

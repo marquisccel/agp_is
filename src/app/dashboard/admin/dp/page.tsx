@@ -50,7 +50,7 @@ export default async function DPListAdmin() {
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4">Tanggal Pengajuan</th>
-                <th className="px-6 py-4">Supplier</th>
+                <th className="px-6 py-4">Lapak</th>
                 <th className="px-6 py-4">Nominal Diajukan</th>
                 <th className="px-6 py-4">Sisa DP</th>
                 <th className="px-6 py-4">Status</th>
@@ -74,7 +74,7 @@ export default async function DPListAdmin() {
                       <div>{dp.supplier.nama}</div>
                       {dp.keterangan && (
                         <div className="text-xs text-slate-500 mt-1.5 italic font-normal bg-slate-50 p-2 rounded-lg border border-slate-100 max-w-xs">
-                          Note: "{dp.keterangan}"
+                          Note: &ldquo;{dp.keterangan}&rdquo;
                         </div>
                       )}
                     </td>

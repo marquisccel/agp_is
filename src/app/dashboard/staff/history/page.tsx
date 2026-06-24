@@ -44,7 +44,7 @@ export default async function StaffHistoryPage() {
             <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4">Tanggal / Waktu</th>
-                <th className="px-6 py-4">Supplier</th>
+                <th className="px-6 py-4">Lapak</th>
                 <th className="px-6 py-4">Metode Bayar</th>
                 <th className="px-6 py-4">Total Item</th>
                 <th className="px-6 py-4">Status</th>

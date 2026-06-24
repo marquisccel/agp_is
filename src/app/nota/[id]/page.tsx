@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation"
 import NotaViewerClient from "@/components/features/NotaViewerClient"
 import QRCode from "qrcode"
 

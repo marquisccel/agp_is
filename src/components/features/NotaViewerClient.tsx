@@ -62,7 +62,7 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
             </td>
           </tr>
           <tr>
-            <td style={{ color: "#64748b", paddingBottom: 4 }}>Supplier / Lapak:</td>
+            <td style={{ color: "#64748b", paddingBottom: 4 }}>Lapak / Supplier:</td>
             <td style={{ fontWeight: 700, color: "#0f172a", textAlign: "right" }}>{purchase.supplier?.nama}</td>
           </tr>
           <tr>
@@ -193,7 +193,6 @@ export default function NotaViewerClient({
 }) {
   const notaRef = useRef<HTMLDivElement>(null)
   const [isClient, setIsClient] = useState(false)
-  const [phase, setPhase] = useState<"preview" | "done">("preview")
   const [jpgLoading, setJpgLoading] = useState(false)
   const [jpgUrl, setJpgUrl] = useState<string | null>(null)
 
@@ -346,8 +345,7 @@ export default function NotaViewerClient({
             fileName={`Nota-${purchase.nomor_nota || purchase.id}.pdf`}
             className="block"
           >
-            {/* @ts-ignore */}
-            {({ loading }) => (
+            {({ loading }: { loading: boolean }) => (
               <button
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2.5 py-3.5 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-60"
