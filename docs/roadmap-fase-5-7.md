@@ -24,16 +24,16 @@ Tujuan: sistem siap dipakai serius tanpa celah role/akses, sebelum data stakehol
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Role access matrix | Open | Dokumentasikan matrix role x route x aksi (view/create/edit/delete) sebagai satu tabel, verifikasi tiap baris terhadap `proxy.ts` dan guard di setiap API route. |
-| Cross-warehouse access audit | Open | Pastikan semua endpoint STAFF/ADMIN konsisten scoped ke `warehouseId` (1 ADMIN per gudang), MANAGER konsisten lintas warehouse (pola yang sudah benar di `admin/purchases/[id]/route.ts` jadi referensi). |
-| Delete permission audit | Open | Cek ulang endpoint mana saja yang punya operasi delete/cancel dan siapa yang boleh memicunya - belum ada pass khusus untuk ini. |
-| Upload validation lanjutan | Partial | MIME + size guard untuk bukti transfer sudah ada (`docs/hardening-review-2026-06-18.md`); perlu cek apakah validasi yang sama berlaku di semua titik upload lain. |
-| Session safety | Open | Review `authOptions.ts` untuk expiry, rotasi token, dan perilaku saat role/warehouse user berubah di tengah sesi aktif. |
+| Role access matrix | Done (2026-06-24) | Audit penuh semua route di `src/app/api/**/route.ts` (role check, warehouse-scope, ada/tidaknya `getServerSession`). Hasil: MANAGER memang didesain lintas-gudang di hampir semua endpoint write (approve harga, set target, sku-price, export, delete master data) - itu bukan gap, itu fungsi manager. Gap nyata yang ketemu sudah difix, lihat 2 baris di bawah. |
+| Cross-warehouse access audit | Done (2026-06-24) | 2 gap nyata ditemukan & difix: (1) `GET /api/targets` ternyata tidak punya `getServerSession` sama sekali - publicly readable tanpa login, karena `proxy.ts` cuma guard `/dashboard/:path*`, bukan `/api/:path*`. (2) `GET /api/suppliers/[id]` tidak ada warehouse-scope - STAFF/ADMIN gudang manapun bisa baca data supplier (termasuk rekening bank) gudang lain by ID. Keduanya sudah ditutup. |
+| Delete permission audit | Done (2026-06-24) | Semua operasi delete (`manager/purchases/[id]` DELETE, `manager/suppliers/[id]` DELETE) sudah role-guard MANAGER-only + audit log, dan supplier delete sudah ada pre-check (tolak hapus kalau masih punya riwayat transaksi/DP). Tidak ada endpoint delete yang lupa guard. |
+| Upload validation lanjutan | Done (2026-06-24) | Hanya ada 1 titik upload (`purchases/[id]/transfer/route.ts`, bukti transfer) - sudah MIME+size guard server-side. Ditemukan & difix 1 celah kecil: kode lama default ke `image/jpeg` kalau `file.type` kosong (bisa dipakai buat lolosin file non-image), sekarang ditolak langsung kalau MIME type kosong/tidak dikenali. |
+| Session safety | Done (2026-06-24) | `authOptions.ts`: JWT `maxAge` diperketat dari default 30 hari jadi 7 hari, dan ditambah throttle login (in-memory, lock 15 menit setelah 5 kali gagal per email) di `src/lib/loginThrottle.ts` - sebelumnya tidak ada perlindungan brute-force sama sekali. Catatan yang masih berlaku: token tidak auto-refresh kalau role/warehouse user diubah admin di tengah sesi aktif - user harus re-login manual supaya perubahan kebaca. Untuk skala tim sekarang (~7 user internal) ini cukup, belum perlu infra token-revocation. |
 | Role naming cleanup (opsional) | Open | ADMIN/STAFF secara konsep satu role operasional (`isOperationalRole()`), legacy naming masih dipakai untuk kompatibilitas. Tunda sampai stakeholder konfirmasi final sebelum rename ke istilah seperti `OPERATIONAL`. |
 
 ### Phase 6 Gate
 
-Fase 5 siap ditutup ketika role access matrix terdokumentasi dan terverifikasi, dan tidak ada endpoint yang lupa scope warehouse.
+Fase 5 ditutup 2026-06-24. Role access matrix terverifikasi, 2 gap nyata (akses publik tanpa login, kebocoran data lintas-gudang) sudah ditutup, delete & upload validation sudah diaudit bersih, session diperketat. Sisa item (role naming cleanup) bersifat opsional dan ditunda atas keputusan sendiri, bukan blocker.
 
 ## Fase 6 - Data Quality & Import Tools
 
