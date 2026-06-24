@@ -83,8 +83,7 @@ export default function ManagerHistoryClient({
   })
 
   const statusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_verifikasi_supervisor: { label: "Menunggu Verifikasi Supervisor", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    menunggu_double_cek: { label: "Menunggu Cek", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    menunggu_verifikasi: { label: "Menunggu Verifikasi", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
     menunggu_approval_harga: { label: "Menunggu Approval Harga", cls: "bg-orange-50 text-orange-700 border-orange-200" },
     approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
     sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -117,8 +116,7 @@ export default function ManagerHistoryClient({
               menuClassName="w-72"
               options={[
                 { value: "all", label: "Semua Status" },
-                { value: "menunggu_verifikasi_supervisor", label: "Menunggu Verifikasi Supervisor" },
-                { value: "menunggu_double_cek", label: "Menunggu Double Cek" },
+                { value: "menunggu_verifikasi", label: "Menunggu Verifikasi" },
                 { value: "menunggu_approval_harga", label: "Menunggu Approval Harga" },
                 { value: "approved", label: "Disetujui (Menunggu Transfer)" },
                 { value: "sudah_transfer", label: "Sudah Transfer" },

@@ -148,10 +148,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       { name: "Daftar Transaksi", href: "/dashboard/staff/history", icon: ClipboardList },
       { name: "Transfer Pembayaran", href: "/dashboard/admin/transfer", icon: CreditCard },
     ] : []),
-    ...(role === "SUPERVISOR" ? [
-      { name: "Review Transaksi", href: "/dashboard/supervisor", icon: ShieldCheck, exact: true },
-      { name: "Daftar Transaksi", href: "/dashboard/supervisor/history", icon: ClipboardList },
-    ] : []),
     ...(role === "MANAGER" ? [
       { name: "Analytics", href: "/dashboard/manager", icon: BarChart3, exact: true },
       { name: "Analisis Susut", href: "/dashboard/manager/susut", icon: Scale },

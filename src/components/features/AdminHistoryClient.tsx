@@ -55,8 +55,7 @@ export default function AdminHistoryClient({
 
   const statusOptions = [
     { value: "all", label: "Semua Status" },
-    { value: "menunggu_verifikasi_supervisor", label: "Menunggu Verifikasi Supervisor" },
-    { value: "menunggu_double_cek", label: "Menunggu Double Cek" },
+    { value: "menunggu_verifikasi", label: "Menunggu Verifikasi" },
     { value: "menunggu_approval_harga", label: "Menunggu Approval Harga" },
     { value: "approved", label: "Disetujui (Menunggu Transfer)" },
     { value: "sudah_transfer", label: "Sudah Transfer" },
@@ -88,8 +87,7 @@ export default function AdminHistoryClient({
   })
 
   const statusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_verifikasi_supervisor: { label: "Menunggu Verifikasi Supervisor", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    menunggu_double_cek: { label: "Menunggu Cek", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    menunggu_verifikasi: { label: "Menunggu Verifikasi", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
     menunggu_approval_harga: { label: "Menunggu Approval", cls: "bg-orange-50 text-orange-700 border-orange-200" },
     approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
     sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -197,7 +195,7 @@ export default function AdminHistoryClient({
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2 flex-wrap">
-                          {purchase.status_approval === "menunggu_verifikasi_supervisor" || purchase.status_approval === "menunggu_double_cek" ? (
+                          {purchase.status_approval === "menunggu_verifikasi" ? (
                             <Link href={`${basePath}/check/${purchase.id}`}>
                               <button className="bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1">
                                 Cek <ArrowRight className="w-3.5 h-3.5" />

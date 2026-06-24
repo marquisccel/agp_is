@@ -3,7 +3,6 @@ import { NextResponse } from "next/server"
 
 const ROLE_GUARDS: Array<{ prefix: string; roles: string[] }> = [
   { prefix: "/dashboard/manager", roles: ["MANAGER"] },
-  { prefix: "/dashboard/supervisor", roles: ["SUPERVISOR"] },
   { prefix: "/dashboard/admin/transfer", roles: ["ADMIN", "STAFF"] },
   { prefix: "/dashboard/admin", roles: ["ADMIN"] },
   { prefix: "/dashboard/staff", roles: ["ADMIN", "STAFF"] },
@@ -23,7 +22,6 @@ export default withAuth(
       const role = String(token?.role || "")
       const fallback =
         role === "MANAGER" ? "/dashboard/manager" :
-        role === "SUPERVISOR" ? "/dashboard/supervisor" :
         role === "ADMIN" ? "/dashboard/admin" :
         role === "STAFF" ? "/dashboard/staff" :
         "/login"

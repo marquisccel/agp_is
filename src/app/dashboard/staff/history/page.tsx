@@ -21,8 +21,7 @@ export default async function StaffHistoryPage() {
   })
 
   const statusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_verifikasi_supervisor: { label: "Menunggu Verifikasi Supervisor", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    menunggu_double_cek: { label: "Menunggu Double Cek", cls: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+    menunggu_verifikasi: { label: "Menunggu Verifikasi", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
     menunggu_approval_harga: { label: "Menunggu Approval", cls: "bg-orange-50 text-orange-700 border-orange-200" },
     approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
     sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },

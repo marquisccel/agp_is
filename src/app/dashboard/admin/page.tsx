@@ -4,7 +4,7 @@ import Link from "next/link"
 import { authOptions } from "@/lib/authOptions"
 import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
-import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
+import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import PageHeader from "@/components/ui/PageHeader"
 
 export default async function AdminDashboard() {
@@ -41,7 +41,7 @@ export default async function AdminDashboard() {
 
   const drafts = await prisma.purchase.findMany({
     where: { 
-      status_approval: { in: PENDING_SUPERVISOR_STATUSES },
+      status_approval: { in: PENDING_VERIFICATION_STATUSES },
       warehouseId: warehouseId 
     },
     include: {

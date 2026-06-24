@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, percentageNumber, positiveNumber } from "@/lib/numberValidation"
-import { PENDING_SUPERVISOR_STATUSES } from "@/lib/purchaseStatus"
+import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import { markSupplierGreen } from "@/lib/supplierStatus"
 
 type DoubleCheckItemInput = {
@@ -29,7 +29,7 @@ const toNumber = (value: number | string | null | undefined, fieldName = "Nilai"
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || !["ADMIN", "SUPERVISOR"].includes(session.user.role)) {
+    if (!session || !session.user || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -66,10 +66,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     if (!currentPurchase) return NextResponse.json({ error: "Not found" }, { status: 404 })
-    if (["ADMIN", "SUPERVISOR"].includes(session.user.role) && currentPurchase.warehouseId !== session.user.warehouseId) {
+    if (currentPurchase.warehouseId !== session.user.warehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
-    if (!PENDING_SUPERVISOR_STATUSES.includes(currentPurchase.status_approval)) {
+    if (!PENDING_VERIFICATION_STATUSES.includes(currentPurchase.status_approval)) {
       return NextResponse.json({ error: "Purchase is not waiting for warehouse verification" }, { status: 400 })
     }
 
@@ -240,7 +240,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         await markSupplierGreen(tx, {
           supplierId: currentPurchase.supplierId,
           userId: session.user.id,
-          trigger: session.user.role === "SUPERVISOR" ? "supervisor_verify_purchase" : "admin_double_check_purchase",
+          trigger: "admin_double_check_purchase",
           purchaseId,
         })
       }
@@ -251,7 +251,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     // 3. Audit Log
     await createAuditLog({
       userId: session.user.id,
-      action: session.user.role === "SUPERVISOR" ? "SUPERVISOR_VERIFY_PURCHASE" : "DOUBLE_CHECK",
+      action: "ADMIN_DOUBLE_CHECK",
       table_name: "Purchase",
       record_id: purchaseId,
       old_data: currentPurchase,

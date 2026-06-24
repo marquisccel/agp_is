@@ -10,7 +10,6 @@ export async function markSupplierGreen(
     supplierId: string
     userId: string
     trigger:
-      | "supervisor_verify_purchase"
       | "admin_double_check_purchase"
       | "manager_approve_purchase"
       | "manager_approve_harga"

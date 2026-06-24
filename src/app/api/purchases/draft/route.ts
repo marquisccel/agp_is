@@ -88,7 +88,7 @@ export async function POST(req: Request) {
         userIdStaff: session.user.id,
         metode_pembayaran_terpilih,
         berat_timbangan_lapak: totalLapakWeight,
-        status_approval: "menunggu_verifikasi_supervisor",
+        status_approval: "menunggu_verifikasi",
         potongan_sampah: potonganSampah,
         berat_potongan_sampah: beratPotonganSampah,
         harga_potongan_sampah: hargaPotonganSampah,

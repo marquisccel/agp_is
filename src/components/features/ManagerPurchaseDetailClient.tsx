@@ -133,15 +133,10 @@ export default function ManagerPurchaseDetailClient({
 
   // Status mapping
   const statusMap: Record<string, { label: string; cls: string; desc: string }> = {
-    menunggu_verifikasi_supervisor: {
-      label: "Menunggu Verifikasi Supervisor",
+    menunggu_verifikasi: {
+      label: "Menunggu Verifikasi",
       cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      desc: "Menunggu verifikasi penerimaan barang dari Supervisor gudang."
-    },
-    menunggu_double_cek: {
-      label: "Menunggu Cek",
-      cls: "bg-amber-50 text-amber-700 border-amber-200",
-      desc: "Menunggu pemeriksaan ulang (double check) dari Admin."
+      desc: "Menunggu verifikasi dan double check penerimaan barang dari Admin gudang."
     },
     menunggu_approval_harga: {
       label: "Menunggu Approval",

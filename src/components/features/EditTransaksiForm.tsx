@@ -54,8 +54,7 @@ const SPEC_SELECT_OPTIONS = [
   ...SPEC_OPTIONS.map(spec => ({ value: spec, label: spec })),
 ]
 const STATUS_LABELS: Record<string, string> = {
-  menunggu_verifikasi_supervisor: "Menunggu Verifikasi Supervisor",
-  menunggu_double_cek: "Menunggu Double Cek",
+  menunggu_verifikasi: "Menunggu Verifikasi",
   menunggu_approval_harga: "Menunggu Approval Harga",
   approved: "Disetujui",
   sudah_transfer: "Sudah Transfer",

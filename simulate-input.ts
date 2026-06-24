@@ -43,7 +43,7 @@ async function main() {
       userIdStaff: staff.id,
       metode_pembayaran_terpilih: 'TIMBANGAN_GUDANG',
       total_nilai_sebelum_retur: totalNilai,
-      status_approval: 'menunggu_double_cek',
+      status_approval: 'menunggu_verifikasi',
       items: {
         create: items.map(item => ({
           sku_name: item.sku,

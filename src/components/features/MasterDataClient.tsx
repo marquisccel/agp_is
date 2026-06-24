@@ -309,7 +309,6 @@ export default function MasterDataClient({
               className="w-full sm:w-48"
               options={[
                 { value: "all", label: "Semua Role" },
-                { value: "SUPERVISOR", label: "Supervisor" },
                 { value: "ADMIN", label: "Admin" },
                 { value: "STAFF", label: "Staff" },
               ]}
