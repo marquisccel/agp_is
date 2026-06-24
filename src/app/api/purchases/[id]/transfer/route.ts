@@ -46,8 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     let buktiUrl = purchase.bukti_transfer
     if (file) {
-      const mimeType = file.type || "image/jpeg"
-      const extension = ALLOWED_PROOF_TYPES[mimeType]
+      const extension = ALLOWED_PROOF_TYPES[file.type]
       if (!extension) {
         return NextResponse.json({ error: "Format bukti transfer harus JPG, PNG, WEBP, atau PDF." }, { status: 400 })
       }

@@ -108,7 +108,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user) {
+    if (!session || !session.user || !["STAFF", "MANAGER", "ADMIN"].includes(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -116,6 +116,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const supplier = await prisma.supplier.findUnique({ where: { id } })
     if (!supplier) {
       return NextResponse.json({ error: "Supplier tidak ditemukan" }, { status: 404 })
+    }
+
+    if (isOperationalRole(session.user.role) && supplier.warehouseId !== session.user.warehouseId) {
+      return NextResponse.json({ error: "Tidak memiliki akses ke supplier ini" }, { status: 403 })
     }
 
     return NextResponse.json(supplier)

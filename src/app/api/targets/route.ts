@@ -27,6 +27,11 @@ function parseYear(value: string | number | null | undefined, fallback: number) 
 // GET all warehouse targets with monthly and yearly filter
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session || session.user.role !== "MANAGER") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const { searchParams } = new URL(req.url)
     const qBulan = searchParams.get("bulan")
     const qTahun = searchParams.get("tahun")
