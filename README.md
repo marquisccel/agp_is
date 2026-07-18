@@ -210,3 +210,5 @@ Staff input draft -> Admin verifikasi + double check (per gudang) -> Manager app
 - [Fase 2 - Status Supplier](docs/phase-2-supplier-status.md)
 - [Fase 3 - Kontrol Pembayaran](docs/phase-3-payment-control.md)
 - [Fase 4 - Tata Kelola Pelaporan](docs/phase-4-reporting-governance.md)
+
+## Progress 25%
