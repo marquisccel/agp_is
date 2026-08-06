@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node seed.js",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -34,6 +35,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
+    "tsx": "^4.23.9",
     "typescript": "^5"
   }
 }

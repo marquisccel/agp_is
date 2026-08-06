@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -35,19 +36,24 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       )
     }
 
+    // Snapshot lengkap sebelum penghapusan, agar data lapak yang dihapus
+    // masih dapat direkonstruksi dari audit log (FR-8.3 / D-5).
+    const existing = await prisma.supplier.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "Data lapak tidak ditemukan" }, { status: 404 })
+    }
+
     await prisma.supplier.delete({
       where: { id }
     })
 
-    // Log the action
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: "DELETE",
-        table_name: "Supplier",
-        record_id: id,
-        old_data: "Deleted by manager"
-      }
+    await createAuditLog({
+      userId: session.user.id,
+      action: "DELETE_SUPPLIER",
+      table_name: "Supplier",
+      record_id: id,
+      old_data: existing,
+      new_data: null,
     })
 
     return NextResponse.json({ message: "Data Lapak berhasil dihapus" })

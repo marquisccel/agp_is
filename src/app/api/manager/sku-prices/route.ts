@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { positiveNumber } from "@/lib/numberValidation"
+import { createAuditLog } from "@/lib/audit"
 
 type SkuPriceInput = {
   sku_name: string
@@ -36,17 +37,41 @@ export async function PUT(req: Request) {
       })
 
       if (existing) {
-        await prisma.skuPriceStandard.update({
+        // Lewati penulisan bila nilainya tidak berubah, agar audit log tidak
+        // dipenuhi entri tanpa perubahan nyata.
+        if (existing.max_price_per_kg === maxPrice) continue
+
+        const updated = await prisma.skuPriceStandard.update({
           where: { id: existing.id },
           data: { max_price_per_kg: maxPrice }
         })
+
+        // Standar harga adalah dasar kontrol harga; perubahannya wajib
+        // tercatat agar dapat diaudit (D-4).
+        await createAuditLog({
+          userId: session.user.id,
+          action: "UPDATE_SKU_PRICE_STANDARD",
+          table_name: "SkuPriceStandard",
+          record_id: existing.id,
+          old_data: existing,
+          new_data: updated,
+        })
       } else {
-        await prisma.skuPriceStandard.create({
+        const created = await prisma.skuPriceStandard.create({
           data: {
             warehouseId,
             sku_name: p.sku_name,
             max_price_per_kg: maxPrice
           }
+        })
+
+        await createAuditLog({
+          userId: session.user.id,
+          action: "CREATE_SKU_PRICE_STANDARD",
+          table_name: "SkuPriceStandard",
+          record_id: created.id,
+          old_data: null,
+          new_data: created,
         })
       }
     }

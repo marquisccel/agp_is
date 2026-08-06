@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -10,22 +11,32 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     if (!session || session.user.role !== "MANAGER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    
+
+    // Ambil snapshot lengkap sebelum penghapusan agar data yang dihapus masih
+    // dapat direkonstruksi dari audit log. Sebelumnya kolom data lama hanya
+    // berisi penanda teks "Deleted by manager" (FR-8.3 / D-5).
+    const existing = await prisma.purchase.findUnique({
+      where: { id },
+      include: { items: true, returs: true, supplier: true },
+    })
+
+    if (!existing) {
+      return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
+    }
+
     // Deleting the purchase will automatically cascade delete its items and returs
     // because of `onDelete: Cascade` in the Prisma schema.
     await prisma.purchase.delete({
       where: { id }
     })
 
-    // Log the action
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: "DELETE",
-        table_name: "Purchase",
-        record_id: id,
-        old_data: "Deleted by manager"
-      }
+    await createAuditLog({
+      userId: session.user.id,
+      action: "DELETE_PURCHASE",
+      table_name: "Purchase",
+      record_id: id,
+      old_data: existing,
+      new_data: null,
     })
 
     return NextResponse.json({ message: "Transaksi berhasil dihapus" })

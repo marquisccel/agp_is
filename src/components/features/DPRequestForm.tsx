@@ -117,7 +117,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
             placeholder="Contoh: 1500000"
           />
         </div>
-        <p className="text-xs text-slate-500 mt-2">Catatan: Pengajuan di atas Rp 2.000.000 memerlukan persetujuan Manager.</p>
+        <p className="text-xs text-slate-500 mt-2">Catatan: Semua pengajuan kasbon memerlukan persetujuan, berapa pun nominalnya — pengajuan Staff diputus oleh Admin gudang, pengajuan Admin diputus oleh Manager.</p>
       </div>
 
       <div>

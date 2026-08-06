@@ -3,6 +3,8 @@ import { authOptions } from '@/lib/authOptions';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
+import { createAuditLog } from '@/lib/audit';
 
 export async function PUT(request: Request) {
   try {
@@ -20,11 +22,15 @@ export async function PUT(request: Request) {
       newPassword?: string;
     };
 
-    const updateData: Record<string, string> = {};
+    // Diketik dengan tipe Prisma (bukan Record<string, string>) agar salah
+    // nama field terdeteksi saat build. Sebelumnya nilai ditulis ke field
+    // "name" yang tidak ada pada model User -- seharusnya "nama" -- sehingga
+    // perubahan nama profil selalu gagal (D-12).
+    const updateData: Prisma.UserUpdateInput = {};
 
-    // Handle profile update (name / email)
+    // Handle profile update (nama / email)
     if (nama !== undefined) {
-      updateData.name = nama;
+      updateData.nama = nama;
     }
 
     if (email !== undefined) {
@@ -69,6 +75,21 @@ export async function PUT(request: Request) {
       await prisma.user.update({
         where: { id: session.user.id },
         data: updateData,
+      });
+
+      // Catat perubahan akun pada audit log (D-5). Nilai password tidak
+      // pernah disalin ke audit log -- hanya penanda bahwa password berubah.
+      await createAuditLog({
+        userId: session.user.id,
+        action: 'UPDATE_USER_SETTINGS',
+        table_name: 'User',
+        record_id: session.user.id,
+        old_data: { changed_fields: Object.keys(updateData) },
+        new_data: {
+          nama: updateData.nama ?? undefined,
+          email: updateData.email ?? undefined,
+          password_changed: updateData.password ? true : undefined,
+        },
       });
     }
 

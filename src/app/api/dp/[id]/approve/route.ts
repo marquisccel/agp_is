@@ -48,22 +48,33 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     let updateData: Prisma.DownPaymentUncheckedUpdateInput = {}
 
     if (action === "reject") {
-      updateData = { status_approval: "rejected" }
+      // Identitas dan waktu penolakan ikut dicatat (memakai field approver
+      // yang sama), agar riwayat keputusan pada pemantauan Manager lengkap --
+      // bukan hanya persetujuan.
+      updateData = {
+        status_approval: "rejected",
+        approvedByUserId: session.user.id,
+        tanggal_approval: new Date(),
+      }
     } else if (action === "forward" && role === "ADMIN") {
+      // Eskalasi opsional: Admin dapat meneruskan pengajuan ke Manager bila
+      // ragu memutuskan sendiri.
       updateData = { status_approval: "menunggu_approval_manager" }
     } else if (action === "forward") {
       return NextResponse.json({ error: "Action tidak valid untuk role ini." }, { status: 403 })
     } else if (action === "approve") {
+      // Kebijakan: approval Admin bersifat FINAL untuk pengajuan Staff,
+      // berapa pun nominalnya -- tidak ada lagi ambang Rp 2 juta dan tidak
+      // perlu approval Manager lanjutan. Identitas penyetuju tercatat pada
+      // approvedByUserId sehingga Manager dapat memantau admin mana yang
+      // menyetujui tiap kasbon (lihat riwayat pada halaman approval Manager).
       const finalNominal = nominal_disetujui === null || nominal_disetujui === undefined || nominal_disetujui === ""
         ? currentDp.nominal_diajukan
         : positiveNumber(nominal_disetujui, "Nominal disetujui")
       if (finalNominal > currentDp.nominal_diajukan) {
         return NextResponse.json({ error: "Nominal disetujui tidak boleh melebihi nominal diajukan." }, { status: 400 })
       }
-      if (role === "ADMIN" && finalNominal > 2000000) {
-         return NextResponse.json({ error: "Admin cannot approve DP > 2,000,000" }, { status: 403 })
-      }
-      
+
       updateData = {
         status_approval: "approved",
         nominal_disetujui: finalNominal,

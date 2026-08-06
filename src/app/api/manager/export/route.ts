@@ -316,19 +316,25 @@ function formatAuditAction(action: string) {
   const labels: Record<string, string> = {
     CREATE_DRAFT: "Draft transaksi dibuat",
     EDIT_PURCHASE: "Transaksi diperbarui",
-    SUPERVISOR_VERIFY_PURCHASE: "Penerimaan diverifikasi supervisor",
-    ADMIN_DOUBLE_CHECK: "Double check admin selesai",
+    ADMIN_DOUBLE_CHECK: "Verifikasi gudang selesai",
     MANAGER_APPROVE_PRICE: "Harga disetujui manager",
     MANAGER_REJECT_PRICE: "Harga ditolak manager",
     UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
     REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
     SETTLE_TERMIN: "Termin ditandai lunas",
     REQUEST_DP: "Pengajuan kasbon dibuat",
-    CREATE_DP_REQUEST: "Pengajuan kasbon dibuat",
     APPROVE_DP: "Kasbon disetujui",
     REJECT_DP: "Kasbon ditolak",
     FORWARD_DP: "Kasbon diteruskan ke manager",
-    SUPPLIER_STATUS_UPDATE: "Status supplier diperbarui",
+    // Nama aksi status supplier sebelumnya tidak cocok dengan yang benar-benar
+    // ditulis kode, sehingga tampil sebagai kode mentah pada export (D-6).
+    SUPPLIER_STATUS_AUTO_GREEN: "Status supplier otomatis menjadi GREEN",
+    SUPPLIER_STATUS_MANUAL_UPDATE: "Status supplier diubah manual",
+    UPDATE_SKU_PRICE_STANDARD: "Standar harga SKU diperbarui",
+    CREATE_SKU_PRICE_STANDARD: "Standar harga SKU ditambahkan",
+    UPDATE_USER_SETTINGS: "Pengaturan akun diperbarui",
+    DELETE_PURCHASE: "Transaksi dihapus permanen",
+    DELETE_SUPPLIER: "Data lapak dihapus",
   }
 
   return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())

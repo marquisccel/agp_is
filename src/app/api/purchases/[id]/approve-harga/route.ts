@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { markSupplierGreen } from "@/lib/supplierStatus"
+import { refundDp } from "@/lib/dpAllocation"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -14,7 +15,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id: purchaseId } = await params
-    const { action } = await req.json() // "approve" | "reject"
+    // rejection_reason bersifat opsional; bila tidak diisi Manager, sistem
+    // memakai teks default (sebelumnya teks ini selalu di-hardcode -- D-13).
+    const { action, rejection_reason } = await req.json() // "approve" | "reject"
 
     if (!["approve", "reject"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
@@ -39,7 +42,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           approvedByUserId: session.user.id,
           approvedAt: new Date(),
           nomor_nota: nomor_nota || purchase.nomor_nota,
-          ...(action === "reject" ? { rejection_reason: "Ditolak oleh Manager karena harga terlalu tinggi" } : {})
+          ...(action === "reject"
+            ? {
+                rejection_reason:
+                  typeof rejection_reason === "string" && rejection_reason.trim()
+                    ? rejection_reason.trim()
+                    : "Ditolak oleh Manager karena harga terlalu tinggi",
+              }
+            : {}),
         }
       })
 
@@ -50,6 +60,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           trigger: "manager_approve_harga",
           purchaseId,
         })
+      }
+
+      // Kembalikan saldo DP yang sudah terpotong saat verifikasi gudang,
+      // karena transaksinya dibatalkan (D-2). Tanpa ini, saldo kasbon supplier
+      // tetap berkurang meskipun pembelian tidak jadi.
+      if (action === "reject" && (purchase.dp_yang_digunakan ?? 0) > 0) {
+        await refundDp(tx, purchase.supplierId, purchase.dp_yang_digunakan ?? 0)
       }
 
       return updated

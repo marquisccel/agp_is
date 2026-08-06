@@ -7,6 +7,7 @@ import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, percentageNumber, positiveNumber } from "@/lib/numberValidation"
 import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import { markSupplierGreen } from "@/lib/supplierStatus"
+import { allocateDp, InsufficientDpError } from "@/lib/dpAllocation"
 
 type DoubleCheckItemInput = {
   sku_name: string
@@ -217,23 +218,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         },
       })
 
-      // If DP used, update Supplier's DP
+      // Potong saldo DP supplier bila DP digunakan.
+      // Alokasi dapat menjangkau beberapa record DP sekaligus, dan akan
+      // melempar InsufficientDpError bila total sisa saldo tidak mencukupi --
+      // sehingga seluruh transaction ini dibatalkan dan tidak ada transaksi
+      // yang tersimpan dengan DP yang tidak pernah terpotong.
       if (final_dp_used > 0) {
-        // Need to find an approved DP that has sisa_dp >= final_dp_used
-        // For simplicity, let's just assume we update the most recent one or aggregate it later.
-        // The PRD mentions DP is per supplier.
-        const dp = await tx.downPayment.findFirst({
-          where: { supplierId: currentPurchase.supplierId, status_approval: 'approved', sisa_dp: { gte: final_dp_used } }
-        })
-        if (dp) {
-          await tx.downPayment.update({
-            where: { id: dp.id },
-            data: {
-              dp_used_amount: { increment: final_dp_used },
-              sisa_dp: { decrement: final_dp_used }
-            }
-          })
-        }
+        await allocateDp(tx, currentPurchase.supplierId, final_dp_used)
       }
 
       if (newStatus === "approved") {
@@ -261,6 +252,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json(updatedPurchase)
   } catch (error) {
     const message = getErrorMessage(error)
+    if (error instanceof InsufficientDpError) {
+      return NextResponse.json({ error: message }, { status: 400 })
+    }
     console.error("Error double checking purchase:", error)
     return NextResponse.json({ error: message }, { status: 500 })
   }

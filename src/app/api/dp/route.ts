@@ -30,11 +30,15 @@ export async function POST(req: Request) {
     }
 
     const requestedNominal = positiveNumber(nominal_diajukan, "Nominal kasbon")
+
+    // Kebijakan: SEMUA pengajuan kasbon, berapa pun nominalnya, wajib melalui
+    // rantai persetujuan dua tingkat -- verifikasi Admin lalu persetujuan
+    // akhir Manager. Tidak ada auto-approve dan tidak ada ambang nominal.
+    // Pengajuan Admin langsung masuk antrean Manager, karena Admin adalah
+    // pengaju sekaligus tingkat verifikasi pertama.
     const status = session.user.role === "STAFF"
       ? "menunggu_approval_admin"
-      : requestedNominal > 2000000
-        ? "menunggu_approval_manager"
-        : "approved"
+      : "menunggu_approval_manager"
 
     const dp = await prisma.downPayment.create({
       data: {
@@ -42,13 +46,6 @@ export async function POST(req: Request) {
         nominal_diajukan: requestedNominal,
         keterangan,
         status_approval: status,
-        ...(status === "approved" && {
-          nominal_disetujui: requestedNominal,
-          sisa_dp: requestedNominal,
-          approvedByUserId: session.user.id,
-          tanggal_approval: new Date(),
-          expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-        })
       }
     })
 
