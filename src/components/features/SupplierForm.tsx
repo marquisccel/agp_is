@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
+import { isValidBankAccountNumber, isValidIndonesianWaNumber } from "@/lib/supplierValidation"
 
 const KNOWN_BANKS = ["BCA","BNI","BRI","BSI","BTN","Mandiri","CIMB Niaga","Danamon","Permata","Panin","OCBC NISP","Maybank","Mega","Muamalat","Jago","SeaBank","Jenius","Gopay","OVO","Dana"]
 const BANK_OPTIONS = [
@@ -80,6 +81,8 @@ export default function SupplierForm({
       ? parseCoordinatesFromMapLink(link)
       : null
   const needsManualCoordinates = isShortGoogleMapsLink(link) && !inferredCoordinates && latitude === "" && longitude === ""
+  const waWarning = kontakWa.trim() && !isValidIndonesianWaNumber(kontakWa) ? "Format nomor WA tidak dikenali (contoh: 0812xxxxxxx)." : ""
+  const rekeningWarning = nomorRekening.trim() && !isValidBankAccountNumber(nomorRekening) ? "Nomor rekening harus 5-20 digit angka." : ""
   const warehouseOptions = [
     { value: "", label: "Pilih lokasi gudang" },
     ...warehouses.map(w => ({ value: w.id as string, label: `Collection Center ${w.nama.replace(/^Gudang\s+/i, "")}` })),
@@ -204,6 +207,7 @@ export default function SupplierForm({
             className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
             placeholder="0812xxxxxx"
           />
+          {waWarning && <p className="text-xs font-medium text-amber-600">{waWarning}</p>}
         </div>
 
         <div className="space-y-2">
@@ -284,6 +288,7 @@ export default function SupplierForm({
             className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
             placeholder="Contoh: 1234567890"
           />
+          {rekeningWarning && <p className="text-xs font-medium text-amber-600">{rekeningWarning}</p>}
         </div>
 
         <div className="space-y-2">

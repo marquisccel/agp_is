@@ -6,6 +6,7 @@ import { createAuditLog } from "@/lib/audit"
 import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
 import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
+import { validateSupplierContactFields } from "@/lib/supplierValidation"
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -39,6 +40,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     if (!nama) {
       return NextResponse.json({ error: "Nama Supplier wajib diisi" }, { status: 400 })
+    }
+
+    const contactError = validateSupplierContactFields({ kontak_wa, nomor_rekening })
+    if (contactError) {
+      return NextResponse.json({ error: contactError }, { status: 400 })
     }
 
     const locationPayload = buildSupplierLocationPayload({ link, latitude, longitude })

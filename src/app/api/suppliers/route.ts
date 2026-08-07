@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
 import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
+import { validateSupplierContactFields } from "@/lib/supplierValidation"
 
 export async function POST(req: Request) {
   try {
@@ -39,6 +40,11 @@ export async function POST(req: Request) {
 
     if (isOperationalRole(session.user.role) && session.user.warehouseId !== warehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke gudang ini" }, { status: 403 })
+    }
+
+    const contactError = validateSupplierContactFields({ kontak_wa, nomor_rekening })
+    if (contactError) {
+      return NextResponse.json({ error: contactError }, { status: 400 })
     }
 
     const locationPayload = buildSupplierLocationPayload({ link, latitude, longitude })
