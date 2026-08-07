@@ -76,6 +76,7 @@ export default function SupplierForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [duplicateCandidates, setDuplicateCandidates] = useState<{ id: string; nama: string; reason: string }[] | null>(null)
   const inferredCoordinates =
     latitude === "" && longitude === ""
       ? parseCoordinatesFromMapLink(link)
@@ -90,9 +91,14 @@ export default function SupplierForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    await submitSupplier(false)
+  }
+
+  const submitSupplier = async (confirmDuplicate: boolean) => {
     setLoading(true)
     setError("")
     setSuccess("")
+    if (confirmDuplicate) setDuplicateCandidates(null)
 
     try {
       const url = isEdit ? `/api/suppliers/${supplierId}` : "/api/suppliers"
@@ -114,12 +120,17 @@ export default function SupplierForm({
           target_bulanan_kg: targetBulanan,
           frekuensi_ambilan_mingguan: parseInt(frekuensiAmbilan) || 1,
           hari_ambilan: hariAmbilanList.join(","),
-          warehouseId
+          warehouseId,
+          confirmDuplicate,
         })
       })
 
       if (!res.ok) {
         const data = await res.json()
+        if (res.status === 409 && data.requiresConfirmation) {
+          setDuplicateCandidates(data.duplicates)
+          return
+        }
         throw new Error(data.error || (isEdit ? "Gagal mengupdate supplier" : "Gagal menyimpan supplier"))
       }
 
@@ -153,6 +164,38 @@ export default function SupplierForm({
   return (
     <form onSubmit={handleSubmit} className="premium-workflow space-y-5">
       {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">{error}</div>}
+      {duplicateCandidates && duplicateCandidates.length > 0 && (
+        <div className="p-4 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-sm space-y-3">
+          <p className="font-semibold">Ditemukan supplier dengan nama/lokasi mirip di gudang ini:</p>
+          <ul className="list-disc pl-5 space-y-1">
+            {duplicateCandidates.map((d) => (
+              <li key={d.id}>
+                {d.nama}{" "}
+                <span className="text-xs text-amber-600">
+                  ({d.reason === "nama_identik" ? "nama identik" : d.reason === "nama_mirip" ? "nama mirip" : "lokasi berdekatan"})
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => submitSupplier(true)}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 disabled:opacity-70"
+            >
+              Ini bukan duplikat, tetap simpan
+            </button>
+            <button
+              type="button"
+              onClick={() => setDuplicateCandidates(null)}
+              className="px-4 py-2 rounded-lg bg-white border border-amber-200 text-xs font-bold text-amber-700 hover:bg-amber-100"
+            >
+              Batal, saya periksa dulu
+            </button>
+          </div>
+        </div>
+      )}
       {success && (
         <div className="p-3 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 text-sm font-medium flex items-center gap-2">
           {success}

@@ -6,6 +6,7 @@ import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
 import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 import { validateSupplierContactFields } from "@/lib/supplierValidation"
+import { findPotentialDuplicates } from "@/lib/supplierDuplicate"
 
 export async function POST(req: Request) {
   try {
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
       frekuensi_ambilan_mingguan,
       hari_ambilan,
       warehouseId,
+      confirmDuplicate,
     } = await req.json()
 
     if (!nama || !warehouseId) {
@@ -54,6 +56,27 @@ export async function POST(req: Request) {
       "Frekuensi ambilan mingguan",
       1
     )
+
+    if (!confirmDuplicate) {
+      const existingInWarehouse = await prisma.supplier.findMany({
+        where: { warehouseId },
+        select: { id: true, nama: true, latitude: true, longitude: true },
+      })
+      const duplicates = findPotentialDuplicates(
+        { nama, latitude: locationPayload.latitude, longitude: locationPayload.longitude },
+        existingInWarehouse
+      )
+      if (duplicates.length > 0) {
+        return NextResponse.json(
+          {
+            error: "Ditemukan supplier dengan nama/lokasi mirip di gudang ini.",
+            duplicates,
+            requiresConfirmation: true,
+          },
+          { status: 409 }
+        )
+      }
+    }
 
     const supplier = await prisma.supplier.create({
       data: {
