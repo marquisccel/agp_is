@@ -41,16 +41,16 @@ Tujuan: siap menerima data stakeholder asli (koordinat lapak, rekening, kontak, 
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Backfill koordinat lapak | Open | Baru ada input awal Lapak CC Kediri; daftar lengkap masih menunggu stakeholder. |
-| Validasi nama lapak vs collection center | Open | Perlu aturan konsisten supaya nama lapak di sistem cocok dengan penamaan CC di lapangan. |
-| Import batch CSV/Excel untuk koordinat supplier | Open | Akan jauh lebih cepat daripada edit satu-satu lewat `ManagerSuppliersClient`. |
-| Validasi nomor rekening & WA supplier | Open | Form sudah usable tapi belum ada validasi format (digit rekening, format nomor WA Indonesia). |
-| Validasi nilai numerik bisnis | Open | Tolak harga minus/nol dan berat yang tidak masuk akal pada input pembelian/edit, di luar yang sudah dicakup `numberValidation.ts`. |
-| Deteksi duplicate supplier | Open | Belum ada pengecekan nama/lokasi mirip saat tambah supplier baru. |
+| Validasi nomor rekening & WA supplier | Done (2026-08-07) | `src/lib/supplierValidation.ts` -- validasi format nomor WA Indonesia (08xx/+628xx/628xx) dan rekening (5-20 digit) di server (POST/PATCH `/api/suppliers`) plus hint real-time di form. Ambang panjang/pola adalah asumsi teknis, belum dikonfirmasi stakeholder (lihat pertanyaan A-1..A-4 di Bagian 16.3 PRD). |
+| Deteksi duplicate supplier | Done (2026-08-07) | `src/lib/supplierDuplicate.ts` -- soft warning (409, bukan block keras) saat nama identik/mirip (Levenshtein) atau lokasi berdekatan (<75m) dengan supplier lain di gudang yang sama. Pengguna bisa konfirmasi "bukan duplikat" untuk tetap simpan. |
+| Validasi nilai numerik bisnis | Done (2026-08-07) | Ditemukan 1 celah nyata saat audit: retur item pada `double-check/route.ts` tidak dibandingkan terhadap berat SKU yang dibeli, sehingga `berat_final` bisa jadi negatif kalau retur diisi berlebihan. Sudah ditutup (validasi per SKU, termasuk retur bertumpuk pada SKU sama). Validasi harga/berat dasar (positif, finite) sudah tercakup `numberValidation.ts` sejak sebelum Fase 6. |
+| Import batch CSV/Excel untuk koordinat supplier | Done (2026-08-07) | Endpoint `POST /api/manager/suppliers/import-coordinates` (Manager-only) + modal upload/paste CSV di `ManagerSuppliersClient.tsx`. Pencocokan baris ke supplier berbasis nama+gudang, baris ambigu/tidak ketemu dilewati (bukan ditebak), hasil per baris ditampilkan ke pengguna. Format Excel (.xlsx) belum didukung, hanya CSV -- cukup untuk kebutuhan saat ini karena Excel dapat diekspor ke CSV. |
+| Backfill koordinat lapak | Blocked | Menunggu data lengkap dari pemilik proses bisnis (pertanyaan C-1). Perangkat importnya sudah siap begitu data tersedia. |
+| Validasi nama lapak vs collection center | Blocked | Menunggu aturan penamaan yang disepakati stakeholder -- belum ada definisi baku "nama lapak yang konsisten dengan CC" untuk diimplementasikan sebagai validasi, supaya tidak menebak aturan bisnis. |
 
 ### Phase 7 Gate
 
-Fase 6 siap ditutup ketika data lapak (koordinat, rekening, kontak) sudah lengkap atau punya jalur import yang jelas, dan validasi input mencegah data sampah masuk sistem.
+4 dari 6 item Fase 6 selesai (2026-08-07); sisa 2 item (backfill koordinat, validasi nama vs CC) diblokir oleh kebutuhan data/aturan dari stakeholder, bukan oleh keterbatasan teknis. Fase 6 dapat dianggap siap ditutup dari sisi perangkat (tooling); penutupan penuh menunggu input stakeholder untuk 2 item yang tersisa. Fase 7 dapat mulai berjalan paralel untuk bagian yang tidak bergantung pada data lapak (unit test, domain types, deployment readiness).
 
 ## Fase 7 - Testing & Deployment Readiness
 
