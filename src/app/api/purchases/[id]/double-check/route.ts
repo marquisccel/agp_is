@@ -109,29 +109,44 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       const hargaPerKg = positiveNumber(item.harga_per_kg, `Harga/kg ${item.sku_name}`)
       const subtotal = weightToUse * hargaPerKg
       total_nilai_sebelum_retur += subtotal
-      
+
       const standard = currentPurchase.warehouse?.skuPrices.find(s => s.sku_name === item.sku_name)
       if (standard && hargaPerKg > standard.max_price_per_kg) {
         isPriceAboveStandard = true
       }
-      return { ...item, harga_per_kg: hargaPerKg, subtotal }
+      return { ...item, harga_per_kg: hargaPerKg, subtotal, weightToUse }
     })
 
     // Calculate Returns
     let total_potongan_retur = 0
     let total_berat_retur = 0
+    const returedWeightBySku = new Map<string, number>()
     const returItems = (returs as ReturItemInput[] | undefined) ?? []
     const returItemsData = returItems.map((r) => {
-      // Calculate return value = (berat_retur * harga_per_kg of that SKU) + potongan_nilai
-      const relatedItem = updatedItems.find((i) => i.sku_name === r.sku_name)
-      const harga = relatedItem ? relatedItem.harga_per_kg : 0
       if (!r.sku_name || typeof r.sku_name !== "string") {
         throw new Error("SKU retur wajib diisi.")
       }
 
+      // Retur mengacu ke SKU pada transaksi ini agar nilai retur dapat
+      // dihitung dan tidak melebihi berat yang benar-benar dibeli untuk
+      // SKU tersebut (mencegah berat_final menjadi negatif).
+      const relatedItem = updatedItems.find((i) => i.sku_name === r.sku_name)
+      if (!relatedItem) {
+        throw new Error(`SKU retur "${r.sku_name}" tidak ditemukan pada daftar item transaksi ini.`)
+      }
+      const harga = relatedItem.harga_per_kg
+
       const beratRetur = toNumber(r.berat_retur, `Berat retur ${r.sku_name}`)
       const potonganNilai = toNumber(r.potongan_nilai, `Potongan retur ${r.sku_name}`)
-      
+
+      const alreadyReturedForSku = returedWeightBySku.get(r.sku_name) ?? 0
+      if (alreadyReturedForSku + beratRetur > relatedItem.weightToUse) {
+        throw new Error(
+          `Total berat retur untuk SKU "${r.sku_name}" (${(alreadyReturedForSku + beratRetur).toFixed(2)} kg) melebihi berat yang dibeli (${relatedItem.weightToUse.toFixed(2)} kg).`
+        )
+      }
+      returedWeightBySku.set(r.sku_name, alreadyReturedForSku + beratRetur)
+
       const potongan = (beratRetur * harga) + potonganNilai
       total_potongan_retur += potongan
       total_berat_retur += beratRetur
