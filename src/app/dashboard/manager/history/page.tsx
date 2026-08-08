@@ -52,7 +52,7 @@ export default async function ManagerHistoryPage() {
       />
 
       <ManagerHistoryClient 
-        initialPurchases={formattedPurchases as any} 
+        initialPurchases={formattedPurchases} 
         warehouses={warehouses} 
       />
     </div>

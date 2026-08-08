@@ -45,7 +45,7 @@ export default async function AdminHistoryPage() {
         description="Daftar lengkap seluruh transaksi pembelian PET di Collection Center Anda."
       />
 
-      <AdminHistoryClient initialPurchases={formattedPurchases as any} />
+      <AdminHistoryClient initialPurchases={formattedPurchases} />
     </div>
   )
 }

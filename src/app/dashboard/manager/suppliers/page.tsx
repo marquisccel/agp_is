@@ -56,7 +56,7 @@ export default async function ManagerSuppliersPage() {
         description="Pantau kualitas, volume, harga, dan kelengkapan data lapak dengan ritme visual yang konsisten."
       />
       <ManagerSuppliersClient
-        suppliers={serializedSuppliers as any}
+        suppliers={serializedSuppliers}
         warehouses={warehouses}
         skuPrices={skuPrices}
       />

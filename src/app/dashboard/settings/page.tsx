@@ -109,7 +109,7 @@ export default function SettingsPage() {
     localStorage.setItem("petrecycle_lang", code)
   }
 
-  const role = (session?.user as any)?.role || ""
+  const role = session?.user?.role || ""
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

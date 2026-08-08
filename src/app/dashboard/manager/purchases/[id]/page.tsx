@@ -73,9 +73,9 @@ export default async function ManagerPurchaseDetailPage({ params }: { params: Pr
   return (
     <div className="max-w-5xl mx-auto">
       <ManagerPurchaseDetailClient
-        purchase={serializedPurchase as any}
-        auditLogs={serializedAuditLogs as any}
-        skuPrices={warehouseSkuPrices as any}
+        purchase={serializedPurchase}
+        auditLogs={serializedAuditLogs}
+        skuPrices={warehouseSkuPrices}
       />
     </div>
   )

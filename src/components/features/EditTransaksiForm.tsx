@@ -8,7 +8,7 @@ interface PurchaseItem {
   id?: string
   sku_name: string
   spec: string | null
-  berat_lapak: number
+  berat_lapak: number | null
   berat_final_item: number
   harga_per_kg: number
   subtotal: number

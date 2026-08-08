@@ -86,7 +86,7 @@ export default async function ManagerSupplierDetailPage({ params }: { params: Pr
 
   return (
     <div className="max-w-7xl mx-auto">
-      <ManagerSupplierDetailsClient supplier={serializedSupplier as any} />
+      <ManagerSupplierDetailsClient supplier={serializedSupplier} />
     </div>
   )
 }

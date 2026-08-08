@@ -109,8 +109,8 @@ export default async function MasterDataPage() {
       <MasterDataClient
         warehouses={warehouses}
         suppliers={suppliersWithStats}
-        users={users as any}
-        skuPrices={skuPrices as any}
+        users={users}
+        skuPrices={skuPrices}
         globalStats={{
           totalPurchases,
           totalCompleted,

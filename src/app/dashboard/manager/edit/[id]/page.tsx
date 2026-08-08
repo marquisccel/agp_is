@@ -46,7 +46,7 @@ export default async function ManagerEditTransaksiPage({ params }: { params: Pro
         title="Edit Transaksi"
         description={
           <>
-            <span className="font-semibold text-slate-700">{(purchase as any).warehouse?.nama}</span>
+            <span className="font-semibold text-slate-700">{purchase.warehouse?.nama}</span>
             {" · "}
             <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>
             {" · "}
@@ -61,7 +61,7 @@ export default async function ManagerEditTransaksiPage({ params }: { params: Pro
       />
 
       <EditTransaksiForm
-        purchase={purchaseSerialized as any}
+        purchase={purchaseSerialized}
         suppliers={suppliers}
         backUrl="/dashboard/manager/history"
       />

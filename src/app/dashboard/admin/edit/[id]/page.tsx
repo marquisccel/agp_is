@@ -67,7 +67,7 @@ export default async function EditTransaksiPage({ params }: { params: Promise<{ 
         }
       />
 
-      <EditTransaksiForm purchase={purchaseSerialized as any} suppliers={suppliers} />
+      <EditTransaksiForm purchase={purchaseSerialized} suppliers={suppliers} />
     </div>
   )
 }

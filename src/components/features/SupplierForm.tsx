@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import type { Supplier, Warehouse } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 import { isValidBankAccountNumber, isValidIndonesianWaNumber } from "@/lib/supplierValidation"
@@ -49,11 +50,11 @@ export default function SupplierForm({
   supplierId,
   initialData,
 }: {
-  warehouses: any[]
+  warehouses: Warehouse[]
   defaultWarehouseId?: string
   lockedWarehouse?: boolean
   supplierId?: string
-  initialData?: any
+  initialData?: Supplier
 }) {
   const isEdit = !!supplierId
   const { bank: initBank, lainnya: initBankLainnya } = resolveBank(initialData?.nama_bank)
