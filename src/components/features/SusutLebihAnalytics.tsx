@@ -5,14 +5,14 @@ import { createPortal } from "react-dom"
 import { fmtKg, fmtPct } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 
-interface SkuSusutDetail {
+export interface SkuSusutDetail {
   skuName: string
   beratLapak: number
   beratGudang: number
   selisih: number
 }
 
-interface TransaksiSusutDetail {
+export interface TransaksiSusutDetail {
   purchaseId: string
   nomorNota: string | null
   tanggal: string

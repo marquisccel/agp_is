@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import SusutLebihAnalytics from "@/components/features/SusutLebihAnalytics"
+import SusutLebihAnalytics, { type TransaksiSusutDetail } from "@/components/features/SusutLebihAnalytics"
 import MonthYearFilter from "@/components/features/MonthYearFilter"
 import Link from "next/link"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
@@ -52,7 +52,7 @@ export default async function ManagerSusutPage({
     totalSusut: number
     totalLebih: number
     transaksi: number
-    detailTransaksi: any[]
+    detailTransaksi: TransaksiSusutDetail[]
   }> = {}
 
   for (const p of validPurchases) {

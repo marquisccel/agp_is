@@ -15,7 +15,7 @@ import {
   Area,
 } from "recharts"
 
-interface WarehouseData {
+export interface WarehouseData {
   id: string
   nama: string
   target_harian: number

@@ -2,10 +2,10 @@ import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { authOptions } from "@/lib/authOptions"
-import ManagerAnalytics from "@/components/features/ManagerAnalytics"
+import ManagerAnalytics, { type WarehouseData } from "@/components/features/ManagerAnalytics"
 import ManagerCalendar from "@/components/features/ManagerCalendar"
 import TopLapakAnalytics from "@/components/features/TopLapakAnalytics"
-import SusutLebihAnalytics from "@/components/features/SusutLebihAnalytics"
+import SusutLebihAnalytics, { type TransaksiSusutDetail } from "@/components/features/SusutLebihAnalytics"
 import ExpenseAnalytics from "@/components/features/ExpenseAnalytics"
 import DpSummaryAnalytics from "@/components/features/DpSummaryAnalytics"
 import { redirect } from "next/navigation"
@@ -255,7 +255,7 @@ export default async function ManagerDashboard({
   // ──────────────────────────────────────────
   // 6. Build ManagerAnalytics dataMap AND Expense Metrics
   // ──────────────────────────────────────────
-  const dataMap: Record<string, any> = {}
+  const dataMap: Record<string, WarehouseData> = {}
   const warehouseExpenses = []
   const globalExpenses = { harian: 0, mingguan: 0, bulanan: 0 }
 
@@ -266,7 +266,7 @@ export default async function ManagerDashboard({
     const wPurchases = validPurchases.filter(p => p.warehouseId === w.id)
 
     // Pengeluaran (Expenses) calculation
-    const getExpense = (p: any) => p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
+    const getExpense = (p: (typeof validPurchases)[number]) => p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
     const expHarian = wPurchases.filter(p => p.createdAt >= todayStart && p.createdAt < todayEnd).reduce((s, p) => s + getExpense(p), 0)
     const expMingguan = wPurchases.filter(p => p.createdAt >= weekStart && p.createdAt < weekEnd).reduce((s, p) => s + getExpense(p), 0)
     const expBulanan = wPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd).reduce((s, p) => s + getExpense(p), 0)
@@ -356,7 +356,7 @@ export default async function ManagerDashboard({
   }))
 
   // Global sum harian target (for calendar indicator)
-  const totalTargetHarian = Object.values(dataMap).reduce((s, d: any) => s + (d.target_harian || 0), 0)
+  const totalTargetHarian = Object.values(dataMap).reduce((s, d) => s + (d.target_harian || 0), 0)
 
   // ──────────────────────────────────────────
   // 8. Top 10 Lapak per warehouse (selected month)
@@ -411,7 +411,7 @@ export default async function ManagerDashboard({
     totalSusut: number   // akumulasi selisih negatif (gudang < lapak)
     totalLebih: number   // akumulasi selisih positif (gudang > lapak)
     transaksi: number
-    detailTransaksi: any[]
+    detailTransaksi: TransaksiSusutDetail[]
   }> = {}
 
   for (const p of monthlyPurchases) {
