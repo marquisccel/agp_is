@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
+import type { Warehouse } from "@prisma/client"
 import { fmtKg, fmtAngka, fmtTon, fmtRpPerKg } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import {
@@ -117,13 +118,25 @@ function aggregateAll(dataMap: Record<string, WarehouseData>): WarehouseData {
   }
 }
 
+type TooltipPayloadEntry = { name: string; value: number | string; color: string }
+
 // Custom tooltip for chart
-const CustomTooltip = ({ active, payload, label, unit }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  unit,
+}: {
+  active?: boolean
+  payload?: TooltipPayloadEntry[]
+  label?: string
+  unit: string
+}) => {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-3 text-xs min-w-[140px]">
       <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <div key={p.name} className="flex justify-between gap-4 mb-1">
           <span style={{ color: p.color }} className="font-semibold">{p.name}</span>
           <span className="font-mono text-slate-800">{fmtAngka(Number(p.value || 0), 2)} {unit}</span>
@@ -257,7 +270,7 @@ export default function ManagerAnalytics({
   dataMap,
   skuPricesMap
 }: {
-  warehouses: any[]
+  warehouses: Warehouse[]
   dataMap: Record<string, WarehouseData>
   skuPricesMap?: Record<string, SkuPriceData[]>
 }) {
@@ -294,7 +307,7 @@ export default function ManagerAnalytics({
 
   // Chart data & config based on selected mode
   const chartConfig: {
-    data: any[]
+    data: { label: string; Pembelian: number; Target: number }[]
     xKey: string
     unit: string
     title: string
