@@ -3,8 +3,9 @@
 import { PDFDownloadLink } from "@react-pdf/renderer"
 import NotaPDF from "./NotaPDF"
 import { useState, useEffect } from "react"
+import type { PurchaseDTO } from "@/types/purchase"
 
-export default function DownloadNotaButton({ purchase, qrCodeUrl }: { purchase: any, qrCodeUrl: string }) {
+export default function DownloadNotaButton({ purchase, qrCodeUrl }: { purchase: PurchaseDTO, qrCodeUrl: string }) {
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {

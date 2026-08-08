@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { fmtAngka } from '@/lib/format';
+import type { PurchaseDTO } from '@/types/purchase';
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 12, fontFamily: 'Helvetica' },
@@ -26,7 +27,7 @@ const styles = StyleSheet.create({
   footerText: { fontSize: 8, color: '#94a3b8', textAlign: 'center' }
 });
 
-export default function NotaPDF({ purchase, qrCodeUrl }: { purchase: any, qrCodeUrl: string }) {
+export default function NotaPDF({ purchase, qrCodeUrl }: { purchase: PurchaseDTO, qrCodeUrl: string }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -61,7 +62,7 @@ export default function NotaPDF({ purchase, qrCodeUrl }: { purchase: any, qrCode
             <Text style={styles.col4}>Subtotal</Text>
           </View>
           
-          {purchase.items.map((item: any, i: number) => {
+          {purchase.items.map((item, i) => {
             const billedWeight = purchase.metode_pembayaran_terpilih === "TIMBANGAN_LAPAK" ? (item.berat_lapak ?? item.berat_final_item) : item.berat_final_item;
             return (
               <View key={i} style={styles.tableRow}>
@@ -78,7 +79,7 @@ export default function NotaPDF({ purchase, qrCodeUrl }: { purchase: any, qrCode
         {purchase.returs && purchase.returs.length > 0 && (
           <View style={{ marginTop: 20 }}>
             <Text style={{ fontSize: 10, fontWeight: 'bold', marginBottom: 5 }}>Potongan / Retur:</Text>
-            {purchase.returs.map((retur: any, i: number) => (
+            {purchase.returs.map((retur, i) => (
               <View key={i} style={[styles.row, { fontSize: 10 }]}>
                 <Text style={{ width: '40%' }}>- {retur.sku_name} ({retur.alasan})</Text>
                 <Text style={{ width: '60%', textAlign: 'right', color: '#ef4444' }}>
@@ -99,36 +100,36 @@ export default function NotaPDF({ purchase, qrCodeUrl }: { purchase: any, qrCode
             <Text style={styles.totalLabel}>Total Potongan/Retur:</Text>
             <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {(purchase.total_potongan_retur || 0).toLocaleString('id-ID')}</Text>
           </View>
-          {purchase.potongan_sampah > 0 && (
+          {(purchase.potongan_sampah || 0) > 0 && (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>
-                {`Potongan Sampah (${fmtAngka(purchase.berat_potongan_sampah)} KG @ Rp ${purchase.harga_potongan_sampah?.toLocaleString('id-ID')})`}
+                {`Potongan Sampah (${fmtAngka(purchase.berat_potongan_sampah || 0)} KG @ Rp ${purchase.harga_potongan_sampah?.toLocaleString('id-ID')})`}
               </Text>
-              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {purchase.potongan_sampah.toLocaleString('id-ID')}</Text>
+              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {(purchase.potongan_sampah || 0).toLocaleString('id-ID')}</Text>
             </View>
           )}
-          {purchase.potongan_susut > 0 && (
+          {(purchase.potongan_susut || 0) > 0 && (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>
-                {`Potongan Susut (${fmtAngka(purchase.berat_potongan_susut)} KG @ Rp ${purchase.harga_potongan_susut?.toLocaleString('id-ID')})`}
+                {`Potongan Susut (${fmtAngka(purchase.berat_potongan_susut || 0)} KG @ Rp ${purchase.harga_potongan_susut?.toLocaleString('id-ID')})`}
               </Text>
-              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {purchase.potongan_susut.toLocaleString('id-ID')}</Text>
+              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {(purchase.potongan_susut || 0).toLocaleString('id-ID')}</Text>
             </View>
           )}
-          {purchase.potongan_air > 0 && (
+          {(purchase.potongan_air || 0) > 0 && (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>
-                {`Potongan Air (${fmtAngka(purchase.berat_potongan_air)} KG @ Rp ${purchase.harga_potongan_air?.toLocaleString('id-ID')})`}
+                {`Potongan Air (${fmtAngka(purchase.berat_potongan_air || 0)} KG @ Rp ${purchase.harga_potongan_air?.toLocaleString('id-ID')})`}
               </Text>
-              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {purchase.potongan_air.toLocaleString('id-ID')}</Text>
+              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {(purchase.potongan_air || 0).toLocaleString('id-ID')}</Text>
             </View>
           )}
-          {purchase.potongan_karung > 0 && (
+          {(purchase.potongan_karung || 0) > 0 && (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>
-                {`Potongan Karung (${fmtAngka(purchase.berat_potongan_karung)} KG @ Rp ${purchase.harga_potongan_karung?.toLocaleString('id-ID')})`}
+                {`Potongan Karung (${fmtAngka(purchase.berat_potongan_karung || 0)} KG @ Rp ${purchase.harga_potongan_karung?.toLocaleString('id-ID')})`}
               </Text>
-              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {purchase.potongan_karung.toLocaleString('id-ID')}</Text>
+              <Text style={[styles.totalValue, { color: '#ef4444' }]}>- Rp {(purchase.potongan_karung || 0).toLocaleString('id-ID')}</Text>
             </View>
           )}
           <View style={styles.totalRow}>

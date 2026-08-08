@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react"
 import { PDFDownloadLink } from "@react-pdf/renderer"
 import NotaPDF from "./NotaPDF"
+import type { PurchaseDTO } from "@/types/purchase"
 
 // ── Format helpers ──
 function fmtRp(n: number) {
@@ -18,10 +19,10 @@ function fmtTgl(d: string) {
 }
 
 // ── Nota visual card (dirender untuk screenshot JPG) ──
-function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObject<HTMLDivElement | null> }) {
+function NotaCard({ purchase, notaRef }: { purchase: PurchaseDTO; notaRef: React.RefObject<HTMLDivElement | null> }) {
   const items = purchase.items || []
   const returs = purchase.returs || []
-  const totalBeratBruto = items.reduce((s: number, i: any) =>
+  const totalBeratBruto = items.reduce((s, i) =>
     s + (purchase.metode_pembayaran_terpilih === "TIMBANGAN_LAPAK" ? (i.berat_lapak ?? i.berat_final_item) : i.berat_final_item), 0)
 
   return (
@@ -90,7 +91,7 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
             </tr>
           </thead>
           <tbody>
-            {items.map((item: any, i: number) => {
+            {items.map((item, i) => {
               const berat = purchase.metode_pembayaran_terpilih === "TIMBANGAN_LAPAK"
                 ? (item.berat_lapak ?? item.berat_final_item) : item.berat_final_item
               return (
@@ -116,7 +117,7 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
       {returs.length > 0 && (
         <div style={{ marginBottom: 14, padding: "10px 12px", backgroundColor: "#fef2f2", borderRadius: 8, border: "1px solid #fecaca" }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", marginBottom: 6 }}>Potongan / Retur</div>
-          {returs.map((r: any, i: number) => (
+          {returs.map((r, i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, marginBottom: 3 }}>
               <span style={{ color: "#64748b" }}>{r.sku_name} - {fmtKg(r.berat_retur)} ({r.alasan || "-"})</span>
               <span style={{ color: "#dc2626", fontWeight: 700 }}>-{fmtRp(r.potongan_nilai)}</span>
@@ -129,12 +130,12 @@ function NotaCard({ purchase, notaRef }: { purchase: any; notaRef: React.RefObje
       <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 12, fontSize: 11 }}>
         {[
           { label: "Subtotal", value: purchase.total_nilai_sebelum_retur || 0, red: false },
-          ...(purchase.total_potongan_retur > 0 ? [{ label: "Potongan Retur", value: -(purchase.total_potongan_retur), red: true }] : []),
-          ...(purchase.potongan_sampah > 0 ? [{ label: `Potongan Sampah (${fmtKg(purchase.berat_potongan_sampah)})`, value: -(purchase.potongan_sampah), red: true }] : []),
-          ...(purchase.potongan_susut > 0 ? [{ label: `Potongan Susut (${fmtKg(purchase.berat_potongan_susut)})`, value: -(purchase.potongan_susut), red: true }] : []),
-          ...(purchase.potongan_air > 0 ? [{ label: `Potongan Air (${fmtKg(purchase.berat_potongan_air)})`, value: -(purchase.potongan_air), red: true }] : []),
-          ...(purchase.potongan_karung > 0 ? [{ label: `Potongan Karung (${fmtKg(purchase.berat_potongan_karung)})`, value: -(purchase.potongan_karung), red: true }] : []),
-          ...(purchase.dp_yang_digunakan > 0 ? [{ label: "Gunakan DP", value: -(purchase.dp_yang_digunakan), red: true }] : []),
+          ...((purchase.total_potongan_retur || 0) > 0 ? [{ label: "Potongan Retur", value: -(purchase.total_potongan_retur || 0), red: true }] : []),
+          ...((purchase.potongan_sampah || 0) > 0 ? [{ label: `Potongan Sampah (${fmtKg(purchase.berat_potongan_sampah || 0)})`, value: -(purchase.potongan_sampah || 0), red: true }] : []),
+          ...((purchase.potongan_susut || 0) > 0 ? [{ label: `Potongan Susut (${fmtKg(purchase.berat_potongan_susut || 0)})`, value: -(purchase.potongan_susut || 0), red: true }] : []),
+          ...((purchase.potongan_air || 0) > 0 ? [{ label: `Potongan Air (${fmtKg(purchase.berat_potongan_air || 0)})`, value: -(purchase.potongan_air || 0), red: true }] : []),
+          ...((purchase.potongan_karung || 0) > 0 ? [{ label: `Potongan Karung (${fmtKg(purchase.berat_potongan_karung || 0)})`, value: -(purchase.potongan_karung || 0), red: true }] : []),
+          ...((purchase.dp_yang_digunakan || 0) > 0 ? [{ label: "Gunakan DP", value: -(purchase.dp_yang_digunakan || 0), red: true }] : []),
         ].map((row, i) => (
           <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ color: "#64748b" }}>{row.label}:</span>
@@ -188,7 +189,7 @@ export default function NotaViewerClient({
   purchase,
   qrCodeUrl,
 }: {
-  purchase: any
+  purchase: PurchaseDTO
   qrCodeUrl: string
 }) {
   const notaRef = useRef<HTMLDivElement>(null)
@@ -253,7 +254,7 @@ export default function NotaViewerClient({
     const totalDibayar = fmtRp(purchase.total_dibayar || 0)
     const tanggal = fmtTgl(purchase.approvedAt || purchase.createdAt)
     const itemLines = (purchase.items || [])
-      .map((i: any) => `  • ${i.sku_name}: ${fmtKg(i.berat_final_item)} × ${fmtRp(i.harga_per_kg)}/kg = ${fmtRp(i.subtotal)}`)
+      .map((i) => `  • ${i.sku_name}: ${fmtKg(i.berat_final_item)} × ${fmtRp(i.harga_per_kg)}/kg = ${fmtRp(i.subtotal)}`)
       .join("\n")
 
     const msg = [
@@ -264,13 +265,13 @@ export default function NotaViewerClient({
       `*Detail:*`,
       itemLines,
       ``,
-      purchase.total_potongan_retur > 0 ? `  • Potongan Retur: -${fmtRp(purchase.total_potongan_retur)}` : "",
-      purchase.potongan_sampah > 0 ? `  • Potongan Sampah: -${fmtRp(purchase.potongan_sampah)}` : "",
-      purchase.potongan_susut > 0 ? `  • Potongan Susut: -${fmtRp(purchase.potongan_susut)}` : "",
-      purchase.potongan_air > 0 ? `  • Potongan Air: -${fmtRp(purchase.potongan_air)}` : "",
-      purchase.potongan_karung > 0 ? `  • Potongan Karung: -${fmtRp(purchase.potongan_karung)}` : "",
-      purchase.dp_yang_digunakan > 0 ? `  • Gunakan DP: -${fmtRp(purchase.dp_yang_digunakan)}` : "",
-      (purchase.total_potongan_retur > 0 || purchase.potongan_sampah > 0 || purchase.potongan_susut > 0 || purchase.potongan_air > 0 || purchase.potongan_karung > 0 || purchase.dp_yang_digunakan > 0) ? `` : "",
+      (purchase.total_potongan_retur || 0) > 0 ? `  • Potongan Retur: -${fmtRp(purchase.total_potongan_retur || 0)}` : "",
+      (purchase.potongan_sampah || 0) > 0 ? `  • Potongan Sampah: -${fmtRp(purchase.potongan_sampah || 0)}` : "",
+      (purchase.potongan_susut || 0) > 0 ? `  • Potongan Susut: -${fmtRp(purchase.potongan_susut || 0)}` : "",
+      (purchase.potongan_air || 0) > 0 ? `  • Potongan Air: -${fmtRp(purchase.potongan_air || 0)}` : "",
+      (purchase.potongan_karung || 0) > 0 ? `  • Potongan Karung: -${fmtRp(purchase.potongan_karung || 0)}` : "",
+      (purchase.dp_yang_digunakan || 0) > 0 ? `  • Gunakan DP: -${fmtRp(purchase.dp_yang_digunakan || 0)}` : "",
+      ((purchase.total_potongan_retur || 0) > 0 || (purchase.potongan_sampah || 0) > 0 || (purchase.potongan_susut || 0) > 0 || (purchase.potongan_air || 0) > 0 || (purchase.potongan_karung || 0) > 0 || (purchase.dp_yang_digunakan || 0) > 0) ? `` : "",
       `*TOTAL DIBAYAR: ${totalDibayar}*`,
       purchase.status_pelunasan === "BELUM_LUNAS"
         ? `_(Pembayaran ${purchase.persentase_pembayaran || 80}% dahulu: ${fmtRp(purchase.nominal_pembayaran_awal || 0)}, sisa: ${fmtRp(purchase.nominal_belum_lunas || 0)})_`
