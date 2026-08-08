@@ -2,7 +2,27 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import type { Purchase, PurchaseItem, Supplier, User } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+
+type PurchaseForDoubleCheck = Purchase & {
+  items: PurchaseItem[]
+  supplier: Supplier
+  staff: User
+}
+
+/** Item kerja lokal: berat_lapak dinormalisasi ke number (fallback ke berat_final_item) saat inisialisasi. */
+type WorkingItem = {
+  id: string
+  sku_name: string
+  spec: string | null
+  berat_lapak: number
+  berat_final_item: number
+  harga_per_kg: number
+  subtotal: number
+}
+
+type ReturInput = { sku_name: string; berat_retur: number; potongan_nilai: number; alasan: string }
 
 const METODE_BAYAR_OPTIONS = [
   { value: "TIMBANGAN_GUDANG", label: "Timbangan Gudang" },
@@ -22,28 +42,29 @@ export default function DoubleCheckForm({
   availableDp,
   successRedirect = "/dashboard/admin",
 }: {
-  purchase: any
+  purchase: PurchaseForDoubleCheck
   availableDp: number
   successRedirect?: string
 }) {
   const router = useRouter()
-  
-  const staffLapakSum = purchase.berat_timbangan_lapak || purchase.items.reduce((sum: number, item: any) => sum + (item.berat_final_item || 0), 0)
+
+  const staffLapakSum = purchase.berat_timbangan_lapak || purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
 
   const [timbanganLapak] = useState(staffLapakSum)
-  const [timbanganGudang, setTimbanganGudang] = useState(purchase.berat_timbangan_gudang || purchase.items.reduce((sum: number, item: any) => sum + (item.berat_final_item || 0), 0))
+  const [timbanganGudang, setTimbanganGudang] = useState(purchase.berat_timbangan_gudang || purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0))
   const [metodeBayar, setMetodeBayar] = useState(purchase.metode_pembayaran_terpilih || "TIMBANGAN_GUDANG")
   const [persentasePembayaran, setPersentasePembayaran] = useState<number>(purchase.persentase_pembayaran || 100)
-  
+
   // Initialize items from draft
-  const [items, setItems] = useState(purchase.items.map((i: any) => ({
+  const [items, setItems] = useState<WorkingItem[]>(purchase.items.map((i) => ({
     ...i,
     berat_lapak: i.berat_lapak ?? i.berat_final_item, // Timbangan lapak staff
     berat_final_item: i.berat_final_item // Timbangan gudang (admin inputs this)
   })))
 
-  // Returs
-  const [returs, setReturs] = useState<{sku_name: string, berat_retur: number, potongan_nilai: number, alasan: string}[]>(purchase.returs || [])
+  // Returs -- transaksi pada tahap ini selalu menunggu_verifikasi (belum pernah
+  // melalui double-check), jadi belum mungkin ada retur tersimpan sebelumnya.
+  const [returs, setReturs] = useState<ReturInput[]>([])
   const [dpDigunakan, setDpDigunakan] = useState(purchase.dp_yang_digunakan || 0)
 
   // Deductions from draft
@@ -65,15 +86,15 @@ export default function DoubleCheckForm({
   const [error, setError] = useState("")
 
   const addRetur = () => setReturs([...returs, { sku_name: "", berat_retur: 0, potongan_nilai: 0, alasan: "" }])
-  const updateRetur = (idx: number, field: string, value: any) => {
+  const updateRetur = <K extends keyof ReturInput>(idx: number, field: K, value: ReturInput[K]) => {
     setReturs(current => current.map((r, i) => i === idx ? { ...r, [field]: value } : r))
   }
   const removeRetur = (idx: number) => setReturs(current => current.filter((_, i) => i !== idx))
 
   const updateItem = (idx: number, value: number) => {
-    setItems((current: any) => {
-      const updated = current.map((item: any, i: number) => i === idx ? { ...item, berat_final_item: value } : item)
-      const totalGudang = updated.reduce((sum: number, item: any) => sum + (item.berat_final_item || 0), 0)
+    setItems((current) => {
+      const updated = current.map((item, i) => i === idx ? { ...item, berat_final_item: value } : item)
+      const totalGudang = updated.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
       setTimbanganGudang(totalGudang)
       return updated
     })
@@ -137,13 +158,13 @@ export default function DoubleCheckForm({
   }
 
   // Dynamic calculations
-  const totalKotor = items.reduce((sum: number, item: any) => {
+  const totalKotor = items.reduce((sum, item) => {
     const w = metodeBayar === "TIMBANGAN_LAPAK" ? (item.berat_lapak ?? item.berat_final_item ?? 0) : (item.berat_final_item ?? 0)
     return sum + (w * item.harga_per_kg)
   }, 0)
   
   const totalRetur = returs.reduce((sum, r) => {
-    const relatedItem = items.find((i: any) => i.sku_name === r.sku_name)
+    const relatedItem = items.find((i) => i.sku_name === r.sku_name)
     const harga = relatedItem ? relatedItem.harga_per_kg : 0
     return sum + (r.berat_retur * harga) + (r.potongan_nilai || 0)
   }, 0)
@@ -245,7 +266,7 @@ export default function DoubleCheckForm({
               <p className="text-xs text-slate-500 mt-1">Admin menginput kembali hasil timbangan gudang untuk setiap SKU yang masuk dari data staff.</p>
             </div>
             <div className="space-y-3">
-              {items.map((item: any, idx: number) => {
+              {items.map((item, idx) => {
                 const lapakWeight = item.berat_lapak ?? item.berat_final_item ?? 0
                 const gudangWeight = item.berat_final_item ?? 0
                 const diff = gudangWeight - lapakWeight
@@ -328,7 +349,7 @@ export default function DoubleCheckForm({
             ) : (
               <div className="space-y-4">
                 {returs.map((retur, idx) => {
-                  const relatedItem = items.find((i: any) => i.sku_name === retur.sku_name);
+                  const relatedItem = items.find((i) => i.sku_name === retur.sku_name);
                   const hargaItem = relatedItem ? relatedItem.harga_per_kg : 0;
                   const autoDeduction = (retur.berat_retur || 0) * hargaItem;
                   const rowTotal = autoDeduction + (retur.potongan_nilai || 0);
@@ -343,7 +364,7 @@ export default function DoubleCheckForm({
                         <label className="text-xs font-medium text-slate-500">SKU (Barang Dikembalikan)</label>
                         <ElegantSelect
                           value={retur.sku_name}
-                          options={[{ value: "", label: "Pilih SKU" }, ...items.map((i: any) => ({ value: i.sku_name as string, label: i.sku_name }))]}
+                          options={[{ value: "", label: "Pilih SKU" }, ...items.map((i) => ({ value: i.sku_name, label: i.sku_name }))]}
                           onChange={(value) => updateRetur(idx, 'sku_name', value)}
                           ariaLabel="Pilih SKU retur"
                           className="mt-1 w-full"
