@@ -104,7 +104,7 @@ export default function EditTransaksiForm({
     initialPurchase.items.map(i => ({ ...i }))
   )
 
-  const updateItem = (idx: number, field: keyof PurchaseItem, value: any) => {
+  const updateItem = (idx: number, field: keyof PurchaseItem, value: string | number | null) => {
     setItems(prev => {
       const next = [...prev]
       const item = { ...next[idx], [field]: value }
