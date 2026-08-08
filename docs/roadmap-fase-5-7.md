@@ -58,10 +58,10 @@ Tujuan: siap dibawa ke demo/staging dengan jaminan otomatis, bukan cuma verifika
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Unit test helper calculation | Open | Prioritas: `src/lib/numberValidation.ts`, `src/lib/purchaseStatus.ts`, `src/lib/supplierStatus.ts`, `src/lib/workingDays.ts` - logic murni, mudah ditest, risiko tinggi kalau salah. |
+| Unit test helper calculation | Done (2026-08-08) | `numberValidation.test.ts`, `purchaseStatus.test.ts`, `supplierStatus.test.ts` (mock `Prisma.TransactionClient`, bukan DB asli), `workingDays.test.ts`. Suite total 64 test (termasuk yang sudah ada dari Fase 6: purchaseCalculation, dpAllocation, supplierValidation, supplierDuplicate, supplierCsvImport). |
+| Shared domain types untuk `Purchase`/`Supplier` | Sebagian (2026-08-08) | `src/types/purchase.ts` (`PurchaseDTO`) dibuat dan diterapkan di jalur nota (`NotaPDF`, `NotaViewerClient`, `DownloadNotaButton`). Juga dibersihkan 11 cast `as any` di boundary server->client yang ternyata semuanya tidak perlu. Ditemukan 1 bug tipe nyata (bukan fungsional): `EditTransaksiForm.tsx` mendeklarasikan `berat_lapak: number` padahal Prisma-nya `Float?`. ~30 warning `no-explicit-any` tersisa di form interaktif kompleks (DoubleCheckForm, PurchaseForm, ApprovalHargaForm) -- sengaja belum disentuh karena risiko regresi lebih tinggi dan sesi ini tidak bisa verifikasi visual di browser (Docker/Postgres tidak tersedia). |
 | API route smoke test | Open | Minimal satu request happy-path per route kritikal (draft, double-check, approve, transfer, dp). |
 | Playwright flow test | Open | Skenario end-to-end: login -> draft -> verify -> approve -> transfer -> export, untuk tiap role. |
-| Shared domain types untuk `Purchase`/`Supplier` | Open | Prasyarat untuk membersihkan 82 warning `no-explicit-any` secara aman (lihat tabel temuan audit di atas) - tanpa ini, fix `any` satu-satu berisiko menyembunyikan bug shape Prisma. |
 | `next/image` migration untuk preview upload | Open | 3 lokasi `<img>` (bukti transfer) - butuh uji visual sebelum migrasi karena dimensi gambar dinamis. |
 | Audit trail page khusus | Open | Saat ini audit trail hanya tampil di laporan & detail tertentu. Next upgrade: halaman khusus dengan filter tanggal/role/aksi/entity + export. |
 | Print/report PDF-grade | Open | Layout sudah period-aware; belum ada cover, section break, signature area rapi, print CSS, atau export PDF langsung. |
