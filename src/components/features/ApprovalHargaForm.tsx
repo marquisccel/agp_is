@@ -2,8 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import type { Purchase, PurchaseItem, SkuPriceStandard, Warehouse } from "@prisma/client"
 
-export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
+type PurchaseForApproval = Purchase & {
+  items: PurchaseItem[]
+  warehouse: Warehouse & { skuPrices: SkuPriceStandard[] }
+}
+
+export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForApproval }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -32,8 +38,9 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
     }
   }
 
+  const beratTimbanganLapak = purchase.berat_timbangan_lapak || 0
   const selisihTotal =
-    (purchase.berat_timbangan_gudang || 0) - (purchase.berat_timbangan_lapak || 0)
+    (purchase.berat_timbangan_gudang || 0) - beratTimbanganLapak
 
   return (
     <div className="premium-workflow space-y-6">
@@ -64,8 +71,8 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {purchase.items.map((item: any) => {
-                const standard = purchase.warehouse.skuPrices.find((s: any) => s.sku_name === item.sku_name)
+              {purchase.items.map((item) => {
+                const standard = purchase.warehouse.skuPrices.find((s) => s.sku_name === item.sku_name)
                 const maxPrice = standard ? standard.max_price_per_kg : 0
                 const isOver = item.harga_per_kg > maxPrice
                 const lapakW = item.berat_lapak ?? item.berat_final_item ?? 0
@@ -118,8 +125,8 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
 
         {/* Mobile card layout, shown only on small screens */}
         <div className="md:hidden space-y-3">
-          {purchase.items.map((item: any) => {
-            const standard = purchase.warehouse.skuPrices.find((s: any) => s.sku_name === item.sku_name)
+          {purchase.items.map((item) => {
+            const standard = purchase.warehouse.skuPrices.find((s) => s.sku_name === item.sku_name)
             const maxPrice = standard ? standard.max_price_per_kg : 0
             const isOver = item.harga_per_kg > maxPrice
             const lapakW = item.berat_lapak ?? item.berat_final_item ?? 0
@@ -226,9 +233,9 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
               {selisihTotal > 0 ? `+${selisihTotal.toFixed(2)}` : selisihTotal.toFixed(2)}
               <span className="text-[10px] font-normal ml-0.5">KG</span>
             </div>
-            {purchase.berat_timbangan_lapak > 0 && (
+            {beratTimbanganLapak > 0 && (
               <div className={`text-[10px] font-semibold mt-0.5 ${selisihTotal === 0 ? "text-emerald-500" : selisihTotal < 0 ? "text-rose-500" : "text-cyan-500"}`}>
-                ({((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1)}%)
+                ({((selisihTotal / beratTimbanganLapak) * 100).toFixed(1)}%)
               </div>
             )}
           </div>
@@ -237,8 +244,8 @@ export default function ApprovalHargaForm({ purchase }: { purchase: any }) {
           {selisihTotal === 0
             ? "Hasil timbangan staff (lapak) dan admin (gudang) sesuai sempurna."
             : selisihTotal < 0
-              ? `Peringatan: penyusutan timbangan gudang ${Math.abs(selisihTotal).toFixed(2)} KG (${purchase.berat_timbangan_lapak > 0 ? Math.abs((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`
-              : `ℹ Timbangan gudang bertambah: +${selisihTotal.toFixed(2)} KG (+${purchase.berat_timbangan_lapak > 0 ? ((selisihTotal / purchase.berat_timbangan_lapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`}
+              ? `Peringatan: penyusutan timbangan gudang ${Math.abs(selisihTotal).toFixed(2)} KG (${beratTimbanganLapak > 0 ? Math.abs((selisihTotal / beratTimbanganLapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`
+              : `ℹ Timbangan gudang bertambah: +${selisihTotal.toFixed(2)} KG (+${beratTimbanganLapak > 0 ? ((selisihTotal / beratTimbanganLapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`}
         </div>
       </div>
 
