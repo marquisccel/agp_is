@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AlertTriangle, CalendarDays, CheckCircle2, Loader2, Recycle, Save } from "lucide-react"
+import type { Warehouse, WarehouseTarget } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getWorkingDaysInMonth } from "@/lib/workingDays"
 
@@ -12,7 +13,9 @@ interface TargetValues {
   pet_harian: string
 }
 
-export default function TargetSettingForm({ warehouses, existingTargets }: { warehouses: any[]; existingTargets: any[] }) {
+type TargetApiRow = Pick<WarehouseTarget, "warehouseId" | "target_bulanan_pet_final" | "target_mingguan_pet_final" | "target_harian_pet_final">
+
+export default function TargetSettingForm({ warehouses, existingTargets }: { warehouses: Warehouse[]; existingTargets: WarehouseTarget[] }) {
   const router = useRouter()
   const now = new Date()
   const [selectedBulan, setSelectedBulan] = useState<number>(now.getMonth() + 1)
@@ -46,7 +49,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
       try {
         const res = await fetch(`/api/targets?bulan=${selectedBulan}&tahun=${selectedTahun}`)
         if (res.ok) {
-          const data: any[] = await res.json()
+          const data: TargetApiRow[] = await res.json()
           const nextValues = Object.fromEntries(
             warehouses.map((warehouse) => {
               const target = data.find((item) => item.warehouseId === warehouse.id)

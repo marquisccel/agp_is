@@ -3,8 +3,10 @@
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, Clock3, Eye, FileImage, Loader2, ReceiptText, RefreshCw, UploadCloud, X } from "lucide-react"
+import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
 
 type TransferFilter = "all" | "pending" | "transferred" | "termin"
+type PurchaseWithRelations = Purchase & { supplier: Supplier; items: PurchaseItem[] }
 
 function formatRp(n: number) {
   return n.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })
@@ -18,7 +20,7 @@ function formatDateTime(value: string | Date) {
   return new Date(value).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" })
 }
 
-export default function TransferList({ purchases }: { purchases: any[] }) {
+export default function TransferList({ purchases }: { purchases: PurchaseWithRelations[] }) {
   const router = useRouter()
   const [uploading, setUploading] = useState<string | null>(null)
   const [preview, setPreview] = useState<{ src: string; title: string } | null>(null)
@@ -138,10 +140,11 @@ export default function TransferList({ purchases }: { purchases: any[] }) {
         )}
 
         {filteredPurchases.map((p) => {
-          const total = p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.items.reduce((s: number, i: any) => s + i.subtotal, 0)
+          const total = p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.items.reduce((s, i) => s + i.subtotal, 0)
           const isTransferred = p.status_approval === "sudah_transfer"
           const isPendingTermin = p.status_pelunasan === "BELUM_LUNAS" && (p.nominal_belum_lunas || 0) > 0
           const isUploading = uploading === p.id
+          const buktiTransfer = p.bukti_transfer
 
           return (
             <article
@@ -191,13 +194,13 @@ export default function TransferList({ purchases }: { purchases: any[] }) {
                 </div>
 
                 <div className="flex flex-col justify-between bg-white/92 p-5">
-                  {isTransferred && p.bukti_transfer ? (
+                  {isTransferred && buktiTransfer ? (
                     <div className="space-y-3">
                       <button
-                        onClick={() => setPreview({ src: p.bukti_transfer, title: p.supplier.nama })}
+                        onClick={() => setPreview({ src: buktiTransfer, title: p.supplier.nama })}
                         className="group/preview relative aspect-[16/10] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(15,23,42,0.16)]"
                       >
-                        <img src={p.bukti_transfer} alt="Bukti" className="h-full w-full object-cover transition-transform duration-700 group-hover/preview:scale-[1.04]" />
+                        <img src={buktiTransfer} alt="Bukti" className="h-full w-full object-cover transition-transform duration-700 group-hover/preview:scale-[1.04]" />
                         <div className="absolute inset-0 flex items-center justify-center bg-slate-950/0 transition-colors duration-300 group-hover/preview:bg-slate-950/28">
                           <span className="grid h-11 w-11 scale-90 place-items-center rounded-full bg-white/92 text-slate-950 opacity-0 shadow-lg transition-all duration-300 group-hover/preview:scale-100 group-hover/preview:opacity-100">
                             <Eye className="h-4 w-4" />

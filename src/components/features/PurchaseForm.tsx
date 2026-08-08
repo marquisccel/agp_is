@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import dynamic from "next/dynamic"
+import type { Supplier } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
@@ -51,7 +52,7 @@ interface NotaData {
   hargaPotonganKarung: number
 }
 
-export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: any[], namaGudang: string }) {
+export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Supplier[], namaGudang: string }) {
   const [supplierId, setSupplierId] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)

@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import type { Supplier } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
-export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers: any[], role?: string }) {
+export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers: Supplier[], role?: string }) {
   const router = useRouter()
   const [supplierId, setSupplierId] = useState("")
   const [nominal, setNominal] = useState("")
