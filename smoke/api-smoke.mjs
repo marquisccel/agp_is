@@ -1,0 +1,222 @@
+#!/usr/bin/env node
+/**
+ * API route smoke test (Fase 7).
+ *
+ * Bukan unit test -- ini skenario HTTP nyata yang membutuhkan server yang
+ * jalan dan Postgres yang terisi seed data (npm run seed). Data uji dibuat
+ * sendiri (supplier throwaway) dan dibersihkan sendiri di akhir, sehingga
+ * aman dijalankan berulang tanpa hardcode ID dari database siapa pun.
+ *
+ * Jalankan: npm run test:smoke
+ * (server dev/production + docker compose db harus sudah menyala)
+ */
+
+const BASE_URL = process.env.SMOKE_BASE_URL || "http://localhost:3000"
+const CREDENTIALS = {
+  MANAGER: { email: process.env.SMOKE_MANAGER_EMAIL || "manager@example.com", password: "password123" },
+  ADMIN: { email: process.env.SMOKE_ADMIN_EMAIL || "admin.kediri@example.com", password: "password123" },
+  STAFF: { email: process.env.SMOKE_STAFF_EMAIL || "staff.kediri@example.com", password: "password123" },
+}
+
+let passed = 0
+let failed = 0
+const failures = []
+
+function check(name, condition, detail) {
+  if (condition) {
+    passed++
+    console.log(`  ok - ${name}`)
+  } else {
+    failed++
+    failures.push(name)
+    console.log(`  FAIL - ${name}${detail ? ` (${detail})` : ""}`)
+  }
+}
+
+/** Cookie jar sederhana: satu instance per sesi role. */
+function createJar() {
+  const cookies = new Map()
+  return {
+    apply(headers) {
+      const setCookie = headers.getSetCookie ? headers.getSetCookie() : headers.raw?.()["set-cookie"] || []
+      for (const raw of setCookie) {
+        const [pair] = raw.split(";")
+        const idx = pair.indexOf("=")
+        cookies.set(pair.slice(0, idx), pair.slice(idx + 1))
+      }
+    },
+    header() {
+      return [...cookies.entries()].map(([k, v]) => `${k}=${v}`).join("; ")
+    },
+  }
+}
+
+async function req(jar, path, options = {}) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    redirect: "manual",
+    headers: { ...(options.headers || {}), ...(jar ? { Cookie: jar.header() } : {}) },
+  })
+  if (jar) jar.apply(res.headers)
+  return res
+}
+
+async function loginAs(role) {
+  const jar = createJar()
+  const { email, password } = CREDENTIALS[role]
+
+  const csrfRes = await req(jar, "/api/auth/csrf")
+  const { csrfToken } = await csrfRes.json()
+
+  const loginRes = await req(jar, "/api/auth/callback/credentials", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ email, password, csrfToken, json: "true" }),
+  })
+
+  const sessionRes = await req(jar, "/api/auth/session")
+  const session = await sessionRes.json()
+
+  if (!session?.user) {
+    throw new Error(`Gagal login sebagai ${role} (status login: ${loginRes.status}). Cek kredensial seed atau server tidak menyala.`)
+  }
+  return { jar, session: session.user }
+}
+
+async function main() {
+  console.log(`Smoke test API terhadap ${BASE_URL}\n`)
+
+  console.log("1. Health check")
+  const health = await req(null, "/api/health")
+  check("GET /api/health -> 200", health.status === 200)
+  const healthBody = await health.json().catch(() => ({}))
+  check("health body melaporkan db up", healthBody.db === "up", JSON.stringify(healthBody))
+
+  console.log("\n2. Akses tanpa sesi ditolak (regresi Fase 5)")
+  check(
+    "GET /api/targets tanpa auth -> 401",
+    (await req(null, "/api/targets")).status === 401
+  )
+  check(
+    "POST /api/purchases/draft tanpa auth -> 401",
+    (await req(null, "/api/purchases/draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status === 401
+  )
+  check(
+    "POST /api/dp tanpa auth -> 401",
+    (await req(null, "/api/dp", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status === 401
+  )
+
+  console.log("\n3. Login setiap role")
+  const staff = await loginAs("STAFF")
+  check("login STAFF berhasil, role sesuai", staff.session.role === "STAFF")
+  const admin = await loginAs("ADMIN")
+  check("login ADMIN berhasil, role sesuai", admin.session.role === "ADMIN")
+  const manager = await loginAs("MANAGER")
+  check("login MANAGER berhasil, role sesuai", manager.session.role === "MANAGER")
+
+  console.log("\n4. Kontrol peran (bukan sekadar login berhasil)")
+  check(
+    "POST /api/dp sebagai MANAGER -> 401 (Manager tidak mengajukan kasbon, FR-5.1)",
+    (await req(manager.jar, "/api/dp", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status === 401
+  )
+  check(
+    "PUT double-check sebagai STAFF -> 401 (hanya ADMIN)",
+    (await req(staff.jar, "/api/purchases/smoke-test-fake-id/double-check", { method: "PUT", headers: { "Content-Type": "application/json" }, body: "{}" })).status === 401
+  )
+
+  console.log("\n5. Siklus transaksi penuh: buat supplier -> draft -> double-check -> transfer")
+  const stamp = Date.now()
+  const supplierName = `Smoke Test Supplier ${stamp}`
+  const skuName = `SmokeSKU-${stamp}` // sengaja tanpa standar harga -> lolos approval-harga otomatis
+
+  const warehouseId = staff.session.warehouseId
+  check("sesi STAFF memiliki warehouseId", !!warehouseId, "seed data staff harus ditugaskan ke gudang")
+
+  const createSupplierRes = await req(staff.jar, "/api/suppliers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nama: supplierName, warehouseId, target_bulanan_kg: 100, frekuensi_ambilan_mingguan: 1 }),
+  })
+  check("POST /api/suppliers (throwaway) -> 201", createSupplierRes.status === 201, `status ${createSupplierRes.status}`)
+  const supplier = await createSupplierRes.json()
+  const supplierId = supplier.id
+
+  let purchaseId = null
+  if (supplierId) {
+    const draftRes = await req(staff.jar, "/api/purchases/draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        supplierId,
+        metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+        items: [{ sku_name: skuName, spec: "Grading", berat_estimasi: 10, harga_per_kg: 5000 }],
+        potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
+        potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
+        potongan_air: 0, berat_potongan_air: 0, harga_potongan_air: 0,
+        potongan_karung: 0, berat_potongan_karung: 0, harga_potongan_karung: 0,
+      }),
+    })
+    check("POST /api/purchases/draft -> 201", draftRes.status === 201, `status ${draftRes.status}`)
+    const draft = await draftRes.json()
+    purchaseId = draft.id
+    check("draft berstatus menunggu_verifikasi", draft.status_approval === "menunggu_verifikasi")
+
+    if (purchaseId) {
+      const doubleCheckRes = await req(admin.jar, `/api/purchases/${purchaseId}/double-check`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          berat_timbangan_lapak: 10,
+          berat_timbangan_gudang: 10,
+          metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+          items: [{ sku_name: skuName, spec: "Grading", berat_lapak: 10, berat_final_item: 10, harga_per_kg: 5000 }],
+          returs: [],
+          dp_yang_digunakan: 0,
+          potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
+          potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
+          potongan_air: 0, berat_potongan_air: 0, harga_potongan_air: 0,
+          potongan_karung: 0, berat_potongan_karung: 0, harga_potongan_karung: 0,
+          persentase_pembayaran: 100,
+          nominal_pembayaran_awal: 0,
+          nominal_belum_lunas: 0,
+          status_pelunasan: "LUNAS",
+        }),
+      })
+      check("PUT double-check sebagai ADMIN -> 200", doubleCheckRes.status === 200, `status ${doubleCheckRes.status}`)
+      const doubleChecked = await doubleCheckRes.json()
+      check(
+        "SKU tanpa standar harga -> langsung approved (kontrol harga tidak memblokir)",
+        doubleChecked.status_approval === "approved",
+        `status_approval: ${doubleChecked.status_approval}`
+      )
+
+      const form = new FormData()
+      form.append("bukti", new Blob(["fake-image-bytes"], { type: "image/png" }), "bukti.png")
+      const transferRes = await req(admin.jar, `/api/purchases/${purchaseId}/transfer`, { method: "POST", body: form })
+      check("POST transfer dengan bukti -> 200", transferRes.status === 200, `status ${transferRes.status}`)
+      const transferred = await transferRes.json().catch(() => ({}))
+      check("status setelah transfer -> sudah_transfer", transferred.status_approval === "sudah_transfer")
+    }
+  }
+
+  console.log("\n6. Bersih-bersih data uji")
+  if (purchaseId) {
+    const delPurchase = await req(manager.jar, `/api/manager/purchases/${purchaseId}`, { method: "DELETE" })
+    check("DELETE transaksi uji -> 200", delPurchase.status === 200, `status ${delPurchase.status}`)
+  }
+  if (supplierId) {
+    const delSupplier = await req(manager.jar, `/api/manager/suppliers/${supplierId}`, { method: "DELETE" })
+    check("DELETE supplier uji -> 200", delSupplier.status === 200, `status ${delSupplier.status}`)
+  }
+
+  console.log(`\n${passed} lolos, ${failed} gagal.`)
+  if (failed > 0) {
+    console.log("Gagal pada:", failures.join(", "))
+    process.exit(1)
+  }
+}
+
+main().catch((err) => {
+  console.error("Smoke test berhenti karena error tak terduga:", err)
+  process.exit(1)
+})

@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { unlink } from "fs/promises"
+import path from "path"
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -29,6 +31,15 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     await prisma.purchase.delete({
       where: { id }
     })
+
+    // Bukti transfer disimpan lokal di disk (bukan object storage), jadi
+    // baris DB dan berkasnya bisa lepas satu sama lain kalau tidak dibersihkan
+    // di sini -- berkas yang gagal dihapus tidak membatalkan penghapusan
+    // transaksi yang sudah terjadi (best-effort, sama seperti kegagalan audit log).
+    if (existing.bukti_transfer?.startsWith("/uploads/transfer-proofs/")) {
+      const filePath = path.join(process.cwd(), "public", existing.bukti_transfer)
+      await unlink(filePath).catch((err) => console.error("Gagal menghapus berkas bukti transfer:", err))
+    }
 
     await createAuditLog({
       userId: session.user.id,

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed": "node seed.js",
     "postinstall": "prisma generate",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "test:smoke": "node smoke/api-smoke.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
