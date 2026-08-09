@@ -17,5 +17,31 @@ services:
       timeout: 5s
       retries: 10
 
+  # Dijalankan lewat profile "production" supaya "docker compose up -d" untuk
+  # dev lokal (npm run dev + db saja) tidak berubah kebiasaannya. Untuk uji
+  # image production secara lokal: `docker compose --profile production up -d --build`.
+  app:
+    profiles: ["production"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agp_is_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/agp_is?schema=public
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   agp_is_pgdata:
