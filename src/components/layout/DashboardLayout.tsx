@@ -15,6 +15,7 @@ import {
   Menu,
   Package,
   PenLine,
+  ScrollText,
   ShieldCheck,
   Scale,
   Settings,
@@ -158,6 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       { name: "Setting Target", href: "/dashboard/manager/targets", icon: Target },
       { name: "Data Lapak", href: "/dashboard/manager/suppliers", icon: Store },
       { name: "Daftar Transaksi", href: "/dashboard/manager/history", icon: History },
+      { name: "Audit Trail", href: "/dashboard/manager/audit-trail", icon: ScrollText },
     ] : []),
     { name: "Pengaturan", href: "/dashboard/settings", icon: Settings },
   ]

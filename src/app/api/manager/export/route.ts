@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { positiveInteger } from "@/lib/numberValidation"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
+import { formatAuditAction } from "@/lib/auditLabels"
 
 // Helper to escape values for CSV
 function escape(val: unknown): string {
@@ -310,37 +311,4 @@ export async function GET(req: Request) {
     const message = error instanceof Error ? error.message : "Internal Server Error"
     return new Response(message, { status: message.includes("harus") ? 400 : 500 })
   }
-}
-
-function formatAuditAction(action: string) {
-  const labels: Record<string, string> = {
-    CREATE_DRAFT: "Draft transaksi dibuat",
-    EDIT_PURCHASE: "Transaksi diperbarui",
-    ADMIN_DOUBLE_CHECK: "Verifikasi gudang selesai",
-    MANAGER_APPROVE_PRICE: "Harga disetujui manager",
-    MANAGER_REJECT_PRICE: "Harga ditolak manager",
-    UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
-    REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
-    SETTLE_TERMIN: "Termin ditandai lunas",
-    REQUEST_DP: "Pengajuan kasbon dibuat",
-    APPROVE_DP: "Kasbon disetujui",
-    REJECT_DP: "Kasbon ditolak",
-    FORWARD_DP: "Kasbon diteruskan ke manager",
-    // Nama aksi status supplier sebelumnya tidak cocok dengan yang benar-benar
-    // ditulis kode, sehingga tampil sebagai kode mentah pada export (D-6).
-    SUPPLIER_STATUS_AUTO_GREEN: "Status supplier otomatis menjadi GREEN",
-    SUPPLIER_STATUS_MANUAL_UPDATE: "Status supplier diubah manual",
-    UPDATE_SKU_PRICE_STANDARD: "Standar harga SKU diperbarui",
-    CREATE_SKU_PRICE_STANDARD: "Standar harga SKU ditambahkan",
-    UPDATE_USER_SETTINGS: "Pengaturan akun diperbarui",
-    DELETE_PURCHASE: "Transaksi dihapus permanen",
-    DELETE_SUPPLIER: "Data lapak dihapus",
-    // Ditambahkan untuk menutup D-5: pembuatan supplier dan perubahan target
-    // gudang sebelumnya tidak tercatat di audit log sama sekali.
-    CREATE_SUPPLIER: "Data lapak ditambahkan",
-    CREATE_WAREHOUSE_TARGET: "Target gudang ditambahkan",
-    UPDATE_WAREHOUSE_TARGET: "Target gudang diperbarui",
-  }
-
-  return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())
 }
