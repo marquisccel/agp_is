@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, Clock3, Eye, FileImage, Loader2, ReceiptText, RefreshCw, UploadCloud, X } from "lucide-react"
 import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
@@ -90,8 +91,14 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="bg-slate-100/70 p-3">
-              <img src={preview.src} alt="Bukti Transfer" className="max-h-[72vh] w-full rounded-3xl bg-white object-contain shadow-inner" />
+            <div className="relative h-[72vh] w-full bg-slate-100/70 p-3">
+              <Image
+                src={preview.src}
+                alt="Bukti Transfer"
+                fill
+                sizes="(min-width: 768px) 42rem, 100vw"
+                className="rounded-3xl bg-white object-contain shadow-inner"
+              />
             </div>
           </div>
         </div>
@@ -200,7 +207,13 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                         onClick={() => setPreview({ src: buktiTransfer, title: p.supplier.nama })}
                         className="group/preview relative aspect-[16/10] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(15,23,42,0.16)]"
                       >
-                        <img src={buktiTransfer} alt="Bukti" className="h-full w-full object-cover transition-transform duration-700 group-hover/preview:scale-[1.04]" />
+                        <Image
+                          src={buktiTransfer}
+                          alt="Bukti"
+                          fill
+                          sizes="(min-width: 1024px) 260px, 50vw"
+                          className="object-cover transition-transform duration-700 group-hover/preview:scale-[1.04]"
+                        />
                         <div className="absolute inset-0 flex items-center justify-center bg-slate-950/0 transition-colors duration-300 group-hover/preview:bg-slate-950/28">
                           <span className="grid h-11 w-11 scale-90 place-items-center rounded-full bg-white/92 text-slate-950 opacity-0 shadow-lg transition-all duration-300 group-hover/preview:scale-100 group-hover/preview:opacity-100">
                             <Eye className="h-4 w-4" />

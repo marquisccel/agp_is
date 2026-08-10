@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import Image from "next/image"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 
@@ -83,7 +84,13 @@ export default async function StaffHistoryPage() {
                       <td className="px-6 py-4 text-center">
                         {purchase.bukti_transfer ? (
                           <a href={purchase.bukti_transfer} target="_blank" rel="noreferrer">
-                            <img src={purchase.bukti_transfer} alt="Bukti transfer" className="w-12 h-12 object-cover rounded-lg border border-slate-200 mx-auto hover:scale-105 transition-transform shadow-sm" />
+                            <Image
+                              src={purchase.bukti_transfer}
+                              alt="Bukti transfer"
+                              width={48}
+                              height={48}
+                              className="w-12 h-12 object-cover rounded-lg border border-slate-200 mx-auto hover:scale-105 transition-transform shadow-sm"
+                            />
                           </a>
                         ) : (
                           <span className="text-slate-300 text-xs">-</span>

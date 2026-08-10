@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -469,9 +470,14 @@ export default function ManagerPurchaseDetailClient({
                 )}
               </div>
               {showProof && purchase.bukti_transfer && (
-                <div className="mt-4 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={purchase.bukti_transfer} alt="Bukti Transfer" className="max-h-96 w-full object-contain" />
+                <div className="relative mt-4 h-96 w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                  <Image
+                    src={purchase.bukti_transfer}
+                    alt="Bukti Transfer"
+                    fill
+                    sizes="(min-width: 1024px) 66vw, 100vw"
+                    className="object-contain"
+                  />
                 </div>
               )}
             </div>
