@@ -10,7 +10,8 @@
     "seed": "node seed.js",
     "postinstall": "prisma generate",
     "test": "tsx --test tests/*.test.ts",
-    "test:smoke": "node smoke/api-smoke.mjs"
+    "test:smoke": "node smoke/api-smoke.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -29,6 +30,7 @@
     "recharts": "^3.8.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
