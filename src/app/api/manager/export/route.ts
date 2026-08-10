@@ -335,6 +335,11 @@ function formatAuditAction(action: string) {
     UPDATE_USER_SETTINGS: "Pengaturan akun diperbarui",
     DELETE_PURCHASE: "Transaksi dihapus permanen",
     DELETE_SUPPLIER: "Data lapak dihapus",
+    // Ditambahkan untuk menutup D-5: pembuatan supplier dan perubahan target
+    // gudang sebelumnya tidak tercatat di audit log sama sekali.
+    CREATE_SUPPLIER: "Data lapak ditambahkan",
+    CREATE_WAREHOUSE_TARGET: "Target gudang ditambahkan",
+    UPDATE_WAREHOUSE_TARGET: "Target gudang diperbarui",
   }
 
   return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())

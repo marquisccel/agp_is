@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
 import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
@@ -94,6 +95,18 @@ export async function POST(req: Request) {
         hari_ambilan: hari_ambilan || null,
         warehouseId
       }
+    })
+
+    // Pembuatan supplier sebelumnya tidak tercatat sama sekali di audit log
+    // (D-5) -- data kontak/rekening baru tidak bisa ditelusuri siapa yang
+    // menambahkannya dan kapan.
+    await createAuditLog({
+      userId: session.user.id,
+      action: "CREATE_SUPPLIER",
+      table_name: "Supplier",
+      record_id: supplier.id,
+      old_data: null,
+      new_data: supplier,
     })
 
     return NextResponse.json(supplier, { status: 201 })

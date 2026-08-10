@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
 
 function parseMonth(value: string | number | null | undefined, fallback: number) {
@@ -138,6 +139,17 @@ export async function PUT(req: Request) {
         include: { warehouse: true }
       })
     }
+
+    // Perubahan target gudang sebelumnya tidak tercatat di audit log (D-5) --
+    // tidak bisa ditelusuri siapa yang mengubah target dan nilai sebelumnya.
+    await createAuditLog({
+      userId,
+      action: existing ? "UPDATE_WAREHOUSE_TARGET" : "CREATE_WAREHOUSE_TARGET",
+      table_name: "WarehouseTarget",
+      record_id: target.id,
+      old_data: existing,
+      new_data: target,
+    })
 
     return NextResponse.json(target)
   } catch (error) {
