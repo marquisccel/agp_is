@@ -110,7 +110,10 @@ model Purchase {
   nominal_belum_lunas        Float?    @default(0)
   status_pelunasan           String?   @default("LUNAS") // "BELUM_LUNAS" | "LUNAS"
   
-  status_approval            String    // 'menunggu_verifikasi', 'menunggu_approval_harga', 'approved', 'sudah_transfer', 'rejected', 'dibatalkan'
+  status_approval            String    // 'menunggu_verifikasi', 'menunggu_approval_harga', 'approved', 'sudah_transfer', 'dibatalkan'
+  // 'rejected' dihapus dari daftar (D-14): tidak pernah ditetapkan oleh kode
+  // manapun untuk Purchase -- 'dibatalkan' adalah status yang benar-benar
+  // dipakai untuk kasus penolakan harga oleh Manager.
   rejection_reason           String?
   bukti_transfer             String?
   tanggal_transfer           DateTime?

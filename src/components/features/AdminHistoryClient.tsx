@@ -59,7 +59,6 @@ export default function AdminHistoryClient({
     { value: "menunggu_approval_harga", label: "Menunggu Approval Harga" },
     { value: "approved", label: "Disetujui (Menunggu Transfer)" },
     { value: "sudah_transfer", label: "Sudah Transfer" },
-    { value: "rejected", label: "Ditolak" },
     { value: "dibatalkan", label: "Dibatalkan" },
   ]
 
@@ -91,7 +90,6 @@ export default function AdminHistoryClient({
     menunggu_approval_harga: { label: "Menunggu Approval", cls: "bg-orange-50 text-orange-700 border-orange-200" },
     approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
     sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    rejected: { label: "Ditolak", cls: "bg-red-50 text-red-700 border-red-200" },
     dibatalkan: { label: "Dibatalkan", cls: "bg-slate-50 text-slate-500 border-slate-200" },
   }
 

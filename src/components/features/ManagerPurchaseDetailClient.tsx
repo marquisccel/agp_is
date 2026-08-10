@@ -153,15 +153,10 @@ export default function ManagerPurchaseDetailClient({
       cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
       desc: "Pembayaran telah ditransfer oleh Admin ke rekening supplier."
     },
-    rejected: {
-      label: "Ditolak",
-      cls: "bg-red-50 text-red-700 border-red-200",
-      desc: "Transaksi ditolak oleh Manager / Admin."
-    },
     dibatalkan: {
       label: "Dibatalkan",
-      cls: "bg-slate-50 text-slate-500 border-slate-200",
-      desc: "Transaksi dibatalkan."
+      cls: "bg-red-50 text-red-700 border-red-200",
+      desc: "Ditolak oleh Manager karena harga di atas standar SKU."
     }
   }
 
@@ -242,7 +237,7 @@ export default function ManagerPurchaseDetailClient({
 
       {/* Alert status description */}
       <div className={`p-4 rounded-xl border flex gap-3 items-start ${s.cls}`}>
-        {purchase.status_approval === "rejected" ? (
+        {purchase.status_approval === "dibatalkan" ? (
           <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
         ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
           <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -252,7 +247,7 @@ export default function ManagerPurchaseDetailClient({
         <div>
           <h4 className="font-bold text-sm">Status: {s.label}</h4>
           <p className="text-xs opacity-90 mt-0.5">{s.desc}</p>
-          {purchase.status_approval === "rejected" && purchase.rejection_reason && (
+          {purchase.status_approval === "dibatalkan" && purchase.rejection_reason && (
             <div className="mt-2 bg-white/50 p-2.5 rounded-lg border border-red-200/50 text-xs">
               <span className="font-bold">Alasan Penolakan:</span> {purchase.rejection_reason}
             </div>
