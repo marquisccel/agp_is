@@ -8,6 +8,7 @@ import { Activity, CheckCircle2, Clock3, Download, FileWarning, ReceiptText } fr
 import ReportYearSelect from "@/components/features/ReportYearSelect"
 import PageHeader from "@/components/ui/PageHeader"
 import PrintButton from "@/components/ui/PrintButton"
+import { formatAuditAction } from "@/lib/auditLabels"
 
 // Helper formatters
 function fmtRp(n: number) {
@@ -432,28 +433,6 @@ export default async function ManagerReportsPage({
       </div>
     </div>
   )
-}
-
-function formatAuditAction(action: string) {
-  const labels: Record<string, string> = {
-    CREATE_DRAFT: "Draft transaksi dibuat",
-    EDIT_PURCHASE: "Transaksi diperbarui",
-    SUPERVISOR_VERIFY_PURCHASE: "Penerimaan diverifikasi supervisor",
-    ADMIN_DOUBLE_CHECK: "Double check admin selesai",
-    MANAGER_APPROVE_PRICE: "Harga disetujui manager",
-    MANAGER_REJECT_PRICE: "Harga ditolak manager",
-    UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
-    REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
-    SETTLE_TERMIN: "Termin ditandai lunas",
-    REQUEST_DP: "Pengajuan kasbon dibuat",
-    CREATE_DP_REQUEST: "Pengajuan kasbon dibuat",
-    APPROVE_DP: "Kasbon disetujui",
-    REJECT_DP: "Kasbon ditolak",
-    FORWARD_DP: "Kasbon diteruskan ke manager",
-    SUPPLIER_STATUS_UPDATE: "Status supplier diperbarui",
-  }
-
-  return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())
 }
 
 function ExecutiveSignal({

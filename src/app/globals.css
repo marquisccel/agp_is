@@ -390,3 +390,37 @@ a:focus-visible {
     transform: none;
   }
 }
+
+/* Print/report PDF-grade (Fase 7). Halaman laporan sendiri sudah punya kelas
+   print:* (Tailwind) untuk cover, section, dan area tanda tangan -- aturan
+   di sini melengkapi bagian yang tidak bisa diatur lewat kelas per elemen:
+   ukuran halaman, warna latar yang biasanya dibuang browser saat print, dan
+   larangan section/baris tabel terpotong di tengah halaman. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  section,
+  table,
+  tr,
+  .workflow-card,
+  .interactive-surface {
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+}

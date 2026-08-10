@@ -168,15 +168,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     (pathname.includes("/dashboard/manager/") ? "Detail" : "Dashboard")
 
   return (
-    <div className="liquid-shell flex h-screen overflow-hidden">
+    <div className="liquid-shell flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible">
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm print:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      <aside className="liquid-sidebar hidden lg:flex w-72 text-slate-950 border-r border-white/70 flex-col flex-shrink-0 z-40">
+      <aside className="liquid-sidebar hidden lg:flex w-72 text-slate-950 border-r border-white/70 flex-col flex-shrink-0 z-40 print:hidden">
         <SidebarContent
           navItems={navItems}
           pathname={pathname}
@@ -189,7 +189,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <aside className={`
         liquid-sidebar fixed top-0 left-0 h-full w-72 max-w-[85vw] text-slate-950 shadow-2xl
-        flex flex-col z-40 lg:hidden
+        flex flex-col z-40 lg:hidden print:hidden
         transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
@@ -203,8 +203,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         />
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <header className="liquid-topbar relative h-20 border-b border-white/70 flex items-center px-4 sm:px-7 gap-3 flex-shrink-0 z-20">
+      <main className="flex-1 flex flex-col overflow-hidden min-w-0 print:block print:overflow-visible">
+        <header className="liquid-topbar relative h-20 border-b border-white/70 flex items-center px-4 sm:px-7 gap-3 flex-shrink-0 z-20 print:hidden">
           <button
             className="lg:hidden p-2 rounded-2xl text-slate-600 hover:bg-white transition-colors flex-shrink-0 shadow-sm border border-slate-200"
             onClick={() => setSidebarOpen(true)}
@@ -238,8 +238,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto">
-          <div key={pathname} className="soft-enter p-4 sm:p-7 lg:p-9 max-w-[1500px] mx-auto">
+        <div className="flex-1 overflow-auto print:overflow-visible">
+          <div key={pathname} className="soft-enter p-4 sm:p-7 lg:p-9 max-w-[1500px] mx-auto print:p-0 print:max-w-none">
             {children}
           </div>
         </div>

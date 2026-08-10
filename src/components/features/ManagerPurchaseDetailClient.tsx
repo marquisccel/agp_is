@@ -18,6 +18,7 @@ import {
   Activity,
 } from "lucide-react"
 import { fmtRp } from "@/lib/format"
+import { formatAuditAction } from "@/lib/auditLabels"
 import PageHeader from "@/components/ui/PageHeader"
 
 interface PurchaseItem {
@@ -677,17 +678,4 @@ function PaymentMetric({
   )
 }
 
-function formatAuditAction(action: string) {
-  const labels: Record<string, string> = {
-    UPLOAD_TRANSFER_PROOF: "Bukti transfer diunggah",
-    REPLACE_TRANSFER_PROOF: "Bukti transfer diganti",
-    SETTLE_TERMIN: "Termin ditandai lunas",
-    CREATE_DRAFT: "Draft transaksi dibuat",
-    SUPERVISOR_VERIFY_PURCHASE: "Penerimaan diverifikasi supervisor",
-    ADMIN_DOUBLE_CHECK: "Double check admin selesai",
-    MANAGER_APPROVE_PRICE: "Harga disetujui manager",
-    MANAGER_REJECT_PRICE: "Harga ditolak manager",
-  }
 
-  return labels[action] || action.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase())
-}

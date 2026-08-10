@@ -21,10 +21,20 @@ const formatActivityAction = (action: string) => {
       description: "membuat draft transaksi pembelian baru",
       tone: "bg-sky-50 text-sky-700 border-sky-100",
     },
-    SUPERVISOR_VERIFY_PURCHASE: {
-      label: "Pembelian diverifikasi",
-      description: "memverifikasi transaksi pembelian",
+    ADMIN_DOUBLE_CHECK: {
+      label: "Verifikasi gudang selesai",
+      description: "menyelesaikan verifikasi gudang atas transaksi pembelian",
       tone: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    },
+    UPLOAD_TRANSFER_PROOF: {
+      label: "Bukti transfer diunggah",
+      description: "mengunggah bukti transfer pembayaran",
+      tone: "bg-sky-50 text-sky-700 border-sky-100",
+    },
+    REQUEST_DP: {
+      label: "Kasbon diajukan",
+      description: "mengajukan uang muka (kasbon) ke lapak",
+      tone: "bg-violet-50 text-violet-700 border-violet-100",
     },
     MANAGER_APPROVE_PRICE: {
       label: "Harga disetujui",
