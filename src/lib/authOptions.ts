@@ -37,11 +37,19 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.role = user.role
         token.id = user.id
         token.warehouseId = user.warehouseId
+      }
+      // Dipicu oleh useSession().update({...}) di halaman Pengaturan setelah
+      // profil disimpan. Tanpa ini, token JWT (sumber data session) tetap
+      // membawa nama/email lama sampai user logout-login ulang, walau baris
+      // di DB sudah berubah -- sesi yang sedang berjalan tidak pernah tahu.
+      if (trigger === "update" && session) {
+        if (typeof session.name === "string") token.name = session.name
+        if (typeof session.email === "string") token.email = session.email
       }
       return token
     },
