@@ -15,6 +15,9 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
   const [error, setError] = useState("")
 
   const handleAction = async (action: "approve" | "reject") => {
+    if (action === "reject" && !confirm("Yakin ingin menolak harga transaksi ini? Transaksi akan dibatalkan secara permanen dan tidak bisa diproses ulang.")) {
+      return
+    }
     setLoading(true)
     setError("")
 
@@ -263,7 +266,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
             disabled={loading}
             className="flex-1 px-5 py-3 rounded-xl font-bold text-sm text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 transition-colors disabled:opacity-50"
           >
-            Tolak (Dibatalkan)
+            {loading ? "Memproses..." : "Tolak (Dibatalkan)"}
           </button>
           <button
             onClick={() => handleAction("approve")}

@@ -38,24 +38,12 @@ interface LapakSusutData {
   detailTransaksi: TransaksiSusutDetail[]
 }
 
-interface SusutLebihSummary {
-  totalLapakAll: number
-  totalGudangAll: number
-  totalSusutAll: number
-  totalLebihAll: number
-  totalSelisihBersih: number
-  pctSusutAll: number
-  pctLebihAll: number
-  transaksiDenganData: number
-}
-
 interface Props {
   lapakData: LapakSusutData[]
-  summary: SusutLebihSummary
   warehouseNames: { id: string; nama: string }[]
 }
 
-export default function SusutLebihAnalytics({ lapakData, summary, warehouseNames }: Props) {
+export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props) {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
   const [sortBy, setSortBy] = useState<"susut" | "lebih" | "volume">("susut")
   const [showMode, setShowMode] = useState<"semua" | "susut" | "lebih">("semua")

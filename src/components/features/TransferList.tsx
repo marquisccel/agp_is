@@ -221,7 +221,11 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                         </div>
                       </button>
                       <button
-                        onClick={() => fileRefs.current[p.id]?.click()}
+                        onClick={() => {
+                          if (confirm("Ganti bukti transfer yang sudah ada? Bukti lama tidak akan bisa diakses lagi setelah diganti.")) {
+                            fileRefs.current[p.id]?.click()
+                          }
+                        }}
                         disabled={isUploading}
                         className="premium-button flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                       >

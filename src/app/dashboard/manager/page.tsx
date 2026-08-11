@@ -491,22 +491,6 @@ export default async function ManagerDashboard({
     pctLebih: v.totalLapak > 0 ? (v.totalLebih / v.totalLapak) * 100 : 0,
   })).sort((a, b) => b.totalSusut - a.totalSusut)
 
-  const susutSummaryTotalLapak = lapakSusutData.reduce((s, d) => s + d.totalLapak, 0)
-  const susutSummaryTotalGudang = lapakSusutData.reduce((s, d) => s + d.totalGudang, 0)
-  const susutSummaryTotalSusut = lapakSusutData.reduce((s, d) => s + d.totalSusut, 0)
-  const susutSummaryTotalLebih = lapakSusutData.reduce((s, d) => s + d.totalLebih, 0)
-
-  const susutLebihSummary = {
-    totalLapakAll: susutSummaryTotalLapak,
-    totalGudangAll: susutSummaryTotalGudang,
-    totalSusutAll: susutSummaryTotalSusut,
-    totalLebihAll: susutSummaryTotalLebih,
-    totalSelisihBersih: susutSummaryTotalGudang - susutSummaryTotalLapak,
-    pctSusutAll: susutSummaryTotalLapak > 0 ? (susutSummaryTotalSusut / susutSummaryTotalLapak) * 100 : 0,
-    pctLebihAll: susutSummaryTotalLapak > 0 ? (susutSummaryTotalLebih / susutSummaryTotalLapak) * 100 : 0,
-    transaksiDenganData: lapakSusutData.reduce((s, d) => s + d.transaksi, 0),
-  }
-
   // ──────────────────────────────────────────
   // 11. Rekap DP & Kasbon per Lapak
   // ──────────────────────────────────────────
@@ -862,7 +846,6 @@ export default async function ManagerDashboard({
       {/* Susut & Lebih Timbangan per Lapak */}
       <SusutLebihAnalytics
         lapakData={lapakSusutData}
-        summary={susutLebihSummary}
         warehouseNames={warehouses.map(w => ({ id: w.id, nama: w.nama }))}
       />
 
