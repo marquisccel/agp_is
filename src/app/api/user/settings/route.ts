@@ -14,6 +14,21 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Sesi JWT tidak divalidasi ulang terhadap DB pada tiap request -- kalau
+    // baris user di belakang session.user.id sudah tidak ada (misal DB
+    // di-reseed sementara pengguna masih login), lookup email di bawah bisa
+    // salah mengira baris BARU dengan email yang sama sebagai "milik orang
+    // lain" karena ID-nya tidak cocok dengan token lama. Deteksi kondisi ini
+    // lebih dulu supaya errornya jelas, bukan "email sudah digunakan" yang
+    // menyesatkan.
+    const currentUser = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'Sesi Anda sudah tidak valid (akun tidak ditemukan). Silakan keluar dan masuk kembali.' },
+        { status: 401 },
+      );
+    }
+
     const body = await request.json();
     const { nama, email, oldPassword, newPassword } = body as {
       nama?: string;
@@ -47,18 +62,7 @@ export async function PUT(request: Request) {
 
     // Handle password change
     if (newPassword && oldPassword) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-      });
-
-      if (!user || !user.password) {
-        return NextResponse.json(
-          { error: 'User tidak ditemukan' },
-          { status: 404 },
-        );
-      }
-
-      const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+      const passwordMatch = await bcrypt.compare(oldPassword, currentUser.password);
       if (!passwordMatch) {
         return NextResponse.json(
           { error: 'Password lama tidak sesuai' },
