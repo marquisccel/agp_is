@@ -83,7 +83,15 @@ test.describe.serial("Alur transaksi pembelian penuh (draft -> verifikasi -> tra
     await page.getByPlaceholder("Ketik nama / inisial supplier...").fill(supplierName)
     await page.getByText(supplierName, { exact: false }).first().click()
 
-    await page.getByText("Pilih SKU", { exact: true }).first().click()
+    // ElegantSelect membuka menu lewat portal dengan position:fixed, dihitung
+    // dari posisi tombolnya saat diklik (lihat ElegantSelect.tsx). Kalau
+    // tombolnya ada dekat batas bawah viewport (tergantung tinggi render
+    // form -- bisa beda antar environment/font), menunya bisa jatuh di luar
+    // viewport dan tidak bisa di-scroll-ke (fixed, bukan mengikuti scroll
+    // halaman). Scroll ke tengah viewport dulu supaya selalu ada ruang.
+    const skuSelectButton = page.getByText("Pilih SKU", { exact: true }).first()
+    await skuSelectButton.evaluate((el) => el.scrollIntoView({ block: "center" }))
+    await skuSelectButton.click()
     await page.getByRole("option", { name: skuName, exact: true }).click()
 
     // Berat Lapak (KG) dan Harga/KG tidak punya atribut placeholder (beda

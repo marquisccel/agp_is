@@ -12,7 +12,7 @@ export default defineConfig({
   fullyParallel: false, // skenario menyentuh data bersama (draft/double-check/dst), jalankan berurutan
   retries: 0,
   workers: 1,
-  reporter: [["list"]],
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : [["list"]],
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
     trace: "retain-on-failure",
