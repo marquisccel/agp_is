@@ -199,7 +199,92 @@ async function main() {
     }
   }
 
-  console.log("\n6. Bersih-bersih data uji")
+  console.log("\n6. DP dikembalikan saat transaksi dihapus permanen (D-2 diperluas)")
+  const dpSupplierName = `Smoke DP Supplier ${stamp}`
+  const dpSkuName = `SmokeDP-SKU-${stamp}`
+  const createDpSupplierRes = await req(staff.jar, "/api/suppliers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    // confirmDuplicate: true -- nama ini berbagi stamp dengan supplier
+    // section 5, bisa ke-flag "mirip" oleh deteksi duplikat (Levenshtein).
+    body: JSON.stringify({ nama: dpSupplierName, warehouseId, target_bulanan_kg: 100, frekuensi_ambilan_mingguan: 1, confirmDuplicate: true }),
+  })
+  const dpSupplier = await createDpSupplierRes.json()
+  const dpSupplierId = dpSupplier.id
+  check("POST /api/suppliers (throwaway DP) -> 201", createDpSupplierRes.status === 201, `status ${createDpSupplierRes.status}`)
+
+  let dpId = null
+  let dpPurchaseId = null
+  if (dpSupplierId) {
+    const requestDpRes = await req(staff.jar, "/api/dp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ supplierId: dpSupplierId, nominal_diajukan: 100000, keterangan: "smoke test D-2" }),
+    })
+    check("POST /api/dp -> 201", requestDpRes.status === 201, `status ${requestDpRes.status}`)
+    const dp = await requestDpRes.json()
+    dpId = dp.id
+
+    const approveDpRes = await req(admin.jar, `/api/dp/${dpId}/approve`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "approve" }),
+    })
+    check("PUT approve DP sebagai ADMIN -> 200", approveDpRes.status === 200, `status ${approveDpRes.status}`)
+
+    const draftDpRes = await req(staff.jar, "/api/purchases/draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        supplierId: dpSupplierId,
+        metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+        items: [{ sku_name: dpSkuName, spec: "Grading", berat_estimasi: 10, harga_per_kg: 5000 }],
+        potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
+        potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
+        potongan_air: 0, berat_potongan_air: 0, harga_potongan_air: 0,
+        potongan_karung: 0, berat_potongan_karung: 0, harga_potongan_karung: 0,
+      }),
+    })
+    const dpDraft = await draftDpRes.json()
+    dpPurchaseId = dpDraft.id
+
+    const dcDpRes = await req(admin.jar, `/api/purchases/${dpPurchaseId}/double-check`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        berat_timbangan_lapak: 10,
+        berat_timbangan_gudang: 10,
+        metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+        items: [{ sku_name: dpSkuName, spec: "Grading", berat_lapak: 10, berat_final_item: 10, harga_per_kg: 5000 }],
+        returs: [],
+        dp_yang_digunakan: 50000,
+        potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
+        potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
+        potongan_air: 0, berat_potongan_air: 0, harga_potongan_air: 0,
+        potongan_karung: 0, berat_potongan_karung: 0, harga_potongan_karung: 0,
+        persentase_pembayaran: 100,
+      }),
+    })
+    check("PUT double-check dengan dp_yang_digunakan -> 200", dcDpRes.status === 200, `status ${dcDpRes.status}`)
+
+    const summaryBefore = await (await req(manager.jar, `/api/dp/summary?supplierId=${dpSupplierId}`)).json()
+    const rowBefore = summaryBefore.find((s) => s.supplierId === dpSupplierId)
+    check("sisa DP terpotong 50000 setelah dialokasikan", rowBefore?.remaining === 50000, JSON.stringify(rowBefore))
+
+    const delDpPurchaseRes = await req(manager.jar, `/api/manager/purchases/${dpPurchaseId}`, { method: "DELETE" })
+    check("DELETE transaksi (dengan DP terpakai) -> 200", delDpPurchaseRes.status === 200, `status ${delDpPurchaseRes.status}`)
+    dpPurchaseId = null // sudah terhapus, jangan dihapus lagi di bagian cleanup
+
+    const summaryAfter = await (await req(manager.jar, `/api/dp/summary?supplierId=${dpSupplierId}`)).json()
+    const rowAfter = summaryAfter.find((s) => s.supplierId === dpSupplierId)
+    check(
+      "DP dikembalikan penuh (remaining 100000) setelah transaksi dihapus",
+      rowAfter?.remaining === 100000 && rowAfter?.totalUsed === 0,
+      JSON.stringify(rowAfter)
+    )
+  }
+
+  console.log("\n7. Bersih-bersih data uji")
   if (purchaseId) {
     const delPurchase = await req(manager.jar, `/api/manager/purchases/${purchaseId}`, { method: "DELETE" })
     check("DELETE transaksi uji -> 200", delPurchase.status === 200, `status ${delPurchase.status}`)
@@ -207,6 +292,22 @@ async function main() {
   if (supplierId) {
     const delSupplier = await req(manager.jar, `/api/manager/suppliers/${supplierId}`, { method: "DELETE" })
     check("DELETE supplier uji -> 200", delSupplier.status === 200, `status ${delSupplier.status}`)
+  }
+  if (dpPurchaseId) {
+    await req(manager.jar, `/api/manager/purchases/${dpPurchaseId}`, { method: "DELETE" })
+  }
+  if (dpId) {
+    // Tidak ada endpoint DELETE untuk DownPayment (riwayat kasbon memang
+    // dipertahankan) -- baris DP uji dihapus langsung lewat Prisma di sini
+    // supaya supplier throwaway di bawah tetap bisa dibersihkan.
+    const { PrismaClient } = await import("@prisma/client")
+    const prisma = new PrismaClient()
+    await prisma.downPayment.delete({ where: { id: dpId } }).catch(() => {})
+    await prisma.$disconnect()
+  }
+  if (dpSupplierId) {
+    const delDpSupplier = await req(manager.jar, `/api/manager/suppliers/${dpSupplierId}`, { method: "DELETE" })
+    check("DELETE supplier DP uji -> 200", delDpSupplier.status === 200, `status ${delDpSupplier.status}`)
   }
 
   console.log(`\n${passed} lolos, ${failed} gagal.`)

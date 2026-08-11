@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { unlink } from "fs/promises"
 import path from "path"
+import { refundDp } from "@/lib/dpAllocation"
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -26,10 +27,20 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
     }
 
-    // Deleting the purchase will automatically cascade delete its items and returs
-    // because of `onDelete: Cascade` in the Prisma schema.
-    await prisma.purchase.delete({
-      where: { id }
+    // Sama seperti penolakan harga (D-2): DP yang sudah dialokasikan ke
+    // transaksi ini harus dikembalikan sebelum baris transaksinya hilang,
+    // supaya saldo DP tidak terpotong permanen akibat transaksi yang justru
+    // dihapus. Dibungkus satu transaksi DB dengan penghapusan agar atomik.
+    await prisma.$transaction(async (tx) => {
+      if ((existing.dp_yang_digunakan ?? 0) > 0) {
+        await refundDp(tx, existing.supplierId, existing.dp_yang_digunakan ?? 0)
+      }
+
+      // Deleting the purchase will automatically cascade delete its items and returs
+      // because of `onDelete: Cascade` in the Prisma schema.
+      await tx.purchase.delete({
+        where: { id }
+      })
     })
 
     // Bukti transfer disimpan lokal di disk (bukan object storage), jadi
