@@ -7,6 +7,13 @@ import {
   isWorkingDay,
 } from "../src/lib/workingDays"
 
+function captureConsoleWarn() {
+  const original = console.warn
+  const lines: string[] = []
+  console.warn = (line: string) => { lines.push(line) }
+  return { lines, restore: () => { console.warn = original } }
+}
+
 test("isWorkingDay menolak hari Minggu, terlepas dari libur nasional", () => {
   assert.equal(isWorkingDay(new Date(Date.UTC(2026, 0, 4))), false) // Minggu
 })
@@ -49,4 +56,20 @@ test("getWorkingDaysInMonth tidak pernah melebihi jumlah hari dalam bulan terseb
   const daysInJanuary = new Date(Date.UTC(2026, 1, 0)).getUTCDate()
   assert.ok(getWorkingDaysInMonth(2026, 1) <= daysInJanuary)
   assert.equal(getWorkingDaysInMonth(2026, 1), 26)
+})
+
+test("D-18: tanggal di tahun yang belum tercakup data libur memicu warning satu kali", () => {
+  const cap = captureConsoleWarn()
+  try {
+    // 2099 dipilih jauh melebihi tahun terakhir pada national-holidays.json
+    // supaya tidak mungkin tersenggol pembaruan data di masa depan.
+    isWorkingDay(new Date(Date.UTC(2099, 0, 6))) // Selasa biasa
+    isNationalHoliday(new Date(Date.UTC(2099, 0, 7)))
+    assert.equal(cap.lines.length, 1, "warning cuma boleh muncul sekali per proses")
+    const parsed = JSON.parse(cap.lines[0])
+    assert.equal(parsed.level, "warn")
+    assert.equal(parsed.year, 2099)
+  } finally {
+    cap.restore()
+  }
 })
