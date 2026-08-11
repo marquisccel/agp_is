@@ -17,6 +17,7 @@ import {
   Users,
 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import { hasResolvedSupplierCoordinates, isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 
@@ -121,6 +122,7 @@ export default function ManagerSuppliersClient({
   const [selectedYear, setSelectedYear] = useState<number>(currentYear)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { confirm, dialog } = useConfirm()
   const [editingLocationSupplierId, setEditingLocationSupplierId] = useState<string | null>(null)
   const [locationLink, setLocationLink] = useState("")
   const [locationLatitude, setLocationLatitude] = useState("")
@@ -140,7 +142,13 @@ export default function ManagerSuppliersClient({
     isShortGoogleMapsLink(locationLink) && !inferredLocation && locationLatitude === "" && locationLongitude === ""
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Hati-hati! Apakah Anda yakin ingin menghapus data lapak ini? Lapak tidak bisa dihapus jika memiliki riwayat transaksi/kasbon.")) return
+    const ok = await confirm({
+      title: "Hapus data lapak ini?",
+      description: "Lapak tidak bisa dihapus jika memiliki riwayat transaksi/kasbon.",
+      tone: "danger",
+      confirmLabel: "Ya, hapus",
+    })
+    if (!ok) return
 
     setDeletingId(id)
     try {
@@ -432,6 +440,7 @@ export default function ManagerSuppliersClient({
 
   return (
     <div className="space-y-6">
+      {dialog}
       <section className="interactive-surface border border-slate-200/80 p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>

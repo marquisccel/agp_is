@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { ArrowRight, Calendar, Filter, Home, Search, User } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { useConfirm } from "@/components/ui/ConfirmDialog"
 
 interface PurchaseItem {
   id: string
@@ -48,9 +49,16 @@ export default function ManagerHistoryClient({
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedWarehouse, setSelectedWarehouse] = useState("all")
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { confirm, dialog } = useConfirm()
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Hati-hati! Apakah Anda yakin ingin menghapus transaksi ini? Data yang terhapus tidak dapat dikembalikan.")) return
+    const ok = await confirm({
+      title: "Hapus transaksi ini?",
+      description: "Data yang terhapus tidak dapat dikembalikan.",
+      tone: "danger",
+      confirmLabel: "Ya, hapus",
+    })
+    if (!ok) return
 
     setDeletingId(id)
     try {
@@ -92,6 +100,7 @@ export default function ManagerHistoryClient({
 
   return (
     <div className="space-y-6">
+      {dialog}
       <div className="interactive-surface border border-slate-200/80 p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="relative">

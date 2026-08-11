@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useConfirm } from "@/components/ui/ConfirmDialog"
 
 type DpRow = {
   id: string
@@ -24,6 +25,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
   const [loading, setLoading] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [nominal, setNominal] = useState(dp.nominal_diajukan)
+  const { confirm, dialog } = useConfirm()
 
   const handleAction = async (action: "approve" | "reject" | "forward", finalNominal?: number) => {
     setLoading(true)
@@ -52,6 +54,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
   if (showEdit) {
     return (
       <div className="flex items-center gap-2 justify-center">
+        {dialog}
         <input
           type="number"
           value={nominal}
@@ -80,6 +83,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
 
   return (
     <div className="flex gap-2 justify-center">
+      {dialog}
       <button
         onClick={() => handleAction("approve")}
         disabled={loading}
@@ -96,10 +100,13 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
       </button>
       {role === "ADMIN" && (
         <button
-          onClick={() => {
-            if (confirm("Teruskan pengajuan ini ke Manager untuk diputuskan?")) {
-              handleAction("forward")
-            }
+          onClick={async () => {
+            const ok = await confirm({
+              title: "Teruskan ke Manager?",
+              description: "Pengajuan ini akan diputuskan oleh Manager, bukan Anda.",
+              confirmLabel: "Ya, teruskan",
+            })
+            if (ok) handleAction("forward")
           }}
           disabled={loading}
           className="px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 font-bold text-xs rounded-lg border border-orange-200 transition-colors disabled:opacity-50"
@@ -108,10 +115,14 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
         </button>
       )}
       <button
-        onClick={() => {
-          if (confirm("Yakin ingin menolak pengajuan kasbon ini?")) {
-            handleAction("reject")
-          }
+        onClick={async () => {
+          const ok = await confirm({
+            title: "Tolak pengajuan kasbon ini?",
+            description: "Pengajuan yang ditolak tidak bisa diproses ulang oleh Staff/Admin.",
+            tone: "danger",
+            confirmLabel: "Ya, tolak",
+          })
+          if (ok) handleAction("reject")
         }}
         disabled={loading}
         className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 font-bold text-xs rounded-lg border border-red-200 transition-colors disabled:opacity-50"

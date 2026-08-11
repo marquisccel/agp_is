@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Purchase, PurchaseItem, SkuPriceStandard, Warehouse } from "@prisma/client"
+import { useConfirm } from "@/components/ui/ConfirmDialog"
 
 type PurchaseForApproval = Purchase & {
   items: PurchaseItem[]
@@ -13,10 +14,17 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const { confirm, dialog } = useConfirm()
 
   const handleAction = async (action: "approve" | "reject") => {
-    if (action === "reject" && !confirm("Yakin ingin menolak harga transaksi ini? Transaksi akan dibatalkan secara permanen dan tidak bisa diproses ulang.")) {
-      return
+    if (action === "reject") {
+      const ok = await confirm({
+        title: "Tolak harga transaksi ini?",
+        description: "Transaksi akan dibatalkan secara permanen dan tidak bisa diproses ulang.",
+        tone: "danger",
+        confirmLabel: "Ya, tolak",
+      })
+      if (!ok) return
     }
     setLoading(true)
     setError("")
@@ -47,6 +55,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
 
   return (
     <div className="premium-workflow space-y-6">
+      {dialog}
       {error && (
         <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
           {error}

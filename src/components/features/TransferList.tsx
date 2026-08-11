@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, Clock3, Eye, FileImage, Loader2, ReceiptText, RefreshCw, UploadCloud, X } from "lucide-react"
 import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
+import { useConfirm } from "@/components/ui/ConfirmDialog"
 
 type TransferFilter = "all" | "pending" | "transferred" | "termin"
 type PurchaseWithRelations = Purchase & { supplier: Supplier; items: PurchaseItem[] }
@@ -27,6 +28,7 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
   const [preview, setPreview] = useState<{ src: string; title: string } | null>(null)
   const [activeFilter, setActiveFilter] = useState<TransferFilter>("all")
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const { confirm, dialog } = useConfirm()
 
   const handleUpload = async (purchaseId: string, file: File) => {
     setUploading(purchaseId)
@@ -72,6 +74,7 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
 
   return (
     <>
+      {dialog}
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-xl" onClick={() => setPreview(null)}>
           <div
@@ -221,10 +224,13 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                         </div>
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm("Ganti bukti transfer yang sudah ada? Bukti lama tidak akan bisa diakses lagi setelah diganti.")) {
-                            fileRefs.current[p.id]?.click()
-                          }
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: "Ganti bukti transfer?",
+                            description: "Bukti transfer yang sudah ada tidak akan bisa diakses lagi setelah diganti.",
+                            confirmLabel: "Ya, ganti",
+                          })
+                          if (ok) fileRefs.current[p.id]?.click()
                         }}
                         disabled={isUploading}
                         className="premium-button flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:opacity-60"
