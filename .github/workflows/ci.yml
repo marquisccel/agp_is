@@ -8,9 +8,32 @@ on:
     branches:
       - main
 
+env:
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/agp_is?schema=public"
+  NEXTAUTH_URL: "http://localhost:3000"
+  NEXTAUTH_SECRET: "ci-only-secret-not-for-production"
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # Postgres dibutuhkan mulai Fase 7 (D-18 follow-up: CI wiring) supaya
+    # smoke test dan Playwright bisa jalan otomatis di CI, bukan cuma manual
+    # terhadap server lokal seperti sebelumnya.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agp_is
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -28,8 +51,44 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
+      - name: Unit test
         run: npm test
+
+      - name: Apply Prisma migrations
+        run: npx prisma migrate deploy
+
+      - name: Seed database
+        run: npm run seed
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Start server
+        run: |
+          npx next start &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/health > /dev/null; then
+              echo "Server up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Server did not become healthy in time" >&2
+          exit 1
+
+      - name: API smoke test
+        run: npm run test:smoke
+
+      - name: Playwright end-to-end test
+        run: npm run test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
