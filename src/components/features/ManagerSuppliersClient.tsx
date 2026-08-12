@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   Activity,
   AlertTriangle,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
+import { useToast } from "@/components/ui/Toast"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import { hasResolvedSupplierCoordinates, isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 
@@ -123,6 +125,8 @@ export default function ManagerSuppliersClient({
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const { confirm, dialog } = useConfirm()
+  const { toast, host: toastHost } = useToast()
+  const router = useRouter()
   const [editingLocationSupplierId, setEditingLocationSupplierId] = useState<string | null>(null)
   const [locationLink, setLocationLink] = useState("")
   const [locationLatitude, setLocationLatitude] = useState("")
@@ -157,10 +161,14 @@ export default function ManagerSuppliersClient({
         const data = await res.json()
         throw new Error(data.error || "Gagal menghapus data lapak")
       }
-      alert("Data lapak berhasil dihapus.")
-      window.location.reload()
+      // `suppliers` disalin ke state lokal (bukan dibaca langsung dari prop),
+      // jadi router.refresh() saja tidak menghapusnya dari tampilan -- state
+      // lokalnya juga harus di-update di sini, tidak cukup andalkan re-fetch.
+      setSuppliers((current) => current.filter((s) => s.id !== id))
+      toast("Data lapak berhasil dihapus.")
+      router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast(err.message, "error")
     } finally {
       setDeletingId(null)
     }
@@ -441,6 +449,7 @@ export default function ManagerSuppliersClient({
   return (
     <div className="space-y-6">
       {dialog}
+      {toastHost}
       <section className="interactive-surface border border-slate-200/80 p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>

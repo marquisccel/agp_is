@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
+import { useToast } from "@/components/ui/Toast"
 
 type DpRow = {
   id: string
@@ -26,6 +27,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
   const [showEdit, setShowEdit] = useState(false)
   const [nominal, setNominal] = useState(dp.nominal_diajukan)
   const { confirm, dialog } = useConfirm()
+  const { toast, host: toastHost } = useToast()
 
   const handleAction = async (action: "approve" | "reject" | "forward", finalNominal?: number) => {
     setLoading(true)
@@ -46,7 +48,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
 
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : String(err))
+      toast(err instanceof Error ? err.message : String(err), "error")
       setLoading(false)
     }
   }
@@ -55,6 +57,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
     return (
       <div className="flex items-center gap-2 justify-center">
         {dialog}
+        {toastHost}
         <input
           type="number"
           value={nominal}
@@ -84,6 +87,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
   return (
     <div className="flex gap-2 justify-center">
       {dialog}
+      {toastHost}
       <button
         onClick={() => handleAction("approve")}
         disabled={loading}

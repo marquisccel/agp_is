@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react"
 import { PDFDownloadLink } from "@react-pdf/renderer"
 import NotaPDF from "./NotaPDF"
 import type { PurchaseDTO } from "@/types/purchase"
+import { useToast } from "@/components/ui/Toast"
 
 // ── Format helpers ──
 function fmtRp(n: number) {
@@ -196,6 +197,7 @@ export default function NotaViewerClient({
   const [isClient, setIsClient] = useState(false)
   const [jpgLoading, setJpgLoading] = useState(false)
   const [jpgUrl, setJpgUrl] = useState<string | null>(null)
+  const { toast, host: toastHost } = useToast()
 
   useEffect(() => { setIsClient(true) }, [])
 
@@ -246,7 +248,7 @@ export default function NotaViewerClient({
   const handleShareWa = async () => {
     const nomor = purchase.supplier?.kontak_wa
     if (!nomor) {
-      alert("Nomor WA supplier tidak tersedia.")
+      toast("Nomor WA supplier tidak tersedia.", "info")
       return
     }
 
@@ -286,6 +288,7 @@ export default function NotaViewerClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50/30 p-4 sm:p-8 flex flex-col items-center">
+      {toastHost}
       {/* Page header */}
       <div className="w-full max-w-md mb-6 text-center">
         <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl mb-4">

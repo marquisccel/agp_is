@@ -3,6 +3,7 @@
 import { useRef, useState } from "react"
 import { fmtAngka } from "@/lib/format"
 import { Download, X, CheckCircle } from "lucide-react"
+import { useToast } from "@/components/ui/Toast"
 
 interface NotaItem {
   sku_name: string
@@ -188,6 +189,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
   const hiddenRef = useRef<HTMLDivElement>(null)
   const [downloading, setDownloading] = useState(false)
   const [saved, setSaved] = useState<"idle" | "downloaded">("idle")
+  const { toast, host: toastHost } = useToast()
 
   const handleDownload = async () => {
     if (!hiddenRef.current) return
@@ -222,7 +224,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
   const handleShareWa = () => {
     const nomor = data.supplierKontakWa
     if (!nomor) {
-      alert("Nomor WA supplier tidak tersedia.")
+      toast("Nomor WA supplier tidak tersedia.", "info")
       return
     }
 
@@ -285,6 +287,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
 
   return (
     <>
+      {toastHost}
       {/* Hidden capture target, absolutely positioned off-screen with no Tailwind classes */}
       <div
         style={{

@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowRight, Calendar, Filter, Home, Search, User } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
+import { useToast } from "@/components/ui/Toast"
 
 interface PurchaseItem {
   id: string
@@ -50,6 +52,8 @@ export default function ManagerHistoryClient({
   const [selectedWarehouse, setSelectedWarehouse] = useState("all")
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const { confirm, dialog } = useConfirm()
+  const { toast, host: toastHost } = useToast()
+  const router = useRouter()
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({
@@ -67,10 +71,10 @@ export default function ManagerHistoryClient({
         const data = await res.json()
         throw new Error(data.error || "Gagal menghapus transaksi")
       }
-      alert("Transaksi berhasil dihapus.")
-      window.location.reload()
+      toast("Transaksi berhasil dihapus.")
+      router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast(err.message, "error")
     } finally {
       setDeletingId(null)
     }
@@ -101,6 +105,7 @@ export default function ManagerHistoryClient({
   return (
     <div className="space-y-6">
       {dialog}
+      {toastHost}
       <div className="interactive-surface border border-slate-200/80 p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="relative">

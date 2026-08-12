@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { CheckCircle2, Clock3, Eye, FileImage, Loader2, ReceiptText, RefreshCw, UploadCloud, X } from "lucide-react"
 import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
+import { useToast } from "@/components/ui/Toast"
 
 type TransferFilter = "all" | "pending" | "transferred" | "termin"
 type PurchaseWithRelations = Purchase & { supplier: Supplier; items: PurchaseItem[] }
@@ -29,6 +30,7 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
   const [activeFilter, setActiveFilter] = useState<TransferFilter>("all")
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const { confirm, dialog } = useConfirm()
+  const { toast, host: toastHost } = useToast()
 
   const handleUpload = async (purchaseId: string, file: File) => {
     setUploading(purchaseId)
@@ -45,7 +47,7 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
       }
       router.refresh()
     } catch (e: any) {
-      alert(e.message)
+      toast(e.message, "error")
     } finally {
       setUploading(null)
     }
@@ -75,6 +77,7 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
   return (
     <>
       {dialog}
+      {toastHost}
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-xl" onClick={() => setPreview(null)}>
           <div

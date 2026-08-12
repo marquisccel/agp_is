@@ -4,6 +4,7 @@ import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Check, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/components/ui/Toast";
 
 interface PendingTermin {
   id: string;
@@ -35,6 +36,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
   const [alerts, setAlerts] = useState<PendingTermin[]>(initialAlerts);
   const [isPending, startTransition] = useTransition();
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const { toast, host: toastHost } = useToast();
 
   const handleSettle = (id: string) => {
     setLoadingId(id);
@@ -46,20 +48,21 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
           router.refresh();
         } else {
           const d = await res.json();
-          alert(d.error || "Gagal menyelesaikan pelunasan");
+          toast(d.error || "Gagal menyelesaikan pelunasan", "error");
         }
       } catch (e: any) {
-        alert(e.message || "Terjadi kesalahan koneksi");
+        toast(e.message || "Terjadi kesalahan koneksi", "error");
       } finally {
         setLoadingId(null);
       }
     });
   };
 
-  if (alerts.length === 0) return null;
+  if (alerts.length === 0) return toastHost;
 
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 space-y-4 shadow-sm animate-in fade-in duration-200">
+      {toastHost}
       <div className="flex items-center gap-2.5 border-b border-amber-200 pb-2.5">
         <AlertCircle className="w-5.5 h-5.5 text-amber-500 shrink-0 animate-pulse" />
         <div>
