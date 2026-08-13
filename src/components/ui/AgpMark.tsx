@@ -22,11 +22,14 @@ export default function AgpMark({ size = 32, className = "" }: { size?: number; 
         points="50,4 93,27 93,73 50,96 7,73 7,27"
         fill="var(--brand-strong, #164A2E)"
       />
+      {/* Vesica (dua busur lingkaran radius sama lewat 2 titik ujung) --
+          bentuk daun runcing di kedua ujung yang konsisten, bukan blob
+          bezier bebas seperti versi sebelumnya. */}
       <path
-        d="M50 24 C 66 30, 70 46, 62 60 C 56 70, 44 74, 34 70 C 44 68, 52 60, 54 48 C 44 54, 36 52, 32 44 C 42 46, 48 40, 46 30 C 48 28, 49 26, 50 24 Z"
+        d="M34,24 A40,40 0 0,1 64,74 A40,40 0 0,1 34,24 Z"
         fill="#ffffff"
-        opacity="0.94"
       />
+      <line x1="34" y1="24" x2="64" y2="74" stroke="var(--brand-strong, #164A2E)" strokeWidth="2.2" opacity="0.55" strokeLinecap="round" />
     </svg>
   )
 }
