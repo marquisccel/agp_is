@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { isOperationalRole } from "@/lib/roles"
+import AgpMark from "@/components/ui/AgpMark"
 
 type NavItem = {
   name: string
@@ -53,16 +54,14 @@ function SidebarContent({
     <>
       <div className="px-4 py-5 border-b border-slate-200/70">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-950 text-teal-200 font-black text-sm shadow-sm">
-            AG
-          </div>
+          <AgpMark size={40} className="rounded-xl shadow-sm flex-shrink-0" />
           <div className="min-w-0">
             <h1 className="text-sm font-black text-slate-950 leading-tight truncate">Agrapana Greenworks</h1>
             <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-[0.08em] truncate">Polymer Information System</p>
           </div>
         </div>
       </div>
-      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = item.exact
@@ -71,15 +70,16 @@ function SidebarContent({
 
           return (
             <Link key={item.href} href={item.href} onClick={onNavigate}>
-              <span className={`group flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-300 text-sm font-semibold ${
+              <span className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 text-sm font-medium ${
                 isActive
-                  ? "bg-slate-950 text-white shadow-[0_16px_36px_rgba(15,23,42,0.13)]"
-                  : "text-slate-500 hover:bg-white hover:text-slate-950 hover:shadow-sm"
-              }`}>
+                  ? "font-semibold"
+                  : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-900"
+              }`} style={isActive ? { background: "var(--brand-soft)", color: "var(--brand-strong)" } : undefined}>
                 <Icon
                   size={16}
                   strokeWidth={2.1}
-                  className={`transition-colors ${isActive ? "text-teal-200" : "text-slate-400 group-hover:text-slate-700"}`}
+                  className={`transition-colors ${isActive ? "" : "text-slate-400 group-hover:text-slate-700"}`}
+                  style={isActive ? { color: "var(--brand)" } : undefined}
                 />
                 <span className="truncate">{item.name}</span>
               </span>
@@ -89,7 +89,7 @@ function SidebarContent({
       </nav>
       <div className="p-3 border-t border-slate-200/70">
         <div className="flex items-center gap-3 px-2 mb-3">
-          <div className="w-9 h-9 rounded-2xl bg-slate-950 flex items-center justify-center font-bold text-sm text-teal-200 flex-shrink-0 shadow-sm">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm text-white flex-shrink-0 shadow-sm" style={{ background: "var(--brand-strong)" }}>
             {user.name?.charAt(0) || "U"}
           </div>
           <div className="min-w-0">
@@ -123,7 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!session) return (
     <div className="liquid-shell flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <svg className="animate-spin w-8 h-8 text-teal-700" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin w-8 h-8" style={{ color: "var(--brand)" }} fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
         </svg>
@@ -224,7 +224,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          <div className="hidden sm:flex flex-col items-end flex-shrink-0 rounded-2xl border border-slate-200/80 bg-white/76 px-3.5 py-2.5 shadow-sm backdrop-blur">
+          <div className="hidden sm:flex flex-col items-end flex-shrink-0 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-sm">
             <span className="text-sm font-bold text-slate-800 tabular-nums leading-none">
               {now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Jakarta" })}
             </span>
@@ -233,7 +233,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </span>
           </div>
 
-          <div className="lg:hidden w-9 h-9 rounded-2xl bg-slate-950 flex items-center justify-center font-bold text-xs text-teal-200 shadow flex-shrink-0">
+          <div className="lg:hidden w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow flex-shrink-0" style={{ background: "var(--brand-strong)" }}>
             {session.user.name?.charAt(0) || "U"}
           </div>
         </header>
