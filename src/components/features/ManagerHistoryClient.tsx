@@ -7,6 +7,8 @@ import { ArrowRight, Calendar, Filter, Home, Search, User } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
+import StatusPill from "@/components/ui/StatusPill"
+import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 
 interface PurchaseItem {
   id: string
@@ -94,13 +96,6 @@ export default function ManagerHistoryClient({
     return matchesSearch && matchesStatus && matchesWarehouse
   })
 
-  const statusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_verifikasi: { label: "Menunggu Verifikasi", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    menunggu_approval_harga: { label: "Menunggu Approval Harga", cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-    sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    dibatalkan: { label: "Dibatalkan", cls: "bg-slate-50 text-slate-500 border-slate-200" },
-  }
 
   return (
     <div className="space-y-6">
@@ -179,7 +174,7 @@ export default function ManagerHistoryClient({
                 filteredPurchases.map((purchase) => {
                   const totalBerat = purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
                   const totalNilai = purchase.total_dibayar ?? purchase.total_nilai_setelah_retur ?? purchase.total_nilai_sebelum_retur ?? 0
-                  const status = statusMap[purchase.status_approval] ?? { label: purchase.status_approval, cls: "bg-slate-50 text-slate-600 border-slate-200" }
+                  const status = getPurchaseStatus(purchase.status_approval)
 
                   return (
                     <tr key={purchase.id} className="premium-row">
@@ -207,9 +202,7 @@ export default function ManagerHistoryClient({
                         {formatRp(totalNilai)}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-block rounded-full border px-2.5 py-1 text-xs font-black ${status.cls}`}>
-                          {status.label}
-                        </span>
+                        <StatusPill label={status.label} tone={status.tone} />
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex flex-col items-center gap-2">

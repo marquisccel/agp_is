@@ -5,6 +5,8 @@ import { redirect } from "next/navigation"
 import Image from "next/image"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
+import StatusPill from "@/components/ui/StatusPill"
+import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 
 export default async function StaffHistoryPage() {
   const session = await getServerSession(authOptions)
@@ -20,14 +22,6 @@ export default async function StaffHistoryPage() {
     orderBy: { createdAt: "desc" },
     include: { supplier: true, items: true },
   })
-
-  const statusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_verifikasi: { label: "Menunggu Verifikasi", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    menunggu_approval_harga: { label: "Menunggu Approval", cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-    sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    dibatalkan: { label: "Dibatalkan", cls: "bg-slate-50 text-slate-500 border-slate-200" },
-  }
 
   return (
     <div className="space-y-6">
@@ -60,7 +54,7 @@ export default async function StaffHistoryPage() {
                 </tr>
               ) : (
                 purchases.map((purchase) => {
-                  const status = statusMap[purchase.status_approval] ?? { label: purchase.status_approval, cls: "bg-slate-50 text-slate-600 border-slate-200" }
+                  const status = getPurchaseStatus(purchase.status_approval)
 
                   return (
                     <tr key={purchase.id} className="hover:bg-slate-50/40 transition-colors">
@@ -77,9 +71,7 @@ export default async function StaffHistoryPage() {
                         {purchase.items.length} jenis
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${status.cls}`}>
-                          {status.label}
-                        </span>
+                        <StatusPill label={status.label} tone={status.tone} />
                       </td>
                       <td className="px-6 py-4 text-center">
                         {purchase.bukti_transfer ? (

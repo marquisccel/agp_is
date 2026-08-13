@@ -19,6 +19,8 @@ import {
 } from "lucide-react"
 import { fmtRp } from "@/lib/format"
 import { formatAuditAction } from "@/lib/auditLabels"
+import { getPurchaseStatus, PURCHASE_STATUS_DESCRIPTIONS } from "@/lib/purchaseStatusLabels"
+import { TONE_STYLE } from "@/components/ui/StatusPill"
 import PageHeader from "@/components/ui/PageHeader"
 
 interface PurchaseItem {
@@ -133,40 +135,9 @@ export default function ManagerPurchaseDetailClient({
   const router = useRouter()
   const [showProof, setShowProof] = useState(false)
 
-  // Status mapping
-  const statusMap: Record<string, { label: string; cls: string; desc: string }> = {
-    menunggu_verifikasi: {
-      label: "Menunggu Verifikasi",
-      cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      desc: "Menunggu verifikasi dan double check penerimaan barang dari Admin gudang."
-    },
-    menunggu_approval_harga: {
-      label: "Menunggu Approval",
-      cls: "bg-orange-50 text-orange-700 border-orange-200",
-      desc: "Menunggu persetujuan harga dari Manager."
-    },
-    approved: {
-      label: "Disetujui",
-      cls: "bg-blue-50 text-blue-700 border-blue-200",
-      desc: "Telah disetujui manager. Menunggu transfer pembayaran dari Admin."
-    },
-    sudah_transfer: {
-      label: "Sudah Transfer",
-      cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      desc: "Pembayaran telah ditransfer oleh Admin ke rekening supplier."
-    },
-    dibatalkan: {
-      label: "Dibatalkan",
-      cls: "bg-red-50 text-red-700 border-red-200",
-      desc: "Ditolak oleh Manager karena harga di atas standar SKU."
-    }
-  }
-
-  const s = statusMap[purchase.status_approval] || {
-    label: purchase.status_approval,
-    cls: "bg-slate-50 text-slate-600 border-slate-200",
-    desc: ""
-  }
+  const s = getPurchaseStatus(purchase.status_approval)
+  const sDesc = PURCHASE_STATUS_DESCRIPTIONS[purchase.status_approval] ?? ""
+  const sStyle = TONE_STYLE[s.tone]
 
   // Calculate stats
   const totalWeightLapak = purchase.items.reduce((sum, item) => sum + (item.berat_lapak || item.berat_final_item || 0), 0)
@@ -238,7 +209,7 @@ export default function ManagerPurchaseDetailClient({
       />
 
       {/* Alert status description */}
-      <div className={`p-4 rounded-xl border flex gap-3 items-start ${s.cls}`}>
+      <div className="p-4 rounded-xl border flex gap-3 items-start" style={{ background: sStyle.bg, color: sStyle.color, borderColor: sStyle.border }}>
         {purchase.status_approval === "dibatalkan" ? (
           <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
         ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
@@ -248,7 +219,7 @@ export default function ManagerPurchaseDetailClient({
         )}
         <div>
           <h4 className="font-bold text-sm">Status: {s.label}</h4>
-          <p className="text-xs opacity-90 mt-0.5">{s.desc}</p>
+          <p className="text-xs opacity-90 mt-0.5">{sDesc}</p>
           {purchase.status_approval === "dibatalkan" && purchase.rejection_reason && (
             <div className="mt-2 bg-white/50 p-2.5 rounded-lg border border-red-200/50 text-xs">
               <span className="font-bold">Alasan Penolakan:</span> {purchase.rejection_reason}

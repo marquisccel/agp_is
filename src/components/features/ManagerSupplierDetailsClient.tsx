@@ -19,6 +19,8 @@ import {
 } from "lucide-react"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import PageHeader from "@/components/ui/PageHeader"
+import StatusPill from "@/components/ui/StatusPill"
+import { getPurchaseStatus, getDpStatus } from "@/lib/purchaseStatusLabels"
 import { getSupplierMapHref, resolveSupplierCoordinates } from "@/lib/supplierLocation"
 
 interface PurchaseItem {
@@ -264,22 +266,6 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
       p.staff.nama.toLowerCase().includes(query)
     )
   })
-
-  // Status map badges
-  const statusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_verifikasi: { label: "Menunggu Verifikasi", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    menunggu_approval_harga: { label: "Menunggu Approval", cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    approved: { label: "Disetujui", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-    sudah_transfer: { label: "Sudah Transfer", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    dibatalkan: { label: "Dibatalkan", cls: "bg-slate-50 text-slate-500 border-slate-200" }
-  }
-
-  const dpStatusMap: Record<string, { label: string; cls: string }> = {
-    menunggu_approval_admin: { label: "Menunggu Admin", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    menunggu_approval_manager: { label: "Menunggu Manager", cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    approved: { label: "Approved", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    rejected: { label: "Rejected", cls: "bg-red-50 text-red-700 border-red-200" }
-  }
 
   const resolvedCoordinates = resolveSupplierCoordinates(supplier)
   const mapHref = getSupplierMapHref({
@@ -812,10 +798,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                       {filteredPurchases.map(p => {
                         const totalBerat = p.items.reduce((s, i) => s + (i.berat_final_item || 0), 0)
                         const totalNilai = p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
-                        const badge = statusMap[p.status_approval] ?? {
-                          label: p.status_approval,
-                          cls: "bg-slate-50 text-slate-600 border-slate-200"
-                        }
+                        const badge = getPurchaseStatus(p.status_approval)
 
                         return (
                           <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
@@ -847,9 +830,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                               {fmtRp(totalNilai)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border inline-block ${badge.cls}`}>
-                                {badge.label}
-                              </span>
+                              <StatusPill label={badge.label} tone={badge.tone} />
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                               <div className="inline-flex gap-2">
@@ -897,10 +878,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
                       {supplier.downPayments.map(dp => {
-                        const badge = dpStatusMap[dp.status_approval] ?? {
-                          label: dp.status_approval,
-                          cls: "bg-slate-50 text-slate-600 border-slate-200"
-                        }
+                        const badge = getDpStatus(dp.status_approval)
 
                         return (
                           <tr key={dp.id} className="hover:bg-slate-50/50 transition-colors">
@@ -928,9 +906,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                               {dp.sisa_dp !== null ? fmtRp(dp.sisa_dp) : "-"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border inline-block ${badge.cls}`}>
-                                {badge.label}
-                              </span>
+                              <StatusPill label={badge.label} tone={badge.tone} />
                             </td>
                           </tr>
                         )
