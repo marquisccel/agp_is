@@ -117,20 +117,19 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
               <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Payment queue</p>
               <p className="mt-1 text-sm font-semibold text-slate-600">Prioritaskan bukti transfer dan termin yang belum lunas.</p>
             </div>
-            <div className="grid grid-cols-2 gap-1 rounded-2xl border border-slate-200 bg-slate-100/70 p-1 sm:flex">
+            <div className="grid grid-cols-2 gap-1 rounded-[10px] border border-slate-200 p-1 sm:flex" style={{ background: "var(--bg-tint)" }}>
               {filterOptions.map((option) => {
                 const active = activeFilter === option.id
                 return (
                   <button
                     key={option.id}
                     onClick={() => setActiveFilter(option.id)}
-                    className={`premium-button rounded-xl px-3.5 py-2 text-xs font-black transition-all ${
-                      active
-                        ? "bg-slate-950 text-white shadow-sm"
-                        : "text-slate-500 hover:bg-white hover:text-slate-950"
-                    }`}
+                    className="premium-button rounded-lg px-3.5 py-2 text-xs font-black transition-all"
+                    style={active
+                      ? { background: "var(--surface)", color: "var(--text, #14181A)", boxShadow: "0 1px 3px rgba(20,24,26,0.12)" }
+                      : { color: "var(--muted, #5B6560)" }}
                   >
-                    {option.label} <span className={active ? "text-white/70" : "text-slate-400"}>{option.count}</span>
+                    {option.label} <span style={{ color: active ? "var(--brand)" : "var(--muted-faint, #8A938D)" }}>{option.count}</span>
                   </button>
                 )
               })}

@@ -82,9 +82,10 @@ export default function ElegantSelect<T extends string | number>({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen(current => !current)}
-        className={`flex w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2 text-left text-sm font-bold text-slate-800 outline-none hover:bg-slate-50 focus-visible:border-slate-300 focus-visible:ring-2 focus-visible:ring-slate-900/8 ${
-          open ? "border-slate-300 ring-2 ring-slate-900/6" : "border-slate-200 hover:border-slate-300"
+        className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-white px-3 py-2 text-left text-sm font-bold text-slate-800 outline-none hover:border-slate-300 ${
+          open ? "border-slate-300" : "border-slate-200"
         }`}
+        style={open ? { boxShadow: "0 0 0 3px var(--brand-soft)" } : undefined}
       >
         <span className="truncate">{selected?.label}</span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -99,8 +100,9 @@ export default function ElegantSelect<T extends string | number>({
             top: menuRect.top,
             left: menuRect.left,
             minWidth: menuRect.width,
+            boxShadow: "var(--shadow-hover)",
           }}
-          className={`elegant-select-menu z-[120] max-h-72 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-2xl shadow-slate-900/12 ring-1 ring-slate-900/5 ${menuClassName}`}
+          className={`elegant-select-menu z-[120] max-h-72 overflow-y-auto rounded-[10px] border border-slate-200 bg-white p-1 ${menuClassName}`}
         >
           {options.map(option => {
             const active = option.value === value
@@ -115,11 +117,8 @@ export default function ElegantSelect<T extends string | number>({
                   onChange(option.value)
                   setOpen(false)
                 }}
-                className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                  active
-                    ? "bg-slate-100 font-bold text-slate-950"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
-                }`}
+                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-950"
+                style={active ? { background: "var(--brand-soft)", color: "var(--brand-strong)", fontWeight: 700 } : undefined}
               >
                 <span className="truncate">{option.label}</span>
               </button>

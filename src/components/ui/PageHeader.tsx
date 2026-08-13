@@ -16,7 +16,7 @@ export default function PageHeader({
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="min-w-0">
           {eyebrow && (
-            <p className="mb-2 text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">
+            <p className="mb-2 text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--brand-strong)" }}>
               {eyebrow}
             </p>
           )}

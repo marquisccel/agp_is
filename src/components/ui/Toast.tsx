@@ -45,7 +45,8 @@ export function useToast() {
         <div className="fixed bottom-6 right-6 z-[300] w-full max-w-sm px-4 sm:px-0">
           <div
             role="status"
-            className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 shadow-2xl animate-in slide-in-from-bottom-2 duration-300 ${cls}`}
+            className={`flex items-start gap-3 rounded-[14px] border px-4 py-3.5 animate-in slide-in-from-bottom-2 duration-300 ${cls}`}
+            style={{ boxShadow: "var(--shadow-hover)" }}
           >
             <Icon className="h-5 w-5 shrink-0 mt-0.5" />
             <p className="flex-1 text-sm font-semibold leading-snug">{state.message}</p>
