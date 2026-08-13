@@ -1,19 +1,50 @@
 @import "tailwindcss";
 
+/* AGP IS design tokens -- v2 (Fase 8 UI/UX redesign).
+   Acuan utama: Sleena (dashboard flat, aksen minor, kartu putih di atas
+   latar netral) + 4 kebiasaan Apple (material sidebar, easing spring,
+   continuous corner, segmented control). Warna aksen diambil dari logo
+   resmi PT (hexagon hijau), bukan lagi teal. Dark mode sengaja ditunda
+   (bukan lupa) -- lihat docs/roadmap-fase-5-7.md Fase 8. */
 :root {
-  --background: #f5f5f7;
-  --foreground: #111827;
+  --background: #F5F7F4;
+  --bg-tint: #EEF2EE;
+  --foreground: #14181A;
   --surface: #ffffff;
-  --surface-elevated: rgba(255, 255, 255, 0.82);
-  --border: rgba(15, 23, 42, 0.1);
-  --muted: #667085;
-  --brand: #007a73;
-  --brand-strong: #005f59;
-  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-press: cubic-bezier(0.2, 0, 0, 1);
-  --shadow-hairline: 0 1px 1px rgba(15, 23, 42, 0.035);
-  --shadow-soft: 0 16px 40px rgba(15, 23, 42, 0.07);
-  --shadow-float: 0 24px 60px rgba(15, 23, 42, 0.11);
+  --surface-sunken: #FAFBFA;
+  --border: #E2E7E1;
+  --border-strong: #CBD3C9;
+  --muted: #5B6560;
+  --muted-faint: #8A938D;
+
+  --brand: #1E7A45;
+  --brand-strong: #164A2E;
+  --brand-soft: #E7F2E9;
+  --brand-soft-strong: #C9E4CE;
+
+  --success: #16A34A;
+  --success-soft: #E9F7EE;
+  --warning: #D97706;
+  --warning-soft: #FDF2E3;
+  --danger: #DC2626;
+  --danger-soft: #FCEAEA;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-card: 0 1px 2px rgba(20, 24, 26, 0.04);
+  --shadow-hover: 0 8px 24px rgba(20, 24, 26, 0.08);
+
+  /* easing lapisan Apple: spring untuk micro-interaction (toggle, press),
+     system untuk transisi panel/tab yang lebih tenang */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-system: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* material -- SATU-SATUNYA tempat blur dipakai (sidebar), jangan
+     ditempel ke card lain */
+  --sidebar-material: rgba(255, 255, 255, 0.72);
+  --sidebar-blur: blur(20px) saturate(180%);
 }
 
 @theme inline {
@@ -24,10 +55,7 @@
 }
 
 body {
-  background:
-    radial-gradient(circle at 18% -8%, rgba(0, 122, 115, 0.11), transparent 28rem),
-    radial-gradient(circle at 86% 0%, rgba(56, 189, 248, 0.1), transparent 24rem),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   font-size: 14px;
@@ -37,8 +65,8 @@ body {
 }
 
 ::selection {
-  background: rgba(15, 118, 110, 0.18);
-  color: #0f172a;
+  background: var(--brand-soft-strong);
+  color: var(--brand-strong);
 }
 
 /* Force dark text color for all inputs to prevent white text on white bg under mobile system dark mode */
@@ -50,16 +78,16 @@ input, select, textarea {
 input,
 select,
 textarea {
-  border-radius: 12px;
-  transition: border-color 280ms var(--ease-premium),
-    box-shadow 280ms var(--ease-premium),
-    background-color 280ms var(--ease-premium);
+  border-radius: var(--radius-md);
+  transition: border-color 240ms var(--ease-system),
+    box-shadow 240ms var(--ease-system),
+    background-color 240ms var(--ease-system);
 }
 
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: rgba(15, 23, 42, 0.18);
+  border-color: var(--border-strong);
 }
 
 /* Specific select option styling for mobile device readability */
@@ -70,7 +98,7 @@ select option {
 
 /* Prevent native autofill styles from turning input text white or invisible */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
+input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 textarea:-webkit-autofill,
 textarea:-webkit-autofill:hover,
@@ -93,8 +121,8 @@ input,
 textarea,
 [role="button"] {
   transition-property: color, background-color, border-color, box-shadow, transform, opacity;
-  transition-duration: 260ms;
-  transition-timing-function: var(--ease-premium);
+  transition-duration: 220ms;
+  transition-timing-function: var(--ease-system);
 }
 
 button:not(:disabled),
@@ -112,6 +140,7 @@ button:not(:disabled):active,
 a[href]:active,
 [role="button"]:active {
   transform: translateY(1px) scale(0.985);
+  transition-timing-function: var(--ease-spring);
 }
 
 input:focus-visible,
@@ -119,70 +148,78 @@ select:focus-visible,
 textarea:focus-visible,
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid rgba(0, 122, 115, 0.16);
+  outline: 3px solid var(--brand-soft-strong);
   outline-offset: 2px;
 }
 
+/* Kartu dasar -- dipakai di 25+ tempat. Flat: border tipis + shadow
+   hairline, TANPA blur/gradient/translateY-lift seperti versi lama. */
 .interactive-surface {
-  background: var(--surface-elevated);
-  border-radius: 24px;
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.035), 0 18px 50px rgba(15, 23, 42, 0.045);
-  backdrop-filter: blur(18px);
-  transition: border-color 320ms var(--ease-premium),
-    box-shadow 320ms var(--ease-premium),
-    transform 320ms var(--ease-premium),
-    background-color 320ms var(--ease-premium),
-    filter 320ms var(--ease-premium);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  transition: border-color 240ms var(--ease-system), box-shadow 240ms var(--ease-system);
 }
 
 .interactive-surface:hover {
-  border-color: rgba(15, 23, 42, 0.14);
-  box-shadow: var(--shadow-float);
-  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-hover);
 }
 
+.interactive-surface :is(tbody tr) {
+  transition: background-color 200ms var(--ease-system);
+}
+
+.interactive-surface :is(tbody tr:hover) {
+  background-color: var(--surface-sunken);
+}
+
+.interactive-surface :is(thead) {
+  background: var(--surface-sunken);
+}
+
+/* Material Apple -- dulu dipakai luas sebagai "glass" dekoratif, sekarang
+   direservasi untuk sidebar/permukaan navigasi saja (login card termasuk,
+   karena posisinya sebagai "chrome" pintu masuk, bukan card konten). */
 .glass-panel {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.74));
-  border: 1px solid rgba(15, 23, 42, 0.09);
-  box-shadow: var(--shadow-hairline);
-  backdrop-filter: blur(22px) saturate(1.14);
+  background: var(--sidebar-material);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: var(--sidebar-blur);
 }
 
 .premium-button {
-  border-radius: 10px;
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.08);
-  transition: transform 300ms var(--ease-premium),
-    box-shadow 300ms var(--ease-premium),
-    background-color 300ms var(--ease-premium),
-    border-color 300ms var(--ease-premium),
-    color 300ms var(--ease-premium);
+  border-radius: var(--radius-md);
+  transition: transform 260ms var(--ease-spring),
+    box-shadow 240ms var(--ease-system),
+    background-color 240ms var(--ease-system),
+    border-color 240ms var(--ease-system),
+    color 240ms var(--ease-system);
 }
 
 .premium-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
+  box-shadow: var(--shadow-hover);
 }
 
 .liquid-sidebar {
-  background: rgba(255, 255, 255, 0.76);
-  backdrop-filter: blur(24px);
+  background: var(--sidebar-material);
+  backdrop-filter: var(--sidebar-blur);
 }
 
 .liquid-topbar {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
 }
 
 .page-hero {
   position: relative;
   isolation: isolate;
   overflow: visible;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 10px 30px rgba(15,23,42,0.045);
-  backdrop-filter: blur(22px) saturate(1.1);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
 }
 
 .page-hero::after {
@@ -190,157 +227,101 @@ a:focus-visible {
 }
 
 .page-header-actions :is(a, button) {
-  border-radius: 10px;
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.08);
-  transition: transform 300ms var(--ease-premium),
-    box-shadow 300ms var(--ease-premium),
-    background-color 300ms var(--ease-premium),
-    border-color 300ms var(--ease-premium),
-    color 300ms var(--ease-premium);
+  border-radius: var(--radius-md);
+  transition: transform 260ms var(--ease-spring),
+    box-shadow 240ms var(--ease-system),
+    background-color 240ms var(--ease-system),
+    border-color 240ms var(--ease-system),
+    color 240ms var(--ease-system);
 }
 
 .page-header-actions :is(a, button):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
+  box-shadow: var(--shadow-hover);
 }
 
+/* Kartu statistik dashboard -- dulu ada gradient overlay + scale-up angka
+   saat hover, sekarang cukup border/shadow flat konsisten dengan
+   .interactive-surface (hierarki dari tipografi, bukan efek). */
 .premium-metric {
   position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.premium-metric::before {
-  content: "";
-  position: absolute;
-  inset: -35% -20%;
-  z-index: -1;
-  opacity: 0;
-  background:
-    radial-gradient(circle at 24% 18%, rgba(255,255,255,0.34), transparent 34%),
-    linear-gradient(135deg, rgba(0,122,115,0.95), rgba(8,75,87,0.95));
-  transition: opacity 420ms var(--ease-premium), transform 420ms var(--ease-premium);
-  transform: scale(0.96);
-}
-
-.premium-metric:hover::before {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .premium-number {
-  transition: transform 420ms var(--ease-premium), color 420ms var(--ease-premium);
   transform-origin: left bottom;
 }
 
-.premium-metric:hover .premium-number {
-  transform: scale(1.08);
-}
-
 .premium-row {
-  transition: background-color 260ms var(--ease-premium), transform 260ms var(--ease-premium);
+  transition: background-color 200ms var(--ease-system);
 }
 
 .premium-row:hover {
-  background: rgba(248, 250, 252, 0.78);
-}
-
-.interactive-surface :is(tbody tr) {
-  transition: background-color 260ms var(--ease-premium);
-}
-
-.interactive-surface :is(tbody tr:hover) {
-  background-color: rgba(248, 250, 252, 0.78);
-}
-
-.interactive-surface :is(thead) {
-  background: rgba(248, 250, 252, 0.72);
-}
-
-.pending-bar {
-  background: linear-gradient(90deg, transparent, #0f766e, transparent);
-  animation: pending-bar 1.05s ease-in-out infinite;
+  background: var(--surface-sunken);
 }
 
 .soft-enter {
-  animation: soft-enter 420ms var(--ease-premium);
+  animation: soft-enter 320ms var(--ease-system);
 }
 
 .premium-workflow {
-  animation: soft-enter 420ms var(--ease-premium);
+  animation: soft-enter 320ms var(--ease-system);
 }
 
 .premium-workflow :is(input, textarea) {
-  border: 1px solid rgba(15, 23, 42, 0.12) !important;
-  border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--surface) !important;
   color: #0f172a !important;
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.025);
+  box-shadow: none;
 }
 
 .premium-workflow :is(input, textarea):focus {
-  border-color: rgba(15, 23, 42, 0.32) !important;
-  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.07) !important;
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px var(--brand-soft) !important;
 }
 
 .premium-workflow :is(input, textarea):disabled,
 .premium-workflow :is(input, textarea)[readonly] {
-  background: rgba(248, 250, 252, 0.82) !important;
+  background: var(--surface-sunken) !important;
   color: #64748b !important;
 }
 
-.premium-workflow :is(.bg-slate-50, .bg-slate-50\/70, .bg-orange-50\/50, .bg-blue-50\/50) {
-  background: rgba(255, 255, 255, 0.64) !important;
-}
-
 .premium-workflow :is(.rounded-2xl, .rounded-xl) {
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
 }
 
 .premium-workflow :is(.shadow-sm) {
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.035), 0 16px 42px rgba(15, 23, 42, 0.045);
+  box-shadow: var(--shadow-card);
 }
 
 .premium-workflow :is(.text-cyan-600, .text-cyan-700, .text-blue-600, .text-indigo-600) {
-  color: #0f766e !important;
+  color: var(--brand-strong) !important;
 }
 
 .premium-workflow :is(.border-cyan-100, .border-cyan-200, .border-blue-100, .border-blue-200) {
-  border-color: rgba(15, 23, 42, 0.1) !important;
+  border-color: var(--border) !important;
 }
 
 .premium-workflow :is(.bg-cyan-50, .bg-blue-50, .bg-cyan-100, .bg-blue-100) {
-  background: rgba(240, 253, 250, 0.72) !important;
-}
-
-.premium-workflow .workflow-section {
-  background: var(--surface-elevated);
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 24px;
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.035), 0 18px 50px rgba(15, 23, 42, 0.045);
-  backdrop-filter: blur(18px);
+  background: var(--brand-soft) !important;
 }
 
 .workflow-card {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 24px;
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.035), 0 18px 50px rgba(15, 23, 42, 0.045);
-  backdrop-filter: blur(18px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .workflow-summary {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,250,252,0.82));
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 22px;
-  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.035), 0 16px 42px rgba(15, 23, 42, 0.045);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .workflow-stat {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .elegant-select-menu {
@@ -351,25 +332,14 @@ a:focus-visible {
   display: none;
 }
 
-@keyframes pending-bar {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
 @keyframes soft-enter {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.995);
-    filter: blur(2px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
