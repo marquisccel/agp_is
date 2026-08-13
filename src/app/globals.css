@@ -17,10 +17,12 @@
   --muted: #5B6560;
   --muted-faint: #8A938D;
 
-  --brand: #1E7A45;
-  --brand-strong: #164A2E;
-  --brand-soft: #E7F2E9;
-  --brand-soft-strong: #C9E4CE;
+  /* Hijau resmi dari file vektor logo PT (agp_logo.svg) -- bukan lagi
+     estimasi dari gambar. */
+  --brand: #559133;
+  --brand-strong: #036030;
+  --brand-soft: #EAF3E6;
+  --brand-soft-strong: #D3E8CC;
 
   --success: #16A34A;
   --success-soft: #E9F7EE;
