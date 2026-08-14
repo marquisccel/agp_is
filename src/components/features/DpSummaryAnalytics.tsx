@@ -39,30 +39,28 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames }: DpSummary
   ]
 
   return (
-    <div className="interactive-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <div className="section">
       {/* Header */}
-      <div className="border-b border-slate-100 bg-slate-50/60 p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="min-w-0">
-            <span className="text-xs font-bold uppercase text-teal-700">Cashflow control</span>
-            <h3 className="mt-1 flex items-center gap-2 text-base font-bold text-slate-950">
-              <Wallet className="h-5 w-5 text-teal-700" />
-              Rekap Saldo DP &amp; Kasbon per Lapak
-            </h3>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              Pantau total dana uang muka (down payment) disetujui, terpakai, dan sisa saldo aktif supplier.
-            </p>
-          </div>
-          {/* Warehouse filter */}
-          <ElegantSelect
-            value={selectedWarehouseId}
-            options={warehouseOptions}
-            onChange={setSelectedWarehouseId}
-            ariaLabel="Pilih gudang DP"
-            className="w-full sm:w-44"
-            menuClassName="sm:w-52"
-          />
+      <div className="section-shell-head">
+        <div className="min-w-0">
+          <p className="section-eyebrow">Cashflow control</p>
+          <h3 className="flex items-center gap-2 text-[15.5px] font-bold text-slate-950">
+            <Wallet className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
+            Rekap Saldo DP &amp; Kasbon per Lapak
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            Pantau total dana uang muka (down payment) disetujui, terpakai, dan sisa saldo aktif supplier.
+          </p>
         </div>
+        {/* Warehouse filter */}
+        <ElegantSelect
+          value={selectedWarehouseId}
+          options={warehouseOptions}
+          onChange={setSelectedWarehouseId}
+          ariaLabel="Pilih gudang DP"
+          className="w-full sm:w-44"
+          menuClassName="sm:w-52"
+        />
       </div>
 
       {/* Global Summary Card Metrics */}

@@ -170,6 +170,9 @@ const DashedLineNote = ({ children }: { children: ReactNode }) => (
   </span>
 )
 
+const RING_RADIUS = 27
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
+
 const TargetMetricCard = ({
   label,
   period,
@@ -186,39 +189,35 @@ const TargetMetricCard = ({
   const hasTarget = target > 0
   const remaining = Math.max(target - actual, 0)
   const isComplete = hasTarget && actual >= target
+  const truePercent = hasTarget ? (actual / target) * 100 : 0
+  const ringColor = isComplete ? "var(--success)" : "var(--brand)"
+  const ringOffset = RING_CIRCUMFERENCE * (1 - percent / 100)
 
   return (
-    <div className="bg-white p-5">
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
-          <p className="mt-1 text-xs text-slate-400">{period}</p>
-        </div>
-        <span
-          className={`rounded-md px-2.5 py-1 text-xs font-bold ${
-            isComplete
-              ? "bg-emerald-50 text-emerald-700"
-              : hasTarget
-              ? "bg-amber-50 text-amber-700"
-              : "bg-slate-100 text-slate-500"
-          }`}
-        >
-          {hasTarget ? `${percent.toFixed(0)}%` : "N/A"}
+    <div className="target-card">
+      <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${truePercent.toFixed(0)} persen tercapai`}>
+        <circle cx="32" cy="32" r={RING_RADIUS} fill="none" stroke="var(--bg-tint)" strokeWidth="7" />
+        {hasTarget && (
+          <circle
+            cx="32" cy="32" r={RING_RADIUS} fill="none"
+            stroke={ringColor} strokeWidth="7"
+            strokeDasharray={RING_CIRCUMFERENCE}
+            strokeDashoffset={ringOffset}
+            strokeLinecap="round"
+            transform="rotate(-90 32 32)"
+          />
+        )}
+        <text x="32" y="37" textAnchor="middle" fontSize="14" fontWeight="800" fill="var(--foreground)">
+          {hasTarget ? `${truePercent.toFixed(0)}%` : "N/A"}
+        </text>
+      </svg>
+      <div className="target-info min-w-0">
+        <p className="t-label">{label} <span className="font-normal normal-case text-slate-400">· {period}</span></p>
+        <p className="t-value font-mono">{fmtTon(actual)} <span className="text-slate-400 font-sans font-semibold text-xs">/ {hasTarget ? fmtTon(target) : "-"}</span></p>
+        <span className={`target-chip ${isComplete ? "ok" : hasTarget ? "warn" : "neutral"}`}>
+          {hasTarget ? (isComplete ? "Target tercapai" : `Kurang ${fmtTon(remaining)} lagi`) : "Target belum diatur"}
         </span>
       </div>
-      <div className="flex items-end gap-2">
-        <span className="text-3xl font-bold text-slate-950">{fmtTon(actual)}</span>
-        <span className="mb-1 text-sm font-semibold text-slate-400">/ {hasTarget ? fmtTon(target) : "-"}</span>
-      </div>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ${isComplete ? "bg-emerald-500" : ""}`}
-          style={{ width: `${percent}%`, background: isComplete ? undefined : "var(--brand)" }}
-        />
-      </div>
-      <p className={`mt-3 text-xs font-medium ${isComplete ? "text-emerald-600" : hasTarget ? "text-amber-700" : "text-slate-400"}`}>
-        {hasTarget ? (isComplete ? "Target tercapai" : `Kurang ${fmtTon(remaining)} lagi`) : "Target belum diatur"}
-      </p>
     </div>
   )
 }
@@ -399,68 +398,65 @@ export default function ManagerAnalytics({
   return (
     <div className="space-y-5">
       {/* Performance Cockpit */}
-      <div className="interactive-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 bg-slate-50/60 p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <span className="text-xs font-bold uppercase" style={{ color: "var(--brand-strong)" }}>Performance cockpit</span>
-              <h3 className="mt-1 text-lg font-bold text-slate-950">Target vs Realisasi Collection Center</h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Bandingkan realisasi tonase terhadap target operasional untuk periode aktif.
-              </p>
-            </div>
-            <ElegantSelect
-              value={selectedWarehouseId}
-              options={warehouseOptions}
-              onChange={setSelectedWarehouseId}
-              ariaLabel="Pilih collection center"
-              className="w-full sm:w-64"
-              menuClassName="sm:w-72"
+      <div className="section">
+        <div className="section-shell-head">
+          <div className="min-w-0">
+            <p className="section-eyebrow">Performance cockpit</p>
+            <h3 className="text-[15.5px] font-bold text-slate-950">Target vs Realisasi Collection Center</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Bandingkan realisasi tonase terhadap target operasional untuk periode aktif.
+            </p>
+          </div>
+          <ElegantSelect
+            value={selectedWarehouseId}
+            options={warehouseOptions}
+            onChange={setSelectedWarehouseId}
+            ariaLabel="Pilih collection center"
+            className="w-full sm:w-64"
+            menuClassName="sm:w-72"
+          />
+        </div>
+        <div className="p-5">
+          <div className="target-grid">
+            <TargetMetricCard
+              label="Harian"
+              period="Hari ini"
+              actual={activeData.actual_harian}
+              target={activeData.target_harian}
+              percent={pctHarian}
+            />
+            <TargetMetricCard
+              label="Mingguan"
+              period="Minggu ini"
+              actual={activeData.actual_mingguan}
+              target={activeData.target_mingguan}
+              percent={pctMingguan}
+            />
+            <TargetMetricCard
+              label="Bulanan"
+              period="Bulan ini"
+              actual={activeData.actual_bulanan}
+              target={activeData.target_bulanan}
+              percent={pctBulanan}
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 divide-y divide-slate-100 lg:grid-cols-3 lg:divide-x lg:divide-y-0">
-          <TargetMetricCard
-            label="Target Harian"
-            period="Hari ini"
-            actual={activeData.actual_harian}
-            target={activeData.target_harian}
-            percent={pctHarian}
-          />
-          <TargetMetricCard
-            label="Target Mingguan"
-            period="Minggu ini"
-            actual={activeData.actual_mingguan}
-            target={activeData.target_mingguan}
-            percent={pctMingguan}
-          />
-          <TargetMetricCard
-            label="Target Bulanan"
-            period="Bulan ini"
-            actual={activeData.actual_bulanan}
-            target={activeData.target_bulanan}
-            percent={pctBulanan}
-          />
-        </div>
       </div>
       {/* Chart Section - Full Width with mode toggle */}
-      <div className="interactive-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="section">
         {/* Chart Header + Mode Toggle */}
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-100 bg-slate-50/60 p-5 sm:flex-row sm:items-center">
+        <div className="section-shell-head">
           <div className="min-w-0">
-            <h4 className="mb-1 text-base font-bold text-slate-950">{chartConfig.title}</h4>
-            <p className="text-xs leading-5 text-slate-500">{chartConfig.description}</p>
+            <h4 className="text-[15.5px] font-bold text-slate-950">{chartConfig.title}</h4>
+            <p className="mt-1 text-xs leading-5 text-slate-500">{chartConfig.description}</p>
           </div>
           {/* Toggle Buttons */}
-          <div className="grid w-full grid-cols-3 items-center gap-1 self-start rounded-lg p-1 sm:w-auto sm:flex sm:self-auto sm:shrink-0" style={{ background: "var(--bg-tint)" }}>
+          <div className="segmented w-full sm:w-auto grid grid-cols-3 sm:flex">
             {chartModes.map(mode => (
               <button
                 key={mode.key}
                 onClick={() => setChartMode(mode.key)}
-                className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold transition-all duration-200 whitespace-nowrap"
-                style={chartMode === mode.key
-                  ? { background: "var(--surface)", color: "var(--foreground)", boxShadow: "0 1px 3px rgba(20,24,26,0.12)" }
-                  : { color: "var(--muted)" }}
+                className={chartMode === mode.key ? "active" : ""}
               >
                 {mode.label}
               </button>
@@ -553,10 +549,12 @@ export default function ManagerAnalytics({
       </div>
 
       {/* Target vs Realisasi Summary */}
-      <div className="interactive-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 bg-slate-50/60 p-5">
-          <h4 className="mb-1 text-base font-bold text-slate-950">Ringkasan Target vs Realisasi</h4>
-          <p className="text-xs leading-5 text-slate-500">Status pencapaian target dalam bahasa operasional yang mudah dibaca.</p>
+      <div className="section">
+        <div className="section-shell-head">
+          <div className="min-w-0">
+            <h4 className="text-[15.5px] font-bold text-slate-950">Ringkasan Target vs Realisasi</h4>
+            <p className="mt-1 text-xs leading-5 text-slate-500">Status pencapaian target dalam bahasa operasional yang mudah dibaca.</p>
+          </div>
         </div>
         <div className="p-4 sm:p-6">
           <div className="divide-y divide-slate-100">
@@ -573,11 +571,11 @@ export default function ManagerAnalytics({
       </div>
 
       {/* SKU Price Table */}
-      <div className="interactive-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 bg-slate-50/60 p-5">
-          <div>
-            <span className="text-xs font-bold uppercase" style={{ color: "var(--brand-strong)" }}>SKU pricing</span>
-            <h4 className="mt-1 text-base font-bold text-slate-950">
+      <div className="section">
+        <div className="section-shell-head">
+          <div className="min-w-0">
+            <p className="section-eyebrow">SKU pricing</p>
+            <h4 className="text-[15.5px] font-bold text-slate-950">
               Rata-rata Harga Pembelian per SKU &amp; Spesifikasi ({selectedWarehouseId === "all" ? "Semua Gudang" : (dataMap[selectedWarehouseId]?.nama || "Gudang")})
             </h4>
             <p className="mt-1 text-xs leading-5 text-slate-500">

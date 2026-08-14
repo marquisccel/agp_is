@@ -13,65 +13,55 @@ interface WarehouseExpense {
 }
 
 interface ExpenseAnalyticsProps {
-  globalExpenses: ExpenseData
   warehouseExpenses: WarehouseExpense[]
 }
 
-export default function ExpenseAnalytics({ globalExpenses, warehouseExpenses }: ExpenseAnalyticsProps) {
+export default function ExpenseAnalytics({ warehouseExpenses }: ExpenseAnalyticsProps) {
   const formatRp = (n: number) => n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 
   return (
-    <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden p-5 space-y-4">
-      <div>
-        <h3 className="text-base font-bold text-slate-900">Pengeluaran Pembelian</h3>
-        <p className="text-xs text-slate-400 mt-0.5">Total nilai transaksi dibayar ke supplier, lintas seluruh Collection Center.</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-slate-50 rounded-lg p-4">
-          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Hari Ini</p>
-          <p className="text-xl font-extrabold text-slate-800">{formatRp(globalExpenses.harian)}</p>
-        </div>
-        <div className="bg-slate-50 rounded-lg p-4">
-          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Minggu Ini</p>
-          <p className="text-xl font-extrabold text-slate-800">{formatRp(globalExpenses.mingguan)}</p>
-        </div>
-        <div className="bg-rose-50 rounded-lg p-4 border border-rose-100">
-          <p className="text-xs text-rose-500 font-semibold uppercase tracking-wider mb-1">Bulan Ini</p>
-          <p className="text-xl font-extrabold text-rose-700">{formatRp(globalExpenses.bulanan)}</p>
+    <div className="section">
+      <div className="section-shell-head">
+        <div className="min-w-0">
+          <p className="section-eyebrow">Cost breakdown</p>
+          <h3 className="text-[15.5px] font-bold text-slate-900">Pengeluaran per Collection Center</h3>
+          <p className="mt-1 text-xs leading-5 text-slate-400">
+            Total nilai transaksi dibayar ke supplier -- ringkasan global sudah ada di baris statistik atas.
+          </p>
         </div>
       </div>
-
-      {warehouseExpenses.length === 0 ? (
-        <p className="text-center text-slate-400 text-sm py-8">Belum ada transaksi tercatat di gudang mana pun.</p>
-      ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {warehouseExpenses.map((w) => (
-          <div key={w.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
-              <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div className="p-5">
+        {warehouseExpenses.length === 0 ? (
+          <p className="text-center text-slate-400 text-sm py-8">Belum ada transaksi tercatat di gudang mana pun.</p>
+        ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {warehouseExpenses.map((w) => (
+            <div key={w.id} className="rounded-[var(--radius-md)] p-4 border border-slate-100 bg-[var(--surface-sunken)]">
+              <div className="flex items-center gap-3 mb-3 border-b border-slate-100 pb-3">
+                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <h4 className="font-bold text-slate-800 text-sm">{w.nama}</h4>
               </div>
-              <h4 className="font-bold text-slate-800">{w.nama}</h4>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500 font-medium">Hari Ini</span>
-                <span className="font-extrabold text-slate-700">{formatRp(w.expenses.harian)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500 font-medium">Minggu Ini</span>
-                <span className="font-extrabold text-slate-700">{formatRp(w.expenses.mingguan)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm pt-3 border-t border-slate-50">
-                <span className="text-slate-500 font-bold">Bulan Ini</span>
-                <span className="font-extrabold text-rose-600">{formatRp(w.expenses.bulanan)}</span>
+              <div className="space-y-2.5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-medium">Hari Ini</span>
+                  <span className="font-mono font-bold text-slate-700">{formatRp(w.expenses.harian)}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-medium">Minggu Ini</span>
+                  <span className="font-mono font-bold text-slate-700">{formatRp(w.expenses.mingguan)}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-200/70">
+                  <span className="text-slate-500 font-bold">Bulan Ini</span>
+                  <span className="font-mono font-extrabold" style={{ color: "var(--danger)" }}>{formatRp(w.expenses.bulanan)}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        )}
       </div>
-      )}
     </div>
   )
 }

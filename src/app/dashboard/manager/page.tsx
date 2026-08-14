@@ -13,6 +13,7 @@ import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 import MonthYearFilter from "@/components/features/MonthYearFilter"
 import { isWorkingDay } from "@/lib/workingDays"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
+import { fmtRp } from "@/lib/format"
 
 const formatActivityAction = (action: string) => {
   const actionMap: Record<string, { label: string; description: string; tone: string }> = {
@@ -338,6 +339,20 @@ export default async function ManagerDashboard({
   }
 
   const monthlyPurchases = validPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd)
+
+  // ──────────────────────────────────────────
+  // 6b. Delta bulan lalu (untuk stat strip) -- validPurchases sudah
+  // mencakup 12 bulan ke belakang, jadi bulan sebelumnya selalu ada
+  // di dalam rentang tanpa perlu query tambahan.
+  // ──────────────────────────────────────────
+  const prevMonthStart = new Date(Date.UTC(selectedTahun, selectedBulan - 2, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
+  const prevMonthEnd = monthStart
+  const prevMonthPurchases = validPurchases.filter(p => p.createdAt >= prevMonthStart && p.createdAt < prevMonthEnd)
+  const prevMonthTonase = prevMonthPurchases.flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0) / 1000
+  const getExpenseValue = (p: (typeof validPurchases)[number]) => p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
+  const prevMonthExpense = prevMonthPurchases.reduce((s, p) => s + getExpenseValue(p), 0)
+  const tonaseDeltaPct = prevMonthTonase > 0 ? ((totalTonase - prevMonthTonase) / prevMonthTonase) * 100 : null
+  const expenseDeltaPct = prevMonthExpense > 0 ? ((globalExpenses.bulanan - prevMonthExpense) / prevMonthExpense) * 100 : null
 
   // ──────────────────────────────────────────
   // 7. Calendar data: per-day aggregation (selected month)
@@ -744,86 +759,71 @@ export default async function ManagerDashboard({
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div
-          className="premium-metric group relative isolate overflow-hidden rounded-[28px] p-5 text-white transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1"
-          style={{ background: "linear-gradient(135deg, var(--brand-strong), var(--brand))", boxShadow: "0 18px 48px rgba(3, 96, 48, 0.18)" }}
-        >
-          <div className="absolute inset-0 -z-10 bg-[linear-gradient(115deg,rgba(255,255,255,0.22),transparent_36%),radial-gradient(circle_at_88%_10%,rgba(255,255,255,0.32),transparent_28%)] opacity-70 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 group-hover:opacity-100" />
-          <div className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent opacity-70 transition-opacity duration-700 group-hover:opacity-100" />
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h3 className="text-[11px] font-black uppercase tracking-[0.16em] text-white/80">Total Tonase Bulan Ini</h3>
-              <p className="mt-1 text-xs text-white/72">Akumulasi seluruh Collection Center</p>
-            </div>
-            <span className="rounded-full border border-white/20 bg-white/20 px-2.5 py-1 text-[10px] font-black text-white shadow-sm backdrop-blur transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/25">Live</span>
+      <div className="stat-strip">
+        <div className="stat-tile">
+          <span className="stat-label">Total Tonase Bulan Ini</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{totalTonase.toFixed(2)}</span>
+            <span className="stat-unit">Ton</span>
           </div>
-          <div className="premium-number inline-flex origin-left items-end gap-2 will-change-transform">
-            <span className="text-4xl font-black leading-none tracking-[-0.06em] text-white">{totalTonase.toFixed(2)}</span>
-            <span className="mb-1 text-sm font-bold text-white/75">Ton</span>
-          </div>
+          {tonaseDeltaPct === null ? (
+            <span className="stat-delta flat">Belum ada data bulan lalu</span>
+          ) : (
+            <span className={`stat-delta ${tonaseDeltaPct >= 0 ? "up" : "down"}`}>
+              {tonaseDeltaPct >= 0 ? "↑" : "↓"} {Math.abs(tonaseDeltaPct).toFixed(0)}% dari bulan lalu
+            </span>
+          )}
         </div>
 
-        <div className="interactive-surface group relative overflow-hidden rounded-[28px] border border-slate-200/80 p-5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-amber-200/90">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,251,235,0.95),rgba(255,255,255,0)_58%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-          <div className="relative mb-3 flex items-start gap-3">
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 ring-1 ring-amber-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 9v4" />
-                  <path d="M12 17h.01" />
-                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
-                </svg>
-              </span>
-              <div className="min-w-0">
-                <h3 className="text-xs font-bold uppercase text-slate-500">Approval Harga</h3>
-                <p className="mt-1 text-xs text-slate-400">Transaksi menunggu keputusan harga</p>
-              </div>
-            </div>
+        <div className="stat-tile">
+          <span className="stat-label">Approval Harga</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{waitingApprovalHarga}</span>
+            <span className="stat-unit">item</span>
           </div>
-          <div className="relative flex items-end justify-between gap-3">
-            <div>
-              <div className="premium-number inline-block origin-left text-3xl font-black text-slate-950 will-change-transform">{waitingApprovalHarga}</div>
-              <p className="mt-1 text-xs font-semibold text-slate-400">item pending</p>
-            </div>
-            <Link href="/dashboard/manager/approval-harga" className="premium-button mb-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-800">
-              Lihat detail
-            </Link>
-          </div>
+          {waitingApprovalHarga > 0 ? (
+            <span className="stat-delta pending">● menunggu keputusan</span>
+          ) : (
+            <span className="stat-delta flat">Semua sudah diputuskan</span>
+          )}
+          <Link href="/dashboard/manager/approval-harga" className="text-[11px] font-bold" style={{ color: "var(--brand-strong)" }}>
+            Lihat detail →
+          </Link>
         </div>
 
-        <div className="interactive-surface group relative overflow-hidden rounded-[28px] border border-slate-200/80 p-5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-sky-200/90">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(239,246,255,0.95),rgba(255,255,255,0)_58%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-          <div className="relative mb-3 flex items-start gap-3">
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 7h-9" />
-                  <path d="M14 17H5" />
-                  <circle cx="17" cy="17" r="3" />
-                  <circle cx="7" cy="7" r="3" />
-                </svg>
-              </span>
-              <div className="min-w-0">
-                <h3 className="text-xs font-bold uppercase text-slate-500">Approval DP</h3>
-                <p className="mt-1 text-xs text-slate-400">Pengajuan kasbon menunggu validasi</p>
-              </div>
-            </div>
+        <div className="stat-tile">
+          <span className="stat-label">Approval DP</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{waitingApprovalDP}</span>
+            <span className="stat-unit">item</span>
           </div>
-          <div className="relative flex items-end justify-between gap-3">
-            <div>
-              <div className="premium-number inline-block origin-left text-3xl font-black text-slate-950 will-change-transform">{waitingApprovalDP}</div>
-              <p className="mt-1 text-xs font-semibold text-slate-400">item pending</p>
-            </div>
-            <Link href="/dashboard/manager/approval-dp" className="premium-button mb-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-sky-200 hover:bg-sky-50 hover:text-sky-800">
-              Lihat detail
-            </Link>
+          {waitingApprovalDP > 0 ? (
+            <span className="stat-delta pending">● menunggu validasi</span>
+          ) : (
+            <span className="stat-delta flat">Semua sudah divalidasi</span>
+          )}
+          <Link href="/dashboard/manager/approval-dp" className="text-[11px] font-bold" style={{ color: "var(--brand-strong)" }}>
+            Lihat detail →
+          </Link>
+        </div>
+
+        <div className="stat-tile">
+          <span className="stat-label">Pengeluaran Bulan Ini</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(globalExpenses.bulanan)}</span>
           </div>
+          {expenseDeltaPct === null ? (
+            <span className="stat-delta flat">Belum ada data bulan lalu</span>
+          ) : (
+            <span className={`stat-delta ${expenseDeltaPct <= 0 ? "up" : "down"}`}>
+              {expenseDeltaPct >= 0 ? "↑" : "↓"} {Math.abs(expenseDeltaPct).toFixed(0)}% dari bulan lalu
+            </span>
+          )}
         </div>
       </div>
 
       {/* Pengeluaran Analytics */}
-      <ExpenseAnalytics globalExpenses={globalExpenses} warehouseExpenses={warehouseExpenses} />
+      <ExpenseAnalytics warehouseExpenses={warehouseExpenses} />
 
       {/* Target vs Realisasi Charts */}
       <ManagerAnalytics warehouses={warehouses} dataMap={dataMap} skuPricesMap={skuPricesMap} />
@@ -859,14 +859,16 @@ export default async function ManagerDashboard({
       />
 
       {/* Recent Activities */}
-      <div className="interactive-surface overflow-hidden border border-slate-200/80">
-        <div className="border-b border-slate-100 bg-slate-50/60 p-5">
-          <span className="text-xs font-bold uppercase" style={{ color: "var(--brand-strong)" }}>Operational feed</span>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-bold text-slate-950">Aktivitas Terbaru</h3>
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-500">{recentLogs.length} aktivitas</span>
+      <div className="section">
+        <div className="section-shell-head">
+          <div className="min-w-0">
+            <p className="section-eyebrow">Operational feed</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-[15.5px] font-bold text-slate-950">Aktivitas Terbaru</h3>
+              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-500">{recentLogs.length} aktivitas</span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-500">Aktivitas paling baru dan jejak operasional terakhir.</p>
           </div>
-          <p className="mt-1 text-xs leading-5 text-slate-500">Aktivitas paling baru dan jejak operasional terakhir.</p>
         </div>
         <div className="p-5">
           {recentLogs.length === 0 ? (

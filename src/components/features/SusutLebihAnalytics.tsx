@@ -84,56 +84,53 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
   ]
 
   return (
-    <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+    <div className="section">
       {/* Header */}
-      <div className="p-5 border-b border-slate-100">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="text-base font-bold text-slate-900">Analisis Susut &amp; Lebih Timbangan per Lapak</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Selisih timbangan lapak vs timbangan gudang - susut berarti gudang lebih kecil dari lapak
-            </p>
-          </div>
-          {/* Warehouse filter */}
-          <ElegantSelect
-            value={selectedWarehouseId}
-            options={warehouseOptions}
-            onChange={setSelectedWarehouseId}
-            ariaLabel="Pilih gudang susut"
-            className="w-full sm:w-44"
-            menuClassName="sm:w-52"
-          />
+      <div className="section-shell-head">
+        <div className="min-w-0">
+          <p className="section-eyebrow">Weighing variance</p>
+          <h3 className="text-[15.5px] font-bold text-slate-900">Analisis Susut &amp; Lebih Timbangan per Lapak</h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Selisih timbangan lapak vs timbangan gudang - susut berarti gudang lebih kecil dari lapak
+          </p>
         </div>
+        {/* Warehouse filter */}
+        <ElegantSelect
+          value={selectedWarehouseId}
+          options={warehouseOptions}
+          onChange={setSelectedWarehouseId}
+          ariaLabel="Pilih gudang susut"
+          className="w-full sm:w-44"
+          menuClassName="sm:w-52"
+        />
       </div>
 
-      {/* Global Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-5 border-b border-slate-100">
-        <div className="bg-slate-50 rounded-lg p-4">
-          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Total Lapak</p>
-          <p className="text-xl font-extrabold text-slate-800">{fmtKg(filteredSummary.totalLapak)}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Timbangan lapak</p>
+      {/* Global Summary KPI row */}
+      <div className="kpi-grid p-5 border-b border-slate-100">
+        <div className="kpi-tile">
+          <p className="kpi-label">Total Lapak</p>
+          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalLapak)}</p>
         </div>
-        <div className="bg-slate-50 rounded-lg p-4">
-          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Total Gudang</p>
-          <p className="text-xl font-extrabold text-slate-800">{fmtKg(filteredSummary.totalGudang)}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Timbangan gudang</p>
+        <div className="kpi-tile">
+          <p className="kpi-label">Total Gudang</p>
+          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalGudang)}</p>
         </div>
-        <div className="bg-rose-50 rounded-lg p-4 border border-rose-100">
-          <p className="text-xs text-rose-500 font-semibold uppercase tracking-wider mb-1">Total Susut</p>
-          <p className="text-xl font-extrabold text-rose-700">{fmtKg(filteredSummary.totalSusut)}</p>
-          <p className="text-xs text-rose-400 mt-0.5 font-semibold">{fmtPct(filteredSusutPct)} dari lapak</p>
+        <div className="kpi-tile tone-danger">
+          <p className="kpi-label">Total Susut</p>
+          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalSusut)}</p>
+          <p className="text-[11px] mt-0.5 font-semibold">{fmtPct(filteredSusutPct)} dari lapak</p>
         </div>
-        <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
-          <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wider mb-1">Total Lebih</p>
-          <p className="text-xl font-extrabold text-emerald-700">{fmtKg(filteredSummary.totalLebih)}</p>
-          <p className="text-xs text-emerald-500 mt-0.5 font-semibold">{fmtPct(filteredLebihPct)} dari lapak</p>
+        <div className="kpi-tile tone-success">
+          <p className="kpi-label">Total Lebih</p>
+          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalLebih)}</p>
+          <p className="text-[11px] mt-0.5 font-semibold">{fmtPct(filteredLebihPct)} dari lapak</p>
         </div>
       </div>
 
       {/* Controls */}
       <div className="px-5 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Show mode toggle */}
-        <div className="flex w-full overflow-x-auto rounded-lg p-1 gap-1 sm:w-auto" style={{ background: "var(--bg-tint)" }}>
+        <div className="segmented w-full overflow-x-auto sm:w-auto flex">
           {([
             { key: "semua", label: "Semua Lapak" },
             { key: "susut", label: "Ada Susut" },
@@ -142,10 +139,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
             <button
               key={m.key}
               onClick={() => setShowMode(m.key)}
-              className="flex shrink-0 items-center gap-1 px-3 py-2 rounded-md text-xs font-bold transition-all"
-              style={showMode === m.key
-                ? { background: "var(--surface)", color: "var(--foreground)", boxShadow: "0 1px 3px rgba(20,24,26,0.12)" }
-                : { color: "var(--muted)" }}
+              className={`shrink-0 ${showMode === m.key ? "active" : ""}`}
             >
               {m.label}
             </button>
