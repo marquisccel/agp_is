@@ -133,7 +133,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
       {/* Controls */}
       <div className="px-5 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Show mode toggle */}
-        <div className="flex w-full overflow-x-auto bg-slate-100 rounded-lg p-1 gap-1 sm:w-auto">
+        <div className="flex w-full overflow-x-auto rounded-lg p-1 gap-1 sm:w-auto" style={{ background: "var(--bg-tint)" }}>
           {([
             { key: "semua", label: "Semua Lapak" },
             { key: "susut", label: "Ada Susut" },
@@ -142,9 +142,10 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
             <button
               key={m.key}
               onClick={() => setShowMode(m.key)}
-              className={`flex shrink-0 items-center gap-1 px-3 py-2 rounded-md text-xs font-bold transition-all ${
-                showMode === m.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-              }`}
+              className="flex shrink-0 items-center gap-1 px-3 py-2 rounded-md text-xs font-bold transition-all"
+              style={showMode === m.key
+                ? { background: "var(--surface)", color: "var(--foreground)", boxShadow: "0 1px 3px rgba(20,24,26,0.12)" }
+                : { color: "var(--muted)" }}
             >
               {m.label}
             </button>
@@ -243,7 +244,10 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
                   <div className="flex items-center justify-end lg:w-40 shrink-0">
                     <button
                       onClick={() => setSelectedLapak(row)}
-                      className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 font-bold px-4 py-2.5 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-1.5"
+                      className="w-full sm:w-auto text-white font-bold px-4 py-2.5 rounded-lg text-xs transition-colors shadow-sm flex items-center justify-center gap-1.5"
+                      style={{ background: "var(--brand)" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--brand-strong)" }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "var(--brand)" }}
                     >
                       Cek Detail
                     </button>
@@ -328,7 +332,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
                                     {sDiff === 0 ? (
                                       <span className="text-emerald-600 font-bold">0 kg</span>
                                     ) : (
-                                      <span className={`font-bold ${sDiff < 0 ? "text-rose-600" : "text-cyan-600"}`}>
+                                      <span className={`font-bold ${sDiff < 0 ? "text-rose-600" : "text-emerald-600"}`}>
                                         {sDiff < 0 ? `${sDiff.toFixed(1)} kg` : `+${sDiff.toFixed(1)} kg`}
                                       </span>
                                     )}
@@ -352,7 +356,10 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
               <button
                 type="button"
                 onClick={() => setSelectedLapak(null)}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-lg text-xs transition-all shadow-md shadow-slate-900/10"
+                className="text-white font-bold px-6 py-2.5 rounded-lg text-xs transition-colors"
+                style={{ background: "var(--brand)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--brand-strong)" }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "var(--brand)" }}
               >
                 Tutup
               </button>

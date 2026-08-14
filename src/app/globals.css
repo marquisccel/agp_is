@@ -326,6 +326,15 @@ a:focus-visible {
   border-radius: var(--radius-md);
 }
 
+.btn-brand {
+  background: var(--brand);
+  transition: background-color 160ms var(--ease-system);
+}
+
+.btn-brand:hover {
+  background: var(--brand-strong);
+}
+
 .elegant-select-menu {
   scrollbar-width: none;
 }

@@ -212,8 +212,8 @@ const TargetMetricCard = ({
       </div>
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
         <div
-          className={`h-full rounded-full transition-all duration-700 ${isComplete ? "bg-emerald-500" : "bg-teal-600"}`}
-          style={{ width: `${percent}%` }}
+          className={`h-full rounded-full transition-all duration-700 ${isComplete ? "bg-emerald-500" : ""}`}
+          style={{ width: `${percent}%`, background: isComplete ? undefined : "var(--brand)" }}
         />
       </div>
       <p className={`mt-3 text-xs font-medium ${isComplete ? "text-emerald-600" : hasTarget ? "text-amber-700" : "text-slate-400"}`}>
@@ -331,7 +331,7 @@ export default function ManagerAnalytics({
           title: "Pembelian Harian",
           description: `Realisasi pembelian per hari dalam bulan ini (ton) vs target harian`,
           gradientId: "colorHarian",
-          areaColor: "#0f766e",
+          areaColor: "#559133",
           lineColor: "#f59e0b",
           showTarget: activeData.target_harian > 0,
           targetKey: "Target",
@@ -348,7 +348,7 @@ export default function ManagerAnalytics({
           title: "Pembelian Mingguan",
           description: `Realisasi pembelian per minggu dalam 8 minggu terakhir (ton) vs target mingguan`,
           gradientId: "colorMingguan",
-          areaColor: "#0f766e",
+          areaColor: "#559133",
           lineColor: "#f59e0b",
           showTarget: activeData.target_mingguan > 0,
           targetKey: "Target",
@@ -366,7 +366,7 @@ export default function ManagerAnalytics({
           title: "Tren Pembelian Bulanan",
           description: `Total pembelian PET per bulan dalam 12 bulan terakhir (ton)`,
           gradientId: "colorBulanan",
-          areaColor: "#0f766e",
+          areaColor: "#559133",
           lineColor: "#f59e0b",
           showTarget: activeData.target_bulanan > 0,
           targetKey: "Target",
@@ -403,7 +403,7 @@ export default function ManagerAnalytics({
         <div className="border-b border-slate-100 bg-slate-50/60 p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <span className="text-xs font-bold uppercase text-teal-700">Performance cockpit</span>
+              <span className="text-xs font-bold uppercase" style={{ color: "var(--brand-strong)" }}>Performance cockpit</span>
               <h3 className="mt-1 text-lg font-bold text-slate-950">Target vs Realisasi Collection Center</h3>
               <p className="mt-1 text-sm text-slate-500">
                 Bandingkan realisasi tonase terhadap target operasional untuk periode aktif.
@@ -452,16 +452,15 @@ export default function ManagerAnalytics({
             <p className="text-xs leading-5 text-slate-500">{chartConfig.description}</p>
           </div>
           {/* Toggle Buttons */}
-          <div className="grid w-full grid-cols-3 items-center gap-1 self-start rounded-lg border border-slate-200 bg-white p-1 shadow-sm sm:w-auto sm:flex sm:self-auto sm:shrink-0">
+          <div className="grid w-full grid-cols-3 items-center gap-1 self-start rounded-lg p-1 sm:w-auto sm:flex sm:self-auto sm:shrink-0" style={{ background: "var(--bg-tint)" }}>
             {chartModes.map(mode => (
               <button
                 key={mode.key}
                 onClick={() => setChartMode(mode.key)}
-                className={`flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold transition-all duration-200 whitespace-nowrap ${
-                  chartMode === mode.key
-                    ? "bg-slate-950 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
+                className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold transition-all duration-200 whitespace-nowrap"
+                style={chartMode === mode.key
+                  ? { background: "var(--surface)", color: "var(--foreground)", boxShadow: "0 1px 3px rgba(20,24,26,0.12)" }
+                  : { color: "var(--muted)" }}
               >
                 {mode.label}
               </button>
@@ -577,7 +576,7 @@ export default function ManagerAnalytics({
       <div className="interactive-surface overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 bg-slate-50/60 p-5">
           <div>
-            <span className="text-xs font-bold uppercase text-teal-700">SKU pricing</span>
+            <span className="text-xs font-bold uppercase" style={{ color: "var(--brand-strong)" }}>SKU pricing</span>
             <h4 className="mt-1 text-base font-bold text-slate-950">
               Rata-rata Harga Pembelian per SKU &amp; Spesifikasi ({selectedWarehouseId === "all" ? "Semua Gudang" : (dataMap[selectedWarehouseId]?.nama || "Gudang")})
             </h4>
@@ -590,7 +589,7 @@ export default function ManagerAnalytics({
         <div className="p-4 sm:p-6">
         {hasSKUData ? (
           <div className="space-y-4">
-            <div className="rounded-lg border border-slate-200 bg-slate-950 p-5 text-white">
+            <div className="rounded-lg p-5 text-white" style={{ background: "var(--brand-strong)" }}>
               <div>
                 <p className="text-xs font-bold uppercase text-slate-400">Harga rata-rata periode ini</p>
                 <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">

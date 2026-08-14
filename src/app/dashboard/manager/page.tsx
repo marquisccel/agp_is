@@ -39,7 +39,7 @@ const formatActivityAction = (action: string) => {
     MANAGER_APPROVE_PRICE: {
       label: "Harga disetujui",
       description: "menyetujui harga pembelian",
-      tone: "bg-teal-50 text-teal-700 border-teal-100",
+      tone: "bg-emerald-50 text-emerald-700 border-emerald-100",
     },
     MANAGER_REJECT_PRICE: {
       label: "Harga ditolak",
@@ -702,7 +702,7 @@ export default async function ManagerDashboard({
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
           <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-teal-700">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--brand-strong)" }}>
               Agrapana Greenworks Polymer Information System
             </p>
             <h2 className="mt-3 max-w-4xl whitespace-nowrap text-3xl font-semibold leading-none tracking-[-0.04em] text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
@@ -723,7 +723,7 @@ export default async function ManagerDashboard({
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
               <Link
                 href="/dashboard/manager/reports"
-                className="premium-button bg-slate-950 text-white hover:bg-slate-800 px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 group whitespace-nowrap"
+                className="premium-button btn-brand text-white px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm flex items-center justify-center gap-2 group whitespace-nowrap"
               >
                 Rekap Laporan
               </Link>
@@ -745,19 +745,22 @@ export default async function ManagerDashboard({
       </section>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="premium-metric group relative isolate overflow-hidden rounded-[28px] border border-teal-900/10 bg-gradient-to-br from-[#05736c] via-[#08796f] to-[#0b5c72] p-5 text-white shadow-[0_18px_48px_rgba(6,95,70,0.16)] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-950/20">
+        <div
+          className="premium-metric group relative isolate overflow-hidden rounded-[28px] p-5 text-white transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1"
+          style={{ background: "linear-gradient(135deg, var(--brand-strong), var(--brand))", boxShadow: "0 18px 48px rgba(3, 96, 48, 0.18)" }}
+        >
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(115deg,rgba(255,255,255,0.22),transparent_36%),radial-gradient(circle_at_88%_10%,rgba(255,255,255,0.32),transparent_28%)] opacity-70 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 group-hover:opacity-100" />
           <div className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent opacity-70 transition-opacity duration-700 group-hover:opacity-100" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-[11px] font-black uppercase tracking-[0.16em] text-teal-50/80">Total Tonase Bulan Ini</h3>
-              <p className="mt-1 text-xs text-teal-50/72">Akumulasi seluruh Collection Center</p>
+              <h3 className="text-[11px] font-black uppercase tracking-[0.16em] text-white/80">Total Tonase Bulan Ini</h3>
+              <p className="mt-1 text-xs text-white/72">Akumulasi seluruh Collection Center</p>
             </div>
-            <span className="rounded-full border border-white/20 bg-white/20 px-2.5 py-1 text-[10px] font-black text-teal-50 shadow-sm backdrop-blur transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/25">Live</span>
+            <span className="rounded-full border border-white/20 bg-white/20 px-2.5 py-1 text-[10px] font-black text-white shadow-sm backdrop-blur transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/25">Live</span>
           </div>
           <div className="premium-number inline-flex origin-left items-end gap-2 will-change-transform">
             <span className="text-4xl font-black leading-none tracking-[-0.06em] text-white">{totalTonase.toFixed(2)}</span>
-            <span className="mb-1 text-sm font-bold text-teal-50/75">Ton</span>
+            <span className="mb-1 text-sm font-bold text-white/75">Ton</span>
           </div>
         </div>
 
@@ -858,7 +861,7 @@ export default async function ManagerDashboard({
       {/* Recent Activities */}
       <div className="interactive-surface overflow-hidden border border-slate-200/80">
         <div className="border-b border-slate-100 bg-slate-50/60 p-5">
-          <span className="text-xs font-bold uppercase text-teal-700">Operational feed</span>
+          <span className="text-xs font-bold uppercase" style={{ color: "var(--brand-strong)" }}>Operational feed</span>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <h3 className="text-base font-bold text-slate-950">Aktivitas Terbaru</h3>
             <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-500">{recentLogs.length} aktivitas</span>
