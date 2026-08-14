@@ -218,7 +218,8 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
                         <button
                           key={s.id}
                           type="button"
-                          className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-cyan-50 flex justify-between items-center ${s.id === supplierId ? 'bg-cyan-50/50 text-cyan-700 font-bold' : 'text-slate-700'}`}
+                          className={`w-full text-left px-4 py-3 text-sm transition-colors flex justify-between items-center ${s.id === supplierId ? 'font-bold' : 'text-slate-700 hover:bg-[var(--bg-tint)]'}`}
+                          style={s.id === supplierId ? { background: "var(--brand-soft)", color: "var(--brand-strong)" } : undefined}
                           onClick={() => {
                             setSupplierId(s.id)
                             setSearchQuery(s.nama)
@@ -373,7 +374,8 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
           <button
             type="button"
             onClick={addItem}
-            className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-dashed border-cyan-200 rounded-xl text-sm text-cyan-600 font-semibold hover:bg-cyan-50 hover:border-cyan-400 transition-all"
+            className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-dashed rounded-xl text-sm font-semibold transition-all hover:bg-[var(--brand-soft)]"
+            style={{ borderColor: "var(--brand-soft-strong)", color: "var(--brand-strong)" }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah SKU
@@ -567,7 +569,10 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
           <button
             type="submit"
             disabled={loading}
-            className="premium-button flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3.5 font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="premium-button flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+            style={{ background: "var(--brand)" }}
+            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "var(--brand-strong)" }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--brand)" }}
           >
             {loading ? (
               <>

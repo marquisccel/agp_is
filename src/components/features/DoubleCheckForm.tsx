@@ -220,7 +220,7 @@ export default function DoubleCheckForm({
                 <div>
                   <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
                     Timbangan Gudang (KG)
-                    <span className="text-[10px] bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded font-bold">Gudang</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>Gudang</span>
                   </label>
                   <input
                     type="number" step="0.01" required
@@ -237,18 +237,18 @@ export default function DoubleCheckForm({
                   <div className="flex items-center justify-between mt-1">
                     <div>
                       <div className="text-xs text-slate-400">Selisih Timbangan</div>
-                      <div className={`text-lg font-bold font-mono ${(timbanganGudang - timbanganLapak) === 0 ? 'text-emerald-600' : (timbanganGudang - timbanganLapak) < 0 ? 'text-rose-600' : 'text-cyan-600'}`}>
+                      <div className={`text-lg font-bold font-mono ${(timbanganGudang - timbanganLapak) === 0 ? 'text-emerald-600' : (timbanganGudang - timbanganLapak) < 0 ? 'text-rose-600' : ''}`} style={(timbanganGudang - timbanganLapak) > 0 ? { color: "var(--brand-strong)" } : undefined}>
                         {(timbanganGudang - timbanganLapak) > 0 ? `+${(timbanganGudang - timbanganLapak).toFixed(2)}` : (timbanganGudang - timbanganLapak).toFixed(2)} KG
                       </div>
                     </div>
                     <div>
                       <div className="text-xs text-slate-400">Persentase Selisih / Susut</div>
-                      <div className={`text-lg font-bold font-mono ${(timbanganGudang - timbanganLapak) === 0 ? 'text-emerald-600' : (timbanganGudang - timbanganLapak) < 0 ? 'text-rose-600' : 'text-cyan-600'}`}>
+                      <div className={`text-lg font-bold font-mono ${(timbanganGudang - timbanganLapak) === 0 ? 'text-emerald-600' : (timbanganGudang - timbanganLapak) < 0 ? 'text-rose-600' : ''}`} style={(timbanganGudang - timbanganLapak) > 0 ? { color: "var(--brand-strong)" } : undefined}>
                         {timbanganLapak > 0 ? (((timbanganGudang - timbanganLapak) / timbanganLapak) * 100).toFixed(1) : "0"}%
                       </div>
                     </div>
                   </div>
-                  <div className={`mt-2 text-xs py-2 px-3 rounded-lg border text-center font-semibold ${(timbanganGudang - timbanganLapak) === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : (timbanganGudang - timbanganLapak) < 0 ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-cyan-50 text-cyan-700 border-cyan-100'}`}>
+                  <div className={`mt-2 text-xs py-2 px-3 rounded-lg border text-center font-semibold ${(timbanganGudang - timbanganLapak) === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : (timbanganGudang - timbanganLapak) < 0 ? 'bg-rose-50 text-rose-700 border-rose-100' : ''}`} style={(timbanganGudang - timbanganLapak) > 0 ? { background: "var(--brand-soft)", color: "var(--brand-strong)", borderColor: "var(--brand-soft-strong)" } : undefined}>
                     {(timbanganGudang - timbanganLapak) === 0 
                       ? "Timbangan lapak staff dan timbangan gudang sinkron sempurna" 
                       : (timbanganGudang - timbanganLapak) < 0 
@@ -285,7 +285,10 @@ export default function DoubleCheckForm({
                       
                       {/* SKU Delta indicator */}
                       {diff !== 0 ? (
-                        <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-lg flex items-center gap-1 ${diff < 0 ? 'bg-rose-50 text-rose-600' : 'bg-cyan-50 text-cyan-600'}`}>
+                        <span
+                          className={`text-xs font-bold font-mono px-2 py-0.5 rounded-lg flex items-center gap-1 ${diff < 0 ? 'bg-rose-50 text-rose-600' : ''}`}
+                          style={diff > 0 ? { background: "var(--brand-soft)", color: "var(--brand-strong)" } : undefined}
+                        >
                           {diff < 0 ? `Susut ${diff.toFixed(2)} KG (${((diff / lapakWeight) * 100).toFixed(1)}%)` : `Bertambah +${diff.toFixed(2)} KG (+${((diff / lapakWeight) * 100).toFixed(1)}%)`}
                         </span>
                       ) : (
@@ -582,7 +585,7 @@ export default function DoubleCheckForm({
       <div className="workflow-summary p-5 md:p-6 space-y-5 animate-in fade-in duration-300">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Payment summary</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--brand-strong)" }}>Payment summary</p>
             <h3 className="mt-1 text-base font-bold text-slate-950 md:text-lg">Rincian Perhitungan Pembayaran</h3>
           </div>
           <p className="text-xs font-medium text-slate-500">Nilai bersih setelah retur, potongan, dan DP.</p>
@@ -612,7 +615,7 @@ export default function DoubleCheckForm({
           </div>
           <div className="md:text-right">
             <span className="text-xs font-bold text-slate-500 block uppercase tracking-wider">Total Akhir Dibayar ke Lapak</span>
-            <span className="text-2xl font-extrabold text-teal-700">Rp {totalAkhirDibayar.toLocaleString('id-ID')}</span>
+            <span className="text-2xl font-extrabold" style={{ color: "var(--brand-strong)" }}>Rp {totalAkhirDibayar.toLocaleString('id-ID')}</span>
           </div>
         </div>
 
@@ -640,7 +643,14 @@ export default function DoubleCheckForm({
         <button type="button" onClick={() => router.back()} className="px-6 py-3 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
           Batal
         </button>
-        <button type="submit" disabled={loading} className="premium-button rounded-xl bg-slate-950 px-8 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-70">
+        <button
+          type="submit"
+          disabled={loading}
+          className="premium-button rounded-xl px-8 py-3 font-bold text-white disabled:opacity-70"
+          style={{ background: "var(--brand)" }}
+          onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "var(--brand-strong)" }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "var(--brand)" }}
+        >
           {loading ? "Menyimpan..." : "Simpan Verifikasi"}
         </button>
       </div>

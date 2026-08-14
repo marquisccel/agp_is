@@ -110,7 +110,10 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                       {diff === 0 ? (
                         <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold">Sama</span>
                       ) : (
-                        <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${diff < 0 ? "text-rose-600 bg-rose-50" : "text-cyan-600 bg-cyan-50"}`}>
+                        <span
+                          className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${diff < 0 ? "text-rose-600 bg-rose-50" : ""}`}
+                          style={diff > 0 ? { background: "var(--brand-soft)", color: "var(--brand-strong)" } : undefined}
+                        >
                           {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
                           {lapakW > 0 ? ` (${((diff / lapakW) * 100).toFixed(1)}%)` : ""}
                         </span>
@@ -180,7 +183,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                     {diff === 0 ? (
                       <div className="text-xs text-emerald-600 font-bold">Sama</div>
                     ) : (
-                      <div className={`text-xs font-bold font-mono ${diff < 0 ? "text-rose-600" : "text-cyan-600"}`}>
+                      <div className={`text-xs font-bold font-mono ${diff < 0 ? "text-rose-600" : ""}`} style={diff > 0 ? { color: "var(--brand-strong)" } : undefined}>
                         {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
                       </div>
                     )}
@@ -241,18 +244,21 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
           </div>
           <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-center">
             <div className="text-[10px] text-slate-400 font-medium leading-tight">Selisih / Susut</div>
-            <div className={`text-base font-bold mt-1 font-mono ${selisihTotal === 0 ? "text-emerald-600" : selisihTotal < 0 ? "text-rose-600" : "text-cyan-600"}`}>
+            <div className={`text-base font-bold mt-1 font-mono ${selisihTotal === 0 ? "text-emerald-600" : selisihTotal < 0 ? "text-rose-600" : ""}`} style={selisihTotal > 0 ? { color: "var(--brand-strong)" } : undefined}>
               {selisihTotal > 0 ? `+${selisihTotal.toFixed(2)}` : selisihTotal.toFixed(2)}
               <span className="text-[10px] font-normal ml-0.5">KG</span>
             </div>
             {beratTimbanganLapak > 0 && (
-              <div className={`text-[10px] font-semibold mt-0.5 ${selisihTotal === 0 ? "text-emerald-500" : selisihTotal < 0 ? "text-rose-500" : "text-cyan-500"}`}>
+              <div className={`text-[10px] font-semibold mt-0.5 ${selisihTotal === 0 ? "text-emerald-500" : selisihTotal < 0 ? "text-rose-500" : ""}`} style={selisihTotal > 0 ? { color: "var(--brand)" } : undefined}>
                 ({((selisihTotal / beratTimbanganLapak) * 100).toFixed(1)}%)
               </div>
             )}
           </div>
         </div>
-        <div className={`text-xs py-2.5 px-4 rounded-xl border font-semibold text-center ${selisihTotal === 0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : selisihTotal < 0 ? "bg-rose-50 text-rose-700 border-rose-100" : "bg-cyan-50 text-cyan-700 border-cyan-100"}`}>
+        <div
+          className={`text-xs py-2.5 px-4 rounded-xl border font-semibold text-center ${selisihTotal === 0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : selisihTotal < 0 ? "bg-rose-50 text-rose-700 border-rose-100" : ""}`}
+          style={selisihTotal > 0 ? { background: "var(--brand-soft)", color: "var(--brand-strong)", borderColor: "var(--brand-soft-strong)" } : undefined}
+        >
           {selisihTotal === 0
             ? "Hasil timbangan staff (lapak) dan admin (gudang) sesuai sempurna."
             : selisihTotal < 0
@@ -280,7 +286,10 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
           <button
             onClick={() => handleAction("approve")}
             disabled={loading}
-            className="flex-1 px-5 py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all disabled:opacity-70"
+            className="flex-1 px-5 py-3 rounded-xl font-bold text-sm text-white transition-colors disabled:opacity-70"
+            style={{ background: "var(--success)" }}
+            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "#128a3e" }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--success)" }}
           >
             {loading ? "Memproses..." : "Setujui Harga"}
           </button>
