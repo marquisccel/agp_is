@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     const {
       supplierId,
       metode_pembayaran_terpilih,
+      jenis_pengambilan,
       items,
       potongan_sampah,
       berat_potongan_sampah,
@@ -41,6 +42,16 @@ export async function POST(req: Request) {
 
     if (!supplierId || !metode_pembayaran_terpilih || !items || !items.length) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    // Mode logistik wajib untuk transaksi baru supaya rekap efektivitas
+    // armada di dashboard Manager tidak lagi berlubang. Transaksi lama tetap
+    // null (lihat komentar di schema.prisma) dan tidak di-backfill.
+    if (jenis_pengambilan !== "AMBIL" && jenis_pengambilan !== "KIRIM") {
+      return NextResponse.json(
+        { error: "Jenis pengambilan wajib dipilih (AMBIL atau KIRIM)." },
+        { status: 400 }
+      )
     }
 
     // Determine warehouseId from session user
@@ -87,6 +98,7 @@ export async function POST(req: Request) {
         supplierId,
         userIdStaff: session.user.id,
         metode_pembayaran_terpilih,
+        jenis_pengambilan,
         berat_timbangan_lapak: totalLapakWeight,
         status_approval: "menunggu_verifikasi",
         potongan_sampah: potonganSampah,

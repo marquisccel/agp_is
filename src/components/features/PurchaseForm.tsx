@@ -14,6 +14,10 @@ const METODE_BAYAR_OPTIONS = [
   { value: "TIMBANGAN_GUDANG", label: "Timbangan Gudang" },
   { value: "TIMBANGAN_LAPAK", label: "Timbangan Lapak" },
 ]
+const JENIS_PENGAMBILAN_OPTIONS = [
+  { value: "AMBIL", label: "Diambil (armada PT ke lapak)" },
+  { value: "KIRIM", label: "Dikirim (lapak antar ke gudang)" },
+]
 const SKU_OPTIONS = [
   { value: "", label: "Pilih SKU" },
   ...skuList.map(sku => ({ value: sku, label: sku })),
@@ -57,6 +61,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const [metodeBayar, setMetodeBayar] = useState("TIMBANGAN_GUDANG")
+  const [jenisPengambilan, setJenisPengambilan] = useState("AMBIL")
   const [items, setItems] = useState<Item[]>([{ sku_name: "", spec: "", berat_estimasi: 0, harga_per_kg: 0 }])
 
   const filteredSuppliers = suppliers.filter(s =>
@@ -97,6 +102,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
       const payload = {
         supplierId,
         metode_pembayaran_terpilih: metodeBayar,
+        jenis_pengambilan: jenisPengambilan,
         items,
         potongan_sampah: potonganSampah,
         berat_potongan_sampah: beratPotonganSampah,
@@ -306,6 +312,21 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
               ariaLabel="Pilih metode timbangan"
               className="w-full"
             />
+          </div>
+
+          {/* Jenis Pengambilan (mode logistik) */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700">Jenis Pengambilan</label>
+            <ElegantSelect
+              value={jenisPengambilan}
+              options={JENIS_PENGAMBILAN_OPTIONS}
+              onChange={setJenisPengambilan}
+              ariaLabel="Pilih jenis pengambilan barang"
+              className="w-full"
+            />
+            <p className="text-xs text-slate-400">
+              Dipakai untuk rekap efektivitas armada di dashboard Manager.
+            </p>
           </div>
         </div>
 

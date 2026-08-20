@@ -83,7 +83,14 @@ model Purchase {
   
   approvedAt                 DateTime?
   metode_pembayaran_terpilih String?   // 'TIMBANGAN_GUDANG' | 'TIMBANGAN_LAPAK'
-  
+
+  // Mode logistik: 'AMBIL' = armada PT menjemput ke lapak, 'KIRIM' = lapak
+  // mengantar sendiri ke Collection Center. Sengaja nullable: transaksi yang
+  // tercatat sebelum field ini ada tidak punya datanya dan TIDAK boleh
+  // ditebak -- di UI tampil sebagai "belum dicatat", tidak ikut dihitung
+  // dalam rekap efektivitas armada.
+  jenis_pengambilan          String?   // 'AMBIL' | 'KIRIM' | null
+
   berat_timbangan_lapak      Float?
   berat_timbangan_gudang     Float?
   berat_final                Float?

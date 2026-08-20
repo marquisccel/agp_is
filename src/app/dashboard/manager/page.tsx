@@ -8,6 +8,7 @@ import TopLapakAnalytics from "@/components/features/TopLapakAnalytics"
 import SusutLebihAnalytics, { type TransaksiSusutDetail } from "@/components/features/SusutLebihAnalytics"
 import ExpenseAnalytics from "@/components/features/ExpenseAnalytics"
 import DpSummaryAnalytics from "@/components/features/DpSummaryAnalytics"
+import RekapAmbilKirimAnalytics from "@/components/features/RekapAmbilKirimAnalytics"
 import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 import MonthYearFilter from "@/components/features/MonthYearFilter"
@@ -423,16 +424,31 @@ export default async function ManagerDashboard({
     }
   })
 
-  // Top 3 lapak gabungan seluruh Collection Center (untuk digest samping kalender)
-  const globalTop3Lapak = Object.values(
-    warehouseTopData.flatMap(w => w.topByVolume).reduce((acc, s) => {
-      const existing = acc[s.supplierId]
-      if (existing) existing.totalKg += s.totalKg
-      else acc[s.supplierId] = { ...s }
-      return acc
-    }, {} as Record<string, { supplierId: string; nama: string; totalKg: number; avgHarga: number; transaksi: number }>)
-  ).sort((a, b) => b.totalKg - a.totalKg).slice(0, 3)
-  const globalTop3Max = globalTop3Lapak[0]?.totalKg || 1
+  // ──────────────────────────────────────────
+  // 8b. Rekap Ambil / Kirim per Collection Center (bulan terpilih)
+  // Transaksi yang tercatat sebelum field jenis_pengambilan ada bernilai
+  // null -- sengaja TIDAK ditebak, cuma dihitung sebagai "belum dicatat".
+  // ──────────────────────────────────────────
+  const rekapAmbilKirim = warehouses.map(w => {
+    const wPurchases = monthlyPurchases.filter(p => p.warehouseId === w.id)
+    const beratOf = (p: (typeof monthlyPurchases)[number]) =>
+      p.items.reduce((s, i) => s + (i.berat_final_item || 0), 0)
+
+    const ambil = wPurchases.filter(p => p.jenis_pengambilan === "AMBIL")
+    const kirim = wPurchases.filter(p => p.jenis_pengambilan === "KIRIM")
+    const belumDicatat = wPurchases.filter(p => p.jenis_pengambilan !== "AMBIL" && p.jenis_pengambilan !== "KIRIM")
+
+    return {
+      warehouseId: w.id,
+      warehouseName: w.nama,
+      ambilTransaksi: ambil.length,
+      ambilVolume: ambil.reduce((s, p) => s + beratOf(p), 0),
+      kirimTransaksi: kirim.length,
+      kirimVolume: kirim.reduce((s, p) => s + beratOf(p), 0),
+      belumDicatatTransaksi: belumDicatat.length,
+      belumDicatatVolume: belumDicatat.reduce((s, p) => s + beratOf(p), 0),
+    }
+  })
 
   // ──────────────────────────────────────────
   // 10. Susut & Lebih Timbangan per Lapak (selected month)
@@ -849,41 +865,7 @@ export default async function ManagerDashboard({
           selectedBulan={selectedBulan}
           selectedTahun={selectedTahun}
         />
-        <div className="section flex flex-col">
-          <div className="section-shell-head">
-            <div className="min-w-0">
-              <p className="section-eyebrow">Lapak performance</p>
-              <h3 className="text-[15.5px] font-bold text-slate-950">Top 3 Lapak Bulan Ini</h3>
-              <p className="mt-1 text-xs leading-5 text-slate-500">Gabungan seluruh Collection Center, berdasarkan volume.</p>
-            </div>
-          </div>
-          <div className="flex flex-1 flex-col justify-center p-5">
-            {globalTop3Lapak.length === 0 ? (
-              <p className="py-8 text-center text-sm text-slate-400">Belum ada data transaksi bulan ini.</p>
-            ) : (
-              <div className="rank-list">
-                {globalTop3Lapak.map((s, i) => (
-                  <div key={s.supplierId} className={`rank-row${i === 0 ? " rank-first" : ""}`}>
-                    <span className="rank-num">0{i + 1}</span>
-                    <div className="min-w-0">
-                      <div className="rank-name truncate">{s.nama}</div>
-                      <div className="rank-sub">{s.transaksi} transaksi</div>
-                    </div>
-                    <div className="rank-bar-track">
-                      <div className="rank-bar-fill" style={{ width: `${Math.max((s.totalKg / globalTop3Max) * 100, 4)}%` }} />
-                    </div>
-                    <div className="rank-value font-mono">
-                      {(s.totalKg / 1000).toFixed(1)}<span className="rank-value-unit">t</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <Link href="/dashboard/manager/suppliers" className="mt-4 text-center text-[11.5px] font-bold" style={{ color: "var(--brand-strong)" }}>
-              Lihat semua lapak →
-            </Link>
-          </div>
-        </div>
+        <RekapAmbilKirimAnalytics data={rekapAmbilKirim} />
       </div>
 
       {/* Top 10 Lapak -- tidak punya menu sendiri, jadi tetap di dashboard */}

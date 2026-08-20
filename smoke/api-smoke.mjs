@@ -149,6 +149,7 @@ async function main() {
       body: JSON.stringify({
         supplierId,
         metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+        jenis_pengambilan: "AMBIL",
         items: [{ sku_name: skuName, spec: "Grading", berat_estimasi: 10, harga_per_kg: 5000 }],
         potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
         potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
@@ -160,6 +161,27 @@ async function main() {
     const draft = await draftRes.json()
     purchaseId = draft.id
     check("draft berstatus menunggu_verifikasi", draft.status_approval === "menunggu_verifikasi")
+
+    // Mode logistik wajib: draft tanpa jenis_pengambilan harus ditolak, kalau
+    // tidak rekap efektivitas armada di dashboard Manager kembali berlubang.
+    const draftTanpaJenisRes = await req(staff.jar, "/api/purchases/draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        supplierId,
+        metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+        items: [{ sku_name: skuName, spec: "Grading", berat_estimasi: 10, harga_per_kg: 5000 }],
+        potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
+        potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
+        potongan_air: 0, berat_potongan_air: 0, harga_potongan_air: 0,
+        potongan_karung: 0, berat_potongan_karung: 0, harga_potongan_karung: 0,
+      }),
+    })
+    check(
+      "draft tanpa jenis_pengambilan -> 400",
+      draftTanpaJenisRes.status === 400,
+      `status ${draftTanpaJenisRes.status}`
+    )
 
     if (purchaseId) {
       const doubleCheckRes = await req(admin.jar, `/api/purchases/${purchaseId}/double-check`, {
@@ -238,6 +260,7 @@ async function main() {
       body: JSON.stringify({
         supplierId: dpSupplierId,
         metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+        jenis_pengambilan: "KIRIM",
         items: [{ sku_name: dpSkuName, spec: "Grading", berat_estimasi: 10, harga_per_kg: 5000 }],
         potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
         potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
