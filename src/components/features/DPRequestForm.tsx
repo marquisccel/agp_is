@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation"
 import type { Supplier } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
+import { fmtDigitInput, fmtSkalaRupiah } from "@/lib/format"
 
 export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers: Supplier[], role?: string }) {
   const router = useRouter()
   const [supplierId, setSupplierId] = useState("")
+  /** Disimpan sebagai digit mentah ("15000000"); pemisah ribuan cuma untuk
+   * tampilan, supaya nilai yang dikirim ke API tetap angka bersih. */
   const [nominal, setNominal] = useState("")
+  const nominalAngka = nominal ? Number(nominal) : 0
   const [keterangan, setKeterangan] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -25,6 +29,14 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!supplierId || !nominal) return
+
+    // Batas minimal dulu dijaga atribut min="10000" pada input[type=number].
+    // Inputnya sekarang bertipe text (supaya bisa diformat pemisah ribuan),
+    // jadi validasinya dipindah ke sini.
+    if (nominalAngka < 10000) {
+      setError("Nominal kasbon minimal Rp 10.000.")
+      return
+    }
 
     setLoading(true)
     setError("")
@@ -109,15 +121,24 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
             Rp
           </div>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             required
-            min="10000"
-            value={nominal}
-            onChange={(e) => setNominal(e.target.value)}
-            className="w-full border-slate-200 rounded-xl pl-12 pr-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
-            placeholder="Contoh: 1500000"
+            value={fmtDigitInput(nominal)}
+            onChange={(e) => setNominal(e.target.value.replace(/\D/g, ""))}
+            className="w-full border-slate-200 rounded-xl pl-12 pr-4 py-3 bg-slate-50 focus:bg-white outline-none transition-all font-mono text-lg font-bold tabular-nums tracking-wide"
+            placeholder="Contoh: 1.500.000"
+            aria-describedby="nominal-skala"
           />
         </div>
+        <p id="nominal-skala" className="mt-2 min-h-[18px] text-xs font-bold" style={{ color: "var(--brand-strong)" }}>
+          {nominalAngka > 0 ? `≈ ${fmtSkalaRupiah(nominalAngka)} rupiah` : ""}
+        </p>
+        {nominalAngka > 0 && nominalAngka < 10000 && (
+          <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+            Nominal minimal Rp 10.000.
+          </p>
+        )}
         <p className="text-xs text-slate-500 mt-2">Catatan: Semua pengajuan kasbon memerlukan persetujuan, berapa pun nominalnya — pengajuan Staff diputus oleh Admin gudang, pengajuan Admin diputus oleh Manager.</p>
       </div>
 
@@ -143,7 +164,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
         <button
           type="submit"
           disabled={loading}
-          className="premium-button rounded-xl bg-slate-950 px-8 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-70"
+          className="premium-button btn-brand rounded-xl px-8 py-3 font-bold text-white disabled:opacity-70"
         >
           {loading ? "Memproses..." : "Ajukan Kasbon"}
         </button>

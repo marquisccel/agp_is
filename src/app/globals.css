@@ -341,26 +341,32 @@ a:focus-visible {
 .stat-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--border);
+  gap: 22px;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  padding: 20px 22px;
   box-shadow: var(--shadow-card);
 }
 
+/* Rel aksen di kiri tiap metrik menggantikan garis pemisah 1px antar sel --
+   pola yang sama dipakai .metric-rail, biar seluruh dashboard konsisten. */
 .stat-tile {
-  background: var(--surface);
-  padding: 18px 20px;
+  padding-left: 14px;
+  border-left: 3px solid var(--border-strong);
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  transition: background-color 260ms var(--ease-system);
+  transition: border-color 260ms var(--ease-system);
+}
+
+.stat-tile:first-child {
+  border-left-color: var(--brand);
 }
 
 .stat-tile:hover {
-  background: var(--surface-sunken);
+  border-left-color: var(--brand);
 }
 
 /* Angka besar sedikit "mengembang" saat tile disentuh -- micro-interaction
@@ -479,6 +485,69 @@ a:focus-visible {
   text-transform: uppercase;
   color: var(--brand-strong);
   margin: 0 0 3px;
+}
+
+/* Metrik dengan rel aksen di kiri -- pola "Performance Summary" dari
+   referensi dashboard yang dikirim tim: rel tipis berwarna memisahkan
+   metrik tanpa perlu kotak/kartu bersarang, jadi lebih ringan secara
+   visual tapi kelompoknya tetap kebaca. */
+.metric-rail {
+  padding-left: 14px;
+  border-left: 3px solid var(--border-strong);
+  min-width: 0;
+}
+
+.metric-rail.rail-brand {
+  border-left-color: var(--brand);
+}
+
+.metric-rail .rail-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+
+.metric-rail .rail-value {
+  display: block;
+  margin-top: 6px;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.metric-rail.rail-brand .rail-value {
+  color: var(--brand-strong);
+}
+
+.metric-rail .rail-sub {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted-faint);
+}
+
+/* Bar mini dalam sel tabel -- dipakai di kolom proporsi supaya baris
+   bisa dipindai sekilas tanpa membaca angkanya satu per satu. */
+.mini-bar {
+  display: inline-block;
+  vertical-align: middle;
+  width: 46px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--bg-tint);
+  overflow: hidden;
+}
+
+.mini-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
 }
 
 /* Segmented control (Apple layer, Fase 2) */

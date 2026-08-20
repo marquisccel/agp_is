@@ -20,8 +20,8 @@ export interface RekapAmbilKirimRow {
  * berangkat: makin besar porsi AMBIL, makin aktif armada menjemput ke lapak.
  *
  * Porsi ambil-vs-kirim ditampilkan sebagai SATU bar terbagi, bukan dua bar
- * terpisah -- dua bar yang masing-masing menunjukkan persentase dari total
- * yang sama itu mengulang informasi yang persis sama dua kali.
+ * terpisah -- dua bar yang persentasenya dihitung dari total yang sama itu
+ * mengulang informasi yang identik dua kali.
  *
  * Transaksi yang tercatat sebelum field `jenis_pengambilan` ada bernilai null
  * dan tidak ikut jadi penyebut persentase, supaya angka efektivitas tidak
@@ -44,6 +44,7 @@ export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKir
   const tercatatVolume = total.ambilVolume + total.kirimVolume
   const ambilPct = tercatatVolume > 0 ? (total.ambilVolume / tercatatVolume) * 100 : 0
   const adaTercatat = tercatatVolume > 0
+  const totalTransaksi = total.ambilTransaksi + total.kirimTransaksi
   // Baris gudang tanpa aktivitas apa pun tidak perlu memenuhi tabel.
   const barisAktif = data.filter(r => r.ambilTransaksi > 0 || r.kirimTransaksi > 0)
 
@@ -59,51 +60,55 @@ export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKir
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 p-5">
-        {!adaTercatat ? (
-          <p className="py-8 text-center text-sm text-slate-400">
+      {!adaTercatat ? (
+        <div className="flex flex-1 items-center justify-center p-5">
+          <p className="text-center text-sm text-slate-400">
             Belum ada transaksi dengan jenis pengambilan tercatat bulan ini.
           </p>
-        ) : (
-          <>
-            {/* Dua angka utama + satu bar terbagi */}
-            <div>
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <p className="text-[10.5px] font-bold uppercase tracking-[0.07em] text-slate-500">Diambil</p>
-                  <p className="mt-1.5 font-mono text-[26px] font-extrabold leading-none tabular-nums" style={{ color: "var(--brand-strong)" }}>
-                    {fmtTon(total.ambilVolume)}
-                  </p>
-                  <p className="mt-1 text-[11px] text-slate-400">{fmtAngka(total.ambilTransaksi)} transaksi</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10.5px] font-bold uppercase tracking-[0.07em] text-slate-500">Dikirim</p>
-                  <p className="mt-1.5 font-mono text-[26px] font-extrabold leading-none tabular-nums text-slate-800">
-                    {fmtTon(total.kirimVolume)}
-                  </p>
-                  <p className="mt-1 text-[11px] text-slate-400">{fmtAngka(total.kirimTransaksi)} transaksi</p>
-                </div>
-              </div>
-
-              <div className="mt-3.5 flex h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
-                <div style={{ width: `${ambilPct}%`, background: "var(--brand)" }} />
-              </div>
-              <p className="mt-2 text-[11px] font-semibold text-slate-500">
-                <span style={{ color: "var(--brand-strong)" }}>{ambilPct.toFixed(0)}% dijemput armada</span>
-                {" · "}
-                {(100 - ambilPct).toFixed(0)}% diantar lapak
-              </p>
+        </div>
+      ) : (
+        <div className="flex flex-1 flex-col">
+          {/* Tiga metrik utama, pola rel aksen */}
+          <div className="grid grid-cols-3 gap-5 p-5">
+            <div className="metric-rail rail-brand">
+              <span className="rail-label">Diambil</span>
+              <span className="rail-value">{fmtTon(total.ambilVolume)}</span>
+              <span className="rail-sub">{fmtAngka(total.ambilTransaksi)} transaksi</span>
             </div>
+            <div className="metric-rail">
+              <span className="rail-label">Dikirim</span>
+              <span className="rail-value">{fmtTon(total.kirimVolume)}</span>
+              <span className="rail-sub">{fmtAngka(total.kirimTransaksi)} transaksi</span>
+            </div>
+            <div className="metric-rail">
+              <span className="rail-label">Total masuk</span>
+              <span className="rail-value">{fmtTon(tercatatVolume)}</span>
+              <span className="rail-sub">{fmtAngka(totalTransaksi)} transaksi</span>
+            </div>
+          </div>
 
-            {/* Rincian per gudang */}
-            {barisAktif.length > 0 && (
+          {/* Satu bar terbagi + keterangannya */}
+          <div className="px-5">
+            <div className="flex h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+              <div style={{ width: `${ambilPct}%`, background: "var(--brand)" }} />
+            </div>
+            <p className="mt-2 text-[11px] font-semibold text-slate-500">
+              <span style={{ color: "var(--brand-strong)" }}>{ambilPct.toFixed(0)}% dijemput armada</span>
+              {" · "}
+              {(100 - ambilPct).toFixed(0)}% diantar lapak
+            </p>
+          </div>
+
+          {/* Rincian per gudang */}
+          {barisAktif.length > 0 && (
+            <div className="mt-5 px-5 pb-5">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b" style={{ borderColor: "var(--border)" }}>
-                    <th className="pb-2 font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">Gudang</th>
-                    <th className="pb-2 text-right font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">Ambil</th>
-                    <th className="pb-2 text-right font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">Kirim</th>
-                    <th className="pb-2 text-right font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">% Ambil</th>
+                    <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Gudang</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Ambil</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Kirim</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Porsi ambil</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -119,25 +124,28 @@ export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKir
                         <td className="py-2.5 text-right font-mono tabular-nums font-semibold text-slate-700">
                           {fmtTon(row.kirimVolume)}
                         </td>
-                        <td className="py-2.5 text-right font-mono tabular-nums text-slate-500">
-                          {rowPct.toFixed(0)}%
+                        <td className="py-2.5 text-right">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="mini-bar"><span style={{ width: `${rowPct}%` }} /></span>
+                            <span className="font-mono tabular-nums text-slate-500">{rowPct.toFixed(0)}%</span>
+                          </span>
                         </td>
                       </tr>
                     )
                   })}
                 </tbody>
               </table>
-            )}
-          </>
-        )}
+            </div>
+          )}
 
-        {total.belumDicatatTransaksi > 0 && (
-          <p className="mt-auto text-[11px] leading-relaxed text-slate-400">
-            {fmtAngka(total.belumDicatatTransaksi)} transaksi ({fmtTon(total.belumDicatatVolume)}) belum mencatat
-            jenis pengambilan, jadi tidak ikut dihitung di sini.
-          </p>
-        )}
-      </div>
+          {total.belumDicatatTransaksi > 0 && (
+            <p className="mt-auto px-5 pb-5 text-[11px] leading-relaxed text-slate-400">
+              {fmtAngka(total.belumDicatatTransaksi)} transaksi ({fmtTon(total.belumDicatatVolume)}) belum mencatat
+              jenis pengambilan, jadi tidak ikut dihitung di sini.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

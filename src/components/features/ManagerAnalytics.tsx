@@ -233,6 +233,10 @@ export default function ManagerAnalytics({
 }) {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
   const [chartMode, setChartMode] = useState<ChartMode>("bulanan")
+  /** Daftar SKU bisa tumbuh panjang (13 SKU aktif dan bisa bertambah), dan
+   * dashboard ini tugasnya meringkas. Default tampil sebagian, sisanya
+   * dibuka atas permintaan. */
+  const [skuExpanded, setSkuExpanded] = useState(false)
 
   const activeData: WarehouseData | undefined =
     selectedWarehouseId === "all"
@@ -329,6 +333,14 @@ export default function ManagerAnalytics({
   const grandTotalAllVal = currentSkuPrices.reduce((sum, item) => sum + (item.all_avg * item.all_kg), 0)
 
   const grandAvgAllPrice = grandTotalAllKg > 0 ? grandTotalAllVal / grandTotalAllKg : 0
+
+  // Urutkan dari volume terbesar: SKU yang paling banyak dibeli yang paling
+  // layak dilihat duluan, bukan urutan alfabet. Sisanya disembunyikan supaya
+  // kartu tidak memanjang tanpa batas saat daftar SKU bertambah.
+  const SKU_TAMPIL_AWAL = 5
+  const skuTerurut = [...currentSkuPrices].sort((a, b) => b.all_kg - a.all_kg)
+  const skuRows = skuExpanded ? skuTerurut : skuTerurut.slice(0, SKU_TAMPIL_AWAL)
+  const skuTersembunyi = Math.max(skuTerurut.length - SKU_TAMPIL_AWAL, 0)
 
   const chartModes: { key: ChartMode; label: string }[] = [
     { key: "harian", label: "Harian" },
@@ -533,24 +545,28 @@ export default function ManagerAnalytics({
                     <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">SKU</th>
                     <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Harga rata-rata</th>
                     <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Volume</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Porsi</th>
                     <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Gabyuk</th>
                     <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Grading</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {currentSkuPrices.map((row) => {
+                  {skuRows.map((row) => {
                     const pctVol = grandTotalAllKg > 0 ? (row.all_kg / grandTotalAllKg) * 100 : 0
                     return (
                       <tr key={row.sku_name} className="border-b" style={{ borderColor: "var(--border)" }}>
-                        <td className="py-3">
-                          <span className="font-bold text-slate-900">{row.sku_name}</span>
-                          <span className="ml-2 text-[11px] text-slate-400">{pctVol.toFixed(0)}%</span>
-                        </td>
+                        <td className="py-3 font-bold text-slate-900">{row.sku_name}</td>
                         <td className="py-3 text-right font-mono font-bold tabular-nums text-slate-900">
                           {row.all_kg > 0 ? fmtRpPerKg(row.all_avg) : "-"}
                         </td>
                         <td className="py-3 text-right font-mono tabular-nums text-slate-500">
                           {row.all_kg > 0 ? fmtKg(row.all_kg) : "-"}
+                        </td>
+                        <td className="py-3 text-right">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="mini-bar"><span style={{ width: `${pctVol}%` }} /></span>
+                            <span className="font-mono tabular-nums text-[11px] text-slate-500">{pctVol.toFixed(0)}%</span>
+                          </span>
                         </td>
                         <td className="py-3 text-right font-mono tabular-nums text-slate-600">
                           {row.gabyuk_kg > 0 ? fmtRpPerKg(row.gabyuk_avg) : <span className="text-slate-300">-</span>}
@@ -564,6 +580,17 @@ export default function ManagerAnalytics({
                 </tbody>
               </table>
             </div>
+
+            {skuTersembunyi > 0 && (
+              <button
+                type="button"
+                onClick={() => setSkuExpanded(v => !v)}
+                className="text-[11.5px] font-bold"
+                style={{ color: "var(--brand-strong)" }}
+              >
+                {skuExpanded ? "Tampilkan lebih sedikit" : `Tampilkan ${skuTersembunyi} SKU lainnya`}
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50">
