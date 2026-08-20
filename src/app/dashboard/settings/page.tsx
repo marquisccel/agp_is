@@ -2,13 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import { User, Lock, Globe, Save, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
+import { User, Lock, Save, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
 import PageHeader from "@/components/ui/PageHeader"
-
-const LANGUAGES = [
-  { code: "id", label: "Bahasa Indonesia", flag: "🇮🇩" },
-  { code: "en", label: "English", flag: "🇬🇧" },
-]
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession()
@@ -29,17 +24,12 @@ export default function SettingsPage() {
   const [pwStatus, setPwStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [pwError, setPwError] = useState("")
 
-  // Language state
-  const [language, setLanguage] = useState("id")
-
-  // Load from session & localStorage
+  // Load from session
   useEffect(() => {
     if (session?.user) {
       setNama(session.user.name || "")
       setEmail(session.user.email || "")
     }
-    const savedLang = localStorage.getItem("petrecycle_lang") || "id"
-    setLanguage(savedLang)
   }, [session])
 
   const handleProfileSave = async () => {
@@ -104,11 +94,6 @@ export default function SettingsPage() {
     }
   }
 
-  const handleLanguageChange = (code: string) => {
-    setLanguage(code)
-    localStorage.setItem("petrecycle_lang", code)
-  }
-
   const role = session?.user?.role || ""
 
   return (
@@ -132,18 +117,16 @@ export default function SettingsPage() {
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Avatar preview */}
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-950 text-2xl font-extrabold text-white shadow-sm">
-              {nama.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div>
-              <p className="font-bold text-slate-800">{nama || "-"}</p>
-              <p className="text-xs text-slate-400">{email || "-"}</p>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-600 uppercase tracking-wider mt-1 inline-block">
-                {role}
-              </span>
-            </div>
+          {/* Identitas akun (tanpa avatar -- foto profil dihapus atas permintaan) */}
+          <div>
+            <p className="font-bold text-slate-800">{nama || "-"}</p>
+            <p className="text-xs text-slate-400">{email || "-"}</p>
+            <span
+              className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider mt-1 inline-block"
+              style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}
+            >
+              {role}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -319,43 +302,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Language Card */}
-      <div className="interactive-surface bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600">
-            <Globe className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm">Pengaturan Bahasa</h3>
-            <p className="text-xs text-slate-400">Pilih bahasa tampilan aplikasi yang Anda sukai.</p>
-          </div>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {LANGUAGES.map(lang => (
-              <button
-                key={lang.code}
-                onClick={() => handleLanguageChange(lang.code)}
-                className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
-                  language === lang.code
-                    ? "border-violet-500 bg-violet-50 shadow-md shadow-violet-500/10"
-                    : "border-slate-100 hover:border-slate-200 bg-slate-50"
-                }`}
-              >
-                <span className="text-3xl">{lang.flag}</span>
-                <div>
-                  <p className={`font-bold text-sm ${language === lang.code ? "text-violet-700" : "text-slate-700"}`}>
-                    {lang.label}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {language === lang.code ? "Aktif" : "Klik untuk memilih"}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

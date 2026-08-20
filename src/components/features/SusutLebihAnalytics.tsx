@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { createPortal } from "react-dom"
 import { fmtKg, fmtPct } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
@@ -41,9 +42,12 @@ interface LapakSusutData {
 interface Props {
   lapakData: LapakSusutData[]
   warehouseNames: { id: string; nama: string }[]
+  /** Mode ringkas untuk dashboard Manager: hanya KPI total + link ke menu
+   * Analisis Susut. Rincian per lapak tetap utuh di halaman menunya. */
+  summaryOnly?: boolean
 }
 
-export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props) {
+export default function SusutLebihAnalytics({ lapakData, warehouseNames, summaryOnly = false }: Props) {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
   const [sortBy, setSortBy] = useState<"susut" | "lebih" | "volume">("susut")
   const [showMode, setShowMode] = useState<"semua" | "susut" | "lebih">("semua")
@@ -95,18 +99,20 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
           </p>
         </div>
         {/* Warehouse filter */}
-        <ElegantSelect
-          value={selectedWarehouseId}
-          options={warehouseOptions}
-          onChange={setSelectedWarehouseId}
-          ariaLabel="Pilih gudang susut"
-          className="w-full sm:w-44"
-          menuClassName="sm:w-52"
-        />
+        {!summaryOnly && (
+          <ElegantSelect
+            value={selectedWarehouseId}
+            options={warehouseOptions}
+            onChange={setSelectedWarehouseId}
+            ariaLabel="Pilih gudang susut"
+            className="w-full sm:w-44"
+            menuClassName="sm:w-52"
+          />
+        )}
       </div>
 
       {/* Global Summary KPI row */}
-      <div className="kpi-grid p-5 border-b border-slate-100">
+      <div className={`kpi-grid p-5${summaryOnly ? "" : " border-b border-slate-100"}`}>
         <div className="kpi-tile">
           <p className="kpi-label">Total Lapak</p>
           <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalLapak)}</p>
@@ -127,6 +133,19 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
         </div>
       </div>
 
+      {summaryOnly && (
+        <div className="px-5 pb-5">
+          <Link
+            href="/dashboard/manager/susut"
+            className="block text-center text-[11.5px] font-bold"
+            style={{ color: "var(--brand-strong)" }}
+          >
+            Lihat rincian per lapak →
+          </Link>
+        </div>
+      )}
+
+      {!summaryOnly && (<>
       {/* Controls */}
       <div className="px-5 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Show mode toggle */}
@@ -252,6 +271,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames }: Props
           </div>
         )}
       </div>
+      </>)}
 
       {/* Modal Detail Susut per Lapak */}
       {typeof document !== "undefined" && selectedLapak && createPortal(

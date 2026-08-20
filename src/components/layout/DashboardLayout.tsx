@@ -88,14 +88,9 @@ function SidebarContent({
         })}
       </nav>
       <div className="p-3 border-t border-slate-200/70">
-        <div className="flex items-center gap-3 px-2 mb-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm text-white flex-shrink-0 shadow-sm" style={{ background: "var(--brand-strong)" }}>
-            {user.name?.charAt(0) || "U"}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-950 truncate">{user.name}</p>
-            <p className="text-xs text-slate-500 truncate">{user.email}</p>
-          </div>
+        <div className="px-2 mb-3 min-w-0">
+          <p className="text-sm font-bold text-slate-950 truncate">{user.name}</p>
+          <p className="text-xs text-slate-500 truncate">{user.email}</p>
         </div>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
@@ -233,9 +228,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </span>
           </div>
 
-          <div className="lg:hidden w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow flex-shrink-0" style={{ background: "var(--brand-strong)" }}>
-            {session.user.name?.charAt(0) || "U"}
-          </div>
         </header>
 
         <div className="flex-1 overflow-auto print:overflow-visible">

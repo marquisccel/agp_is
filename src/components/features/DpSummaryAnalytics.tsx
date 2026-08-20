@@ -19,9 +19,12 @@ interface DpSupplierRow {
 interface DpSummaryAnalyticsProps {
   dpData: DpSupplierRow[]
   warehouseNames: { id: string; nama: string }[]
+  /** Mode ringkas untuk dashboard Manager: hanya metrik total + link ke
+   * menu Rekap DP. Rincian per lapak tetap utuh di halaman menunya. */
+  summaryOnly?: boolean
 }
 
-export default function DpSummaryAnalytics({ dpData, warehouseNames }: DpSummaryAnalyticsProps) {
+export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly = false }: DpSummaryAnalyticsProps) {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
 
   // Filter data based on warehouse dropdown
@@ -53,18 +56,20 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames }: DpSummary
           </p>
         </div>
         {/* Warehouse filter */}
-        <ElegantSelect
-          value={selectedWarehouseId}
-          options={warehouseOptions}
-          onChange={setSelectedWarehouseId}
-          ariaLabel="Pilih gudang DP"
-          className="w-full sm:w-44"
-          menuClassName="sm:w-52"
-        />
+        {!summaryOnly && (
+          <ElegantSelect
+            value={selectedWarehouseId}
+            options={warehouseOptions}
+            onChange={setSelectedWarehouseId}
+            ariaLabel="Pilih gudang DP"
+            className="w-full sm:w-44"
+            menuClassName="sm:w-52"
+          />
+        )}
       </div>
 
       {/* Global Summary Card Metrics */}
-      <div className="grid grid-cols-1 gap-3 border-b border-slate-100 p-4 sm:p-5 md:grid-cols-3">
+      <div className={`grid grid-cols-1 gap-3 p-4 sm:p-5 md:grid-cols-3${summaryOnly ? "" : " border-b border-slate-100"}`}>
         {/* Metric 1: Total Approved DP */}
         <div className="interactive-surface flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
@@ -99,7 +104,20 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames }: DpSummary
         </div>
       </div>
 
-      {/* List Card Section (No Horizontal Scroll) */}
+      {summaryOnly && (
+        <div className="px-4 pb-5 sm:px-5">
+          <a
+            href="/dashboard/manager/dp"
+            className="block text-center text-[11.5px] font-bold"
+            style={{ color: "var(--brand-strong)" }}
+          >
+            Lihat rincian per lapak →
+          </a>
+        </div>
+      )}
+
+      {!summaryOnly && (
+      /* List Card Section (No Horizontal Scroll) */
       <div className="space-y-4 p-4 sm:p-6">
         {filtered.length === 0 ? (
           <div className="text-center text-slate-400 text-sm py-12 border border-dashed border-slate-200 rounded-2xl">
@@ -167,6 +185,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames }: DpSummary
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }

@@ -886,17 +886,19 @@ export default async function ManagerDashboard({
         </div>
       </div>
 
-      {/* Top 10 Lapak full width */}
+      {/* Top 10 Lapak -- tidak punya menu sendiri, jadi tetap di dashboard */}
       <TopLapakAnalytics warehouseTopData={warehouseTopData} />
 
-      {/* Susut & Lebih Timbangan per Lapak */}
+      {/* Ringkasan Susut & Lebih -- rincian per lapak ada di menu Analisis Susut */}
       <SusutLebihAnalytics
+        summaryOnly
         lapakData={lapakSusutData}
         warehouseNames={warehouses.map(w => ({ id: w.id, nama: w.nama }))}
       />
 
-      {/* Rekap Saldo DP & Kasbon per Lapak */}
+      {/* Ringkasan Saldo DP -- rincian per lapak ada di menu Rekap DP */}
       <DpSummaryAnalytics
+        summaryOnly
         dpData={dpSummaryData}
         warehouseNames={warehouses.map(w => ({ id: w.id, nama: w.nama }))}
       />

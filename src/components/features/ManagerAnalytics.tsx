@@ -222,48 +222,6 @@ const TargetMetricCard = ({
   )
 }
 
-const TargetSummaryCard = ({
-  name,
-  target,
-  realisasi,
-}: {
-  name: string
-  target: number
-  realisasi: number
-}) => {
-  const percent = target > 0 ? Math.min((realisasi / target) * 100, 100) : 0
-  const gap = Math.max(target - realisasi, 0)
-  const isComplete = target > 0 && realisasi >= target
-
-  return (
-    <div className="grid gap-3 border-b border-slate-100 py-4 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)_120px] sm:items-center">
-      <div>
-        <p className="text-sm font-bold text-slate-950">{name}</p>
-        <p className="mt-1 text-xs text-slate-500">
-          {isComplete ? "Target tercapai" : target > 0 ? `Kurang ${fmtAngka(gap, 2)} ton` : "Target belum diatur"}
-        </p>
-      </div>
-      <div>
-        <div className="mb-2 flex items-center justify-between gap-3 text-xs">
-          <span className="font-mono font-bold text-slate-950">{fmtAngka(realisasi, 2)} ton</span>
-          <span className="font-mono font-semibold text-slate-400">{fmtAngka(target, 2)} ton</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className={`h-full rounded-full transition-all duration-700 ${isComplete ? "bg-emerald-500" : "bg-sky-500"}`}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      </div>
-      <div className="sm:text-right">
-        <span className={`inline-flex rounded-md px-2.5 py-1 text-xs font-bold ${isComplete ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
-          {target > 0 ? `${percent.toFixed(0)}%` : "N/A"}
-        </span>
-      </div>
-    </div>
-  )
-}
-
 export default function ManagerAnalytics({
   warehouses,
   dataMap,
@@ -293,16 +251,6 @@ export default function ManagerAnalytics({
   const pctHarian   = activeData.target_harian   > 0 ? Math.min((activeData.actual_harian   / activeData.target_harian)   * 100, 100) : 0
   const pctMingguan = activeData.target_mingguan > 0 ? Math.min((activeData.actual_mingguan / activeData.target_mingguan) * 100, 100) : 0
   const pctBulanan  = activeData.target_bulanan  > 0 ? Math.min((activeData.actual_bulanan  / activeData.target_bulanan)  * 100, 100) : 0
-
-  // Comparison Bar Chart (Target vs Realisasi summary)
-  const comparisonData = [
-    { name: "Harian",   Target: activeData.target_harian   / 1000, Realisasi: activeData.actual_harian   / 1000 },
-    { name: "Mingguan", Target: activeData.target_mingguan / 1000, Realisasi: activeData.actual_mingguan / 1000 },
-    { name: "Bulanan",  Target: activeData.target_bulanan  / 1000, Realisasi: activeData.actual_bulanan  / 1000 },
-  ].map((item) => ({
-    ...item,
-    Max: Math.max(item.Target, item.Realisasi, 1),
-  }))
 
   // Chart data & config based on selected mode
   const chartConfig: {
@@ -544,28 +492,6 @@ export default function ManagerAnalytics({
                 ...(chartConfig.showTarget ? [{ label: "Target", color: chartConfig.lineColor }] : []),
               ]}
             />
-          </div>
-        </div>
-      </div>
-
-      {/* Target vs Realisasi Summary */}
-      <div className="section">
-        <div className="section-shell-head">
-          <div className="min-w-0">
-            <h4 className="text-[15.5px] font-bold text-slate-950">Ringkasan Target vs Realisasi</h4>
-            <p className="mt-1 text-xs leading-5 text-slate-500">Status pencapaian target dalam bahasa operasional yang mudah dibaca.</p>
-          </div>
-        </div>
-        <div className="p-4 sm:p-6">
-          <div className="divide-y divide-slate-100">
-            {comparisonData.map((item) => (
-              <TargetSummaryCard
-                key={item.name}
-                name={item.name}
-                target={item.Target}
-                realisasi={item.Realisasi}
-              />
-            ))}
           </div>
         </div>
       </div>
