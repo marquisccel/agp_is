@@ -33,7 +33,6 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
     : activeWarehouse?.topByHarga || []
   // topByVolume/topByHarga sudah diurutkan menurun di manager/page.tsx, jadi
   // elemen pertama adalah nilai maksimum -- dipakai sebagai acuan lebar bar.
-  const maxValue = suppliers[0] ? (mode === "volume" ? suppliers[0].totalKg : suppliers[0].avgHarga) : 0
   const warehouseOptions = warehouseTopData.map(w => ({
     value: w.warehouseId,
     label: `Gudang ${w.warehouseName}`,
@@ -70,29 +69,37 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
             <p>Belum ada data transaksi untuk gudang ini.</p>
           </div>
         ) : (
-          <div className="rank-list">
-            {suppliers.map((s, i) => {
-              const value = mode === "volume" ? s.totalKg : s.avgHarga
-              const widthPct = maxValue > 0 ? Math.max((value / maxValue) * 100, 4) : 0
-              return (
-                <div key={s.supplierId} className={`rank-row ${i === 0 ? "rank-first" : ""}`}>
-                  <span className="rank-num">{String(i + 1).padStart(2, "0")}</span>
-                  <div className="min-w-0">
-                    <div className="rank-name truncate">{s.nama}</div>
-                    <div className="rank-sub">
-                      {fmtAngka(s.transaksi)} transaksi · {mode === "volume" ? fmtRpPerKg(s.avgHarga) : fmtKg(s.totalKg)}
-                    </div>
-                  </div>
-                  <div className="rank-bar-track">
-                    <div className="rank-bar-fill" style={{ width: `${widthPct}%` }} />
-                  </div>
-                  <div className="rank-value font-mono">
-                    {mode === "volume" ? fmtKg(s.totalKg) : fmtRpPerKg(s.avgHarga)}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b" style={{ borderColor: "var(--border)" }}>
+                <th className="w-8 pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">#</th>
+                <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Lapak</th>
+                <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Volume</th>
+                <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Harga rata-rata</th>
+                <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Transaksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {suppliers.map((s, i) => {
+                const isTop = i === 0
+                return (
+                  <tr key={s.supplierId} className="border-b" style={{ borderColor: "var(--border)" }}>
+                    <td className="py-2.5 font-mono text-[11px] font-bold tabular-nums" style={{ color: isTop ? "var(--brand-strong)" : "var(--muted-faint)" }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </td>
+                    <td className="py-2.5 font-semibold text-slate-800">{s.nama}</td>
+                    <td className="py-2.5 text-right font-mono tabular-nums font-semibold" style={mode === "volume" ? { color: "var(--brand-strong)" } : undefined}>
+                      {fmtKg(s.totalKg)}
+                    </td>
+                    <td className="py-2.5 text-right font-mono tabular-nums font-semibold" style={mode === "harga" ? { color: "var(--brand-strong)" } : undefined}>
+                      {fmtRpPerKg(s.avgHarga)}
+                    </td>
+                    <td className="py-2.5 text-right font-mono tabular-nums text-slate-500">{fmtAngka(s.transaksi)}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

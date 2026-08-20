@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react"
 import type { Warehouse } from "@prisma/client"
 import { fmtKg, fmtAngka, fmtTon, fmtRpPerKg } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import SkuPriceChart from "@/components/features/SkuPriceChart"
 import {
   ComposedChart,
   Line,
@@ -538,48 +539,7 @@ export default function ManagerAnalytics({
               <span className="text-xs text-slate-500">{fmtKg(grandTotalAllKg)} total volume</span>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b" style={{ borderColor: "var(--border)" }}>
-                    <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">SKU</th>
-                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Harga rata-rata</th>
-                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Volume</th>
-                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Porsi</th>
-                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Gabyuk</th>
-                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Grading</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {skuRows.map((row) => {
-                    const pctVol = grandTotalAllKg > 0 ? (row.all_kg / grandTotalAllKg) * 100 : 0
-                    return (
-                      <tr key={row.sku_name} className="border-b" style={{ borderColor: "var(--border)" }}>
-                        <td className="py-3 font-bold text-slate-900">{row.sku_name}</td>
-                        <td className="py-3 text-right font-mono font-bold tabular-nums text-slate-900">
-                          {row.all_kg > 0 ? fmtRpPerKg(row.all_avg) : "-"}
-                        </td>
-                        <td className="py-3 text-right font-mono tabular-nums text-slate-500">
-                          {row.all_kg > 0 ? fmtKg(row.all_kg) : "-"}
-                        </td>
-                        <td className="py-3 text-right">
-                          <span className="inline-flex items-center gap-2">
-                            <span className="mini-bar"><span style={{ width: `${pctVol}%` }} /></span>
-                            <span className="font-mono tabular-nums text-[11px] text-slate-500">{pctVol.toFixed(0)}%</span>
-                          </span>
-                        </td>
-                        <td className="py-3 text-right font-mono tabular-nums text-slate-600">
-                          {row.gabyuk_kg > 0 ? fmtRpPerKg(row.gabyuk_avg) : <span className="text-slate-300">-</span>}
-                        </td>
-                        <td className="py-3 text-right font-mono tabular-nums text-slate-600">
-                          {row.grading_kg > 0 ? fmtRpPerKg(row.grading_avg) : <span className="text-slate-300">-</span>}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <SkuPriceChart rows={skuRows} avgPrice={grandAvgAllPrice} />
 
             {skuTersembunyi > 0 && (
               <button

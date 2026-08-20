@@ -792,14 +792,15 @@ export default async function ManagerDashboard({
           <div className="stat-value-row">
             <span className="stat-value font-mono">{totalTonase.toFixed(2)}</span>
             <span className="stat-unit">Ton</span>
+            {tonaseDeltaPct !== null && (
+              <span className={`trend ${tonaseDeltaPct >= 0 ? "up" : "down"}`}>
+                {Math.abs(tonaseDeltaPct).toFixed(1)}% {tonaseDeltaPct >= 0 ? "↗" : "↘"}
+              </span>
+            )}
           </div>
-          {tonaseDeltaPct === null ? (
-            <span className="stat-delta flat">Belum ada data bulan lalu</span>
-          ) : (
-            <span className={`stat-delta ${tonaseDeltaPct >= 0 ? "up" : "down"}`}>
-              {tonaseDeltaPct >= 0 ? "↑" : "↓"} {Math.abs(tonaseDeltaPct).toFixed(0)}% dari bulan lalu
-            </span>
-          )}
+          <span className="stat-delta flat">
+            {tonaseDeltaPct === null ? "Belum ada data bulan lalu" : "dibanding bulan lalu"}
+          </span>
         </div>
 
         <div className="stat-tile">
@@ -838,14 +839,17 @@ export default async function ManagerDashboard({
           <span className="stat-label">Pengeluaran Bulan Ini</span>
           <div className="stat-value-row">
             <span className="stat-value font-mono">{fmtRp(globalExpenses.bulanan)}</span>
+            {expenseDeltaPct !== null && (
+              /* Pengeluaran naik itu kabar buruk, jadi panah naik sengaja
+                 diberi warna danger -- kebalikan dari metrik tonase. */
+              <span className={`trend ${expenseDeltaPct > 0 ? "down" : "up"}`}>
+                {Math.abs(expenseDeltaPct).toFixed(1)}% {expenseDeltaPct >= 0 ? "↗" : "↘"}
+              </span>
+            )}
           </div>
-          {expenseDeltaPct === null ? (
-            <span className="stat-delta flat">Belum ada data bulan lalu</span>
-          ) : (
-            <span className={`stat-delta ${expenseDeltaPct <= 0 ? "up" : "down"}`}>
-              {expenseDeltaPct >= 0 ? "↑" : "↓"} {Math.abs(expenseDeltaPct).toFixed(0)}% dari bulan lalu
-            </span>
-          )}
+          <span className="stat-delta flat">
+            {expenseDeltaPct === null ? "Belum ada data bulan lalu" : "dibanding bulan lalu"}
+          </span>
         </div>
       </div>
 
