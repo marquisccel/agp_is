@@ -42,7 +42,87 @@ function ringkasRekap(ambilVolume: number, kirimVolume: number): { label: string
   return { label: "Seimbang", warna: "var(--muted)" }
 }
 
-export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKirimRow[] }) {
+
+/**
+ * Donat proporsi ambil-vs-kirim.
+ *
+ * Dua busur dipisahkan celah kecil berwarna permukaan supaya batas antar
+ * bagian tetap terbaca walau salah satunya sangat tipis. Angka total
+ * ditaruh di tengah karena itu konteks yang bikin kedua bagian bermakna.
+ */
+function Donat({ ambil, kirim }: { ambil: number; kirim: number }) {
+  const R = 88
+  const STROKE = 28
+  const C = 2 * Math.PI * R
+  const totalNilai = ambil + kirim
+  const ambilRasio = totalNilai > 0 ? ambil / totalNilai : 0
+
+  // Celah pemisah hanya masuk akal kalau memang ada dua bagian.
+  const adaDuaBagian = ambil > 0 && kirim > 0
+  const gap = adaDuaBagian ? 3 : 0
+  const ambilPanjang = Math.max(C * ambilRasio - gap, 0)
+  const kirimPanjang = Math.max(C * (1 - ambilRasio) - gap, 0)
+
+  // Angka dan satuan dipisah supaya satuannya bisa dibuat jauh lebih kecil.
+  // Kalau digabung sebagai satu string besar ("15,50 ton"), teksnya melebihi
+  // lubang donat begitu nilainya mencapai ratusan ton.
+  const ton = totalNilai / 1000
+  const desimal = ton % 1 === 0 ? 0 : (ton % 0.1 === 0 ? 1 : 2)
+  const angka = fmtAngka(ton, desimal)
+
+  // Lubang donat = 2 * (R - STROKE/2). Ukuran font diturunkan bertahap untuk
+  // angka yang panjang supaya tetap muat tanpa perlu mengukur teks.
+  const fontAngka = angka.length <= 5 ? 36 : angka.length <= 7 ? 30 : 25
+
+  return (
+    <svg
+      width={228}
+      height={228}
+      viewBox="0 0 212 212"
+      role="img"
+      aria-label={`Porsi diambil ${Math.round(ambilRasio * 100)} persen dari total ${angka} ton`}
+      className="shrink-0"
+    >
+      <circle cx="106" cy="106" r={R} fill="none" stroke="var(--bg-tint)" strokeWidth={STROKE} />
+      {kirim > 0 && (
+        <circle
+          cx="106" cy="106" r={R} fill="none"
+          stroke="var(--border-strong)" strokeWidth={STROKE}
+          strokeDasharray={`${kirimPanjang} ${C - kirimPanjang}`}
+          strokeDashoffset={-(C * ambilRasio + gap / 2)}
+          transform="rotate(-90 106 106)"
+          strokeLinecap="butt"
+        />
+      )}
+      {ambil > 0 && (
+        <circle
+          cx="106" cy="106" r={R} fill="none"
+          stroke="var(--brand)" strokeWidth={STROKE}
+          strokeDasharray={`${ambilPanjang} ${C - ambilPanjang}`}
+          strokeDashoffset={-(gap / 2)}
+          transform="rotate(-90 106 106)"
+          strokeLinecap="butt"
+        />
+      )}
+      <text x="106" y="104" textAnchor="middle" fill="var(--foreground)" style={{ fontVariantNumeric: "tabular-nums" }}>
+        <tspan fontSize={fontAngka} fontWeight="800">{angka}</tspan>
+        <tspan fontSize="14" fontWeight="700" fill="var(--muted)" dx="4">ton</tspan>
+      </text>
+      <text x="106" y="126" textAnchor="middle" fontSize="10.5" fontWeight="700" letterSpacing="0.07em" fill="var(--muted-faint)">
+        TOTAL MASUK
+      </text>
+    </svg>
+  )
+}
+
+export default function RekapAmbilKirimAnalytics({
+  data,
+  prevAmbilPct = null,
+}: {
+  data: RekapAmbilKirimRow[]
+  /** Porsi ambil bulan lalu; null kalau bulan lalu belum ada data tercatat. */
+  prevAmbilPct?: number | null
+}) {
   const total = data.reduce(
     (acc, r) => ({
       ambilTransaksi: acc.ambilTransaksi + r.ambilTransaksi,
@@ -82,49 +162,76 @@ export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKir
           </div>
         ) : (
           <>
-            {/* Dua sisi utama */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--brand-soft)", borderColor: "var(--brand-soft-strong)" }}>
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4" style={{ color: "var(--brand-strong)" }} />
-                  <span className="text-[10.5px] font-bold uppercase tracking-[0.06em]" style={{ color: "var(--brand-strong)" }}>
-                    Diambil
-                  </span>
-                </div>
-                <p className="mt-2 font-mono text-[26px] font-extrabold leading-none tabular-nums" style={{ color: "var(--brand-strong)" }}>
-                  {fmtTon(total.ambilVolume)}
-                </p>
-                <p className="mt-1.5 text-[11px] font-semibold text-slate-500">
-                  {fmtAngka(total.ambilTransaksi)} transaksi
-                </p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: "var(--surface)" }}>
-                  <div className="h-full rounded-full" style={{ width: `${ambilPct}%`, background: "var(--brand)" }} />
-                </div>
-                <p className="mt-1.5 text-[11px] font-bold" style={{ color: "var(--brand-strong)" }}>
-                  {ambilPct.toFixed(1)}% dari volume tercatat
-                </p>
-              </div>
+            {/* Donat, bukan dua kotak sejajar. Ambil dan Kirim adalah dua
+                bagian dari SATU keseluruhan, dan bentuk yang menyatakan
+                "bagian dari keseluruhan" itu lingkaran terbagi -- dua kotak
+                datar berdampingan justru terbaca sebagai dua angka lepas
+                yang kebetulan bersebelahan, sehingga sulit dibedakan mana
+                yang lebih besar tanpa membaca angkanya satu per satu. */}
+            <div className="flex flex-wrap items-center gap-6">
+              <Donat ambil={total.ambilVolume} kirim={total.kirimVolume} />
 
-              <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
-                <div className="flex items-center gap-2">
-                  <PackageCheck className="h-4 w-4 text-slate-500" />
-                  <span className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-slate-500">
-                    Dikirim
+              <ul className="min-w-[170px] flex-1 space-y-6">
+                <li className="flex items-start gap-2.5">
+                  <span className="mt-[5px] h-3 w-3 shrink-0 rounded-full" style={{ background: "var(--brand)" }} />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.06em]" style={{ color: "var(--brand-strong)" }}>
+                      <Truck className="h-4 w-4" /> Diambil
+                    </span>
+                    <span className="mt-1.5 block font-mono text-[26px] font-extrabold leading-none tabular-nums" style={{ color: "var(--brand-strong)" }}>
+                      {fmtTon(total.ambilVolume)}
+                    </span>
+                    <span className="mt-1.5 block text-[12px] text-slate-400">
+                      {fmtAngka(total.ambilTransaksi)} transaksi
+                    </span>
                   </span>
-                </div>
-                <p className="mt-2 font-mono text-[26px] font-extrabold leading-none tabular-nums text-slate-900">
-                  {fmtTon(total.kirimVolume)}
-                </p>
-                <p className="mt-1.5 text-[11px] font-semibold text-slate-500">
-                  {fmtAngka(total.kirimTransaksi)} transaksi
-                </p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
-                  <div className="h-full rounded-full" style={{ width: `${kirimPct}%`, background: "var(--muted-faint)" }} />
-                </div>
-                <p className="mt-1.5 text-[11px] font-bold text-slate-500">
-                  {kirimPct.toFixed(1)}% dari volume tercatat
-                </p>
-              </div>
+                </li>
+
+                <li className="flex items-start gap-2.5">
+                  <span className="mt-[5px] h-3 w-3 shrink-0 rounded-full" style={{ background: "var(--border-strong)" }} />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.06em] text-slate-500">
+                      <PackageCheck className="h-4 w-4" /> Dikirim
+                    </span>
+                    <span className="mt-1.5 block font-mono text-[26px] font-extrabold leading-none tabular-nums text-slate-800">
+                      {fmtTon(total.kirimVolume)}
+                    </span>
+                    <span className="mt-1.5 block text-[12px] text-slate-400">
+                      {fmtAngka(total.kirimTransaksi)} transaksi
+                    </span>
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Perbandingan bulan lalu -- menjawab "efektivitas armada
+                membaik atau menurun?", bukan cuma memotret bulan ini. */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
+              {prevAmbilPct === null ? (
+                <span className="text-slate-400">
+                  Belum ada data bulan lalu untuk dibandingkan.
+                </span>
+              ) : (
+                (() => {
+                  const selisih = ambilPct - prevAmbilPct
+                  const stabil = Math.abs(selisih) < 0.5
+                  return (
+                    <>
+                      <span className="text-slate-500">Porsi ambil bulan lalu</span>
+                      <span className="font-mono font-bold tabular-nums text-slate-700">
+                        {Math.round(prevAmbilPct)}%
+                      </span>
+                      {stabil ? (
+                        <span className="trend flat">stabil</span>
+                      ) : (
+                        <span className={`trend ${selisih > 0 ? "up" : "down"}`}>
+                          {selisih > 0 ? "+" : "−"}{fmtAngka(Math.abs(selisih), 1)} poin {selisih > 0 ? "↗" : "↘"}
+                        </span>
+                      )}
+                    </>
+                  )
+                })()
+              )}
             </div>
 
             {/* Rincian per gudang -- semua Collection Center selalu tampil,
@@ -223,7 +330,7 @@ export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKir
             </div>
 
             {total.belumDicatatTransaksi > 0 && (
-              <p className="mt-auto pt-4 text-[11px] leading-relaxed text-slate-400">
+              <p className="pt-3 text-[11px] leading-relaxed text-slate-400">
                 {fmtAngka(total.belumDicatatTransaksi)} transaksi ({fmtTon(total.belumDicatatVolume)}) belum mencatat
                 jenis pengambilan, jadi tidak ikut dihitung di sini.
               </p>

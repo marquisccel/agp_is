@@ -116,7 +116,6 @@ interface DayActivity {
 
 interface Props {
   calendarData: DayActivity[]
-  targetHarian: number
   selectedBulan?: number
   selectedTahun?: number
 }
@@ -133,7 +132,7 @@ const toDateKey = (year: number, monthIndex: number, day: number) =>
 // ─────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────
-export default function ManagerCalendar({ calendarData, targetHarian, selectedBulan, selectedTahun }: Props) {
+export default function ManagerCalendar({ calendarData, selectedBulan, selectedTahun }: Props) {
   const today = new Date()
   const [viewYear, setViewYear]   = useState(selectedTahun ?? today.getFullYear())
   const [viewMonth, setViewMonth] = useState(selectedBulan ? (selectedBulan - 1) : today.getMonth())
@@ -190,11 +189,11 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
   const getActivityColor = (kg: number): string => {
     if (kg === 0 || maxKgMonth === 0) return ""
     const r = kg / maxKgMonth
-    if (r >= 0.85) return "bg-emerald-500 text-white"
-    if (r >= 0.65) return "bg-emerald-400 text-white"
-    if (r >= 0.45) return "bg-emerald-300 text-slate-800"
-    if (r >= 0.25) return "bg-emerald-200 text-slate-700"
-    return "bg-emerald-100 text-slate-600"
+    if (r >= 0.85) return "cal-lvl cal-lvl-5"
+    if (r >= 0.65) return "cal-lvl cal-lvl-4"
+    if (r >= 0.45) return "cal-lvl cal-lvl-3"
+    if (r >= 0.25) return "cal-lvl cal-lvl-2"
+    return "cal-lvl cal-lvl-1"
   }
 
   return (
@@ -275,8 +274,8 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
             }
 
             // Today ring
-            const todayRing = isToday ? "ring-2 ring-cyan-500 ring-offset-1" : ""
-            const selRing   = isSelected ? "ring-2 ring-indigo-500 ring-offset-1 scale-105" : ""
+            const todayRing = isToday ? "cal-ring-today" : ""
+            const selRing   = isSelected ? "cal-ring-selected" : ""
             const cursor    = (kg > 0 || holiday) ? "cursor-pointer" : "cursor-default"
             const shadow    = (kg > 0 || holiday) ? "hover:shadow-md" : ""
 
@@ -310,7 +309,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
                         : isRed
                         ? "text-red-500"
                         : isToday
-                        ? "text-cyan-600"
+                        ? "cal-today-num"
                         : numColor
                     }`}
                   >
@@ -347,7 +346,7 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
         {/* ── Legend ── */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 pt-4 border-t border-slate-100 text-[11px] text-slate-500">
           <div className="flex items-center gap-1.5">
-            {["bg-emerald-100","bg-emerald-200","bg-emerald-300","bg-emerald-400","bg-emerald-500"].map((c, i) => (
+            {["cal-lvl-1","cal-lvl-2","cal-lvl-3","cal-lvl-4","cal-lvl-5"].map((c, i) => (
               <div key={i} className={`w-4 h-3 rounded ${c}`} />
             ))}
             <span>Volume pembelian</span>
@@ -365,68 +364,66 @@ export default function ManagerCalendar({ calendarData, targetHarian, selectedBu
             <span>Libur Nasional</span>
           </div>
           <div className="flex items-center gap-1.5 sm:ml-auto">
-            <div className="w-4 h-4 rounded border-2 border-cyan-500" />
+            <div className="w-4 h-4 rounded border-2" style={{ borderColor: "var(--brand)" }} />
             <span>Hari ini</span>
           </div>
         </div>
 
         {/* ── Detail Popup ── */}
         {selectedDay && (
-          <div className="mt-4 bg-gradient-to-br from-slate-50 to-indigo-50 border border-indigo-100 rounded-xl p-4">
-            <div className="flex items-start justify-between mb-3 gap-2">
-              <div>
-                <p className="text-sm font-bold text-slate-800">
+          <div className="mt-4 overflow-hidden rounded-[var(--radius-md)] border" style={{ borderColor: "var(--border)" }}>
+            {/* Kepala bertint: tanggal + total hari itu. Dipisah dari daftar
+                gudang supaya panel punya hierarki, tidak sekadar tumpukan
+                baris teks yang rata semua. */}
+            <div
+              className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3"
+              style={{ background: "var(--brand-soft)" }}
+            >
+              <div className="min-w-0">
+                <p className="text-[13px] font-bold" style={{ color: "var(--brand-strong)" }}>
                   {new Date(selectedDay.date + "T00:00:00").toLocaleDateString("id-ID", {
                     weekday: "long", day: "numeric", month: "long", year: "numeric"
                   })}
                 </p>
-                {HARI_LIBUR[selectedDay.date] && (
-                  <p className="text-xs font-semibold text-red-500 mt-0.5">
-                    {HARI_LIBUR[selectedDay.date]}
-                  </p>
-                )}
-                {selectedDay.totalTransaksi > 0 && (
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {fmtAngka(selectedDay.totalTransaksi)} transaksi
-                  </p>
-                )}
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  {HARI_LIBUR[selectedDay.date] && (
+                    <span className="font-semibold text-red-500">{HARI_LIBUR[selectedDay.date]}</span>
+                  )}
+                  {HARI_LIBUR[selectedDay.date] && selectedDay.totalTransaksi > 0 && " · "}
+                  {selectedDay.totalTransaksi > 0
+                    ? `${fmtAngka(selectedDay.totalTransaksi)} transaksi`
+                    : !HARI_LIBUR[selectedDay.date] && "Tidak ada transaksi"}
+                </p>
               </div>
-              <div className="text-right shrink-0">
-                {selectedDay.totalKg > 0 ? (
-                  <>
-                    <p className="text-xl font-extrabold text-emerald-600">{fmtKgId(selectedDay.totalKg)}</p>
-                    {targetHarian > 0 && (
-                      <p className="text-[11px] text-slate-400">
-                        {fmtAngka((selectedDay.totalKg / targetHarian) * 100, 1)}% dari target harian
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm font-semibold text-slate-400 italic">Tidak ada transaksi</p>
-                )}
-              </div>
+              {selectedDay.totalKg > 0 && (
+                <p className="font-mono text-lg font-extrabold tabular-nums" style={{ color: "var(--brand-strong)" }}>
+                  {fmtKgId(selectedDay.totalKg)}
+                </p>
+              )}
             </div>
 
-            {/* Per-warehouse breakdown */}
+            {/* Rincian gudang: bar tipis di belakang nama sebagai latar,
+                bukan bar terpisah -- proporsinya kebaca tanpa menambah
+                elemen baru ke dalam baris. */}
             {selectedDay.warehouses.length > 0 && (
-              <div className="space-y-2 mt-2">
-                {selectedDay.warehouses.map(w => (
-                  <div key={w.nama} className="grid grid-cols-1 gap-1 sm:flex sm:items-center sm:gap-2">
-                    <span className="text-xs text-slate-500 sm:w-24 sm:shrink-0">Gudang {w.nama}</span>
-                    <div className="flex-1 bg-white rounded-full h-2 overflow-hidden shadow-inner">
-                      <div
-                        className="h-full bg-gradient-to-r from-cyan-400 to-indigo-500 rounded-full transition-all"
-                        style={{
-                          width: `${selectedDay.totalKg > 0 ? (w.kg / selectedDay.totalKg) * 100 : 0}%`
-                        }}
+              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                {selectedDay.warehouses.map(w => {
+                  const share = selectedDay.totalKg > 0 ? (w.kg / selectedDay.totalKg) * 100 : 0
+                  return (
+                    <li key={w.nama} className="relative px-4 py-2.5" style={{ borderColor: "var(--border)" }}>
+                      <span
+                        className="absolute inset-y-0 left-0 transition-[width] duration-500"
+                        style={{ width: `${share}%`, background: "var(--brand-soft)", opacity: 0.55 }}
+                        aria-hidden
                       />
-                    </div>
-                    <span className="text-xs font-semibold text-slate-700 sm:w-24 sm:text-right sm:shrink-0">
-                      {fmtKgId(w.kg)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                      <span className="relative flex items-baseline justify-between gap-3 text-xs">
+                        <span className="font-semibold text-slate-700">{w.nama}</span>
+                        <span className="font-mono font-semibold tabular-nums text-slate-700">{fmtKgId(w.kg)}</span>
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
             )}
           </div>
         )}

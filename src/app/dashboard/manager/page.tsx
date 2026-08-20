@@ -381,9 +381,6 @@ export default async function ManagerDashboard({
     warehouses: Object.entries(val.warehouses).map(([nama, kg]) => ({ nama, kg }))
   }))
 
-  // Global sum harian target (for calendar indicator)
-  const totalTargetHarian = Object.values(dataMap).reduce((s, d) => s + (d.target_harian || 0), 0)
-
   // ──────────────────────────────────────────
   // 8. Top 10 Lapak per warehouse (selected month)
   // ──────────────────────────────────────────
@@ -449,6 +446,21 @@ export default async function ManagerDashboard({
       belumDicatatVolume: belumDicatat.reduce((s, p) => s + beratOf(p), 0),
     }
   })
+
+  // Porsi ambil bulan lalu -- dipakai kartu Rekap Ambil/Kirim untuk
+  // menjawab "efektivitas armada membaik atau menurun?", bukan cuma
+  // memotret kondisi bulan ini. null kalau bulan lalu belum ada data
+  // yang jenis pengambilannya tercatat (jangan dibandingkan ke nol).
+  const beratPurchase = (p: (typeof validPurchases)[number]) =>
+    p.items.reduce((s, i) => s + (i.berat_final_item || 0), 0)
+  const prevAmbilVolume = prevMonthPurchases
+    .filter(p => p.jenis_pengambilan === "AMBIL")
+    .reduce((s, p) => s + beratPurchase(p), 0)
+  const prevKirimVolume = prevMonthPurchases
+    .filter(p => p.jenis_pengambilan === "KIRIM")
+    .reduce((s, p) => s + beratPurchase(p), 0)
+  const prevTercatat = prevAmbilVolume + prevKirimVolume
+  const prevAmbilPct = prevTercatat > 0 ? (prevAmbilVolume / prevTercatat) * 100 : null
 
   // ──────────────────────────────────────────
   // 10. Susut & Lebih Timbangan per Lapak (selected month)
@@ -865,11 +877,10 @@ export default async function ManagerDashboard({
         <ManagerCalendar
           key={`${selectedTahun}-${selectedBulan}`}
           calendarData={calendarData}
-          targetHarian={totalTargetHarian}
           selectedBulan={selectedBulan}
           selectedTahun={selectedTahun}
         />
-        <RekapAmbilKirimAnalytics data={rekapAmbilKirim} />
+        <RekapAmbilKirimAnalytics data={rekapAmbilKirim} prevAmbilPct={prevAmbilPct} />
       </div>
 
       {/* Top 10 Lapak -- tidak punya menu sendiri, jadi tetap di dashboard */}

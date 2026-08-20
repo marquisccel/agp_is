@@ -844,3 +844,65 @@ a:focus-visible {
     content: none !important;
   }
 }
+
+/* Kartu sisi Ambil/Kirim -- sudut & padding seragam, dengan angkat halus
+   saat disentuh (lapisan Apple, ditahan supaya tidak ramai). */
+.sisi-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  padding: 14px 16px;
+  transition: transform 320ms var(--ease-system), box-shadow 320ms var(--ease-system);
+}
+
+/* Ikon besar samar di pojok -- memberi karakter pada kartu tanpa menambah
+   satu pun angka baru untuk dibaca. */
+.sisi-card .sisi-watermark {
+  position: absolute;
+  right: -10px;
+  bottom: -12px;
+  width: 76px;
+  height: 76px;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.sisi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sisi-card:hover { transform: none; }
+}
+
+/* Tangga warna kalender aktivitas -- diturunkan dari hijau brand, bukan
+   emerald bawaan Tailwind, supaya sewarna dengan sisa dashboard. */
+.cal-lvl-1 { background: #EAF3E6; color: var(--muted); }
+.cal-lvl-2 { background: #D3E8CC; color: var(--foreground); }
+.cal-lvl-3 { background: #A8CF98; color: var(--foreground); }
+.cal-lvl-4 { background: #7CB35C; color: #fff; }
+.cal-lvl-5 { background: var(--brand); color: #fff; }
+
+/* Cincin hari ini / terpilih pakai box-shadow, bukan outline+offset:
+   outline dengan offset menyisakan celah sehingga terbaca sebagai dua
+   garis di sel yang sudutnya membulat. */
+.cal-ring-today {
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+
+.cal-ring-selected {
+  box-shadow: inset 0 0 0 2px var(--brand-strong);
+}
+
+/* Sel yang sudah terisi warna aktivitas: cincin dibuat putih supaya
+   kontras di atas hijau pekat, bukan hijau di atas hijau. */
+.cal-lvl-4.cal-ring-today,
+.cal-lvl-5.cal-ring-today,
+.cal-lvl-4.cal-ring-selected,
+.cal-lvl-5.cal-ring-selected {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+
+.cal-today-num { color: var(--brand-strong); }
