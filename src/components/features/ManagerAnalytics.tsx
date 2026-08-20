@@ -501,63 +501,68 @@ export default function ManagerAnalytics({
         <div className="section-shell-head">
           <div className="min-w-0">
             <p className="section-eyebrow">SKU pricing</p>
-            <h4 className="text-[15.5px] font-bold text-slate-950">
-              Rata-rata Harga Pembelian per SKU &amp; Spesifikasi ({selectedWarehouseId === "all" ? "Semua Gudang" : (dataMap[selectedWarehouseId]?.nama || "Gudang")})
-            </h4>
+            <h4 className="text-[15.5px] font-bold text-slate-950">Harga Rata-rata per SKU</h4>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Harga rata-rata tertimbang per kilogram berdasarkan spesifikasi pembelian untuk {selectedWarehouseId === "all" ? "seluruh gudang" : (dataMap[selectedWarehouseId]?.nama || "gudang")}
+              Rata-rata tertimbang per kilogram &middot; {selectedWarehouseId === "all" ? "semua gudang" : (dataMap[selectedWarehouseId]?.nama || "gudang")}
             </p>
           </div>
         </div>
 
-        <div className="p-4 sm:p-6">
+        <div className="p-5">
         {hasSKUData ? (
           <div className="space-y-4">
-            <div className="rounded-lg p-5 text-white" style={{ background: "var(--brand-strong)" }}>
-              <div>
-                <p className="text-xs font-bold uppercase text-slate-400">Harga rata-rata periode ini</p>
-                <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
-                  <span className="font-mono text-3xl font-bold">{grandTotalAllKg > 0 ? fmtRpPerKg(grandAvgAllPrice) : "-"}</span>
-                  <span className="pb-1 text-sm font-semibold text-slate-400">{fmtKg(grandTotalAllKg)} total volume</span>
-                </div>
-              </div>
+            {/* Ringkasan periode -- strip tipis, bukan blok gelap penuh:
+                aksen brand sengaja minor di dashboard ini. */}
+            <div
+              className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-[var(--radius-md)] px-4 py-3"
+              style={{ background: "var(--brand-soft)" }}
+            >
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.07em]" style={{ color: "var(--brand-strong)" }}>
+                Harga rata-rata periode ini
+              </span>
+              <span className="font-mono text-xl font-extrabold tabular-nums" style={{ color: "var(--brand-strong)" }}>
+                {grandTotalAllKg > 0 ? fmtRpPerKg(grandAvgAllPrice) : "-"}
+              </span>
+              <span className="text-xs text-slate-500">{fmtKg(grandTotalAllKg)} total volume</span>
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-slate-200">
-              <div className="grid grid-cols-[minmax(150px,1.2fr)_minmax(150px,1fr)_minmax(220px,1.4fr)] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-bold uppercase text-slate-500">
-                <span>SKU</span>
-                <span>Harga & volume</span>
-                <span>Breakdown spesifikasi</span>
-              </div>
-              <div className="divide-y divide-slate-100 bg-white">
-              {currentSkuPrices.map((row) => {
-                const pctVol = grandTotalAllKg > 0 ? (row.all_kg / grandTotalAllKg) * 100 : 0
-                return (
-                  <div key={row.sku_name} className="grid gap-4 px-4 py-4 text-sm lg:grid-cols-[minmax(150px,1.2fr)_minmax(150px,1fr)_minmax(220px,1.4fr)] lg:items-center">
-                    <div>
-                      <p className="font-bold text-slate-950">{row.sku_name}</p>
-                      <p className="mt-1 text-xs font-medium text-slate-500">{pctVol.toFixed(1)}% dari total volume periode ini</p>
-                    </div>
-                    <div>
-                      <p className="font-mono text-base font-bold text-slate-950">{row.all_kg > 0 ? fmtRpPerKg(row.all_avg) : "-"}</p>
-                      <p className="text-xs font-medium text-slate-400">{row.all_kg > 0 ? fmtKg(row.all_kg) : "Tidak ada transaksi"}</p>
-                    </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                        <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
-                          <p className="text-[10px] font-bold uppercase text-slate-500">Gabyuk</p>
-                          <p className="font-mono text-sm font-bold text-slate-950">{row.gabyuk_kg > 0 ? fmtRpPerKg(row.gabyuk_avg) : "-"}</p>
-                          <p className="text-xs text-slate-500">{row.gabyuk_kg > 0 ? fmtKg(row.gabyuk_kg) : "0 KG"}</p>
-                        </div>
-                        <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
-                          <p className="text-[10px] font-bold uppercase text-slate-500">Grading</p>
-                          <p className="font-mono text-sm font-bold text-slate-950">{row.grading_kg > 0 ? fmtRpPerKg(row.grading_avg) : "-"}</p>
-                          <p className="text-xs text-slate-500">{row.grading_kg > 0 ? fmtKg(row.grading_kg) : "0 KG"}</p>
-                        </div>
-                    </div>
-                  </div>
-                )
-              })}
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b" style={{ borderColor: "var(--border)" }}>
+                    <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">SKU</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Harga rata-rata</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Volume</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Gabyuk</th>
+                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Grading</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentSkuPrices.map((row) => {
+                    const pctVol = grandTotalAllKg > 0 ? (row.all_kg / grandTotalAllKg) * 100 : 0
+                    return (
+                      <tr key={row.sku_name} className="border-b" style={{ borderColor: "var(--border)" }}>
+                        <td className="py-3">
+                          <span className="font-bold text-slate-900">{row.sku_name}</span>
+                          <span className="ml-2 text-[11px] text-slate-400">{pctVol.toFixed(0)}%</span>
+                        </td>
+                        <td className="py-3 text-right font-mono font-bold tabular-nums text-slate-900">
+                          {row.all_kg > 0 ? fmtRpPerKg(row.all_avg) : "-"}
+                        </td>
+                        <td className="py-3 text-right font-mono tabular-nums text-slate-500">
+                          {row.all_kg > 0 ? fmtKg(row.all_kg) : "-"}
+                        </td>
+                        <td className="py-3 text-right font-mono tabular-nums text-slate-600">
+                          {row.gabyuk_kg > 0 ? fmtRpPerKg(row.gabyuk_avg) : <span className="text-slate-300">-</span>}
+                        </td>
+                        <td className="py-3 text-right font-mono tabular-nums text-slate-600">
+                          {row.grading_kg > 0 ? fmtRpPerKg(row.grading_avg) : <span className="text-slate-300">-</span>}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         ) : (

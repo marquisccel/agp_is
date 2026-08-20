@@ -108,7 +108,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         <div className="px-4 pb-5 sm:px-5">
           <a
             href="/dashboard/manager/dp"
-            className="block text-center text-[11.5px] font-bold"
+            className="inline-block text-[11.5px] font-bold"
             style={{ color: "var(--brand-strong)" }}
           >
             Lihat rincian per lapak →

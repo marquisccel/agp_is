@@ -1,6 +1,5 @@
 "use client"
 
-import { Truck, PackageCheck } from "lucide-react"
 import { fmtAngka, fmtTon } from "@/lib/format"
 
 export interface RekapAmbilKirimRow {
@@ -18,12 +17,14 @@ export interface RekapAmbilKirimRow {
  * Rekap Ambil / Kirim per Collection Center.
  *
  * Dipakai Manager untuk menilai seberapa efektif armada pengambilan bisa
- * berangkat: makin besar porsi AMBIL, makin aktif armada menjemput ke lapak;
- * porsi KIRIM besar berarti lapak yang mengantar sendiri.
+ * berangkat: makin besar porsi AMBIL, makin aktif armada menjemput ke lapak.
+ *
+ * Porsi ambil-vs-kirim ditampilkan sebagai SATU bar terbagi, bukan dua bar
+ * terpisah -- dua bar yang masing-masing menunjukkan persentase dari total
+ * yang sama itu mengulang informasi yang persis sama dua kali.
  *
  * Transaksi yang tercatat sebelum field `jenis_pengambilan` ada bernilai null
- * dan ditampilkan terpisah sebagai "belum dicatat" -- sengaja tidak ditebak
- * atau dimasukkan ke salah satu sisi, supaya persentase efektivitas tidak
+ * dan tidak ikut jadi penyebut persentase, supaya angka efektivitas tidak
  * menyesatkan.
  */
 export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKirimRow[] }) {
@@ -42,8 +43,9 @@ export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKir
   // Basis persentase = hanya transaksi yang modenya tercatat.
   const tercatatVolume = total.ambilVolume + total.kirimVolume
   const ambilPct = tercatatVolume > 0 ? (total.ambilVolume / tercatatVolume) * 100 : 0
-  const kirimPct = tercatatVolume > 0 ? (total.kirimVolume / tercatatVolume) * 100 : 0
-  const adaData = tercatatVolume > 0 || total.belumDicatatTransaksi > 0
+  const adaTercatat = tercatatVolume > 0
+  // Baris gudang tanpa aktivitas apa pun tidak perlu memenuhi tabel.
+  const barisAktif = data.filter(r => r.ambilTransaksi > 0 || r.kirimTransaksi > 0)
 
   return (
     <div className="section flex flex-col">
@@ -52,113 +54,88 @@ export default function RekapAmbilKirimAnalytics({ data }: { data: RekapAmbilKir
           <p className="section-eyebrow">Fleet effectiveness</p>
           <h3 className="text-[15.5px] font-bold text-slate-950">Rekap Ambil / Kirim Barang</h3>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Jumlah transaksi per jenis pengambilan bulan ini, seluruh gudang.
+            Porsi barang yang dijemput armada vs diantar lapak, bulan ini.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        {!adaData ? (
-          <p className="py-10 text-center text-sm text-slate-400">
-            Belum ada transaksi bulan ini.
+      <div className="flex flex-1 flex-col gap-5 p-5">
+        {!adaTercatat ? (
+          <p className="py-8 text-center text-sm text-slate-400">
+            Belum ada transaksi dengan jenis pengambilan tercatat bulan ini.
           </p>
         ) : (
           <>
-            {/* Dua sisi utama */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--brand-soft)", borderColor: "var(--brand-soft-strong)" }}>
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4" style={{ color: "var(--brand-strong)" }} />
-                  <span className="text-[10.5px] font-bold uppercase tracking-[0.06em]" style={{ color: "var(--brand-strong)" }}>
-                    Diambil
-                  </span>
+            {/* Dua angka utama + satu bar terbagi */}
+            <div>
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.07em] text-slate-500">Diambil</p>
+                  <p className="mt-1.5 font-mono text-[26px] font-extrabold leading-none tabular-nums" style={{ color: "var(--brand-strong)" }}>
+                    {fmtTon(total.ambilVolume)}
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-400">{fmtAngka(total.ambilTransaksi)} transaksi</p>
                 </div>
-                <p className="mt-2 font-mono text-[26px] font-extrabold leading-none" style={{ color: "var(--brand-strong)" }}>
-                  {fmtTon(total.ambilVolume)}
-                </p>
-                <p className="mt-1.5 text-[11px] font-semibold text-slate-500">
-                  {fmtAngka(total.ambilTransaksi)} transaksi
-                </p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: "var(--surface)" }}>
-                  <div className="h-full rounded-full" style={{ width: `${ambilPct}%`, background: "var(--brand)" }} />
+                <div className="text-right">
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.07em] text-slate-500">Dikirim</p>
+                  <p className="mt-1.5 font-mono text-[26px] font-extrabold leading-none tabular-nums text-slate-800">
+                    {fmtTon(total.kirimVolume)}
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-400">{fmtAngka(total.kirimTransaksi)} transaksi</p>
                 </div>
-                <p className="mt-1.5 text-[11px] font-bold" style={{ color: "var(--brand-strong)" }}>
-                  {ambilPct.toFixed(1)}% dari volume tercatat
-                </p>
               </div>
 
-              <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
-                <div className="flex items-center gap-2">
-                  <PackageCheck className="h-4 w-4 text-slate-500" />
-                  <span className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-slate-500">
-                    Dikirim
-                  </span>
-                </div>
-                <p className="mt-2 font-mono text-[26px] font-extrabold leading-none text-slate-900">
-                  {fmtTon(total.kirimVolume)}
-                </p>
-                <p className="mt-1.5 text-[11px] font-semibold text-slate-500">
-                  {fmtAngka(total.kirimTransaksi)} transaksi
-                </p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
-                  <div className="h-full rounded-full" style={{ width: `${kirimPct}%`, background: "var(--muted-faint)" }} />
-                </div>
-                <p className="mt-1.5 text-[11px] font-bold text-slate-500">
-                  {kirimPct.toFixed(1)}% dari volume tercatat
-                </p>
+              <div className="mt-3.5 flex h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+                <div style={{ width: `${ambilPct}%`, background: "var(--brand)" }} />
               </div>
+              <p className="mt-2 text-[11px] font-semibold text-slate-500">
+                <span style={{ color: "var(--brand-strong)" }}>{ambilPct.toFixed(0)}% dijemput armada</span>
+                {" · "}
+                {(100 - ambilPct).toFixed(0)}% diantar lapak
+              </p>
             </div>
 
             {/* Rincian per gudang */}
-            <div className="mt-4 overflow-x-auto">
+            {barisAktif.length > 0 && (
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b" style={{ borderColor: "var(--border)" }}>
-                    <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-500">Gudang</th>
-                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-500">Ambil</th>
-                    <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-500">Kirim</th>
+                    <th className="pb-2 font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">Gudang</th>
+                    <th className="pb-2 text-right font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">Ambil</th>
+                    <th className="pb-2 text-right font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">Kirim</th>
+                    <th className="pb-2 text-right font-bold uppercase tracking-[0.05em] text-[10px] text-slate-400">% Ambil</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map(row => (
-                    <tr key={row.warehouseId} className="border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
-                      <td className="py-2.5 font-bold text-slate-800">{row.warehouseName}</td>
-                      <td className="py-2.5 text-right">
-                        <span className="font-mono font-bold" style={{ color: "var(--brand-strong)" }}>
+                  {barisAktif.map(row => {
+                    const rowTercatat = row.ambilVolume + row.kirimVolume
+                    const rowPct = rowTercatat > 0 ? (row.ambilVolume / rowTercatat) * 100 : 0
+                    return (
+                      <tr key={row.warehouseId} className="border-b" style={{ borderColor: "var(--border)" }}>
+                        <td className="py-2.5 font-semibold text-slate-800">{row.warehouseName}</td>
+                        <td className="py-2.5 text-right font-mono tabular-nums font-semibold" style={{ color: "var(--brand-strong)" }}>
                           {fmtTon(row.ambilVolume)}
-                        </span>
-                        <span className="ml-1.5 text-[10.5px] text-slate-400">{row.ambilTransaksi}x</span>
-                      </td>
-                      <td className="py-2.5 text-right">
-                        <span className="font-mono font-bold text-slate-700">{fmtTon(row.kirimVolume)}</span>
-                        <span className="ml-1.5 text-[10.5px] text-slate-400">{row.kirimTransaksi}x</span>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td className="pt-2.5 text-[11px] font-black uppercase tracking-[0.05em] text-slate-500">Total</td>
-                    <td className="pt-2.5 text-right">
-                      <span className="font-mono font-black" style={{ color: "var(--brand-strong)" }}>
-                        {fmtTon(total.ambilVolume)}
-                      </span>
-                      <span className="ml-1.5 text-[10.5px] text-slate-400">{total.ambilTransaksi}x</span>
-                    </td>
-                    <td className="pt-2.5 text-right">
-                      <span className="font-mono font-black text-slate-900">{fmtTon(total.kirimVolume)}</span>
-                      <span className="ml-1.5 text-[10.5px] text-slate-400">{total.kirimTransaksi}x</span>
-                    </td>
-                  </tr>
+                        </td>
+                        <td className="py-2.5 text-right font-mono tabular-nums font-semibold text-slate-700">
+                          {fmtTon(row.kirimVolume)}
+                        </td>
+                        <td className="py-2.5 text-right font-mono tabular-nums text-slate-500">
+                          {rowPct.toFixed(0)}%
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
-            </div>
-
-            {total.belumDicatatTransaksi > 0 && (
-              <p className="mt-3 rounded-[var(--radius-sm)] px-3 py-2 text-[11px] leading-relaxed" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>
-                {fmtAngka(total.belumDicatatTransaksi)} transaksi ({fmtTon(total.belumDicatatVolume)}) belum mencatat
-                jenis pengambilan &mdash; tidak ikut dihitung dalam persentase di atas.
-              </p>
             )}
           </>
+        )}
+
+        {total.belumDicatatTransaksi > 0 && (
+          <p className="mt-auto text-[11px] leading-relaxed text-slate-400">
+            {fmtAngka(total.belumDicatatTransaksi)} transaksi ({fmtTon(total.belumDicatatVolume)}) belum mencatat
+            jenis pengambilan, jadi tidak ikut dihitung di sini.
+          </p>
         )}
       </div>
     </div>

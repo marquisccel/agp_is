@@ -356,6 +356,23 @@ a:focus-visible {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  transition: background-color 260ms var(--ease-system);
+}
+
+.stat-tile:hover {
+  background: var(--surface-sunken);
+}
+
+/* Angka besar sedikit "mengembang" saat tile disentuh -- micro-interaction
+   spring khas Apple, cukup halus supaya tidak mengganggu saat membaca. */
+.stat-tile .stat-value {
+  display: inline-block;
+  transform-origin: left bottom;
+  transition: transform 420ms var(--ease-spring);
+}
+
+.stat-tile:hover .stat-value {
+  transform: scale(1.04);
 }
 
 .stat-tile .stat-label {
@@ -404,19 +421,50 @@ a:focus-visible {
 }
 
 /* Section shell + header pattern bersama -- eyebrow + judul + deskripsi
-   + kontrol kanan, dipakai di semua kartu analytics supaya konsisten. */
+   + kontrol kanan, dipakai di semua kartu analytics supaya konsisten.
+   Lapisan Apple di sini SENGAJA tipis: kartu tetap solid (bukan kaca)
+   supaya angka gampang dibaca, yang diambil cuma sudut lebih lembut,
+   hairline atas seperti material Apple, dan easing spring saat hover.
+   Blur/glassmorphism direservasi untuk chrome navigasi (sidebar/topbar)
+   dan header sticky -- lihat .section-shell-head di bawah. */
 .section {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   overflow: hidden;
+  transition: box-shadow 320ms var(--ease-system), border-color 320ms var(--ease-system);
 }
 
+/* Hairline terang di tepi atas -- meniru cara material Apple menangkap
+   cahaya, tanpa menambah beban visual pada isinya. */
+.section::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.section:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Satu-satunya glass di area konten: header kartu ikut menempel saat
+   tabel panjang di-scroll, jadi butuh buram supaya isi yang lewat di
+   baliknya tidak mengganggu keterbacaan judul. */
 .section-shell-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   padding: 18px 22px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface-sunken);
+  background: color-mix(in srgb, var(--surface-sunken) 82%, transparent);
+  backdrop-filter: blur(12px) saturate(160%);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -655,7 +703,8 @@ a:focus-visible {
   button:not(:disabled):active,
   a[href]:active,
   [role="button"]:active,
-  .interactive-surface:active {
+  .interactive-surface:active,
+  .stat-tile:hover .stat-value {
     transform: none;
   }
 }
