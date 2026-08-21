@@ -1,12 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { mkdir, writeFile } from "fs/promises"
-import path from "path"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { isOperationalRole } from "@/lib/roles"
+import { fileUrl, putFile } from "@/lib/objectStorage"
 
 const ALLOWED_PROOF_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -61,14 +60,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "Format nota pelunasan harus JPG, PNG, WEBP, atau PDF." }, { status: 400 })
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "settlement-notes")
-    await mkdir(uploadDir, { recursive: true })
-
-    const fileName = `${purchaseId}-${Date.now()}.${extension}`
-    await writeFile(path.join(uploadDir, fileName), buffer)
-    const notaUrl = `/uploads/settlement-notes/${fileName}`
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const key = `settlement-notes/${purchaseId}-${Date.now()}.${extension}`
+    await putFile(key, buffer, file.type)
+    const notaUrl = fileUrl(key)
 
     // Update to LUNAS status
     const updatedPurchase = await prisma.purchase.update({

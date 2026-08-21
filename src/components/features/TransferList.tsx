@@ -102,6 +102,7 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                 src={preview.src}
                 alt="Bukti Transfer"
                 fill
+                unoptimized
                 sizes="(min-width: 768px) 42rem, 100vw"
                 className="rounded-3xl bg-white object-contain shadow-inner"
               />
@@ -216,6 +217,7 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                           src={buktiTransfer}
                           alt="Bukti"
                           fill
+                          unoptimized
                           sizes="(min-width: 1024px) 260px, 50vw"
                           className="object-cover transition-transform duration-700 group-hover/preview:scale-[1.04]"
                         />

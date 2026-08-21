@@ -79,6 +79,7 @@ export default async function StaffHistoryPage() {
                             <Image
                               src={purchase.bukti_transfer}
                               alt="Bukti transfer"
+                              unoptimized
                               width={48}
                               height={48}
                               className="w-12 h-12 object-cover rounded-lg border border-slate-200 mx-auto hover:scale-105 transition-transform shadow-sm"

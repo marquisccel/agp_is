@@ -334,7 +334,24 @@ async function main() {
     )
   }
 
-  console.log("\n7. Pendaftaran akun hanya oleh Manager")
+  console.log("\n7. Berkas bukti hanya bisa diakses yang sudah login")
+  // Regresi paparan data: bukti transfer dulu dilayani statis dari
+  // public/uploads sehingga bisa dibuka tanpa sesi sama sekali.
+  const contohKey = "transfer-proofs/tidak-ada.jpg"
+  check(
+    "GET /api/files tanpa auth -> 401",
+    (await req(null, `/api/files/${contohKey}`)).status === 401
+  )
+  check(
+    "GET /api/files sebagai STAFF -> 404 (lolos auth, berkas memang tidak ada)",
+    (await req(staff.jar, `/api/files/${contohKey}`)).status === 404
+  )
+  check(
+    "GET /api/files prefix di luar folder bukti -> 400",
+    (await req(staff.jar, "/api/files/db-backups/rahasia.sql.gz")).status === 400
+  )
+
+  console.log("\n8. Pendaftaran akun hanya oleh Manager")
   const akunStamp = Date.now()
   const akunBody = {
     nama: `Smoke User ${akunStamp}`,
@@ -377,7 +394,7 @@ async function main() {
     (await req(manager.jar, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...akunBody, email: `x.${akunStamp}@example.com`, password: "short" }) })).status === 400
   )
 
-  console.log("\n8. Bersih-bersih data uji")
+  console.log("\n9. Bersih-bersih data uji")
   if (purchaseId) {
     const delPurchase = await req(manager.jar, `/api/manager/purchases/${purchaseId}`, { method: "DELETE" })
     check("DELETE transaksi uji -> 200", delPurchase.status === 200, `status ${delPurchase.status}`)

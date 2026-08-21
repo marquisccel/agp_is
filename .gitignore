@@ -43,6 +43,12 @@ yarn-error.log*
 *.db-journal
 /public/uploads/
 
+# berkas bukti saat Object Storage belum dikonfigurasi (dev)
+/storage/
+
+# hasil dump database
+/backups/
+
 # vercel
 .vercel
 

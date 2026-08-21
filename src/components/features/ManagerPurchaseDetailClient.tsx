@@ -447,6 +447,7 @@ export default function ManagerPurchaseDetailClient({
                     src={purchase.bukti_transfer}
                     alt="Bukti Transfer"
                     fill
+                    unoptimized
                     sizes="(min-width: 1024px) 66vw, 100vw"
                     className="object-contain"
                   />

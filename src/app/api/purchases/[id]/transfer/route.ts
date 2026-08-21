@@ -4,9 +4,8 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
+import { fileUrl, putFile } from "@/lib/objectStorage"
 import { isOperationalRole } from "@/lib/roles"
-import { mkdir, writeFile } from "fs/promises"
-import path from "path"
 
 const ALLOWED_PROOF_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -51,14 +50,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ error: "Format bukti transfer harus JPG, PNG, WEBP, atau PDF." }, { status: 400 })
       }
 
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "transfer-proofs")
-      await mkdir(uploadDir, { recursive: true })
-
-      const fileName = `${purchaseId}-${Date.now()}.${extension}`
-      await writeFile(path.join(uploadDir, fileName), buffer)
-      buktiUrl = `/uploads/transfer-proofs/${fileName}`
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const key = `transfer-proofs/${purchaseId}-${Date.now()}.${extension}`
+      await putFile(key, buffer, file.type)
+      buktiUrl = fileUrl(key)
     }
 
     const updated = await prisma.purchase.update({
