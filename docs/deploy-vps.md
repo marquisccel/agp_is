@@ -106,6 +106,12 @@ S3_SECRET_ACCESS_KEY=<secret key>
 S3_REGION=us-east-1
 ```
 
+> **Kredensial database hanya berlaku saat volume PostgreSQL pertama
+> dibuat.** Kalau `POSTGRES_PASSWORD` diubah setelah database sempat
+> berjalan, nilai baru itu TIDAK otomatis dipakai dan aplikasi akan gagal
+> masuk database. Jadi tetapkan passwordnya sekali di awal, sebelum
+> menjalankan `docker compose up` untuk pertama kali.
+
 Tiga hal yang paling sering bikin gagal:
 
 - **`NEXTAUTH_URL` harus URL publik ber-HTTPS**, bukan `localhost`. Kalau
@@ -270,6 +276,21 @@ docker compose --profile production up -d --build
 | `sudo apt update && sudo apt upgrade` | Bulanan |
 | Cek sisa disk `df -h` | Bulanan |
 | Cek log aplikasi `docker compose logs --tail=200 app` | Saat ada keluhan |
+
+## Pemantauan yang perlu dipasang
+
+Keduanya gratis dan sebaiknya sudah aktif sejak hari pertama, karena tanpa
+ini gangguan baru ketahuan lewat keluhan pengguna.
+
+**Notifikasi error.** Isi `ALERT_WEBHOOK_URL` di `.env` dengan URL webhook
+Discord, Telegram, atau Slack. Setiap error yang tercatat akan dikirim ke
+sana, dibatasi satu pesan per menit supaya tidak membanjiri saat satu error
+terjadi berulang.
+
+**Pemantauan uptime.** Daftarkan `https://<domain-anda>/api/health` di
+UptimeRobot (gratis, cek tiap 5 menit). Endpoint itu sekaligus memeriksa
+koneksi database, jadi ikut mendeteksi kalau databasenya yang bermasalah,
+bukan hanya aplikasinya.
 
 ---
 

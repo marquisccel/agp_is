@@ -32,6 +32,27 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Skema + berkas migrasi dan Prisma CLI.
+#
+# Keluaran "standalone" hanya memuat berkas yang benar-benar di-import kode
+# aplikasi, sehingga folder prisma/ dan CLI-nya TIDAK ikut terbawa. Tanpa
+# bagian ini, `npx prisma migrate deploy` di dalam container gagal dengan
+# "schema.prisma: file not found" -- padahal langkah itulah yang menyiapkan
+# tabel database saat pemasangan pertama di server.
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# bcryptjs dipakai skrip pembuatan akun Manager pertama (lihat
+# docs/deploy-vps.md). Next mem-bundle paket ini ke dalam keluaran servernya,
+# sehingga login tetap berfungsi tanpa baris ini -- tapi skrip `node -e`
+# yang dijalankan manual tidak bisa me-resolve-nya.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
+
+# Symlink bin-nya dibuat manual: COPY tidak membawa isi node_modules/.bin,
+# sehingga tanpa baris ini `npx prisma` berhenti di "prisma: not found".
+RUN mkdir -p node_modules/.bin     && ln -sf ../prisma/build/index.js node_modules/.bin/prisma     && chmod +x node_modules/prisma/build/index.js
+
 USER nextjs
 EXPOSE 3000
 
