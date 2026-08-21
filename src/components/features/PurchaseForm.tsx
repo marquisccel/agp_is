@@ -7,6 +7,7 @@ import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 import { SKU_OPTIONS } from "@/lib/skuList"
 import { fmtDigitInput, fmtRp, fmtSkalaRupiah } from "@/lib/format"
+import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
@@ -103,10 +104,9 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
   const potonganAir = beratPotonganAir * hargaPotonganAir
   const potonganKarung = beratPotonganKarung * hargaPotonganKarung
 
-  // Keempat potongan tambahan dirakit dari satu daftar supaya markup-nya
-  // cukup ditulis sekali. Menambah jenis potongan baru nanti = menambah
-  // satu baris di sini.
-  const barisPotongan = [
+  // Menambah jenis potongan baru = menambah satu baris di sini; markup-nya
+  // ditangani PotonganFields.
+  const barisPotongan: BarisPotongan[] = [
     { kunci: 'sampah', nama: 'Sampah',          berat: beratPotonganSampah, setBerat: setBeratPotonganSampah, harga: hargaPotonganSampah, setHarga: setHargaPotonganSampah, nilai: potonganSampah },
     { kunci: 'susut',  nama: 'Susut Timbangan', berat: beratPotonganSusut,  setBerat: setBeratPotonganSusut,  harga: hargaPotonganSusut,  setHarga: setHargaPotonganSusut,  nilai: potonganSusut },
     { kunci: 'air',    nama: 'Kadar Air',       berat: beratPotonganAir,    setBerat: setBeratPotonganAir,    harga: hargaPotonganAir,    setHarga: setHargaPotonganAir,    nilai: potonganAir },
@@ -450,65 +450,13 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
           </button>
         </div>
 
-        {/* Potongan Tambahan -- keempat baris ini bentuknya sama persis,
-            jadi dirakit dari satu daftar. Sebelumnya masing-masing ditulis
-            sebagai blok terpisah dengan titik warna berbeda (merah, amber,
-            biru, hijau) yang terbaca seperti tingkat kegawatan padahal
-            keempatnya sama-sama pengurang berat. */}
-        <div className="section">
-          <div className="section-shell-head">
-            <div>
-              <span className="section-eyebrow">Opsional</span>
-              <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Potongan Tambahan</h3>
-            </div>
-            <div className="text-right">
-              <span className="field-label" style={{ marginBottom: 2 }}>Total Potongan</span>
-              <span className="text-base font-extrabold" style={{ color: totalDeductions > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>
-                {totalDeductions > 0 ? `- Rp ${totalDeductions.toLocaleString("id-ID")}` : "Rp 0"}
-              </span>
-            </div>
-          </div>
-
-          <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>
-            Isi berat (KG) dan harga per KG; nilai potongan dihitung otomatis.
-          </p>
-
-          <div className="mt-4 space-y-2.5">
-            {barisPotongan.map((b) => (
-              <div key={b.kunci} className="flex flex-col gap-3 rounded-[var(--radius-md)] border p-3.5 md:flex-row md:items-center" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                <div className="text-sm font-bold md:w-[22%]" style={{ color: "var(--foreground)" }}>
-                  {b.nama}
-                </div>
-                <div className="grid flex-1 grid-cols-2 gap-3">
-                  <div>
-                    <label className="field-label">Berat (KG)</label>
-                    <input
-                      type="number" min="0" step="0.01" placeholder="0"
-                      className="field-input"
-                      value={b.berat || ""}
-                      onChange={(e) => b.setBerat(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <label className="field-label">Harga / KG (Rp)</label>
-                    <input
-                      type="number" min="0" placeholder="0"
-                      className="field-input"
-                      value={b.harga || ""}
-                      onChange={(e) => b.setHarga(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                </div>
-                <div className="text-right md:w-[22%]">
-                  <span className="field-label" style={{ marginBottom: 2 }}>Nilai Potongan</span>
-                  <span className="text-sm font-extrabold" style={{ color: b.nilai > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>
-                    {b.nilai > 0 ? `- Rp ${b.nilai.toLocaleString("id-ID")}` : "Rp 0"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PotonganFields
+          baris={barisPotongan}
+          total={totalDeductions}
+          eyebrow="Opsional"
+          judul="Potongan Tambahan"
+          deskripsi="Isi berat (KG) dan harga per KG; nilai potongan dihitung otomatis."
+        />
 
         {/* Potongan Kasbon (DP) -- kasbon yang sudah disetujui Manager
             langsung dipotong di nota ini, tidak lagi menunggu tahap

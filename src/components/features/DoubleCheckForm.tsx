@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Purchase, PurchaseItem, Supplier, User } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 
 type PurchaseForDoubleCheck = Purchase & {
   items: PurchaseItem[]
@@ -81,6 +82,15 @@ export default function DoubleCheckForm({
   const potonganSusut = beratPotonganSusut * hargaPotonganSusut
   const potonganAir = beratPotonganAir * hargaPotonganAir
   const potonganKarung = beratPotonganKarung * hargaPotonganKarung
+
+  // Bentuk baris yang sama dipakai PurchaseForm; markup-nya ada di
+  // PotonganFields supaya kedua layar tidak lagi bisa saling melenceng.
+  const barisPotongan: BarisPotongan[] = [
+    { kunci: 'sampah', nama: 'Sampah',          berat: beratPotonganSampah, setBerat: setBeratPotonganSampah, harga: hargaPotonganSampah, setHarga: setHargaPotonganSampah, nilai: potonganSampah },
+    { kunci: 'susut',  nama: 'Susut Timbangan', berat: beratPotonganSusut,  setBerat: setBeratPotonganSusut,  harga: hargaPotonganSusut,  setHarga: setHargaPotonganSusut,  nilai: potonganSusut },
+    { kunci: 'air',    nama: 'Kadar Air',       berat: beratPotonganAir,    setBerat: setBeratPotonganAir,    harga: hargaPotonganAir,    setHarga: setHargaPotonganAir,    nilai: potonganAir },
+    { kunci: 'karung', nama: 'Potongan Karung', berat: beratPotonganKarung, setBerat: setBeratPotonganKarung, harga: hargaPotonganKarung, setHarga: setHargaPotonganKarung, nilai: potonganKarung },
+  ]
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -175,7 +185,7 @@ export default function DoubleCheckForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
             <h3 className="text-lg font-bold text-slate-800 mb-4">Data Timbangan</h3>
             <div className="space-y-4">
               <div>
@@ -206,7 +216,7 @@ export default function DoubleCheckForm({
                   </label>
                   <input
                     type="number" step="0.01" readOnly disabled
-                    className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 bg-slate-100 text-slate-500 cursor-not-allowed outline-none font-semibold"
+                    className="field-input mt-1"
                     value={timbanganLapak || 0}
                   />
                 </div>
@@ -217,7 +227,7 @@ export default function DoubleCheckForm({
                   </label>
                   <input
                     type="number" step="0.01" required
-                    className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[var(--brand)] outline-none font-semibold"
+                    className="field-input mt-1"
                     value={timbanganGudang || ""} onChange={e => setTimbanganGudang(parseFloat(e.target.value)||0)}
                   />
                 </div>
@@ -253,7 +263,7 @@ export default function DoubleCheckForm({
             </div>
           </div>
 
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
             <div className="mb-4">
               <h3 className="text-lg font-bold text-slate-800">Finalisasi Item per SKU</h3>
               <p className="text-xs text-slate-500 mt-1">Admin menginput kembali hasil timbangan gudang untuk setiap SKU yang masuk dari data staff.</p>
@@ -314,7 +324,7 @@ export default function DoubleCheckForm({
                             step="0.01"
                             required
                             placeholder="0.00"
-                            className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-1.5 text-sm font-bold font-mono bg-white focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-500 outline-none transition-all text-slate-800"
+                            className="field-input pr-10 font-mono font-bold"
                             value={item.berat_final_item || ""}
                             onChange={e => updateItem(idx, parseFloat(e.target.value) || 0)}
                           />
@@ -332,7 +342,7 @@ export default function DoubleCheckForm({
         </div>
 
         <div className="space-y-6">
-          <div className="bg-orange-50/50 p-6 rounded-2xl border border-orange-100">
+          <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--warning-soft)", borderColor: "var(--warning-soft)" }}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-orange-800">Retur / Potongan</h3>
               <button type="button" onClick={addRetur} className="text-xs font-semibold bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg hover:bg-orange-200 transition-colors">
@@ -368,19 +378,19 @@ export default function DoubleCheckForm({
                       </div>
                       <div>
                         <label className="text-xs font-medium text-slate-500">Alasan Retur</label>
-                        <input type="text" className="w-full border-slate-200 rounded-lg p-2 text-sm mt-1" placeholder="Basah, kotor..." value={retur.alasan} onChange={e => updateRetur(idx, 'alasan', e.target.value)} />
+                        <input type="text" className="field-input mt-1" placeholder="Basah, kotor..." value={retur.alasan} onChange={e => updateRetur(idx, 'alasan', e.target.value)} />
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-orange-50">
                       <div>
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">1. Potong Berat (KG)</label>
-                        <input type="number" step="0.01" className="w-full border-slate-200 rounded-lg p-2 text-sm mt-1" value={retur.berat_retur || ""} onChange={e => updateRetur(idx, 'berat_retur', parseFloat(e.target.value)||0)} />
+                        <input type="number" step="0.01" className="field-input mt-1" value={retur.berat_retur || ""} onChange={e => updateRetur(idx, 'berat_retur', parseFloat(e.target.value)||0)} />
                         {retur.sku_name && <span className="text-[10px] text-orange-600 block mt-1">x Rp {hargaItem.toLocaleString('id-ID')} / KG = <strong className="font-mono">Rp {autoDeduction.toLocaleString('id-ID')}</strong></span>}
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">2. Penalti Ekstra (Flat Rp)</label>
-                        <input type="number" className="w-full border-slate-200 rounded-lg p-2 text-sm mt-1" placeholder="0" value={retur.potongan_nilai || ""} onChange={e => updateRetur(idx, 'potongan_nilai', parseFloat(e.target.value)||0)} />
+                        <input type="number" className="field-input mt-1" placeholder="0" value={retur.potongan_nilai || ""} onChange={e => updateRetur(idx, 'potongan_nilai', parseFloat(e.target.value)||0)} />
                         <span className="text-[10px] text-slate-400 block mt-1">Kosongkan jika tidak ada penalti tambahan</span>
                       </div>
                       <div className="flex flex-col justify-center items-end bg-orange-50/50 p-2 rounded-lg border border-orange-100">
@@ -395,175 +405,19 @@ export default function DoubleCheckForm({
             )}
           </div>
 
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-800">Potongan Spesifik</h3>
-              <p className="text-xs text-slate-500 mt-1">Tinjau atau sesuaikan potongan sampah, susut timbangan, kadar air, dan karung.</p>
-            </div>
-            <div className="space-y-4">
-              {/* Sampah */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-                <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                  Sampah
-                </div>
-                <div className="flex-1 grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={beratPotonganSampah || ""}
-                      onChange={(e) => setBeratPotonganSampah(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={hargaPotonganSampah || ""}
-                      onChange={(e) => setHargaPotonganSampah(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                </div>
-                <div className="md:w-1/4 text-right flex flex-col justify-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                  <span className="text-sm font-extrabold text-red-500">
-                    - Rp {potonganSampah.toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Susut */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-                <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                  Susut Timbangan
-                </div>
-                <div className="flex-1 grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={beratPotonganSusut || ""}
-                      onChange={(e) => setBeratPotonganSusut(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={hargaPotonganSusut || ""}
-                      onChange={(e) => setHargaPotonganSusut(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                </div>
-                <div className="md:w-1/4 text-right flex flex-col justify-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                  <span className="text-sm font-extrabold text-red-500">
-                    - Rp {potonganSusut.toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Air */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-                <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
-                  Kadar Air
-                </div>
-                <div className="flex-1 grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={beratPotonganAir || ""}
-                      onChange={(e) => setBeratPotonganAir(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={hargaPotonganAir || ""}
-                      onChange={(e) => setHargaPotonganAir(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                </div>
-                <div className="md:w-1/4 text-right flex flex-col justify-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                  <span className="text-sm font-extrabold text-red-500">
-                    - Rp {potonganAir.toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Karung */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-                <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
-                  Potongan Karung
-                </div>
-                <div className="flex-1 grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={beratPotonganKarung || ""}
-                      onChange={(e) => setBeratPotonganKarung(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
-                      value={hargaPotonganKarung || ""}
-                      onChange={(e) => setHargaPotonganKarung(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                </div>
-                <div className="md:w-1/4 text-right flex flex-col justify-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                  <span className="text-sm font-extrabold text-red-500">
-                    - Rp {potonganKarung.toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PotonganFields
+            baris={barisPotongan}
+            total={totalDeductions}
+            eyebrow="Verifikasi"
+            judul="Potongan Spesifik"
+            deskripsi="Tinjau atau sesuaikan potongan sampah, susut timbangan, kadar air, dan karung."
+          />
 
           {/* Potongan kasbon hanya ditampilkan, tidak bisa diubah di sini:
               saldo kasbon sudah terpotong saat Staff membuat nota. Kalau
               Admin bisa mengubahnya, saldo lapak akan terpotong dua kali dan
               angka di nota yang sudah dipegang lapak jadi tidak cocok. */}
-          <div className="rounded-2xl border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+          <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
             <h3 className="text-lg font-bold text-slate-800">Potongan Kasbon (DP)</h3>
             <p className="mt-1 text-xs text-slate-500">
               Sudah dipotong saat Staff membuat nota. Nilainya tidak bisa diubah di tahap ini.
@@ -594,15 +448,15 @@ export default function DoubleCheckForm({
           </div>
           <div className="workflow-stat p-3.5">
             <span className="text-xs font-semibold block text-slate-500">Total Potongan Retur</span>
-            <span className="text-base font-bold text-rose-600">-Rp {totalRetur.toLocaleString('id-ID')}</span>
+            <span className="text-base font-bold" style={{ color: totalRetur > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>-Rp {totalRetur.toLocaleString('id-ID')}</span>
           </div>
           <div className="workflow-stat p-3.5">
             <span className="text-xs font-semibold block text-slate-500">Potongan Spesifik (Sampah, Susut, Air, Karung)</span>
-            <span className="text-base font-bold text-rose-600">-Rp {totalDeductions.toLocaleString('id-ID')}</span>
+            <span className="text-base font-bold" style={{ color: totalDeductions > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>-Rp {totalDeductions.toLocaleString('id-ID')}</span>
           </div>
           <div className="workflow-stat p-3.5">
             <span className="text-xs font-semibold block text-slate-500">Potongan DP Terpakai</span>
-            <span className="text-base font-bold text-blue-600">-Rp {dpDigunakan.toLocaleString('id-ID')}</span>
+            <span className="text-base font-bold" style={{ color: dpDigunakan > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>-Rp {dpDigunakan.toLocaleString('id-ID')}</span>
           </div>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end pt-4 border-t border-slate-200 gap-4">
