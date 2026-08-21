@@ -1,4 +1,6 @@
-import { NextResponse } from "next/server"
+import { NextResponse, type NextRequest } from "next/server"
+import { mkdir, writeFile } from "fs/promises"
+import path from "path"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
@@ -6,7 +8,14 @@ import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { isOperationalRole } from "@/lib/roles"
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+const ALLOWED_PROOF_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "application/pdf": "pdf",
+}
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
     if (!session || (!isOperationalRole(session.user.role) && session.user.role !== "MANAGER")) {
@@ -34,13 +43,42 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Transaksi ini tidak memiliki nominal termin yang perlu dilunasi." }, { status: 400 })
     }
 
+    // Nota pelunasan wajib (hasil meeting Manager): pelunasan tanpa bukti
+    // membuat sisa termin bisa ditutup tanpa jejak apa pun.
+    const formData = await req.formData()
+    const file = formData.get("nota") as File | null
+
+    if (!file || typeof file === "string") {
+      return NextResponse.json({ error: "Nota pelunasan wajib diunggah." }, { status: 400 })
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      return NextResponse.json({ error: "Ukuran nota pelunasan maksimal 2 MB." }, { status: 400 })
+    }
+
+    const extension = ALLOWED_PROOF_TYPES[file.type]
+    if (!extension) {
+      return NextResponse.json({ error: "Format nota pelunasan harus JPG, PNG, WEBP, atau PDF." }, { status: 400 })
+    }
+
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "settlement-notes")
+    await mkdir(uploadDir, { recursive: true })
+
+    const fileName = `${purchaseId}-${Date.now()}.${extension}`
+    await writeFile(path.join(uploadDir, fileName), buffer)
+    const notaUrl = `/uploads/settlement-notes/${fileName}`
+
     // Update to LUNAS status
     const updatedPurchase = await prisma.purchase.update({
       where: { id: purchaseId },
       data: {
         status_pelunasan: "LUNAS",
         nominal_belum_lunas: 0,
-        persentase_pembayaran: 100
+        persentase_pembayaran: 100,
+        bukti_pelunasan: notaUrl,
+        tanggal_pelunasan: new Date(),
       }
     })
 

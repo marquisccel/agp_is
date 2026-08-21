@@ -124,6 +124,12 @@ model Purchase {
   rejection_reason           String?
   bukti_transfer             String?
   tanggal_transfer           DateTime?
+
+  // Bukti nota pelunasan sisa termin, diunggah Admin saat melunasi
+  // (hasil meeting Manager). Nullable: transaksi lunas sebelum fitur ini
+  // ada tidak punya buktinya, dan pelunasan lama tidak di-backfill.
+  bukti_pelunasan            String?
+  tanggal_pelunasan          DateTime?
   
   createdAt                  DateTime  @default(now())
   updatedAt                  DateTime  @updatedAt

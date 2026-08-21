@@ -334,7 +334,50 @@ async function main() {
     )
   }
 
-  console.log("\n7. Bersih-bersih data uji")
+  console.log("\n7. Pendaftaran akun hanya oleh Manager")
+  const akunStamp = Date.now()
+  const akunBody = {
+    nama: `Smoke User ${akunStamp}`,
+    email: `smoke.user.${akunStamp}@example.com`,
+    password: "password123",
+    role: "STAFF",
+    warehouseId,
+  }
+  check(
+    "POST /api/users tanpa auth -> 401",
+    (await req(null, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(akunBody) })).status === 401
+  )
+  check(
+    "POST /api/users sebagai STAFF -> 401 (bukan wewenang Staff)",
+    (await req(staff.jar, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(akunBody) })).status === 401
+  )
+  check(
+    "POST /api/users sebagai ADMIN -> 401 (bukan wewenang Admin)",
+    (await req(admin.jar, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(akunBody) })).status === 401
+  )
+  // Regresi eskalasi hak akses: Staff tidak boleh mengangkat dirinya Manager.
+  check(
+    "POST /api/users role MANAGER sebagai STAFF -> 401",
+    (await req(staff.jar, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...akunBody, role: "MANAGER", warehouseId: null }) })).status === 401
+  )
+
+  const buatAkunRes = await req(manager.jar, "/api/users", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(akunBody),
+  })
+  check("POST /api/users sebagai MANAGER -> 201", buatAkunRes.status === 201, `status ${buatAkunRes.status}`)
+  const akunBaru = await buatAkunRes.json().catch(() => ({}))
+  check("akun baru tidak mengembalikan password", !("password" in akunBaru), JSON.stringify(Object.keys(akunBaru)))
+
+  check(
+    "POST /api/users email duplikat -> 409",
+    (await req(manager.jar, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(akunBody) })).status === 409
+  )
+  check(
+    "POST /api/users password < 8 karakter -> 400",
+    (await req(manager.jar, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...akunBody, email: `x.${akunStamp}@example.com`, password: "short" }) })).status === 400
+  )
+
+  console.log("\n8. Bersih-bersih data uji")
   if (purchaseId) {
     const delPurchase = await req(manager.jar, `/api/manager/purchases/${purchaseId}`, { method: "DELETE" })
     check("DELETE transaksi uji -> 200", delPurchase.status === 200, `status ${delPurchase.status}`)
@@ -355,9 +398,24 @@ async function main() {
     await prisma.downPayment.delete({ where: { id: dpId } }).catch(() => {})
     await prisma.$disconnect()
   }
+
   if (dpSupplierId) {
     const delDpSupplier = await req(manager.jar, `/api/manager/suppliers/${dpSupplierId}`, { method: "DELETE" })
     check("DELETE supplier DP uji -> 200", delDpSupplier.status === 200, `status ${delDpSupplier.status}`)
+  }
+
+  if (akunBaru?.id) {
+    const { PrismaClient } = await import("@prisma/client")
+    const prisma = new PrismaClient()
+    try {
+      await prisma.auditLog.deleteMany({ where: { record_id: akunBaru.id } })
+      await prisma.user.delete({ where: { id: akunBaru.id } })
+      check("hapus akun uji -> ok", true)
+    } catch (e) {
+      check("hapus akun uji -> ok", false, e.message)
+    } finally {
+      await prisma.$disconnect()
+    }
   }
 
   console.log(`\n${passed} lolos, ${failed} gagal.`)

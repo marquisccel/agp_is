@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Check, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
@@ -38,11 +38,17 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const { toast, host: toastHost } = useToast();
 
-  const handleSettle = (id: string) => {
+  // Pelunasan sekarang wajib disertai nota (hasil meeting Manager), jadi
+  // tombolnya membuka pemilih berkas dulu, bukan langsung mengirim.
+  const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const handleSettle = (id: string, file: File) => {
     setLoadingId(id);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/purchases/${id}/settle`, { method: "POST" });
+        const body = new FormData();
+        body.append("nota", file);
+        const res = await fetch(`/api/purchases/${id}/settle`, { method: "POST", body });
         if (res.ok) {
           setAlerts((current) => current.filter((a) => a.id !== id));
           router.refresh();
@@ -107,8 +113,19 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                   Lihat Nota
                 </Link>
                 
+                <input
+                  ref={(el) => { fileInputs.current[alert.id] = el }}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleSettle(alert.id, file);
+                    e.target.value = "";
+                  }}
+                />
                 <button
-                  onClick={() => handleSettle(alert.id)}
+                  onClick={() => fileInputs.current[alert.id]?.click()}
                   disabled={isPending}
                   className="bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-450 text-white py-2 px-4.5 rounded-xl text-xs font-bold active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md disabled:opacity-50"
                 >
@@ -120,7 +137,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                   ) : (
                     <>
                       <Check className="w-4 h-4" />
-                      Tandai Lunas {remainingPercent}%
+                      Lunasi {remainingPercent}% + Nota
                     </>
                   )}
                 </button>

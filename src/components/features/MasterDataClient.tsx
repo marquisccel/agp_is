@@ -1,13 +1,164 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { Boxes, Building2, CheckCircle2, CircleDollarSign, Database, MapPin, Package, Search, Users } from "lucide-react"
+import { Boxes, Building2, CheckCircle2, CircleDollarSign, Database, MapPin, Package, Search, UserPlus, Users } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { useToast } from "@/components/ui/Toast"
 import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 interface Warehouse { id: string; nama: string; lokasi: string }
+
+/**
+ * Pendaftaran akun operasional.
+ *
+ * Diletakkan di Master Data (halaman khusus Manager) dan bukan sebagai
+ * halaman daftar terbuka: field `role` ditentukan pengisi form, sehingga
+ * kalau terbuka untuk umum siapa pun bisa mendaftarkan dirinya sebagai
+ * MANAGER. Server juga menolak pemanggil non-Manager, jadi pembatasan ini
+ * tidak hanya di tampilan.
+ */
+function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
+  const router = useRouter()
+  const { toast, host: toastHost } = useToast()
+  const [terbuka, setTerbuka] = useState(false)
+  const [nama, setNama] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [role, setRole] = useState("STAFF")
+  const [warehouseId, setWarehouseId] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const butuhGudang = role !== "MANAGER"
+
+  const reset = () => {
+    setNama(""); setEmail(""); setPassword(""); setRole("STAFF"); setWarehouseId("")
+  }
+
+  const simpan = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (butuhGudang && !warehouseId) {
+      toast("Staff dan Admin wajib ditugaskan ke satu gudang.", "error")
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nama, email, password, role, warehouseId: butuhGudang ? warehouseId : null }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal membuat akun")
+      toast(`Akun ${data.nama} (${data.role}) berhasil dibuat.`)
+      reset()
+      setTerbuka(false)
+      router.refresh()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : String(err), "error")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!terbuka) {
+    return (
+      <>
+        {toastHost}
+        <button
+          type="button"
+          onClick={() => setTerbuka(true)}
+          className="premium-button btn-brand flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white"
+        >
+          <UserPlus className="h-4 w-4" />
+          Daftarkan Akun Baru
+        </button>
+      </>
+    )
+  }
+
+  return (
+    <form onSubmit={simpan} className="interactive-surface space-y-4 border border-slate-200/80 p-5">
+      {toastHost}
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-bold text-slate-900">Daftarkan Akun Baru</h3>
+        <button type="button" onClick={() => { reset(); setTerbuka(false) }} className="text-xs font-semibold text-slate-500">
+          Batal
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label className="space-y-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Nama Lengkap</span>
+          <input
+            required value={nama} onChange={(e) => setNama(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none"
+          />
+        </label>
+
+        <label className="space-y-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Email</span>
+          <input
+            required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none"
+          />
+        </label>
+
+        <label className="space-y-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Password</span>
+          <input
+            required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none"
+          />
+          <span className="block text-[11px] text-slate-400">Minimal 8 karakter.</span>
+        </label>
+
+        <div className="space-y-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Role</span>
+          <ElegantSelect
+            value={role}
+            onChange={(v) => { setRole(v); if (v === "MANAGER") setWarehouseId("") }}
+            ariaLabel="Pilih role akun"
+            className="w-full"
+            options={[
+              { value: "STAFF", label: "Staff" },
+              { value: "ADMIN", label: "Admin" },
+              { value: "MANAGER", label: "Manager" },
+            ]}
+          />
+        </div>
+
+        {butuhGudang && (
+          <div className="space-y-1.5 sm:col-span-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Gudang Penugasan</span>
+            <ElegantSelect
+              value={warehouseId}
+              onChange={setWarehouseId}
+              ariaLabel="Pilih gudang penugasan"
+              className="w-full"
+              options={[
+                { value: "", label: "Pilih gudang" },
+                ...warehouses.map(w => ({ value: w.id, label: w.nama })),
+              ]}
+            />
+          </div>
+        )}
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="premium-button btn-brand rounded-xl px-6 py-2.5 text-sm font-bold text-white disabled:opacity-70"
+      >
+        {loading ? "Menyimpan..." : "Buat Akun"}
+      </button>
+    </form>
+  )
+}
+
+
 interface SupplierStat {
   id: string
   nama: string
@@ -300,6 +451,8 @@ export default function MasterDataClient({
 
       {activeTab === "pengguna" && (
         <div className="space-y-4">
+          <FormAkunBaru warehouses={warehouses} />
+
           <FilterBar>
             <SearchBox value={searchUser} onChange={setSearchUser} placeholder="Cari nama atau email..." />
             <ElegantSelect
