@@ -15,71 +15,7 @@ import MonthYearFilter from "@/components/features/MonthYearFilter"
 import { isWorkingDay } from "@/lib/workingDays"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 import { fmtRp } from "@/lib/format"
-
-const formatActivityAction = (action: string) => {
-  const actionMap: Record<string, { label: string; description: string; tone: string }> = {
-    CREATE_DRAFT: {
-      label: "Draft transaksi dibuat",
-      description: "membuat draft transaksi pembelian baru",
-      tone: "bg-sky-50 text-sky-700 border-sky-100",
-    },
-    ADMIN_DOUBLE_CHECK: {
-      label: "Verifikasi gudang selesai",
-      description: "menyelesaikan verifikasi gudang atas transaksi pembelian",
-      tone: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    },
-    UPLOAD_TRANSFER_PROOF: {
-      label: "Bukti transfer diunggah",
-      description: "mengunggah bukti transfer pembayaran",
-      tone: "bg-sky-50 text-sky-700 border-sky-100",
-    },
-    REQUEST_DP: {
-      label: "Kasbon diajukan",
-      description: "mengajukan uang muka (kasbon) ke lapak",
-      tone: "bg-violet-50 text-violet-700 border-violet-100",
-    },
-    MANAGER_APPROVE_PRICE: {
-      label: "Harga disetujui",
-      description: "menyetujui harga pembelian",
-      tone: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    },
-    MANAGER_REJECT_PRICE: {
-      label: "Harga ditolak",
-      description: "menolak pengajuan harga pembelian",
-      tone: "bg-rose-50 text-rose-700 border-rose-100",
-    },
-    APPROVE_DP: {
-      label: "DP disetujui",
-      description: "menyetujui pengajuan DP lapak",
-      tone: "bg-violet-50 text-violet-700 border-violet-100",
-    },
-    REJECT_DP: {
-      label: "DP ditolak",
-      description: "menolak pengajuan DP lapak",
-      tone: "bg-rose-50 text-rose-700 border-rose-100",
-    },
-    FORWARD_DP: {
-      label: "DP diteruskan",
-      description: "meneruskan pengajuan DP ke manager",
-      tone: "bg-orange-50 text-orange-700 border-orange-100",
-    },
-  }
-
-  if (actionMap[action]) return actionMap[action]
-
-  const readable = action
-    .toLowerCase()
-    .split("_")
-    .filter(Boolean)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ")
-
-  return {
-    label: readable || "Aktivitas sistem",
-    description: "memperbarui data operasional",
-    tone: "bg-slate-50 text-slate-700 border-slate-100",
-  }
-}
+import { getAuditAction } from "@/lib/auditLabels"
 
 const formatActivityScope = (tableName: string) => {
   const scopeMap: Record<string, string> = {
@@ -924,7 +860,7 @@ export default async function ManagerDashboard({
               </div>
               <ul className="max-h-[320px] divide-y divide-slate-100 overflow-auto bg-white">
               {recentLogs.map(log => {
-                const activity = formatActivityAction(log.action)
+                const activity = getAuditAction(log.action)
                 const scope = formatActivityScope(log.table_name)
 
                 return (

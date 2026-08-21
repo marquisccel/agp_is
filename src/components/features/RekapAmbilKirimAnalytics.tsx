@@ -51,8 +51,8 @@ function ringkasRekap(ambilVolume: number, kirimVolume: number): { label: string
  * ditaruh di tengah karena itu konteks yang bikin kedua bagian bermakna.
  */
 function Donat({ ambil, kirim }: { ambil: number; kirim: number }) {
-  const R = 88
-  const STROKE = 28
+  const R = 94
+  const STROKE = 21
   const C = 2 * Math.PI * R
   const totalNilai = ambil + kirim
   const ambilRasio = totalNilai > 0 ? ambil / totalNilai : 0
@@ -72,43 +72,61 @@ function Donat({ ambil, kirim }: { ambil: number; kirim: number }) {
 
   // Lubang donat = 2 * (R - STROKE/2). Ukuran font diturunkan bertahap untuk
   // angka yang panjang supaya tetap muat tanpa perlu mengukur teks.
-  const fontAngka = angka.length <= 5 ? 36 : angka.length <= 7 ? 30 : 25
+  const fontAngka = angka.length <= 5 ? 40 : angka.length <= 7 ? 33 : 27
+
+  // Posisi baseline dihitung dari tinggi blok teksnya, bukan angka tetap:
+  // ukuran font angka berubah mengikuti panjang nilai, jadi baseline tetap
+  // akan membuat teks naik-turun dari titik pusat.
+  //
+  // ASCENT/DESCENT di bawah adalah rasio terhadap ukuran font yang DIUKUR
+  // dari getBBox pada font yang dipakai aplikasi ini, bukan perkiraan tinggi
+  // huruf kapital -- getBBox mengembalikan kotak em penuh, sehingga tebakan
+  // 0,7em sempat membuat teksnya naik ~4,5px dari pusat lingkaran.
+  const FONT_LABEL = 10.5
+  const ASCENT = 1.005
+  const DESCENT = 0.305
+  const PUSAT = 114
+
+  const jarakBaseline = fontAngka * 0.3 + FONT_LABEL * 0.32
+  const baselineAngka =
+    PUSAT - (jarakBaseline + DESCENT * FONT_LABEL - ASCENT * fontAngka) / 2
+  const baselineLabel = baselineAngka + jarakBaseline
 
   return (
     <svg
-      width={228}
-      height={228}
-      viewBox="0 0 212 212"
+      width={244}
+      height={244}
+      viewBox="0 0 228 228"
       role="img"
       aria-label={`Porsi diambil ${Math.round(ambilRasio * 100)} persen dari total ${angka} ton`}
       className="shrink-0"
     >
-      <circle cx="106" cy="106" r={R} fill="none" stroke="var(--bg-tint)" strokeWidth={STROKE} />
+      <circle cx={PUSAT} cy={PUSAT} r={R} fill="none" stroke="var(--bg-tint)" strokeWidth={STROKE} />
       {kirim > 0 && (
         <circle
-          cx="106" cy="106" r={R} fill="none"
+          cx={PUSAT} cy={PUSAT} r={R} fill="none"
           stroke="var(--border-strong)" strokeWidth={STROKE}
           strokeDasharray={`${kirimPanjang} ${C - kirimPanjang}`}
           strokeDashoffset={-(C * ambilRasio + gap / 2)}
-          transform="rotate(-90 106 106)"
+          transform={`rotate(-90 ${PUSAT} ${PUSAT})`}
           strokeLinecap="butt"
         />
       )}
       {ambil > 0 && (
         <circle
-          cx="106" cy="106" r={R} fill="none"
+          cx={PUSAT} cy={PUSAT} r={R} fill="none"
           stroke="var(--brand)" strokeWidth={STROKE}
           strokeDasharray={`${ambilPanjang} ${C - ambilPanjang}`}
           strokeDashoffset={-(gap / 2)}
-          transform="rotate(-90 106 106)"
+          transform={`rotate(-90 ${PUSAT} ${PUSAT})`}
           strokeLinecap="butt"
         />
       )}
-      <text x="106" y="104" textAnchor="middle" fill="var(--foreground)" style={{ fontVariantNumeric: "tabular-nums" }}>
+      <text x={PUSAT} y={baselineAngka} textAnchor="middle" fill="var(--foreground)" style={{ fontVariantNumeric: "tabular-nums" }}>
         <tspan fontSize={fontAngka} fontWeight="800">{angka}</tspan>
         <tspan fontSize="14" fontWeight="700" fill="var(--muted)" dx="4">ton</tspan>
       </text>
-      <text x="106" y="126" textAnchor="middle" fontSize="10.5" fontWeight="700" letterSpacing="0.07em" fill="var(--muted-faint)">
+      <text x={PUSAT} y={baselineLabel} textAnchor="middle" fontSize={FONT_LABEL} fontWeight="700" letterSpacing="0.07em" fill="var(--muted-faint)">
         TOTAL MASUK
       </text>
     </svg>
