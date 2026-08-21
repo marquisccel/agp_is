@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import NumberInput from "@/components/ui/NumberInput"
+import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 
 interface PurchaseItem {
   id?: string
@@ -139,6 +141,17 @@ export default function EditTransaksiForm({
   const hargaPotAir     = (parseFloat(beratPotAir) || 0) * (parseFloat(potAir) || 0)
   const hargaPotKarung  = (parseFloat(beratPotKarung) || 0) * (parseFloat(potKarung) || 0)
   const totalAfterCuts  = totalBeforeCuts - hargaPotSampah - hargaPotSusut - hargaPotAir - hargaPotKarung
+  const totalPotongan   = hargaPotSampah + hargaPotSusut + hargaPotAir + hargaPotKarung
+
+  // State di berkas ini disimpan sebagai string (dikirim apa adanya ke
+  // API), jadi dijembatani ke bentuk number yang dipakai PotonganFields.
+  const angka = (v: string) => parseFloat(v) || 0
+  const barisPotongan: BarisPotongan[] = [
+    { kunci: 'sampah', nama: 'Sampah',          berat: angka(beratPotSampah), setBerat: (n) => setBeratPotSampah(String(n)), harga: angka(potSampah), setHarga: (n) => setPotSampah(String(n)), nilai: hargaPotSampah },
+    { kunci: 'susut',  nama: 'Susut Timbangan', berat: angka(beratPotSusut),  setBerat: (n) => setBeratPotSusut(String(n)),  harga: angka(potSusut),  setHarga: (n) => setPotSusut(String(n)),  nilai: hargaPotSusut  },
+    { kunci: 'air',    nama: 'Kadar Air',       berat: angka(beratPotAir),    setBerat: (n) => setBeratPotAir(String(n)),    harga: angka(potAir),    setHarga: (n) => setPotAir(String(n)),    nilai: hargaPotAir    },
+    { kunci: 'karung', nama: 'Potongan Karung', berat: angka(beratPotKarung), setBerat: (n) => setBeratPotKarung(String(n)), harga: angka(potKarung), setHarga: (n) => setPotKarung(String(n)), nilai: hargaPotKarung },
+  ]
 
   const handleSave = async () => {
     if (items.length === 0) {
@@ -187,7 +200,7 @@ export default function EditTransaksiForm({
       </div>
 
       {/* Basic Info */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+      <div className="section">
         <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Informasi Dasar</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Nomor Nota */}
@@ -198,7 +211,7 @@ export default function EditTransaksiForm({
               value={nomor_nota}
               onChange={e => setNomorNota(e.target.value)}
               placeholder="Kosongkan jika tidak ada"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-400 transition-all"
+              className="field-input"
             />
           </div>
 
@@ -234,7 +247,7 @@ export default function EditTransaksiForm({
               value={beratLapak}
               onChange={e => setBeratLapak(e.target.value)}
               placeholder="0"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-400 transition-all"
+              className="field-input"
             />
           </div>
 
@@ -246,19 +259,19 @@ export default function EditTransaksiForm({
               value={beratGudang}
               onChange={e => setBeratGudang(e.target.value)}
               placeholder="0"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-400 transition-all"
+              className="field-input"
             />
           </div>
         </div>
       </div>
 
       {/* Items Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="section overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Item Pembelian</h3>
           <button
             onClick={addItem}
-            className="flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm"
+            className="btn-brand flex items-center gap-1.5 rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold"
           >
             <span className="text-base leading-none">+</span> Tambah Item
           </button>
@@ -284,7 +297,7 @@ export default function EditTransaksiForm({
                       value={item.sku_name}
                       onChange={e => updateItem(idx, "sku_name", e.target.value)}
                       list="sku-options"
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] min-w-[140px]"
+                      className="field-input"
                     />
                     <datalist id="sku-options">
                       {SKU_OPTIONS.map(s => <option key={s} value={s} />)}
@@ -300,19 +313,17 @@ export default function EditTransaksiForm({
                     />
                   </td>
                   <td className="px-4 py-2">
-                    <input
-                      type="number"
+                    <NumberInput
                       value={item.berat_final_item}
-                      onChange={e => updateItem(idx, "berat_final_item", parseFloat(e.target.value) || 0)}
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-right text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] min-w-[100px]"
+                      onValueChange={(n) => updateItem(idx, "berat_final_item", n)}
+                      className="field-input text-right"
                     />
                   </td>
                   <td className="px-4 py-2">
-                    <input
-                      type="number"
+                    <NumberInput
                       value={item.harga_per_kg}
-                      onChange={e => updateItem(idx, "harga_per_kg", parseFloat(e.target.value) || 0)}
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-right text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] min-w-[120px]"
+                      onValueChange={(n) => updateItem(idx, "harga_per_kg", n)}
+                      className="field-input text-right"
                     />
                   </td>
                   <td className="px-4 py-2 text-right font-mono text-slate-700 whitespace-nowrap">
@@ -348,51 +359,19 @@ export default function EditTransaksiForm({
         </div>
       </div>
 
-      {/* Potongan */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Potongan</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[
-            { label: "Potongan Sampah", pct: potSampah, setPct: setPotSampah, berat: beratPotSampah, setBerat: setBeratPotSampah, harga: hargaPotSampah },
-            { label: "Potongan Susut",  pct: potSusut,  setPct: setPotSusut,  berat: beratPotSusut,  setBerat: setBeratPotSusut,  harga: hargaPotSusut  },
-            { label: "Potongan Air",    pct: potAir,    setPct: setPotAir,    berat: beratPotAir,    setBerat: setBeratPotAir,    harga: hargaPotAir    },
-            { label: "Potongan Karung", pct: potKarung, setPct: setPotKarung, berat: beratPotKarung, setBerat: setBeratPotKarung, harga: hargaPotKarung },
-          ].map(pot => (
-            <div key={pot.label} className="border border-slate-100 rounded-xl p-4 space-y-3">
-              <p className="text-xs font-bold text-slate-600">{pot.label}</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[10px] text-slate-400 mb-1">Harga/KG (Rp)</label>
-                  <input
-                    type="number"
-                    value={pot.pct}
-                    onChange={e => pot.setPct(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-slate-400 mb-1">Berat (KG)</label>
-                  <input
-                    type="number"
-                    value={pot.berat}
-                    onChange={e => pot.setBerat(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)]"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-right text-rose-600 font-semibold">
-                − {fmtRp(pot.harga)}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <PotonganFields
+        baris={barisPotongan}
+        total={totalPotongan}
+        eyebrow="Koreksi"
+        judul="Potongan"
+        deskripsi="Berat (KG) dikali harga per KG; nilai potongan dihitung otomatis."
+      />
 
       {/* Grand Total */}
       <div className="workflow-summary p-5 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">Transaction total</p>
+            <span className="section-eyebrow">Transaction total</span>
             <p className="mt-1 text-3xl font-extrabold text-slate-950">{fmtRp(totalAfterCuts)}</p>
           </div>
           <div className="text-left text-xs font-medium text-slate-500 sm:text-right space-y-0.5">

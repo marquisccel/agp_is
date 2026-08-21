@@ -94,12 +94,11 @@ test.describe.serial("Alur transaksi pembelian penuh (draft -> verifikasi -> tra
     await skuSelectButton.click()
     await page.getByRole("option", { name: skuName, exact: true }).click()
 
-    // Berat Lapak (KG) dan Harga/KG tidak punya atribut placeholder (beda
-    // dengan input Potongan yang placeholder="0"), jadi harus ditarget lewat
-    // urutan input[type=number] pertama di form: [0]=Berat Lapak, [1]=Harga/KG.
-    const numberInputs = page.locator('input[type="number"]')
-    await numberInputs.nth(0).fill("10") // Berat Lapak (KG)
-    await numberInputs.nth(1).fill("5000") // Harga/KG
+    // Ditarget lewat aria-label, bukan urutan input[type=number]. Cara
+    // lama ikut terurut oleh setiap kolom angka baru di halaman dan
+    // patah begitu jenis inputnya berubah.
+    await page.getByLabel("Berat Lapak (KG)").first().fill("10")
+    await page.getByLabel("Harga/KG (Rp)").first().fill("5000")
 
     await page.getByRole("button", { name: "Simpan & Buat Nota Draft" }).click()
 

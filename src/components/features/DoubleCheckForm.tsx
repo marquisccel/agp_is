@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import type { Purchase, PurchaseItem, Supplier, User } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
+import NumberInput from "@/components/ui/NumberInput"
 
 type PurchaseForDoubleCheck = Purchase & {
   items: PurchaseItem[]
@@ -319,14 +320,13 @@ export default function DoubleCheckForm({
                           <span className="text-red-500 font-bold">*</span>
                         </label>
                         <div className="relative">
-                          <input
-                            type="number"
+                          <NumberInput
                             step="0.01"
                             required
                             placeholder="0.00"
                             className="field-input pr-10 font-mono font-bold"
-                            value={item.berat_final_item || ""}
-                            onChange={e => updateItem(idx, parseFloat(e.target.value) || 0)}
+                            value={item.berat_final_item}
+                            onValueChange={(n) => updateItem(idx, n)}
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
                             KG

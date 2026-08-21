@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
+import NumberInput from "@/components/ui/NumberInput"
 
 type DpRow = {
   id: string
@@ -54,11 +55,10 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
       <div className="flex items-center gap-2 justify-center">
         {dialog}
         {toastHost}
-        <input
-          type="number"
+        <NumberInput
           value={nominal}
-          onChange={(e) => setNominal(parseFloat(e.target.value) || 0)}
-          className="border border-indigo-200 rounded-lg px-2 py-1.5 w-32 text-sm focus:ring-2 focus:ring-[var(--brand)] outline-none"
+          onValueChange={setNominal}
+          className="field-input w-32"
         />
         <button
           onClick={() => handleAction("approve", nominal)}

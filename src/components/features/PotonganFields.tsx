@@ -1,5 +1,7 @@
 "use client"
 
+import NumberInput from "@/components/ui/NumberInput"
+
 /**
  * Blok isian "potongan" -- sampah, susut timbangan, kadar air, karung.
  *
@@ -73,27 +75,27 @@ export default function PotonganFields({ baris, total, eyebrow, judul, deskripsi
             <div className="grid flex-1 grid-cols-2 gap-3">
               <div>
                 <label className="field-label">Berat (KG)</label>
-                <input
-                  type="number"
+                <NumberInput
+                  aria-label={`Berat ${b.nama} (KG)`}
                   min="0"
                   step="0.01"
                   placeholder="0"
                   className="field-input"
                   disabled={readOnly}
-                  value={b.berat || ""}
-                  onChange={(e) => b.setBerat(parseFloat(e.target.value) || 0)}
+                  value={b.berat}
+                  onValueChange={b.setBerat}
                 />
               </div>
               <div>
                 <label className="field-label">Harga / KG (Rp)</label>
-                <input
-                  type="number"
+                <NumberInput
+                  aria-label={`Harga per KG ${b.nama}`}
                   min="0"
                   placeholder="0"
                   className="field-input"
                   disabled={readOnly}
-                  value={b.harga || ""}
-                  onChange={(e) => b.setHarga(parseFloat(e.target.value) || 0)}
+                  value={b.harga}
+                  onValueChange={b.setHarga}
                 />
               </div>
             </div>

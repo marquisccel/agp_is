@@ -8,6 +8,7 @@ import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/suppli
 import { SKU_OPTIONS } from "@/lib/skuList"
 import { fmtDigitInput, fmtRp, fmtSkalaRupiah } from "@/lib/format"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
+import NumberInput from "@/components/ui/NumberInput"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
@@ -405,21 +406,23 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
                   />
                 </div>
                 <div className="w-full md:w-1/4 space-y-1">
-                  <label className="text-xs font-medium text-slate-500">Berat Lapak (KG)</label>
-                  <input
-                    type="number" min="0" step="0.01" required
+                  <label className="field-label">Berat Lapak (KG)</label>
+                  <NumberInput
+                    aria-label="Berat Lapak (KG)"
+                    min="0" step="0.01" required
                     className="field-input"
-                    value={item.berat_estimasi || ""}
-                    onChange={(e) => updateItem(idx, "berat_estimasi", parseFloat(e.target.value) || 0)}
+                    value={item.berat_estimasi}
+                    onValueChange={(n) => updateItem(idx, "berat_estimasi", n)}
                   />
                 </div>
                 <div className="w-full md:w-1/4 space-y-1">
-                  <label className="text-xs font-medium text-slate-500">Harga/KG (Rp)</label>
-                  <input
-                    type="number" min="0" required
+                  <label className="field-label">Harga/KG (Rp)</label>
+                  <NumberInput
+                    aria-label="Harga/KG (Rp)"
+                    min="0" required
                     className="field-input"
-                    value={item.harga_per_kg || ""}
-                    onChange={(e) => updateItem(idx, "harga_per_kg", parseFloat(e.target.value) || 0)}
+                    value={item.harga_per_kg}
+                    onValueChange={(n) => updateItem(idx, "harga_per_kg", n)}
                   />
                 </div>
                 {items.length > 1 && (
