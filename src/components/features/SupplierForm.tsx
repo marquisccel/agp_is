@@ -215,7 +215,7 @@ export default function SupplierForm({
           required
           value={nama}
           onChange={(e) => setNama(e.target.value)}
-          className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+          className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
           placeholder="Misal: Pengepul A"
         />
       </div>
@@ -248,7 +248,7 @@ export default function SupplierForm({
             type="text"
             value={kontakWa}
             onChange={(e) => setKontakWa(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
             placeholder="0812xxxxxx"
           />
           {waWarning && <p className="text-xs font-medium text-amber-600">{waWarning}</p>}
@@ -260,7 +260,7 @@ export default function SupplierForm({
             type="text"
             value={link}
             onChange={(e) => setLink(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
             placeholder="https://maps.google.com/..."
           />
           {inferredCoordinates && (
@@ -282,7 +282,7 @@ export default function SupplierForm({
             step="any"
             value={latitude}
             onChange={(e) => setLatitude(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
             placeholder="Contoh: -7.8165"
           />
         </div>
@@ -294,7 +294,7 @@ export default function SupplierForm({
             step="any"
             value={longitude}
             onChange={(e) => setLongitude(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
             placeholder="Contoh: 112.0111"
           />
         </div>
@@ -329,7 +329,7 @@ export default function SupplierForm({
             type="text"
             value={nomorRekening}
             onChange={(e) => setNomorRekening(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
             placeholder="Contoh: 1234567890"
           />
           {rekeningWarning && <p className="text-xs font-medium text-amber-600">{rekeningWarning}</p>}
@@ -341,7 +341,7 @@ export default function SupplierForm({
             type="text"
             value={atasNama}
             onChange={(e) => setAtasNama(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
             placeholder="Contoh: Budi Santoso"
           />
         </div>
@@ -368,7 +368,7 @@ export default function SupplierForm({
             min="0"
             value={targetBulanan}
             onChange={(e) => setTargetBulanan(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
           />
         </div>
       </div>
@@ -386,7 +386,7 @@ export default function SupplierForm({
               max="7"
               value={frekuensiAmbilan}
               onChange={(e) => setFrekuensiAmbilan(e.target.value)}
-              className="w-full border-slate-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+              className="w-full border-slate-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
             />
           </div>
 

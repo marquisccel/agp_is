@@ -268,7 +268,12 @@ a:focus-visible {
   animation: soft-enter 320ms var(--ease-system);
 }
 
-.premium-workflow :is(input, textarea) {
+/* Selimut lama untuk isian di dalam .premium-workflow. Dipertahankan
+   untuk form yang belum dipindah ke .field-input, tapi .field-input
+   dikecualikan -- kalau tidak, aturan ini menang spesifisitas (dan pakai
+   !important) sehingga kelas baru itu diam-diam kalah di sebagian
+   halaman saja, dan isian jadi tampil beda-beda tanpa alasan. */
+.premium-workflow :is(input, textarea):not(.field-input) {
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-md) !important;
   background: var(--surface) !important;
@@ -276,13 +281,13 @@ a:focus-visible {
   box-shadow: none;
 }
 
-.premium-workflow :is(input, textarea):focus {
+.premium-workflow :is(input, textarea):not(.field-input):focus {
   border-color: var(--brand) !important;
   box-shadow: 0 0 0 3px var(--brand-soft) !important;
 }
 
-.premium-workflow :is(input, textarea):disabled,
-.premium-workflow :is(input, textarea)[readonly] {
+.premium-workflow :is(input, textarea):not(.field-input):disabled,
+.premium-workflow :is(input, textarea):not(.field-input)[readonly] {
   background: var(--surface-sunken) !important;
   color: #64748b !important;
 }
@@ -1021,3 +1026,54 @@ a:focus-visible {
 .goal-foot strong { font-weight: 800; color: var(--foreground); }
 .goal-foot.ok { color: var(--success); font-weight: 600; }
 .goal-foot.empty { color: var(--muted-faint); font-style: italic; font-size: 11.5px; }
+
+/* ---------------------------------------------------------------------
+   Field input -- satu bentuk untuk semua kolom isian.
+   Sebelumnya tiap form menulis rantai kelasnya sendiri dan cincin
+   fokusnya sempat memakai tujuh warna berbeda (cyan, teal, indigo,
+   biru, dua nada slate) tersebar di sembilan berkas. Warnanya tidak
+   pernah berarti apa-apa, hanya sisa dari siapa yang menulis form itu
+   lebih dulu.
+   --------------------------------------------------------------------- */
+.field-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--foreground);
+  background: var(--bg-tint);
+  outline: none;
+  transition: border-color 160ms var(--ease-system), background 160ms var(--ease-system), box-shadow 160ms var(--ease-system);
+}
+
+.field-input::placeholder { color: var(--muted-faint); font-weight: 400; }
+
+.field-input:focus {
+  background: var(--surface);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.field-input:disabled {
+  color: var(--muted-faint);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.field-input.is-invalid { border-color: var(--danger); }
+.field-input.is-invalid:focus { box-shadow: 0 0 0 3px var(--danger-soft); }
+
+/* Varian besar -- dipakai untuk kolom utama seperti pemilihan lapak. */
+.field-input.field-lg { padding: 12px 14px; font-size: 14px; border-radius: var(--radius-md); }
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}

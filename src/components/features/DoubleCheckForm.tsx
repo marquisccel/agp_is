@@ -217,7 +217,7 @@ export default function DoubleCheckForm({
                   </label>
                   <input
                     type="number" step="0.01" required
-                    className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none font-semibold"
+                    className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[var(--brand)] outline-none font-semibold"
                     value={timbanganGudang || ""} onChange={e => setTimbanganGudang(parseFloat(e.target.value)||0)}
                   />
                 </div>
@@ -314,7 +314,7 @@ export default function DoubleCheckForm({
                             step="0.01"
                             required
                             placeholder="0.00"
-                            className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-1.5 text-sm font-bold font-mono bg-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all text-slate-800"
+                            className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-1.5 text-sm font-bold font-mono bg-white focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-500 outline-none transition-all text-slate-800"
                             value={item.berat_final_item || ""}
                             onChange={e => updateItem(idx, parseFloat(e.target.value) || 0)}
                           />
@@ -415,7 +415,7 @@ export default function DoubleCheckForm({
                       min="0"
                       step="0.01"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={beratPotonganSampah || ""}
                       onChange={(e) => setBeratPotonganSampah(parseFloat(e.target.value) || 0)}
                     />
@@ -426,7 +426,7 @@ export default function DoubleCheckForm({
                       type="number"
                       min="0"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={hargaPotonganSampah || ""}
                       onChange={(e) => setHargaPotonganSampah(parseFloat(e.target.value) || 0)}
                     />
@@ -454,7 +454,7 @@ export default function DoubleCheckForm({
                       min="0"
                       step="0.01"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={beratPotonganSusut || ""}
                       onChange={(e) => setBeratPotonganSusut(parseFloat(e.target.value) || 0)}
                     />
@@ -465,7 +465,7 @@ export default function DoubleCheckForm({
                       type="number"
                       min="0"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={hargaPotonganSusut || ""}
                       onChange={(e) => setHargaPotonganSusut(parseFloat(e.target.value) || 0)}
                     />
@@ -493,7 +493,7 @@ export default function DoubleCheckForm({
                       min="0"
                       step="0.01"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={beratPotonganAir || ""}
                       onChange={(e) => setBeratPotonganAir(parseFloat(e.target.value) || 0)}
                     />
@@ -504,7 +504,7 @@ export default function DoubleCheckForm({
                       type="number"
                       min="0"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={hargaPotonganAir || ""}
                       onChange={(e) => setHargaPotonganAir(parseFloat(e.target.value) || 0)}
                     />
@@ -532,7 +532,7 @@ export default function DoubleCheckForm({
                       min="0"
                       step="0.01"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={beratPotonganKarung || ""}
                       onChange={(e) => setBeratPotonganKarung(parseFloat(e.target.value) || 0)}
                     />
@@ -543,7 +543,7 @@ export default function DoubleCheckForm({
                       type="number"
                       min="0"
                       placeholder="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
                       value={hargaPotonganKarung || ""}
                       onChange={(e) => setHargaPotonganKarung(parseFloat(e.target.value) || 0)}
                     />

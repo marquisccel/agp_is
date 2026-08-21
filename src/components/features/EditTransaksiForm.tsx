@@ -198,7 +198,7 @@ export default function EditTransaksiForm({
               value={nomor_nota}
               onChange={e => setNomorNota(e.target.value)}
               placeholder="Kosongkan jika tidak ada"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400 transition-all"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-400 transition-all"
             />
           </div>
 
@@ -234,7 +234,7 @@ export default function EditTransaksiForm({
               value={beratLapak}
               onChange={e => setBeratLapak(e.target.value)}
               placeholder="0"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400 transition-all"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-400 transition-all"
             />
           </div>
 
@@ -246,7 +246,7 @@ export default function EditTransaksiForm({
               value={beratGudang}
               onChange={e => setBeratGudang(e.target.value)}
               placeholder="0"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400 transition-all"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-400 transition-all"
             />
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function EditTransaksiForm({
                       value={item.sku_name}
                       onChange={e => updateItem(idx, "sku_name", e.target.value)}
                       list="sku-options"
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 min-w-[140px]"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] min-w-[140px]"
                     />
                     <datalist id="sku-options">
                       {SKU_OPTIONS.map(s => <option key={s} value={s} />)}
@@ -304,7 +304,7 @@ export default function EditTransaksiForm({
                       type="number"
                       value={item.berat_final_item}
                       onChange={e => updateItem(idx, "berat_final_item", parseFloat(e.target.value) || 0)}
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-right text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 min-w-[100px]"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-right text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] min-w-[100px]"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -312,7 +312,7 @@ export default function EditTransaksiForm({
                       type="number"
                       value={item.harga_per_kg}
                       onChange={e => updateItem(idx, "harga_per_kg", parseFloat(e.target.value) || 0)}
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-right text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 min-w-[120px]"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm text-right text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)] min-w-[120px]"
                     />
                   </td>
                   <td className="px-4 py-2 text-right font-mono text-slate-700 whitespace-nowrap">
@@ -367,7 +367,7 @@ export default function EditTransaksiForm({
                     type="number"
                     value={pot.pct}
                     onChange={e => pot.setPct(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-400"
+                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)]"
                   />
                 </div>
                 <div>
@@ -376,7 +376,7 @@ export default function EditTransaksiForm({
                     type="number"
                     value={pot.berat}
                     onChange={e => pot.setBerat(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-400"
+                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-[var(--brand)]"
                   />
                 </div>
               </div>

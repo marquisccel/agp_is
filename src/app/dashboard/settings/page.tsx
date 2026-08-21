@@ -136,7 +136,7 @@ export default function SettingsPage() {
                 type="text"
                 value={nama}
                 onChange={e => setNama(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none text-slate-800 font-semibold text-sm transition-all"
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none text-slate-800 font-semibold text-sm transition-all"
                 placeholder="Nama lengkap Anda"
               />
             </div>
@@ -146,7 +146,7 @@ export default function SettingsPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none text-slate-800 font-semibold text-sm transition-all"
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none text-slate-800 font-semibold text-sm transition-all"
                 placeholder="email@domain.com"
               />
             </div>

@@ -102,7 +102,7 @@ export default function ManagerSkuPricesClient({ warehouses, allSkus }: { wareho
                 <input
                   type="number"
                   min="0"
-                  className="w-full border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm font-bold font-mono text-slate-800 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none bg-white transition-all"
+                  className="w-full border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm font-bold font-mono text-slate-800 focus:ring-2 focus:ring-[var(--brand)] focus:border-cyan-500 outline-none bg-white transition-all"
                   value={prices[activeTab]?.[sku] || ""}
                   onChange={e => handleChange(activeTab, sku, e.target.value)}
                 />

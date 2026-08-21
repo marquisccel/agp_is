@@ -147,7 +147,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
         <textarea
           value={keterangan}
           onChange={(e) => setKeterangan(e.target.value)}
-          className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
+          className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all text-sm"
           placeholder="Tulis alasan pengajuan kasbon agar memudahkan Manager menyetujui..."
           rows={3}
         />

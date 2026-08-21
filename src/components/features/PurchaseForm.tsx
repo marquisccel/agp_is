@@ -103,6 +103,17 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
   const potonganAir = beratPotonganAir * hargaPotonganAir
   const potonganKarung = beratPotonganKarung * hargaPotonganKarung
 
+  // Keempat potongan tambahan dirakit dari satu daftar supaya markup-nya
+  // cukup ditulis sekali. Menambah jenis potongan baru nanti = menambah
+  // satu baris di sini.
+  const barisPotongan = [
+    { kunci: 'sampah', nama: 'Sampah',          berat: beratPotonganSampah, setBerat: setBeratPotonganSampah, harga: hargaPotonganSampah, setHarga: setHargaPotonganSampah, nilai: potonganSampah },
+    { kunci: 'susut',  nama: 'Susut Timbangan', berat: beratPotonganSusut,  setBerat: setBeratPotonganSusut,  harga: hargaPotonganSusut,  setHarga: setHargaPotonganSusut,  nilai: potonganSusut },
+    { kunci: 'air',    nama: 'Kadar Air',       berat: beratPotonganAir,    setBerat: setBeratPotonganAir,    harga: hargaPotonganAir,    setHarga: setHargaPotonganAir,    nilai: potonganAir },
+    { kunci: 'karung', nama: 'Potongan Karung', berat: beratPotonganKarung, setBerat: setBeratPotonganKarung, harga: hargaPotonganKarung, setHarga: setHargaPotonganKarung, nilai: potonganKarung },
+  ]
+
+
   const addItem = () => setItems([...items, { sku_name: "", spec: "", berat_estimasi: 0, harga_per_kg: 0 }])
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx))
   const updateItem = (idx: number, field: keyof Item, value: string | number) => {
@@ -229,7 +240,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
               <input
                 type="text"
                 placeholder="Ketik nama / inisial supplier..."
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 transition-all outline-none font-medium text-slate-800"
+                className="field-input field-lg"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
@@ -397,7 +408,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
                   <label className="text-xs font-medium text-slate-500">Berat Lapak (KG)</label>
                   <input
                     type="number" min="0" step="0.01" required
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 outline-none"
+                    className="field-input"
                     value={item.berat_estimasi || ""}
                     onChange={(e) => updateItem(idx, "berat_estimasi", parseFloat(e.target.value) || 0)}
                   />
@@ -406,7 +417,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
                   <label className="text-xs font-medium text-slate-500">Harga/KG (Rp)</label>
                   <input
                     type="number" min="0" required
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500 outline-none"
+                    className="field-input"
                     value={item.harga_per_kg || ""}
                     onChange={(e) => updateItem(idx, "harga_per_kg", parseFloat(e.target.value) || 0)}
                   />
@@ -439,169 +450,63 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
           </button>
         </div>
 
-        {/* Potongan Tambahan */}
-        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-6 pt-4">
-          <div>
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Potongan Tambahan (Opsional)</h3>
-            <p className="text-xs text-slate-500 mt-1">Masukkan berat (KG) dan harga per KG untuk menghitung total potongan secara dinamis.</p>
+        {/* Potongan Tambahan -- keempat baris ini bentuknya sama persis,
+            jadi dirakit dari satu daftar. Sebelumnya masing-masing ditulis
+            sebagai blok terpisah dengan titik warna berbeda (merah, amber,
+            biru, hijau) yang terbaca seperti tingkat kegawatan padahal
+            keempatnya sama-sama pengurang berat. */}
+        <div className="section">
+          <div className="section-shell-head">
+            <div>
+              <span className="section-eyebrow">Opsional</span>
+              <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Potongan Tambahan</h3>
+            </div>
+            <div className="text-right">
+              <span className="field-label" style={{ marginBottom: 2 }}>Total Potongan</span>
+              <span className="text-base font-extrabold" style={{ color: totalDeductions > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>
+                {totalDeductions > 0 ? `- Rp ${totalDeductions.toLocaleString("id-ID")}` : "Rp 0"}
+              </span>
+            </div>
           </div>
-          
-          <div className="space-y-4">
-            {/* Sampah */}
-            <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-              <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                Sampah
-              </div>
-              <div className="flex-1 grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={beratPotonganSampah || ""}
-                    onChange={(e) => setBeratPotonganSampah(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={hargaPotonganSampah || ""}
-                    onChange={(e) => setHargaPotonganSampah(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-              </div>
-              <div className="md:w-1/4 text-right flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                <span className="text-sm font-extrabold text-red-500">
-                  - Rp {potonganSampah.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
 
-            {/* Susut Timbangan */}
-            <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-              <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                Susut Timbangan
-              </div>
-              <div className="flex-1 grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={beratPotonganSusut || ""}
-                    onChange={(e) => setBeratPotonganSusut(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={hargaPotonganSusut || ""}
-                    onChange={(e) => setHargaPotonganSusut(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-              </div>
-              <div className="md:w-1/4 text-right flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                <span className="text-sm font-extrabold text-red-500">
-                  - Rp {potonganSusut.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
+          <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>
+            Isi berat (KG) dan harga per KG; nilai potongan dihitung otomatis.
+          </p>
 
-            {/* Air */}
-            <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-              <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
-                Kadar Air
-              </div>
-              <div className="flex-1 grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={beratPotonganAir || ""}
-                    onChange={(e) => setBeratPotonganAir(parseFloat(e.target.value) || 0)}
-                  />
+          <div className="mt-4 space-y-2.5">
+            {barisPotongan.map((b) => (
+              <div key={b.kunci} className="flex flex-col gap-3 rounded-[var(--radius-md)] border p-3.5 md:flex-row md:items-center" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+                <div className="text-sm font-bold md:w-[22%]" style={{ color: "var(--foreground)" }}>
+                  {b.nama}
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={hargaPotonganAir || ""}
-                    onChange={(e) => setHargaPotonganAir(parseFloat(e.target.value) || 0)}
-                  />
+                <div className="grid flex-1 grid-cols-2 gap-3">
+                  <div>
+                    <label className="field-label">Berat (KG)</label>
+                    <input
+                      type="number" min="0" step="0.01" placeholder="0"
+                      className="field-input"
+                      value={b.berat || ""}
+                      onChange={(e) => b.setBerat(parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">Harga / KG (Rp)</label>
+                    <input
+                      type="number" min="0" placeholder="0"
+                      className="field-input"
+                      value={b.harga || ""}
+                      onChange={(e) => b.setHarga(parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="md:w-1/4 text-right flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                <span className="text-sm font-extrabold text-red-500">
-                  - Rp {potonganAir.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
-
-            {/* Karung */}
-            <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-              <div className="md:w-1/4 font-semibold text-slate-700 text-sm flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
-                Potongan Karung
-              </div>
-              <div className="flex-1 grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berat (KG)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={beratPotonganKarung || ""}
-                    onChange={(e) => setBeratPotonganKarung(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Harga / KG (Rp)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
-                    value={hargaPotonganKarung || ""}
-                    onChange={(e) => setHargaPotonganKarung(parseFloat(e.target.value) || 0)}
-                  />
+                <div className="text-right md:w-[22%]">
+                  <span className="field-label" style={{ marginBottom: 2 }}>Nilai Potongan</span>
+                  <span className="text-sm font-extrabold" style={{ color: b.nilai > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>
+                    {b.nilai > 0 ? `- Rp ${b.nilai.toLocaleString("id-ID")}` : "Rp 0"}
+                  </span>
                 </div>
               </div>
-              <div className="md:w-1/4 text-right flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nilai Potongan</span>
-                <span className="text-sm font-extrabold text-red-500">
-                  - Rp {potonganKarung.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 

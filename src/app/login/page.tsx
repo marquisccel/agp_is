@@ -129,7 +129,7 @@ export default function LoginPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-teal-500/12"
+                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-[var(--brand)]/12"
                       placeholder="nama@agp.local"
                     />
                   </div>
@@ -147,7 +147,7 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-teal-500/12"
+                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-[var(--brand)]/12"
                       placeholder="Masukkan password"
                     />
                   </div>
@@ -156,7 +156,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="premium-button inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-700 focus:outline-none focus:ring-3 focus:ring-teal-500/25 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="premium-button inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-700 focus:outline-none focus:ring-3 focus:ring-[var(--brand)]/25 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isLoading && <span className="h-4 w-4 rounded-full border-2 border-white/35 border-t-white animate-spin" />}
                   {isLoading ? "Memproses..." : "Masuk"}

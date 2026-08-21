@@ -58,7 +58,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
           type="number"
           value={nominal}
           onChange={(e) => setNominal(parseFloat(e.target.value) || 0)}
-          className="border border-indigo-200 rounded-lg px-2 py-1.5 w-32 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+          className="border border-indigo-200 rounded-lg px-2 py-1.5 w-32 text-sm focus:ring-2 focus:ring-[var(--brand)] outline-none"
         />
         <button
           onClick={() => handleAction("approve", nominal)}
