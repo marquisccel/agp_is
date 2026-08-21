@@ -294,7 +294,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="workflow-card overflow-hidden p-0 lg:col-span-2">
           <div className="border-b border-slate-100 px-6 py-5">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Profil lapak</p>
+            <p className="section-eyebrow">Profil lapak</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <h3 className="text-lg font-black text-slate-950">{supplier.nama}</h3>
               <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
@@ -386,28 +386,28 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
         <div className="workflow-card space-y-4 p-6">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Rekening</p>
+            <p className="section-eyebrow">Rekening</p>
             <h3 className="mt-1 text-lg font-black text-slate-950">Informasi Pembayaran</h3>
           </div>
           {supplier.nomor_rekening ? (
-            <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 p-5 text-white">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(20,184,166,0.24),transparent_36%)]" />
+            <div className="relative overflow-hidden rounded-[var(--radius-lg)] p-5 text-white" style={{ background: "var(--brand-strong)" }}>
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.18),transparent_38%)]" />
               <div className="relative space-y-4">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Bank</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">Bank</span>
                   <p className="text-base font-extrabold text-white">{supplier.nama_bank}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nomor Rekening</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">Nomor Rekening</span>
                   <p className="font-mono text-xl font-bold tracking-tight text-white">{supplier.nomor_rekening}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Atas Nama</span>
-                  <p className="text-sm font-semibold text-slate-200">{supplier.atas_nama || "-"}</p>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">Atas Nama</span>
+                  <p className="text-sm font-semibold text-white/90">{supplier.atas_nama || "-"}</p>
                 </div>
                 <button
                   onClick={() => handleCopy(supplier.nomor_rekening || "")}
-                  className="premium-button flex w-full items-center justify-center gap-2 rounded-xl bg-white py-2 text-xs font-bold text-slate-950 hover:bg-slate-100"
+                  className="premium-button flex w-full items-center justify-center gap-2 rounded-[10px] bg-white py-2.5 text-xs font-bold hover:bg-slate-100" style={{ color: "var(--brand-strong)" }}
                 >
                   {copied ? (
                     <>
@@ -424,7 +424,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+            <div className="rounded-[var(--radius-lg)] border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
               <CreditCard className="mx-auto mb-2 h-8 w-8 text-slate-300" />
               <p className="text-xs italic text-slate-500">Data bank belum dilengkapi oleh admin.</p>
             </div>
@@ -434,7 +434,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
       <div className="workflow-card overflow-hidden p-0">
         <div className="border-b border-slate-100 px-6 py-5">
-          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Location preview</p>
+          <p className="section-eyebrow">Location preview</p>
           <h3 className="mt-1 text-lg font-black text-slate-950">Titik Lapak</h3>
           <p className="mt-1 text-sm text-slate-500">Preview peta akan tampil ketika koordinat sudah diisi. Link Maps tetap tersedia sebagai fallback.</p>
         </div>
@@ -442,7 +442,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         {resolvedCoordinates ? (
           <div className="grid gap-px bg-slate-100 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="bg-white p-3">
-              <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+              <div className="overflow-hidden rounded-[var(--radius-lg)] border border-slate-200 bg-slate-50">
                 <iframe
                   title={`Peta ${supplier.nama}`}
                   src={`https://maps.google.com/maps?q=${resolvedCoordinates.latitude},${resolvedCoordinates.longitude}&z=15&output=embed`}
@@ -471,7 +471,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 href={mapHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="premium-button flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
+                className="premium-button btn-brand flex items-center justify-center gap-2 rounded-[10px] px-4 py-3 text-sm font-bold text-white"
               >
                 <MapPin className="h-4 w-4" />
                 Buka di Google Maps
@@ -498,7 +498,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
       <div className="workflow-card overflow-hidden p-0">
         <div className="border-b border-slate-100 px-6 py-5">
-          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Status history</p>
+          <p className="section-eyebrow">Status history</p>
           <h3 className="mt-1 text-lg font-black text-slate-950">Riwayat Perubahan Status Lapak</h3>
           <p className="mt-1 text-sm text-slate-500">Jejak perubahan manual dan aktivasi otomatis setelah transaksi valid pertama.</p>
         </div>
@@ -539,7 +539,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                  <div className="rounded-[var(--radius-md)] border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
                     <p className="font-semibold text-slate-800">
                       {new Date(log.createdAt).toLocaleDateString("id-ID", {
                         dateStyle: "medium",
@@ -570,7 +570,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
       <div className="workflow-card space-y-5 p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Performance report</p>
+            <p className="section-eyebrow">Performance report</p>
             <h3 className="mt-1 text-lg font-black text-slate-950">
               Rapor Kinerja Bulan Ini
             </h3>
@@ -598,7 +598,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         </div>
 
         {mTransactions === 0 ? (
-          <div className="text-center text-slate-400 text-xs py-8 border border-dashed border-slate-200 rounded-2xl">
+          <div className="text-center text-slate-400 text-xs py-8 border border-dashed border-slate-200 rounded-[var(--radius-md)]">
             <Activity className="w-8 h-8 text-slate-300 mx-auto mb-2" />
             <p className="font-semibold">Belum ada transaksi di bulan ini.</p>
             <p className="mt-0.5">Penilaian performa berjalan akan muncul setelah ada pengiriman yang disetujui bulan ini.</p>
@@ -606,10 +606,10 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Indicator 1: Kuantitas (Volume) */}
-            <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
+            <div className="rounded-[var(--radius-lg)] border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-teal-600" />
+                  <TrendingUp className="w-4 h-4" style={{ color: "var(--brand)" }} />
                   Kuantitas (Volume)
                 </span>
                 <span className="text-xs font-extrabold text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded">
@@ -626,7 +626,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
-                          mTargetPct >= 100 ? "bg-emerald-500" : mTargetPct >= 50 ? "bg-cyan-500" : "bg-amber-500"
+                          mTargetPct >= 100 ? "bg-emerald-500" : mTargetPct >= 50 ? "bg-[color:var(--brand)]" : "bg-amber-500"
                         }`}
                         style={{ width: `${Math.min(mTargetPct, 100)}%` }}
                       />
@@ -643,10 +643,10 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             </div>
 
             {/* Indicator 2: Kualitas (Susut Timbangan) */}
-            <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
+            <div className="rounded-[var(--radius-lg)] border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <Activity className="w-4 h-4 text-indigo-600" />
+                  <Activity className="w-4 h-4 text-slate-400" />
                   Kualitas (Susut)
                 </span>
                 <span className="text-xs font-extrabold text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded">
@@ -670,10 +670,10 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             </div>
 
             {/* Indicator 3: Harga Beli Rata-rata */}
-            <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
+            <div className="rounded-[var(--radius-lg)] border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-violet-600" />
+                  <CreditCard className="w-4 h-4 text-slate-400" />
                   Harga Rata-rata
                 </span>
                 <span className="text-xs font-extrabold text-slate-550 bg-slate-200/50 px-2 py-0.5 rounded text-slate-550">
@@ -696,8 +696,8 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-50 flex items-center justify-center text-cyan-600 shadow-inner">
+        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
+          <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-md)]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
@@ -709,8 +709,8 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
+          <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-md)]" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
             <CreditCard className="w-6 h-6" />
           </div>
           <div>
@@ -719,8 +719,8 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
+        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
+          <div className="w-12 h-12 rounded-[var(--radius-md)] bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
             <Wallet className="w-6 h-6" />
           </div>
           <div>
@@ -729,8 +729,8 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600 shadow-inner">
+        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
+          <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-md)]" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
             <Wallet className="w-6 h-6" />
           </div>
           <div>
@@ -741,13 +741,13 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
       </div>
 
       {/* Tabs Control */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[var(--radius-md)] border border-slate-100 shadow-sm overflow-hidden">
         <div className="flex border-b border-slate-100 bg-slate-50/50">
           <button
             onClick={() => setActiveTab("transaksi")}
             className={`flex-1 py-4 text-center font-bold text-sm transition-all border-b-2 ${
               activeTab === "transaksi"
-                ? "border-cyan-600 text-cyan-600 bg-white"
+                ? "border-[color:var(--brand)] text-[color:var(--brand-strong)] bg-white"
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/30"
             }`}
           >
@@ -757,7 +757,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             onClick={() => setActiveTab("dp")}
             className={`flex-1 py-4 text-center font-bold text-sm transition-all border-b-2 ${
               activeTab === "dp"
-                ? "border-cyan-600 text-cyan-600 bg-white"
+                ? "border-[color:var(--brand)] text-[color:var(--brand-strong)] bg-white"
                 : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/30"
             }`}
           >
@@ -776,7 +776,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                   placeholder="Cari transaksi (No. Nota, CC, Staff)..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white text-slate-800 transition-all font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-soft-strong)] focus:bg-white text-slate-800 transition-all font-medium"
                 />
               </div>
 
@@ -836,13 +836,13 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                               <div className="inline-flex gap-2">
                                 <Link
                                   href={`/dashboard/manager/purchases/${p.id}`}
-                                  className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-lg text-xs font-bold transition-all"
+                                  className="border px-3 py-1 rounded-lg text-xs font-bold transition-colors" style={{ background: "var(--bg-tint)", color: "var(--muted)", borderColor: "var(--border)" }}
                                 >
                                   Detail
                                 </Link>
                                 <Link
                                   href={`/dashboard/manager/edit/${p.id}`}
-                                  className="bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 px-3 py-1 rounded-lg text-xs font-bold transition-all"
+                                  className="border px-3 py-1 rounded-lg text-xs font-bold transition-colors" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)", borderColor: "var(--brand-soft-strong)" }}
                                 >
                                   Edit
                                 </Link>
@@ -855,7 +855,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                   </table>
                 </div>
               ) : (
-                <div className="bg-slate-50 rounded-2xl p-12 text-center border border-dashed border-slate-200">
+                <div className="bg-slate-50 rounded-[var(--radius-md)] p-12 text-center border border-dashed border-slate-200">
                   <p className="text-slate-400 text-xs">Tidak ada riwayat pembelian untuk lapak ini.</p>
                 </div>
               )}
@@ -915,7 +915,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                   </table>
                 </div>
               ) : (
-                <div className="bg-slate-50 rounded-2xl p-12 text-center border border-dashed border-slate-200">
+                <div className="bg-slate-50 rounded-[var(--radius-md)] p-12 text-center border border-dashed border-slate-200">
                   <p className="text-slate-400 text-xs">Tidak ada riwayat pengajuan DP/kasbon untuk lapak ini.</p>
                 </div>
               )}

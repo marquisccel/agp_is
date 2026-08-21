@@ -450,111 +450,113 @@ export default function ManagerSuppliersClient({
     <div className="space-y-6">
       {dialog}
       {toastHost}
-      <section className="interactive-surface border border-slate-200/80 p-5">
-        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-teal-700">Lapak intelligence</p>
-            <h3 className="mt-2 text-xl font-black tracking-[-0.02em] text-slate-950">Kinerja Lapak</h3>
-            <p className="mt-1 text-sm leading-6 text-slate-500">
+      <section className="section">
+        <div className="section-shell-head">
+          <div className="min-w-0">
+            <p className="section-eyebrow">Lapak intelligence</p>
+            <h3 className="text-[15.5px] font-bold text-slate-950">Kinerja Lapak</h3>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
               Filter performa berdasarkan gudang, periode, grade, dan kata kunci tanpa kehilangan konteks operasional.
             </p>
           </div>
-          <div className="flex flex-col items-start gap-3 lg:items-end">
-            <div className="text-left lg:text-right">
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-400">Tonase periode ini</p>
-              <p className="mt-1 text-2xl font-black tracking-[-0.04em] text-slate-950">{fmtKg(totalWeightFiltered)}</p>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500">Tonase periode ini</p>
+              <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums text-slate-900">{fmtKg(totalWeightFiltered)}</p>
             </div>
             <button
               onClick={handleOpenImportModal}
-              className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-700 hover:bg-slate-50"
+              className="premium-button rounded-[10px] border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
             >
-              Import Koordinat (CSV)
+              Import Koordinat
             </button>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {filterCards.map((card) => {
-            const Icon = card.icon
-            const active = selectedGradeFilter === card.id
-            return (
-              <button
-                key={card.id}
-                onClick={() => setSelectedGradeFilter(active ? "all" : card.id)}
-                className={`premium-button group flex items-center gap-3 rounded-2xl border p-4 text-left will-change-transform ${
-                  active
-                    ? "border-slate-950 bg-slate-950 text-white shadow-[0_18px_48px_rgba(15,23,42,0.18)]"
-                    : "border-slate-200/80 bg-white/70 text-slate-900 hover:border-slate-300 hover:bg-white"
-                }`}
-              >
-                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${active ? "bg-white/12 text-white" : "bg-slate-100 text-slate-700"}`}>
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="min-w-0">
-                  <span className={`block text-[11px] font-black uppercase tracking-[0.1em] ${active ? "text-white/60" : "text-slate-400"}`}>
-                    {card.label}
+        <div className="p-5">
+          {/* Kartu grade sekaligus berfungsi sebagai filter -- yang aktif
+              ditandai rel aksen dan latar brand-soft, bukan blok hitam
+              pekat seperti sebelumnya. */}
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {filterCards.map((card) => {
+              const Icon = card.icon
+              const active = selectedGradeFilter === card.id
+              return (
+                <button
+                  key={card.id}
+                  onClick={() => setSelectedGradeFilter(active ? "all" : card.id)}
+                  className="flex items-center gap-3 rounded-[var(--radius-md)] border p-4 text-left transition-colors"
+                  style={active
+                    ? { background: "var(--brand-soft)", borderColor: "var(--brand-soft-strong)" }
+                    : { background: "var(--surface)", borderColor: "var(--border)" }}
+                >
+                  <span
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px]"
+                    style={active
+                      ? { background: "var(--brand)", color: "#fff" }
+                      : { background: "var(--bg-tint)", color: "var(--muted)" }}
+                  >
+                    <Icon className="h-4 w-4" />
                   </span>
-                  <span className="mt-1 block text-xl font-black tracking-[-0.03em]">{card.value}</span>
-                  <span className={`block truncate text-xs font-semibold ${active ? "text-white/60" : "text-slate-500"}`}>{card.sub}</span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
+                  <span className="min-w-0">
+                    <span className="block text-[10.5px] font-bold uppercase tracking-[0.07em]" style={{ color: active ? "var(--brand-strong)" : "var(--muted)" }}>
+                      {card.label}
+                    </span>
+                    <span className="mt-0.5 block font-mono text-lg font-extrabold tabular-nums" style={{ color: active ? "var(--brand-strong)" : "var(--foreground)" }}>
+                      {card.value}
+                    </span>
+                    <span className="block truncate text-[11px] text-slate-400">{card.sub}</span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setSelectedStatusFilter("all")}
-            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-              selectedStatusFilter === "all" ? "bg-slate-950 text-white" : "border border-slate-200 bg-white text-slate-600"
-            }`}
-          >
-            Semua Status
-          </button>
-          <button
-            onClick={() => setSelectedStatusFilter("GREEN")}
-            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-              selectedStatusFilter === "GREEN" ? "bg-emerald-600 text-white" : "border border-emerald-200 bg-emerald-50 text-emerald-700"
-            }`}
-          >
-            Hijau {greenSupplierCount}
-          </button>
-          <button
-            onClick={() => setSelectedStatusFilter("RED")}
-            className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-              selectedStatusFilter === "RED" ? "bg-rose-600 text-white" : "border border-rose-200 bg-rose-50 text-rose-700"
-            }`}
-          >
-            Merah {redSupplierCount}
-          </button>
+          {/* Status lapak: hijau/merah punya makna semantik, jadi warnanya
+              tetap dipertahankan -- yang diseragamkan bentuk kontrolnya. */}
+          <div className="segmented mt-4 inline-flex">
+            <button
+              onClick={() => setSelectedStatusFilter("all")}
+              className={selectedStatusFilter === "all" ? "active" : ""}
+            >
+              Semua Status
+            </button>
+            <button
+              onClick={() => setSelectedStatusFilter("GREEN")}
+              className={selectedStatusFilter === "GREEN" ? "active" : ""}
+              style={selectedStatusFilter === "GREEN" ? { color: "var(--success)" } : undefined}
+            >
+              Hijau {greenSupplierCount}
+            </button>
+            <button
+              onClick={() => setSelectedStatusFilter("RED")}
+              className={selectedStatusFilter === "RED" ? "active" : ""}
+              style={selectedStatusFilter === "RED" ? { color: "var(--danger)" } : undefined}
+            >
+              Merah {redSupplierCount}
+            </button>
+          </div>
         </div>
       </section>
 
       <section className="interactive-surface border border-slate-200/80 p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="segmented flex flex-wrap">
             <button
               onClick={() => setSelectedWarehouseId("all")}
-              className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                selectedWarehouseId === "all" ? "bg-slate-950 text-white" : "border border-slate-200 bg-white/80 text-slate-600 hover:text-slate-950"
-              }`}
+              className={selectedWarehouseId === "all" ? "active" : ""}
             >
               Semua Gudang
             </button>
-            {warehouses.map((warehouse) => {
-              const active = selectedWarehouseId === warehouse.id
-              return (
-                <button
-                  key={warehouse.id}
-                  onClick={() => setSelectedWarehouseId(warehouse.id)}
-                  className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                    active ? "bg-slate-950 text-white" : "border border-slate-200 bg-white/80 text-slate-600 hover:text-slate-950"
-                  }`}
-                >
-                  {warehouse.nama.replace(/^Gudang\s+/i, "CC ")}
-                </button>
-              )
-            })}
+            {warehouses.map((warehouse) => (
+              <button
+                key={warehouse.id}
+                onClick={() => setSelectedWarehouseId(warehouse.id)}
+                className={selectedWarehouseId === warehouse.id ? "active" : ""}
+              >
+                {warehouse.nama.replace(/^Gudang\s+/i, "CC ")}
+              </button>
+            ))}
           </div>
 
           <div className="grid gap-2 sm:grid-cols-[140px_112px_minmax(220px,280px)]">
@@ -586,7 +588,7 @@ export default function ManagerSuppliersClient({
         </div>
 
         {(selectedGradeFilter !== "all" || selectedStatusFilter !== "all") && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm text-slate-600">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-slate-200 bg-white/70 px-4 py-3 text-sm text-slate-600">
             <span>
               Menampilkan <strong className="text-slate-950">{filteredSuppliers.length} lapak</strong> sesuai filter performa.
             </span>
@@ -595,7 +597,7 @@ export default function ManagerSuppliersClient({
                 setSelectedGradeFilter("all")
                 setSelectedStatusFilter("all")
               }}
-              className="font-black text-slate-950 hover:text-teal-700"
+              className="font-black text-slate-950 hover:text-[color:var(--brand-strong)]"
             >
               Bersihkan filter
             </button>
@@ -618,7 +620,7 @@ export default function ManagerSuppliersClient({
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="truncate text-lg font-black tracking-[-0.02em] text-slate-950 hover:text-teal-700">
+                      <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="truncate text-lg font-black tracking-[-0.02em] text-slate-950 hover:text-[color:var(--brand-strong)]">
                         {supplier.nama}
                       </Link>
                       <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
@@ -675,7 +677,7 @@ export default function ManagerSuppliersClient({
                     {supplier.nomor_rekening ? (
                       <button
                         onClick={() => handleCopy(supplier.id, supplier.nomor_rekening || "")}
-                        className="mt-1 flex min-w-0 items-center gap-2 text-left font-bold text-slate-800 hover:text-teal-700"
+                        className="mt-1 flex min-w-0 items-center gap-2 text-left font-bold text-slate-800 hover:text-[color:var(--brand-strong)]"
                         title="Salin nomor rekening"
                       >
                         <span className="truncate">{supplier.nama_bank} - {supplier.nomor_rekening}</span>
@@ -687,7 +689,7 @@ export default function ManagerSuppliersClient({
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button rounded-xl bg-slate-950 px-4 py-2 text-xs font-black text-white hover:bg-slate-800">
+                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button btn-brand rounded-[10px] px-4 py-2 text-xs font-bold text-white">
                       Detail Lapak
                     </Link>
                     <button
@@ -738,7 +740,7 @@ export default function ManagerSuppliersClient({
           <div className="w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Quick edit lokasi</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[color:var(--brand-strong)]">Quick edit lokasi</p>
                 <h3 className="mt-1 text-xl font-black text-slate-950">Perbarui Lokasi Lapak</h3>
                 <p className="mt-1 text-sm text-slate-500">Simpan link Maps dan koordinat tanpa meninggalkan daftar lapak.</p>
               </div>
@@ -757,7 +759,7 @@ export default function ManagerSuppliersClient({
                   type="text"
                   value={locationLink}
                   onChange={(event) => setLocationLink(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-cyan-500"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
                   placeholder="https://maps.google.com/..."
                 />
               </div>
@@ -769,7 +771,7 @@ export default function ManagerSuppliersClient({
                   step="any"
                   value={locationLatitude}
                   onChange={(event) => setLocationLatitude(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-cyan-500"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
                   placeholder="-7.8165"
                 />
               </div>
@@ -781,20 +783,20 @@ export default function ManagerSuppliersClient({
                   step="any"
                   value={locationLongitude}
                   onChange={(event) => setLocationLongitude(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-cyan-500"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
                   placeholder="112.0111"
                 />
               </div>
             </div>
 
             {locationError && (
-              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              <div className="mt-4 rounded-[var(--radius-md)] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
                 {locationError}
               </div>
             )}
 
             {inferredLocation && (
-              <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+              <div className="mt-4 rounded-[var(--radius-md)] border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
                 <p className="font-semibold">Koordinat terdeteksi otomatis dari link Maps.</p>
                 <p className="mt-1 text-xs font-medium text-sky-700">
                   Latitude {inferredLocation.latitude}, longitude {inferredLocation.longitude}. Simpan lokasi untuk langsung mengaktifkan preview peta.
@@ -802,7 +804,7 @@ export default function ManagerSuppliersClient({
               </div>
             )}
             {needsManualLocationCoordinates && (
-              <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+              <div className="mt-4 rounded-[var(--radius-md)] border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
                 Link pendek Google Maps tidak menyimpan koordinat di URL. Isi latitude dan longitude agar preview peta aktif.
               </div>
             )}
@@ -817,7 +819,7 @@ export default function ManagerSuppliersClient({
               <button
                 onClick={handleSaveLocation}
                 disabled={savingLocation}
-                className="premium-button rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60"
+                className="premium-button btn-brand rounded-[10px] px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
               >
                 {savingLocation ? "Menyimpan..." : "Simpan Lokasi"}
               </button>
@@ -831,7 +833,7 @@ export default function ManagerSuppliersClient({
           <div className="w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-teal-700">Fase 6 - Kualitas Data</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[color:var(--brand-strong)]">Fase 6 - Kualitas Data</p>
                 <h3 className="mt-1 text-xl font-black text-slate-950">Import Koordinat Lapak (CSV)</h3>
                 <p className="mt-1 text-sm text-slate-500">
                   Kolom wajib: <code className="rounded bg-slate-100 px-1">nama</code>, <code className="rounded bg-slate-100 px-1">gudang</code>.
@@ -857,25 +859,25 @@ export default function ManagerSuppliersClient({
                   const file = e.target.files?.[0]
                   if (file) handleImportFile(file)
                 }}
-                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-950 file:px-4 file:py-2 file:text-xs file:font-bold file:text-white"
+                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[color:var(--brand)] file:px-4 file:py-2 file:text-xs file:font-bold file:text-white"
               />
               <textarea
                 value={importCsvText}
                 onChange={(e) => setImportCsvText(e.target.value)}
                 rows={6}
                 placeholder={"nama;gudang;latitude;longitude\nPengepul A;Kediri;-7.8;112.0"}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-cyan-500"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
               />
             </div>
 
             {importError && (
-              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              <div className="mt-4 rounded-[var(--radius-md)] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
                 {importError}
               </div>
             )}
 
             {importResults && (
-              <div className="mt-4 max-h-64 overflow-y-auto rounded-2xl border border-slate-200">
+              <div className="mt-4 max-h-64 overflow-y-auto rounded-[var(--radius-md)] border border-slate-200">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 text-slate-500">
                     <tr>
@@ -913,7 +915,7 @@ export default function ManagerSuppliersClient({
               <button
                 onClick={handleRunImport}
                 disabled={importing}
-                className="premium-button rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60"
+                className="premium-button btn-brand rounded-[10px] px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
               >
                 {importing ? "Memproses..." : "Proses Import"}
               </button>
@@ -953,7 +955,7 @@ function Signal({
   }[tone]
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 ${toneClass}`}>
+    <div className={`rounded-[var(--radius-md)] border px-4 py-3 ${toneClass}`}>
       <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.08em] opacity-80">
         {icon}
         {label}
