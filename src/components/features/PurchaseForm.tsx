@@ -1,15 +1,16 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import dynamic from "next/dynamic"
 import type { Supplier } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
+import { SKU_OPTIONS } from "@/lib/skuList"
+import { fmtDigitInput, fmtRp, fmtSkalaRupiah } from "@/lib/format"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
 
-const skuList = ["Bening", "BM", "Mix", "Warna", "Tutup HD", "Kotor", "Grade B", "Bocil", "Grade C", "Saos Kecap", "Galon", "PK", "Karung"]
 const METODE_BAYAR_OPTIONS = [
   { value: "TIMBANGAN_GUDANG", label: "Timbangan Gudang" },
   { value: "TIMBANGAN_LAPAK", label: "Timbangan Lapak" },
@@ -17,10 +18,6 @@ const METODE_BAYAR_OPTIONS = [
 const JENIS_PENGAMBILAN_OPTIONS = [
   { value: "AMBIL", label: "Diambil (armada PT ke lapak)" },
   { value: "KIRIM", label: "Dikirim (lapak antar ke gudang)" },
-]
-const SKU_OPTIONS = [
-  { value: "", label: "Pilih SKU" },
-  ...skuList.map(sku => ({ value: sku, label: sku })),
 ]
 const SPEC_OPTIONS = [
   { value: "", label: "Pilih spec" },
@@ -54,6 +51,7 @@ interface NotaData {
   potonganKarung: number
   beratPotonganKarung: number
   hargaPotonganKarung: number
+  dpDigunakan: number
 }
 
 export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Supplier[], namaGudang: string }) {
@@ -63,6 +61,9 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
   const [metodeBayar, setMetodeBayar] = useState("TIMBANGAN_GUDANG")
   const [jenisPengambilan, setJenisPengambilan] = useState("AMBIL")
   const [items, setItems] = useState<Item[]>([{ sku_name: "", spec: "", berat_estimasi: 0, harga_per_kg: 0 }])
+  /** Digit mentah; pemisah ribuan hanya untuk tampilan. */
+  const [dpDigunakan, setDpDigunakan] = useState("")
+  const [sisaDpMap, setSisaDpMap] = useState<Record<string, number>>({})
 
   const filteredSuppliers = suppliers.filter(s =>
     s.nama.toLowerCase().includes(searchQuery.toLowerCase())
@@ -80,6 +81,23 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
   const [error, setError] = useState("")
   const [notaData, setNotaData] = useState<NotaData | null>(null)
 
+  // Sisa kasbon per lapak diambil sekali saat form dibuka; dipakai untuk
+  // membatasi berapa yang boleh dipotong di nota ini.
+  useEffect(() => {
+    let aktif = true
+    fetch("/api/dp/summary")
+      .then(res => (res.ok ? res.json() : null))
+      .then((rows: { supplierId: string; remaining: number }[] | null) => {
+        if (!aktif || !rows) return
+        setSisaDpMap(Object.fromEntries(rows.map(r => [r.supplierId, r.remaining])))
+      })
+      .catch(() => {})
+    return () => { aktif = false }
+  }, [])
+
+  const sisaDp = supplierId ? (sisaDpMap[supplierId] ?? 0) : 0
+  const dpAngka = dpDigunakan ? Number(dpDigunakan) : 0
+
   const potonganSampah = beratPotonganSampah * hargaPotonganSampah
   const potonganSusut = beratPotonganSusut * hargaPotonganSusut
   const potonganAir = beratPotonganAir * hargaPotonganAir
@@ -95,6 +113,18 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    // Dijaga di sini juga, bukan hanya di server: pesan gagal setelah nota
+    // terkirim jauh lebih membingungkan buat Staff di lapangan.
+    if (dpMelebihiSaldo) {
+      setError(`DP yang digunakan melebihi sisa kasbon lapak (${fmtRp(sisaDp)}).`)
+      return
+    }
+    if (dpMelebihiNota) {
+      setError("DP yang digunakan tidak boleh melebihi nilai nota setelah potongan.")
+      return
+    }
+
     setLoading(true)
     setError("")
 
@@ -103,6 +133,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
         supplierId,
         metode_pembayaran_terpilih: metodeBayar,
         jenis_pengambilan: jenisPengambilan,
+        dp_yang_digunakan: dpAngka,
         items,
         potongan_sampah: potonganSampah,
         berat_potongan_sampah: beratPotonganSampah,
@@ -150,6 +181,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
         potonganKarung,
         beratPotonganKarung,
         hargaPotonganKarung,
+        dpDigunakan: dpAngka,
       })
 
       // Reset form
@@ -164,6 +196,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
       setHargaPotonganAir(0)
       setBeratPotonganKarung(0)
       setHargaPotonganKarung(0)
+      setDpDigunakan("")
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -174,6 +207,9 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
   const totalNilaiEstimasi = items.reduce((s, i) => s + i.berat_estimasi * i.harga_per_kg, 0)
   const totalDeductions = potonganSampah + potonganSusut + potonganAir + potonganKarung
   const totalEstimasiSetelahPotongan = Math.max(totalNilaiEstimasi - totalDeductions, 0)
+  const totalDibayarKeLapak = Math.max(totalEstimasiSetelahPotongan - dpAngka, 0)
+  const dpMelebihiSaldo = dpAngka > sisaDp
+  const dpMelebihiNota = dpAngka > totalEstimasiSetelahPotongan
 
   return (
     <>
@@ -569,20 +605,88 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
           </div>
         </div>
 
+        {/* Potongan Kasbon (DP) -- kasbon yang sudah disetujui Manager
+            langsung dipotong di nota ini, tidak lagi menunggu tahap
+            verifikasi gudang. */}
+        {supplierId && (
+          <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-sm font-bold text-slate-800">Potongan Kasbon (DP)</h3>
+              <span className="text-xs text-slate-500">
+                Sisa kasbon lapak ini:{" "}
+                <span className="font-mono font-bold tabular-nums" style={{ color: sisaDp > 0 ? "var(--brand-strong)" : "var(--muted-faint)" }}>
+                  {fmtRp(sisaDp)}
+                </span>
+              </span>
+            </div>
+
+            {sisaDp <= 0 ? (
+              <p className="mt-2 text-xs text-slate-400">
+                Lapak ini belum punya sisa kasbon yang disetujui, jadi tidak ada yang bisa dipotong.
+              </p>
+            ) : (
+              <>
+                <div className="relative mt-3">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 font-semibold text-slate-400">Rp</div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={fmtDigitInput(dpDigunakan)}
+                    onChange={(e) => setDpDigunakan(e.target.value.replace(/\D/g, ""))}
+                    placeholder="0"
+                    className="w-full rounded-xl border border-slate-200 py-3 pl-12 pr-4 font-mono text-lg font-bold tabular-nums outline-none"
+                  />
+                </div>
+                {dpAngka > 0 && (
+                  <p className="mt-2 text-xs font-bold" style={{ color: "var(--brand-strong)" }}>
+                    ≈ {fmtSkalaRupiah(dpAngka)} rupiah
+                  </p>
+                )}
+                {dpMelebihiSaldo && (
+                  <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+                    Melebihi sisa kasbon lapak ({fmtRp(sisaDp)}).
+                  </p>
+                )}
+                {!dpMelebihiSaldo && dpMelebihiNota && (
+                  <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+                    Melebihi nilai nota setelah potongan ({fmtRp(totalEstimasiSetelahPotongan)}).
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         {/* Estimasi Total */}
         {items.some(i => i.berat_estimasi > 0 && i.harga_per_kg > 0) && (
-          <div className="bg-cyan-50 border border-cyan-100 rounded-xl px-5 py-3 flex flex-col md:flex-row justify-between items-center gap-2">
-            <div className="text-left">
-              <span className="text-sm text-cyan-700 font-medium block">Estimasi Total Nilai Setelah Potongan</span>
-              {totalDeductions > 0 && (
-                <span className="text-xs text-slate-500">
-                  (Nilai Kotor: Rp {totalNilaiEstimasi.toLocaleString("id-ID")} - Potongan: Rp {totalDeductions.toLocaleString("id-ID")})
-                </span>
-              )}
+          <div className="rounded-xl border px-5 py-4" style={{ background: "var(--brand-soft)", borderColor: "var(--brand-soft-strong)" }}>
+            <div className="flex flex-col justify-between gap-1 md:flex-row md:items-center">
+              <span className="text-sm font-medium text-slate-600">Nilai nota setelah potongan</span>
+              <span className="font-mono text-base font-bold tabular-nums text-slate-800">
+                {fmtRp(totalEstimasiSetelahPotongan)}
+              </span>
             </div>
-            <span className="text-lg font-extrabold text-cyan-700">
-              Rp {totalEstimasiSetelahPotongan.toLocaleString("id-ID")}
-            </span>
+            {totalDeductions > 0 && (
+              <p className="mt-0.5 text-xs text-slate-500">
+                Nilai kotor {fmtRp(totalNilaiEstimasi)} − potongan {fmtRp(totalDeductions)}
+              </p>
+            )}
+            {dpAngka > 0 && (
+              <div className="mt-1 flex flex-col justify-between gap-1 md:flex-row md:items-center">
+                <span className="text-sm font-medium text-slate-600">Potongan kasbon</span>
+                <span className="font-mono text-base font-bold tabular-nums" style={{ color: "var(--danger)" }}>
+                  − {fmtRp(dpAngka)}
+                </span>
+              </div>
+            )}
+            <div className="mt-3 flex flex-col justify-between gap-1 border-t pt-3 md:flex-row md:items-center" style={{ borderColor: "var(--brand-soft-strong)" }}>
+              <span className="text-sm font-bold" style={{ color: "var(--brand-strong)" }}>
+                Estimasi dibayar ke lapak
+              </span>
+              <span className="font-mono text-xl font-extrabold tabular-nums" style={{ color: "var(--brand-strong)" }}>
+                {fmtRp(totalDibayarKeLapak)}
+              </span>
+            </div>
           </div>
         )}
 

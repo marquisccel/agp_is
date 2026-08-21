@@ -13,15 +13,11 @@ type DpRow = {
 /**
  * Aksi persetujuan kasbon.
  *
- * Kebijakan: tidak ada auto-approve dan tidak ada ambang nominal.
- * - Pengajuan Staff: diputus final oleh Admin gudangnya (setujui/revisi/
- *   tolak), berapa pun nominalnya. Admin dapat meneruskan ke Manager bila
- *   ragu memutuskan sendiri.
- * - Pengajuan Admin: diputus oleh Manager.
- * Identitas penyetuju tercatat, sehingga Manager dapat memantau admin mana
- * yang menyetujui tiap kasbon.
+ * Kebijakan (keputusan meeting Manager): SELURUH pengajuan kasbon diputus
+ * Manager, berapa pun nominalnya dan siapa pun pengajunya. Tingkat
+ * verifikasi Admin dan opsi eskalasi "forward" dihapus.
  */
-export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow, role?: string }) {
+export default function DPApprovalActions({ dp }: { dp: DpRow }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
@@ -29,7 +25,7 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
   const { confirm, dialog } = useConfirm()
   const { toast, host: toastHost } = useToast()
 
-  const handleAction = async (action: "approve" | "reject" | "forward", finalNominal?: number) => {
+  const handleAction = async (action: "approve" | "reject", finalNominal?: number) => {
     setLoading(true)
     try {
       const res = await fetch(`/api/dp/${dp.id}/approve`, {
@@ -102,22 +98,6 @@ export default function DPApprovalActions({ dp, role = "MANAGER" }: { dp: DpRow,
       >
         Revisi Nilai
       </button>
-      {role === "ADMIN" && (
-        <button
-          onClick={async () => {
-            const ok = await confirm({
-              title: "Teruskan ke Manager?",
-              description: "Pengajuan ini akan diputuskan oleh Manager, bukan Anda.",
-              confirmLabel: "Ya, teruskan",
-            })
-            if (ok) handleAction("forward")
-          }}
-          disabled={loading}
-          className="px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 font-bold text-xs rounded-lg border border-orange-200 transition-colors disabled:opacity-50"
-        >
-          Forward ke Manager
-        </button>
-      )}
       <button
         onClick={async () => {
           const ok = await confirm({

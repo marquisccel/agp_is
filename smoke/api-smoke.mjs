@@ -247,12 +247,25 @@ async function main() {
     const dp = await requestDpRes.json()
     dpId = dp.id
 
-    const approveDpRes = await req(admin.jar, `/api/dp/${dpId}/approve`, {
+    // Kasbon kini SELALU diputus Manager (keputusan meeting), Admin tidak
+    // lagi punya wewenang -- kedua sisi itu diuji di sini.
+    const approveDpAsAdminRes = await req(admin.jar, `/api/dp/${dpId}/approve`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "approve" }),
     })
-    check("PUT approve DP sebagai ADMIN -> 200", approveDpRes.status === 200, `status ${approveDpRes.status}`)
+    check(
+      "PUT approve DP sebagai ADMIN -> 401 (kasbon hanya diputus Manager)",
+      approveDpAsAdminRes.status === 401,
+      `status ${approveDpAsAdminRes.status}`
+    )
+
+    const approveDpRes = await req(manager.jar, `/api/dp/${dpId}/approve`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "approve" }),
+    })
+    check("PUT approve DP sebagai MANAGER -> 200", approveDpRes.status === 200, `status ${approveDpRes.status}`)
 
     const draftDpRes = await req(staff.jar, "/api/purchases/draft", {
       method: "POST",
@@ -261,6 +274,7 @@ async function main() {
         supplierId: dpSupplierId,
         metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
         jenis_pengambilan: "KIRIM",
+        dp_yang_digunakan: 50000,
         items: [{ sku_name: dpSkuName, spec: "Grading", berat_estimasi: 10, harga_per_kg: 5000 }],
         potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
         potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
@@ -268,8 +282,19 @@ async function main() {
         potongan_karung: 0, berat_potongan_karung: 0, harga_potongan_karung: 0,
       }),
     })
+    check("POST draft dengan potongan kasbon -> 201", draftDpRes.status === 201, `status ${draftDpRes.status}`)
     const dpDraft = await draftDpRes.json()
     dpPurchaseId = dpDraft.id
+
+    // Saldo kasbon harus sudah terpotong sejak nota dibuat Staff, bukan
+    // menunggu verifikasi gudang.
+    const summaryAfterDraft = await (await req(manager.jar, `/api/dp/summary?supplierId=${dpSupplierId}`)).json()
+    const rowAfterDraft = summaryAfterDraft.find((s) => s.supplierId === dpSupplierId)
+    check(
+      "sisa DP langsung terpotong 50000 saat draft dibuat Staff",
+      rowAfterDraft?.remaining === 50000,
+      JSON.stringify(rowAfterDraft)
+    )
 
     const dcDpRes = await req(admin.jar, `/api/purchases/${dpPurchaseId}/double-check`, {
       method: "PUT",
@@ -280,7 +305,9 @@ async function main() {
         metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
         items: [{ sku_name: dpSkuName, spec: "Grading", berat_lapak: 10, berat_final_item: 10, harga_per_kg: 5000 }],
         returs: [],
-        dp_yang_digunakan: 50000,
+        // Nominal kasbon sengaja TIDAK dikirim: nilainya sudah terkunci sejak
+        // draft. Kalau server sampai memakai nilai dari sini, saldo lapak akan
+        // terpotong dua kali.
         potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
         potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
         potongan_air: 0, berat_potongan_air: 0, harga_potongan_air: 0,
@@ -288,11 +315,11 @@ async function main() {
         persentase_pembayaran: 100,
       }),
     })
-    check("PUT double-check dengan dp_yang_digunakan -> 200", dcDpRes.status === 200, `status ${dcDpRes.status}`)
+    check("PUT double-check (kasbon read-only) -> 200", dcDpRes.status === 200, `status ${dcDpRes.status}`)
 
     const summaryBefore = await (await req(manager.jar, `/api/dp/summary?supplierId=${dpSupplierId}`)).json()
     const rowBefore = summaryBefore.find((s) => s.supplierId === dpSupplierId)
-    check("sisa DP terpotong 50000 setelah dialokasikan", rowBefore?.remaining === 50000, JSON.stringify(rowBefore))
+    check("sisa DP tetap 50000 setelah double-check (tidak dobel potong)", rowBefore?.remaining === 50000, JSON.stringify(rowBefore))
 
     const delDpPurchaseRes = await req(manager.jar, `/api/manager/purchases/${dpPurchaseId}`, { method: "DELETE" })
     check("DELETE transaksi (dengan DP terpakai) -> 200", delDpPurchaseRes.status === 200, `status ${delDpPurchaseRes.status}`)

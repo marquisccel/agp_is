@@ -10,15 +10,15 @@ import type { Prisma } from "@prisma/client"
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || !["ADMIN", "MANAGER"].includes(session.user.role)) {
+    // Hanya Manager yang boleh memutus kasbon (keputusan meeting Manager).
+    if (!session || !session.user || session.user.role !== "MANAGER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { id: dpId } = await params
     const { action, nominal_disetujui } = await req.json()
-    const role = session.user.role
 
-    if (!action || !["approve", "reject", "forward"].includes(action)) {
+    if (!action || !["approve", "reject"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
 
@@ -29,19 +29,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     if (!currentDp) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-    if (role === "ADMIN" && currentDp.supplier.warehouseId !== session.user.warehouseId) {
-      return NextResponse.json({ error: "Tidak memiliki akses ke pengajuan kasbon ini" }, { status: 403 })
-    }
-
     if (["approved", "rejected"].includes(currentDp.status_approval)) {
       return NextResponse.json({ error: "Pengajuan kasbon ini sudah final." }, { status: 400 })
     }
 
-    if (role === "ADMIN" && currentDp.status_approval !== "menunggu_approval_admin") {
-      return NextResponse.json({ error: "Pengajuan kasbon ini tidak berada di antrean admin." }, { status: 400 })
-    }
-
-    if (role === "MANAGER" && currentDp.status_approval !== "menunggu_approval_manager") {
+    if (currentDp.status_approval !== "menunggu_approval_manager") {
       return NextResponse.json({ error: "Pengajuan kasbon ini tidak berada di antrean manager." }, { status: 400 })
     }
 
@@ -56,18 +48,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         approvedByUserId: session.user.id,
         tanggal_approval: new Date(),
       }
-    } else if (action === "forward" && role === "ADMIN") {
-      // Eskalasi opsional: Admin dapat meneruskan pengajuan ke Manager bila
-      // ragu memutuskan sendiri.
-      updateData = { status_approval: "menunggu_approval_manager" }
-    } else if (action === "forward") {
-      return NextResponse.json({ error: "Action tidak valid untuk role ini." }, { status: 403 })
     } else if (action === "approve") {
-      // Kebijakan: approval Admin bersifat FINAL untuk pengajuan Staff,
-      // berapa pun nominalnya -- tidak ada lagi ambang Rp 2 juta dan tidak
-      // perlu approval Manager lanjutan. Identitas penyetuju tercatat pada
-      // approvedByUserId sehingga Manager dapat memantau admin mana yang
-      // menyetujui tiap kasbon (lihat riwayat pada halaman approval Manager).
+      // Kebijakan: keputusan Manager bersifat FINAL, berapa pun nominalnya.
+      // Identitas penyetuju tetap dicatat pada approvedByUserId untuk jejak
+      // audit.
       const finalNominal = nominal_disetujui === null || nominal_disetujui === undefined || nominal_disetujui === ""
         ? currentDp.nominal_diajukan
         : positiveNumber(nominal_disetujui, "Nominal disetujui")

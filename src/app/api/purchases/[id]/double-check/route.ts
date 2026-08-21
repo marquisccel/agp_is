@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, percentageNumber, positiveNumber } from "@/lib/numberValidation"
 import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import { markSupplierGreen } from "@/lib/supplierStatus"
-import { allocateDp, InsufficientDpError } from "@/lib/dpAllocation"
+import { InsufficientDpError } from "@/lib/dpAllocation"
 
 type DoubleCheckItemInput = {
   sku_name: string
@@ -41,7 +41,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       metode_pembayaran_terpilih,
       items, // Updated items with final weights
       returs, // Array of retur items
-      dp_yang_digunakan,
       potongan_sampah,
       berat_potongan_sampah,
       harga_potongan_sampah,
@@ -159,7 +158,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     const total_nilai_setelah_retur = total_nilai_sebelum_retur - total_potongan_retur
-    const final_dp_used = toNumber(dp_yang_digunakan, "DP yang digunakan")
+    // Kasbon sudah dipotong saat Staff membuat nota, jadi nilainya diambil
+    // dari transaksi yang tersimpan -- BUKAN dari body request. Kalau nilai
+    // kiriman Admin dipakai, saldo kasbon akan terpotong dua kali (sekali di
+    // draft, sekali di sini) dan total bayar ke lapak jadi salah.
+    const final_dp_used = currentPurchase.dp_yang_digunakan ?? 0
     const final_potongan_sampah = toNumber(potongan_sampah, "Potongan sampah")
     const final_potongan_susut = toNumber(potongan_susut, "Potongan susut")
     const final_potongan_air = toNumber(potongan_air, "Potongan air")
@@ -233,14 +236,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         },
       })
 
-      // Potong saldo DP supplier bila DP digunakan.
-      // Alokasi dapat menjangkau beberapa record DP sekaligus, dan akan
-      // melempar InsufficientDpError bila total sisa saldo tidak mencukupi --
-      // sehingga seluruh transaction ini dibatalkan dan tidak ada transaksi
-      // yang tersimpan dengan DP yang tidak pernah terpotong.
-      if (final_dp_used > 0) {
-        await allocateDp(tx, currentPurchase.supplierId, final_dp_used)
-      }
+      // Saldo kasbon TIDAK dipotong di sini -- pemotongannya sudah terjadi
+      // di tahap pembuatan nota oleh Staff (lihat api/purchases/draft).
 
       if (newStatus === "approved") {
         await markSupplierGreen(tx, {

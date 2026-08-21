@@ -29,6 +29,7 @@ interface NotaData {
   beratPotonganAir: number
   hargaPotonganAir: number
   potonganKarung: number
+  dpDigunakan?: number
   beratPotonganKarung: number
   hargaPotonganKarung: number
 }
@@ -43,6 +44,8 @@ function NotaContent({ data }: { data: NotaData }) {
   const totalBerat = data.items.reduce((sum, i) => sum + i.berat_estimasi, 0)
   const totalDeductions = (data.potonganSampah || 0) + (data.potonganSusut || 0) + (data.potonganAir || 0) + (data.potonganKarung || 0)
   const totalEstimasiSetelahPotongan = Math.max(totalEstimasi - totalDeductions, 0)
+  const dpDigunakan = data.dpDigunakan || 0
+  const totalDibayar = Math.max(totalEstimasiSetelahPotongan - dpDigunakan, 0)
 
   return (
     <div style={{ backgroundColor: "#ffffff", fontFamily: "Arial, sans-serif", border: "1px solid #edf0f4", borderRadius: 28, padding: "22px 18px", width: "100%", maxWidth: "400px", margin: "0 auto", boxSizing: "border-box", boxShadow: "0 18px 50px rgba(15,23,42,0.08)" }}>
@@ -158,8 +161,20 @@ function NotaContent({ data }: { data: NotaData }) {
         )}
 
         <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: 8 }}>
-          <span style={{ color: "#64748b" }}>Estimasi Total Net Payout</span>
-          <span style={{ fontWeight: 900, color: "#0891b2", fontSize: 13 }}>{formatRp(totalEstimasiSetelahPotongan)}</span>
+          <span style={{ color: "#64748b" }}>Nilai nota setelah potongan</span>
+          <span style={{ fontWeight: 700, color: "#334155" }}>{formatRp(totalEstimasiSetelahPotongan)}</span>
+        </div>
+
+        {dpDigunakan > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+            <span style={{ color: "#64748b" }}>Potongan Kasbon (DP)</span>
+            <span style={{ fontWeight: 700, color: "#dc2626" }}>-{formatRp(dpDigunakan)}</span>
+          </div>
+        )}
+
+        <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: 8, marginTop: 6 }}>
+          <span style={{ color: "#334155", fontWeight: 700 }}>Estimasi Dibayar ke Lapak</span>
+          <span style={{ fontWeight: 900, color: "#036030", fontSize: 13 }}>{formatRp(totalDibayar)}</span>
         </div>
       </div>
 
@@ -231,6 +246,8 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
     const totalEstimasi = data.items.reduce((sum, i) => sum + i.berat_estimasi * i.harga_per_kg, 0)
     const totalDeductions = (data.potonganSampah || 0) + (data.potonganSusut || 0) + (data.potonganAir || 0) + (data.potonganKarung || 0)
     const totalEstimasiSetelahPotongan = Math.max(totalEstimasi - totalDeductions, 0)
+    const dpDigunakan = data.dpDigunakan || 0
+    const totalDibayar = Math.max(totalEstimasiSetelahPotongan - dpDigunakan, 0)
 
     const itemLines = data.items
       .map((i) => `  • ${i.sku_name}${i.spec ? ` (${i.spec})` : ""}: ${i.berat_estimasi} KG × ${formatRp(i.harga_per_kg)} = ${formatRp(i.berat_estimasi * i.harga_per_kg)}`)
@@ -249,7 +266,9 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
       data.potonganAir > 0 ? `  • Potongan Air: -${formatRp(data.potonganAir)}` : "",
       data.potonganKarung > 0 ? `  • Potongan Karung: -${formatRp(data.potonganKarung)}` : "",
       totalDeductions > 0 ? `` : "",
-      `*ESTIMASI TOTAL NET PAYOUT: ${formatRp(totalEstimasiSetelahPotongan)}*`,
+      `Nilai nota setelah potongan: ${formatRp(totalEstimasiSetelahPotongan)}`,
+      dpDigunakan > 0 ? `  • Potongan Kasbon (DP): -${formatRp(dpDigunakan)}` : "",
+      `*ESTIMASI DIBAYAR KE LAPAK: ${formatRp(totalDibayar)}*`,
       `_(Menunggu double check & approval harga)_`,
       ``,
       `Terima kasih`,

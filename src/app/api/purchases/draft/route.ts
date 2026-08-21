@@ -6,6 +6,7 @@ import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, positiveNumber } from "@/lib/numberValidation"
 import { isOperationalRole } from "@/lib/roles"
+import { allocateDp, InsufficientDpError } from "@/lib/dpAllocation"
 
 type DraftPurchaseItemInput = {
   sku_name: string
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
       supplierId,
       metode_pembayaran_terpilih,
       jenis_pengambilan,
+      dp_yang_digunakan,
       items,
       potongan_sampah,
       berat_potongan_sampah,
@@ -91,8 +93,32 @@ export async function POST(req: Request) {
     const beratPotonganKarung = nonNegativeNumber(berat_potongan_karung, "Berat potongan karung")
     const hargaPotonganKarung = nonNegativeNumber(harga_potongan_karung, "Harga potongan karung")
 
-    // Create Draft Purchase
-    const purchase = await prisma.purchase.create({
+    // Kasbon dipotong di tahap ini (keputusan meeting Manager): begitu Manager
+    // menyetujui kasbon, potongannya sudah langsung tercermin di total nota
+    // yang dipegang Staff -- bukan lagi baru dipotong saat verifikasi gudang.
+    const dpDigunakan = nonNegativeNumber(dp_yang_digunakan, "DP yang digunakan")
+
+    // Nilai nota estimasi jadi batas atas potongan kasbon; tanpa ini, total
+    // bayar ke lapak bisa jadi negatif.
+    const totalEstimasiKotor = validatedItems.reduce((sum, item) => sum + item.subtotal, 0)
+    const totalPotongan = potonganSampah + potonganSusut + potonganAir + potonganKarung
+    const totalEstimasiBersih = totalEstimasiKotor - totalPotongan
+    if (dpDigunakan > totalEstimasiBersih) {
+      return NextResponse.json(
+        { error: "DP yang digunakan tidak boleh melebihi nilai nota setelah potongan." },
+        { status: 400 }
+      )
+    }
+
+    // Create Draft Purchase -- dibungkus transaction karena pemotongan saldo
+    // kasbon dan penyimpanan nota harus terjadi bersama. Kalau salah satunya
+    // gagal, saldo kasbon tidak boleh ikut berkurang.
+    const purchase = await prisma.$transaction(async (tx) => {
+      if (dpDigunakan > 0) {
+        await allocateDp(tx, supplierId, dpDigunakan)
+      }
+
+      return tx.purchase.create({
       data: {
         warehouseId,
         supplierId,
@@ -113,6 +139,7 @@ export async function POST(req: Request) {
         potongan_karung: potonganKarung,
         berat_potongan_karung: beratPotonganKarung,
         harga_potongan_karung: hargaPotonganKarung,
+        dp_yang_digunakan: dpDigunakan,
         items: {
           create: validatedItems.map((item) => ({
             sku_name: item.sku_name,
@@ -127,6 +154,7 @@ export async function POST(req: Request) {
       include: {
         items: true,
       },
+      })
     })
 
     // Audit Log
@@ -140,6 +168,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json(purchase, { status: 201 })
   } catch (error) {
+    // Saldo kasbon tidak cukup adalah kesalahan input pengguna, bukan
+    // kegagalan server -- dibalas 400 dengan pesan yang menyebut sisa saldo.
+    if (error instanceof InsufficientDpError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     const message = getErrorMessage(error)
     console.error("Error creating draft purchase:", error)
     return NextResponse.json({ error: message }, { status: 500 })

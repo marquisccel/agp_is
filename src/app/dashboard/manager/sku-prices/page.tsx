@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import ManagerSkuPricesClient from "@/components/features/ManagerSkuPricesClient"
 import Link from "next/link"
 import PageHeader from "@/components/ui/PageHeader"
+import { SKU_LIST } from "@/lib/skuList"
 
 export default async function SkuPricesPage() {
   const session = await getServerSession(authOptions)
@@ -20,7 +21,7 @@ export default async function SkuPricesPage() {
   })
 
   // We have a predefined set of SKUs that are standard.
-  const allSkus = ["Bening", "BM", "Mix", "Warna", "Tutup HD", "Kotor", "Grade B", "Bocil", "Grade C", "Saos Kecap", "Galon", "PK"]
+  const allSkus = [...SKU_LIST]
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">

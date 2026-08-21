@@ -65,7 +65,7 @@ export default function DoubleCheckForm({
   // Returs -- transaksi pada tahap ini selalu menunggu_verifikasi (belum pernah
   // melalui double-check), jadi belum mungkin ada retur tersimpan sebelumnya.
   const [returs, setReturs] = useState<ReturInput[]>([])
-  const [dpDigunakan, setDpDigunakan] = useState(purchase.dp_yang_digunakan || 0)
+  const dpDigunakan = purchase.dp_yang_digunakan || 0
 
   // Deductions from draft
   const [beratPotonganSampah, setBeratPotonganSampah] = useState<number>(purchase.berat_potongan_sampah || 0)
@@ -105,12 +105,6 @@ export default function DoubleCheckForm({
     setLoading(true)
     setError("")
 
-    if (dpDigunakan > availableDp) {
-      setError(`DP yang digunakan tidak boleh melebihi sisa DP (Rp ${availableDp.toLocaleString('id-ID')})`)
-      setLoading(false)
-      return
-    }
-
     try {
       const payload = {
         berat_timbangan_lapak: timbanganLapak,
@@ -118,7 +112,6 @@ export default function DoubleCheckForm({
         metode_pembayaran_terpilih: metodeBayar,
         items,
         returs,
-        dp_yang_digunakan: dpDigunakan,
         potongan_sampah: potonganSampah,
         berat_potongan_sampah: beratPotonganSampah,
         harga_potongan_sampah: hargaPotonganSampah,
@@ -566,17 +559,21 @@ export default function DoubleCheckForm({
             </div>
           </div>
 
-          <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
-            <h3 className="text-lg font-bold text-blue-800 mb-2">Potongan DP</h3>
-            <p className="text-sm text-blue-600 mb-4">Sisa DP Lapak: <span className="font-bold font-mono">Rp {availableDp.toLocaleString('id-ID')}</span></p>
-            <div>
-              <label className="text-sm font-semibold text-slate-700">Gunakan DP (Rp)</label>
-              <input
-                type="number" max={availableDp} min="0"
-                className="w-full mt-1 border-blue-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-                value={dpDigunakan || ""} onChange={e => setDpDigunakan(parseFloat(e.target.value)||0)}
-              />
-            </div>
+          {/* Potongan kasbon hanya ditampilkan, tidak bisa diubah di sini:
+              saldo kasbon sudah terpotong saat Staff membuat nota. Kalau
+              Admin bisa mengubahnya, saldo lapak akan terpotong dua kali dan
+              angka di nota yang sudah dipegang lapak jadi tidak cocok. */}
+          <div className="rounded-2xl border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+            <h3 className="text-lg font-bold text-slate-800">Potongan Kasbon (DP)</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Sudah dipotong saat Staff membuat nota. Nilainya tidak bisa diubah di tahap ini.
+            </p>
+            <p className="mt-4 font-mono text-2xl font-extrabold tabular-nums" style={{ color: dpDigunakan > 0 ? "var(--brand-strong)" : "var(--muted-faint)" }}>
+              {dpDigunakan > 0 ? `Rp ${dpDigunakan.toLocaleString("id-ID")}` : "Tidak ada potongan kasbon"}
+            </p>
+            <p className="mt-2 text-xs text-slate-400">
+              Sisa kasbon lapak saat ini: <span className="font-mono font-semibold">Rp {availableDp.toLocaleString("id-ID")}</span>
+            </p>
           </div>
         </div>
       </div>

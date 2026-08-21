@@ -1,7 +1,6 @@
 import { authOptions } from "@/lib/authOptions"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
-import DPApprovalActions from "@/components/features/DPApprovalActions"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
 import Link from "next/link"
@@ -91,8 +90,8 @@ export default async function DPListAdmin() {
                       {dp.status_approval === "menunggu_approval_admin" && <span className="bg-yellow-50 text-yellow-600 px-2.5 py-1 rounded-md text-xs font-bold border border-yellow-200">Review Admin</span>}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {dp.status_approval === "menunggu_approval_admin" ? (
-                        <DPApprovalActions dp={dp} role="ADMIN" />
+                      {dp.status_approval === "menunggu_approval_manager" ? (
+                        <span className="text-xs text-slate-400">Menunggu keputusan Manager</span>
                       ) : (
                         <span className="text-slate-400 text-xs">-</span>
                       )}
