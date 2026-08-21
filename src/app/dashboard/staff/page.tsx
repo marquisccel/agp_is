@@ -92,50 +92,59 @@ export default async function StaffDashboard() {
     : null
   const namaGudang = warehouseInfo ? `Collection Center ${warehouseInfo.nama.replace(/^Gudang\s+/i, '')}` : "Gudang Anda"
 
+  const rentangMinggu = `${weekStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })} - ${new Date(weekEnd.getTime() - 1).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}`
+  const namaBulan = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })
+
+  // Ketiga target mengukur hal yang sama pada jendela waktu berbeda, jadi
+  // dirakit dari satu bentuk data dan dirender oleh satu potong markup.
+  const kartuTarget = [
+    { kunci: 'harian',   label: 'Target Hari Ini',  rentang: namaGudang,     realisasi: beratHariIni,   target: targetHarian,   progres: progressHarian,   kurang: kekuranganHarian,   libur: !isWorkingToday },
+    { kunci: 'mingguan', label: 'Target Minggu Ini', rentang: rentangMinggu,  realisasi: beratMingguIni, target: targetMingguan, progres: progressMingguan, kurang: kekuranganMingguan, libur: false },
+    { kunci: 'bulanan',  label: 'Target Bulan Ini',  rentang: namaBulan,      realisasi: beratBulanIni,  target: targetBulanan,  progres: progressBulanan,  kurang: kekuranganBulanan,  libur: false },
+  ]
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
 
       {/* Banner Hari Libur */}
       {!isWorkingToday && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-3xl p-5 flex items-start gap-3.5 shadow-sm animate-in fade-in duration-200">
-          <div className="p-2.5 bg-blue-100/70 border border-blue-200 text-blue-600 rounded-2xl shrink-0 mt-0.5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <div className="notice tone-info animate-in fade-in duration-200">
+          <span className="notice-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
               <line x1="16" x2="16" y1="2" y2="6"/>
               <line x1="8" x2="8" y1="2" y2="6"/>
               <line x1="3" x2="21" y1="10" y2="10"/>
             </svg>
-          </div>
+          </span>
           <div>
-            <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider">Hari Libur / Tidak Ada Target Harian</h3>
-            <p className="text-sm text-blue-700 font-medium mt-1">
-              Hari ini adalah hari libur (Minggu atau libur nasional). Tidak ada target harian yang perlu dicapai.
+            <h3 className="notice-title">Hari Libur / Tidak Ada Target Harian</h3>
+            <p className="notice-body">
+              Hari ini hari libur (Minggu atau libur nasional), jadi tidak ada target harian yang perlu dikejar.
             </p>
-            <p className="text-xs text-slate-600 mt-1.5">Selamat beristirahat. Target mingguan tetap berjalan.</p>
+            <p className="notice-foot">Selamat beristirahat. Target mingguan tetap berjalan.</p>
           </div>
         </div>
       )}
 
       {/* Alert mitigasi: hanya tampil di hari kerja */}
       {isWorkingToday && targetHarian > 0 && kekuranganHarian > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-3xl p-5 space-y-3.5 shadow-sm animate-in fade-in duration-200">
-          <div className="flex items-start gap-3.5">
-            <div className="p-2.5 bg-amber-100/70 border border-amber-200 text-amber-600 rounded-2xl shrink-0 mt-0.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-amber-800 uppercase tracking-wider">Mitigasi Pencapaian Target</h3>
-              <p className="text-sm text-amber-700 font-semibold mt-1">
-                Target harian hari ini belum tercapai! Kurang <strong className="font-extrabold">{fmtTon(kekuranganHarian)}</strong> lagi.
-              </p>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Harap maksimalkan pengambilan barang, koordinasi supplier, dan transaksi di hari esok agar target mingguan Anda (<strong className="font-bold text-slate-700">{fmtTon(targetMingguan)}</strong>) tetap aman dan tercapai tepat waktu.
-              </p>
-            </div>
+        <div className="notice tone-warning animate-in fade-in duration-200">
+          <span className="notice-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </span>
+          <div>
+            <h3 className="notice-title">Mitigasi Pencapaian Target</h3>
+            <p className="notice-body">
+              Target harian belum tercapai, kurang <strong>{fmtTon(kekuranganHarian)}</strong> lagi.
+            </p>
+            <p className="notice-foot">
+              Maksimalkan pengambilan dan koordinasi supplier besok agar target mingguan ({fmtTon(targetMingguan)}) tetap aman.
+            </p>
           </div>
         </div>
       )}
@@ -146,129 +155,53 @@ export default async function StaffDashboard() {
         description={`Kelola transaksi pembelian dan target harian untuk ${namaGudang}.`}
       />
 
-      {/* Target Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Harian */}
-        <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Hari Ini</p>
-              <p className="text-sm text-slate-400 mt-0.5">{namaGudang}</p>
-            </div>
-            {isWorkingToday ? (
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${progressHarian >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-50 text-amber-600'}`}>
-                {progressHarian >= 100 ? 'Tercapai' : `${progressHarian.toFixed(0)}%`}
-              </span>
-            ) : (
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">Libur</span>
-            )}
-          </div>
-
-          {isWorkingToday ? (
-            <>
-              <div className="flex items-end gap-2 mb-3">
-                <span className="text-3xl font-extrabold text-slate-900">{fmtTon(beratHariIni)}</span>
-                <span className="text-slate-400 text-sm mb-1">/ {targetHarian > 0 ? fmtTon(targetHarian) : '-'}</span>
-              </div>
-              {/* Progress bar */}
-              <div className="w-full bg-slate-100 rounded-full h-2.5 mb-3">
-                <div
-                  className={`h-2.5 rounded-full transition-all duration-700 ${progressHarian >= 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-cyan-500 to-blue-500'}`}
-                  style={{ width: `${progressHarian}%` }}
-                />
-              </div>
-              {targetHarian > 0 ? (
-                kekuranganHarian > 0 ? (
-                  <p className="text-sm text-orange-600 font-medium">
-                    Kurang <strong>{fmtTon(kekuranganHarian)}</strong> untuk capai target hari ini
-                  </p>
+      {/* Target harian / mingguan / bulanan */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {kartuTarget.map((t) => {
+          const tercapai = t.target > 0 && t.kurang === 0
+          return (
+            <div key={t.kunci} className="goal-card interactive-surface">
+              <div className="goal-head">
+                <div>
+                  <p className="goal-label">{t.label}</p>
+                  <p className="goal-range">{t.rentang}</p>
+                </div>
+                {t.libur ? (
+                  <span className="goal-chip">Libur</span>
+                ) : t.target > 0 ? (
+                  <span className={`goal-chip ${tercapai ? 'ok' : 'warn'}`}>
+                    {tercapai ? 'Tercapai' : `${t.progres.toFixed(0)}%`}
+                  </span>
                 ) : (
-                  <p className="text-sm text-emerald-600 font-medium">Target harian sudah tercapai.</p>
-                )
+                  <span className="goal-chip">Belum diset</span>
+                )}
+              </div>
+
+              {t.libur ? (
+                <p className="goal-foot">Tidak ada target hari ini karena hari libur.</p>
               ) : (
-                <p className="text-xs text-slate-400 italic">Target belum diset oleh Manager</p>
+                <>
+                  <div className="goal-value">
+                    <b>{fmtTon(t.realisasi)}</b>
+                    <span>/ {t.target > 0 ? fmtTon(t.target) : '-'}</span>
+                  </div>
+                  <div className="goal-track">
+                    <i className={tercapai ? 'done' : undefined} style={{ width: `${t.progres}%` }} />
+                  </div>
+                  {t.target > 0 ? (
+                    tercapai ? (
+                      <p className="goal-foot ok">Target sudah tercapai.</p>
+                    ) : (
+                      <p className="goal-foot">Kurang <strong>{fmtTon(t.kurang)}</strong> lagi</p>
+                    )
+                  ) : (
+                    <p className="goal-foot empty">Target belum diset oleh Manager</p>
+                  )}
+                </>
               )}
-            </>
-          ) : (
-            <p className="text-sm text-blue-600 font-medium mt-4">Tidak ada target hari ini karena hari libur.</p>
-          )}
-        </div>
-
-        {/* Mingguan */}
-        <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Minggu Ini</p>
-              <p className="text-sm text-slate-400 mt-0.5">
-                {weekStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })} - {new Date(weekEnd.getTime()-1).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}
-              </p>
             </div>
-            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${progressMingguan >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-violet-50 text-violet-600'}`}>
-              {progressMingguan >= 100 ? 'Tercapai' : `${progressMingguan.toFixed(0)}%`}
-            </span>
-          </div>
-          <div className="flex items-end gap-2 mb-3">
-            <span className="text-3xl font-extrabold text-slate-900">{fmtTon(beratMingguIni)}</span>
-            <span className="text-slate-400 text-sm mb-1">/ {targetMingguan > 0 ? fmtTon(targetMingguan) : '-'}</span>
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-2.5 mb-3">
-            <div
-              className={`h-2.5 rounded-full transition-all duration-700 ${progressMingguan >= 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-violet-500 to-purple-500'}`}
-              style={{ width: `${progressMingguan}%` }}
-            />
-          </div>
-          {targetMingguan > 0 ? (
-            kekuranganMingguan > 0 ? (
-              <p className="text-sm text-violet-600 font-medium">
-                Kurang <strong>{fmtTon(kekuranganMingguan)}</strong> untuk capai target minggu ini
-              </p>
-            ) : (
-              <p className="text-sm text-emerald-600 font-medium">Target mingguan sudah tercapai.</p>
-            )
-          ) : (
-            <p className="text-xs text-slate-400 italic">Target belum diset oleh Manager</p>
-          )}
-        </div>
-
-        {/* Bulanan */}
-        <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Bulan Ini</p>
-              <p className="text-sm text-slate-400 mt-0.5">
-                {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })}
-              </p>
-            </div>
-            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${progressBulanan >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-50 text-indigo-600'}`}>
-              {progressBulanan >= 100 ? 'Tercapai' : `${progressBulanan.toFixed(0)}%`}
-            </span>
-          </div>
-
-          <div className="flex items-end gap-2 mb-3">
-            <span className="text-3xl font-extrabold text-slate-900">{fmtTon(beratBulanIni)}</span>
-            <span className="text-slate-400 text-sm mb-1">/ {targetBulanan > 0 ? fmtTon(targetBulanan) : '-'}</span>
-          </div>
-
-          {/* Progress bar */}
-          <div className="w-full bg-slate-100 rounded-full h-2.5 mb-3">
-            <div
-              className={`h-2.5 rounded-full transition-all duration-700 ${progressBulanan >= 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'}`}
-              style={{ width: `${progressBulanan}%` }}
-            />
-          </div>
-
-          {targetBulanan > 0 ? (
-            kekuranganBulanan > 0 ? (
-              <p className="text-sm text-red-600 font-medium">
-                Kurang <strong>{fmtTon(kekuranganBulanan)}</strong> untuk capai target bulan ini
-              </p>
-            ) : (
-              <p className="text-sm text-emerald-600 font-medium">Target bulanan sudah tercapai.</p>
-            )
-          ) : (
-            <p className="text-xs text-slate-400 italic">Target belum diset oleh Manager</p>
-          )}
-        </div>
+          )
+        })}
       </div>
 
       {/* H-1 Pickup Reminders */}
@@ -278,9 +211,15 @@ export default async function StaffDashboard() {
       <RemainingKasbonList />
 
       {/* Input Form */}
-      <div className="interactive-surface bg-white rounded-lg p-6 shadow-sm border border-slate-200">
-        <h2 className="text-xl font-bold text-slate-800 mb-1">Input Transaksi Baru</h2>
-        <p className="text-slate-500 text-sm mb-6">Data akan disimpan sebagai draft untuk diverifikasi oleh Supervisor gudang.</p>
+      <div className="section">
+        <div className="section-shell-head">
+          <div>
+            <span className="section-eyebrow">Transaksi</span>
+            <h2 className="text-lg font-bold" style={{ color: "var(--foreground)" }}>Input Transaksi Baru</h2>
+          </div>
+          <p className="text-xs" style={{ color: "var(--muted-faint)" }}>Disimpan sebagai draft untuk diverifikasi Supervisor gudang.</p>
+        </div>
+        <div className="mt-5" />
         <PurchaseForm suppliers={suppliers} namaGudang={namaGudang} />
       </div>
     </div>
