@@ -45,7 +45,16 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
     // Admin hanya bisa lihat transaksi warehousenya sendiri
     const userWarehouseId = session.user.warehouseId
-    if (["ADMIN"].includes(role) && userWarehouseId && purchase.warehouseId !== userWarehouseId) {
+    // Admin wajib punya gudang. Pola lama menulis `userWarehouseId &&`,
+    // sehingga Admin yang gudangnya kosong justru MELEWATI pemeriksaan ini
+    // dan bisa menyentuh nota gudang mana pun -- kebalikan dari yang
+    // dimaksud. Pendaftaran akun sekarang mewajibkan gudang untuk
+    // Staff/Admin, tapi akun lama atau hasil seed bisa lolos, jadi
+    // keadaannya ditolak secara tegas.
+    if (role === "ADMIN" && !userWarehouseId) {
+      return NextResponse.json({ error: "Akun Admin ini belum ditugaskan ke gudang." }, { status: 403 })
+    }
+    if (role === "ADMIN" && purchase.warehouseId !== userWarehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
 
@@ -95,7 +104,16 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
     // Admin hanya bisa edit warehousenya sendiri; Manager bisa semua
     const userWarehouseId = session.user.warehouseId
-    if (["ADMIN"].includes(role) && userWarehouseId && existing.warehouseId !== userWarehouseId) {
+    // Admin wajib punya gudang. Pola lama menulis `userWarehouseId &&`,
+    // sehingga Admin yang gudangnya kosong justru MELEWATI pemeriksaan ini
+    // dan bisa menyentuh nota gudang mana pun -- kebalikan dari yang
+    // dimaksud. Pendaftaran akun sekarang mewajibkan gudang untuk
+    // Staff/Admin, tapi akun lama atau hasil seed bisa lolos, jadi
+    // keadaannya ditolak secara tegas.
+    if (role === "ADMIN" && !userWarehouseId) {
+      return NextResponse.json({ error: "Akun Admin ini belum ditugaskan ke gudang." }, { status: 403 })
+    }
+    if (role === "ADMIN" && existing.warehouseId !== userWarehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
     if (existing.status_approval === "sudah_transfer") {

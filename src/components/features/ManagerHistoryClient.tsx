@@ -9,6 +9,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import StatusPill from "@/components/ui/StatusPill"
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
+import { statusPembayaran } from "@/lib/paymentStatus"
 
 interface PurchaseItem {
   id: string
@@ -28,6 +29,8 @@ interface Purchase {
   nomor_nota: string | null
   createdAt: string | Date
   status_approval: string
+  status_pelunasan: string | null
+  nominal_belum_lunas: number | null
   metode_pembayaran_terpilih: string | null
   total_nilai_setelah_retur: number | null
   total_nilai_sebelum_retur: number | null
@@ -175,6 +178,11 @@ export default function ManagerHistoryClient({
                   const totalBerat = purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
                   const totalNilai = purchase.total_dibayar ?? purchase.total_nilai_setelah_retur ?? purchase.total_nilai_sebelum_retur ?? 0
                   const status = getPurchaseStatus(purchase.status_approval)
+                  // Status tahapan saja tidak cukup: nota bisa berstatus
+                  // "Sudah Transfer" sementara sisa terminnya belum dilunasi,
+                  // dan di daftar ini terbaca seolah sudah beres. Manager
+                  // justru pihak yang paling perlu melihat sisa itu.
+                  const bayar = statusPembayaran(purchase)
 
                   return (
                     <tr key={purchase.id} className="premium-row">
@@ -202,7 +210,12 @@ export default function ManagerHistoryClient({
                         {formatRp(totalNilai)}
                       </td>
                       <td className="px-6 py-4">
-                        <StatusPill label={status.label} tone={status.tone} />
+                        <div className="flex flex-col items-start gap-1.5">
+                          <StatusPill label={status.label} tone={status.tone} />
+                          {bayar.sisa > 0 && (
+                            <StatusPill label={bayar.label} tone={bayar.tone} />
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex flex-col items-center gap-2">
