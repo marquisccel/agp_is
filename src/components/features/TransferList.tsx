@@ -7,6 +7,7 @@ import { CheckCircle2, Clock3, Eye, FileImage, Loader2, ReceiptText, RefreshCw, 
 import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
+import { skemaPembayaran, statusPembayaran } from "@/lib/paymentStatus"
 
 type TransferFilter = "all" | "pending" | "transferred" | "termin"
 type PurchaseWithRelations = Purchase & { supplier: Supplier; items: PurchaseItem[] }
@@ -199,9 +200,20 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  {/* Dua kolom yang dulu ditumpuk jadi satu: "Status
+                      Pelunasan" berisi LUNAS/BELUM_LUNAS, yang sebenarnya
+                      menerangkan CARA membayarnya (sekaligus atau dicicil),
+                      bukan apakah sudah dibayar. Nota yang belum ditransfer
+                      pun terbaca LUNAS. Sekarang dipisah: skema di satu
+                      kolom, kenyataan pembayarannya di kolom lain. */}
+                  <div className="mt-5 grid gap-3 sm:grid-cols-4">
                     <PaymentInfo label="Nota" value={p.nomor_nota || p.id.slice(0, 8).toUpperCase()} />
-                    <PaymentInfo label="Status Pelunasan" value={p.status_pelunasan || "LUNAS"} emphasize={isPendingTermin} />
+                    <PaymentInfo label="Skema Bayar" value={skemaPembayaran(p.status_pelunasan).label} />
+                    <PaymentInfo
+                      label="Status Bayar"
+                      value={statusPembayaran(p).label}
+                      emphasize={statusPembayaran(p).tone === "warning"}
+                    />
                     <PaymentInfo label="Tanggal Transfer" value={p.tanggal_transfer ? formatDateTime(p.tanggal_transfer) : "-"} />
                   </div>
                 </div>

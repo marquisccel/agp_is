@@ -5,6 +5,7 @@ import { PDFDownloadLink } from "@react-pdf/renderer"
 import NotaPDF from "./NotaPDF"
 import type { PurchaseDTO } from "@/types/purchase"
 import { useToast } from "@/components/ui/Toast"
+import { skemaPembayaran, statusPembayaran } from "@/lib/paymentStatus"
 
 // ── Format helpers ──
 function fmtRp(n: number) {
@@ -21,6 +22,18 @@ function fmtTgl(d: string) {
 
 // ── Nota visual card (dirender untuk screenshot JPG) ──
 function NotaCard({ purchase, notaRef }: { purchase: PurchaseDTO; notaRef: React.RefObject<HTMLDivElement | null> }) {
+  // Nilai nota = nilai setelah retur dikurangi potongan, SEBELUM dipotong
+  // kasbon. Dihitung dari field aslinya, bukan dari total_dibayar +
+  // kasbon: pada nota termin total_dibayar hanya berisi pembayaran awal,
+  // sehingga rumus itu akan menghasilkan nilai nota yang terlalu kecil.
+  const nilaiNota =
+    (purchase.total_nilai_setelah_retur || 0) -
+    ((purchase.potongan_sampah || 0) +
+      (purchase.potongan_susut || 0) +
+      (purchase.potongan_air || 0) +
+      (purchase.potongan_karung || 0))
+  const bayar = statusPembayaran(purchase)
+
   const items = purchase.items || []
   const returs = purchase.returs || []
   const totalBeratBruto = items.reduce((s, i) =>
@@ -136,11 +149,16 @@ function NotaCard({ purchase, notaRef }: { purchase: PurchaseDTO; notaRef: React
           ...((purchase.potongan_susut || 0) > 0 ? [{ label: `Potongan Susut (${fmtKg(purchase.berat_potongan_susut || 0)})`, value: -(purchase.potongan_susut || 0), red: true }] : []),
           ...((purchase.potongan_air || 0) > 0 ? [{ label: `Potongan Air (${fmtKg(purchase.berat_potongan_air || 0)})`, value: -(purchase.potongan_air || 0), red: true }] : []),
           ...((purchase.potongan_karung || 0) > 0 ? [{ label: `Potongan Karung (${fmtKg(purchase.berat_potongan_karung || 0)})`, value: -(purchase.potongan_karung || 0), red: true }] : []),
-          ...((purchase.dp_yang_digunakan || 0) > 0 ? [{ label: "Gunakan DP", value: -(purchase.dp_yang_digunakan || 0), red: true }] : []),
+          ...((purchase.dp_yang_digunakan || 0) > 0
+            ? [
+                { label: "Nilai nota", value: nilaiNota, red: false, tebal: true },
+                { label: "Kasbon dipakai (dibayar di muka)", value: -(purchase.dp_yang_digunakan || 0), red: true },
+              ]
+            : []),
         ].map((row, i) => (
           <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ color: "#64748b" }}>{row.label}:</span>
-            <span style={{ fontWeight: 600, color: row.red ? "#dc2626" : "#0f172a" }}>
+            <span style={{ fontWeight: (row as { tebal?: boolean }).tebal ? 800 : 600, color: row.red ? "#dc2626" : "#0f172a" }}>
               {row.value < 0 ? `-${fmtRp(Math.abs(row.value))}` : fmtRp(row.value)}
             </span>
           </div>
@@ -152,8 +170,25 @@ function NotaCard({ purchase, notaRef }: { purchase: PurchaseDTO; notaRef: React
           marginTop: 10, paddingTop: 10, borderTop: "1px solid #e2e8f0",
           backgroundColor: "#f8fafc", padding: "12px 14px", borderRadius: 18, marginLeft: -12, marginRight: -12
         }}>
-          <span style={{ fontSize: 13, fontWeight: 900, color: "#0f172a" }}>TOTAL DIBAYAR</span>
-          <span style={{ fontSize: 16, fontWeight: 900, color: "#007a73" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: "#0f172a" }}>DIBAYAR SEKARANG</div>
+            {(purchase.dp_yang_digunakan || 0) > 0 && (
+              <div style={{ fontSize: 9.5, color: "#64748b", marginTop: 2 }}>
+                {fmtRp(nilaiNota)} − kasbon {fmtRp(purchase.dp_yang_digunakan || 0)}
+              </div>
+            )}
+          </div>
+          <span style={{ fontSize: 16, fontWeight: 900, color: "#036030" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
+        </div>
+
+        {/* Skema dan kenyataan pembayarannya dipisah: "LUNAS" di basis data
+            cuma berarti dibayar sekaligus, bukan bahwa uangnya sudah
+            berpindah. */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 10 }}>
+          <span style={{ color: "#64748b" }}>Skema {skemaPembayaran(purchase.status_pelunasan).label.toLowerCase()}</span>
+          <span style={{ fontWeight: 800, color: bayar.tone === "success" ? "#16a34a" : bayar.tone === "warning" ? "#d97706" : "#64748b" }}>
+            {bayar.label}
+          </span>
         </div>
 
         {/* Pelunasan info */}
@@ -272,12 +307,12 @@ export default function NotaViewerClient({
       (purchase.potongan_susut || 0) > 0 ? `  • Potongan Susut: -${fmtRp(purchase.potongan_susut || 0)}` : "",
       (purchase.potongan_air || 0) > 0 ? `  • Potongan Air: -${fmtRp(purchase.potongan_air || 0)}` : "",
       (purchase.potongan_karung || 0) > 0 ? `  • Potongan Karung: -${fmtRp(purchase.potongan_karung || 0)}` : "",
-      (purchase.dp_yang_digunakan || 0) > 0 ? `  • Gunakan DP: -${fmtRp(purchase.dp_yang_digunakan || 0)}` : "",
+      (purchase.dp_yang_digunakan || 0) > 0 ? `  • Kasbon dipakai (dibayar di muka): -${fmtRp(purchase.dp_yang_digunakan || 0)}` : "",
       ((purchase.total_potongan_retur || 0) > 0 || (purchase.potongan_sampah || 0) > 0 || (purchase.potongan_susut || 0) > 0 || (purchase.potongan_air || 0) > 0 || (purchase.potongan_karung || 0) > 0 || (purchase.dp_yang_digunakan || 0) > 0) ? `` : "",
       `*TOTAL DIBAYAR: ${totalDibayar}*`,
       purchase.status_pelunasan === "BELUM_LUNAS"
         ? `_(Pembayaran ${purchase.persentase_pembayaran || 80}% dahulu: ${fmtRp(purchase.nominal_pembayaran_awal || 0)}, sisa: ${fmtRp(purchase.nominal_belum_lunas || 0)})_`
-        : `_(Lunas)_`,
+        : `_(${statusPembayaran(purchase).label})_`,
       ``,
       `Terima kasih`,
     ].filter(val => val !== "").join("\n")

@@ -100,6 +100,11 @@ export const AUDIT_ACTIONS: Record<string, AuditActionInfo> = {
     description: "meneruskan pengajuan kasbon ke Manager",
     tone: TONE.perhatian,
   },
+  REFUND_DP: {
+    label: "Sisa kasbon dikembalikan",
+    description: "mengembalikan kelebihan kasbon ke saldo lapak karena nilai nota lebih kecil dari kasbon yang dialokasikan",
+    tone: TONE.uang,
+  },
 
   // ── Data lapak ────────────────────────────────────────────────
   CREATE_SUPPLIER: {

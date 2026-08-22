@@ -89,9 +89,36 @@ test("total pembayaran negatif ditolak", () => {
   )
 })
 
-test("DP melebihi nilai bersih ditolak", () => {
+test("DP melebihi nilai nota: dipakai sebatas nilainya, sisanya dikembalikan", () => {
+  // Terjadi kalau Staff mengalokasikan DP dari taksiran berat, lalu
+  // timbangan gudang keluar lebih kecil sehingga nilai notanya turun di
+  // bawah DP. Dulu seluruh verifikasi ditolak dan notanya mentok.
+  const t = calculatePurchaseTotals({ ...base, totalNilaiSebelumRetur: 100_000, dpDigunakan: 150_000 })
+  assert.equal(t.totalNetPayout, 100_000)
+  assert.equal(t.dpTerpakai, 100_000)
+  assert.equal(t.dpDikembalikan, 50_000)
+  assert.equal(t.totalDibayar, 0)
+})
+
+test("DP pas sebesar nilai nota: tidak ada yang dikembalikan", () => {
+  const t = calculatePurchaseTotals({ ...base, totalNilaiSebelumRetur: 100_000, dpDigunakan: 100_000 })
+  assert.equal(t.dpTerpakai, 100_000)
+  assert.equal(t.dpDikembalikan, 0)
+  assert.equal(t.totalDibayar, 0)
+})
+
+test("DP di bawah nilai nota: terpakai seluruhnya", () => {
+  const t = calculatePurchaseTotals({ ...base, totalNilaiSebelumRetur: 100_000, dpDigunakan: 40_000 })
+  assert.equal(t.dpTerpakai, 40_000)
+  assert.equal(t.dpDikembalikan, 0)
+  assert.equal(t.totalDibayar, 60_000)
+})
+
+test("potongan yang melampaui nilai barang tetap ditolak", () => {
+  // Beda dengan kelebihan DP: potongan lebih besar dari nilai barang
+  // berarti angkanya memang salah, bukan keadaan yang wajar.
   assert.throws(
-    () => calculatePurchaseTotals({ ...base, totalNilaiSebelumRetur: 100_000, dpDigunakan: 150_000 }),
+    () => calculatePurchaseTotals({ ...base, totalNilaiSebelumRetur: 100_000, potonganSampah: 120_000 }),
     PurchaseCalculationError
   )
 })

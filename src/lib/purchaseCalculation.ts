@@ -35,6 +35,13 @@ export type PurchaseTotals = {
   totalNetPayout: number
   /** Nilai akhir yang harus dibayarkan ke supplier, setelah dikurangi DP. */
   totalDibayar: number
+  /**
+   * Bagian DP yang benar-benar terpakai. Bisa lebih kecil dari yang
+   * dialokasikan kalau nilai notanya menyusut setelah verifikasi gudang.
+   */
+  dpTerpakai: number
+  /** Kelebihan DP yang harus dikembalikan ke saldo lapak. */
+  dpDikembalikan: number
   nominalPembayaranAwal: number
   nominalBelumLunas: number
   statusPelunasan: "LUNAS" | "BELUM_LUNAS"
@@ -64,13 +71,23 @@ export function calculatePurchaseTotals(input: PurchaseTotalsInput): PurchaseTot
   const totalNilaiSetelahRetur = totalNilaiSebelumRetur - totalPotonganRetur
   const totalPotonganLain = potonganSampah + potonganSusut + potonganAir + potonganKarung
   const totalNetPayout = totalNilaiSetelahRetur - totalPotonganLain
-  const totalDibayar = totalNetPayout - dpDigunakan
 
-  if (totalNetPayout < 0 || totalDibayar < 0) {
+  if (totalNetPayout < 0) {
     throw new PurchaseCalculationError(
-      "Total pembayaran tidak boleh negatif. Periksa potongan, retur, dan DP yang digunakan."
+      "Nilai nota menjadi negatif. Periksa potongan dan retur."
     )
   }
+
+  // DP yang dipakai tidak boleh melebihi nilai notanya. Ini bukan kasus
+  // aneh: Staff mengalokasikan DP berdasarkan taksiran berat, lalu berat
+  // hasil timbangan gudang bisa lebih kecil sehingga nilai notanya turun
+  // di bawah DP yang sudah dialokasikan. Dulu keadaan ini menolak seluruh
+  // verifikasi ("total pembayaran tidak boleh negatif") dan notanya
+  // mentok -- padahal yang benar cukup memakai DP sebesar nilai nota dan
+  // mengembalikan kelebihannya ke saldo lapak untuk nota berikutnya.
+  const dpTerpakai = Math.min(dpDigunakan, totalNetPayout)
+  const dpDikembalikan = round2(dpDigunakan - dpTerpakai)
+  const totalDibayar = round2(totalNetPayout - dpTerpakai)
 
   const isTermin = persentasePembayaran < 100
   const nominalPembayaranAwal = isTermin
@@ -89,6 +106,8 @@ export function calculatePurchaseTotals(input: PurchaseTotalsInput): PurchaseTot
     totalPotonganLain,
     totalNetPayout,
     totalDibayar,
+    dpTerpakai,
+    dpDikembalikan,
     nominalPembayaranAwal,
     nominalBelumLunas,
     statusPelunasan: isTermin ? "BELUM_LUNAS" : "LUNAS",

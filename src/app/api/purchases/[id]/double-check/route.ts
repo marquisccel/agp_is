@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, percentageNumber, positiveNumber } from "@/lib/numberValidation"
 import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import { markSupplierGreen } from "@/lib/supplierStatus"
-import { InsufficientDpError } from "@/lib/dpAllocation"
+import { InsufficientDpError, refundDp } from "@/lib/dpAllocation"
 
 type DoubleCheckItemInput = {
   sku_name: string
@@ -168,10 +168,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const final_potongan_air = toNumber(potongan_air, "Potongan air")
     const final_potongan_karung = toNumber(potongan_karung, "Potongan karung")
     const total_net_payout = total_nilai_setelah_retur - (final_potongan_sampah + final_potongan_susut + final_potongan_air + final_potongan_karung)
-    const total_dibayar = total_net_payout - final_dp_used
-    if (total_net_payout < 0 || total_dibayar < 0) {
-      return NextResponse.json({ error: "Total pembayaran tidak boleh negatif. Periksa potongan dan DP yang digunakan." }, { status: 400 })
+    if (total_net_payout < 0) {
+      return NextResponse.json({ error: "Nilai nota menjadi negatif. Periksa potongan dan retur." }, { status: 400 })
     }
+
+    // Kasbon yang dipakai tidak boleh melebihi nilai notanya. Staff
+    // mengalokasikan kasbon dari taksiran berat, sedangkan timbangan gudang
+    // bisa keluar lebih kecil sehingga nilai notanya turun di bawah kasbon
+    // yang sudah dialokasikan. Dulu keadaan ini menolak seluruh verifikasi
+    // dan notanya mentok; sekarang kasbon dipakai sebatas nilai nota dan
+    // kelebihannya dikembalikan ke saldo lapak untuk nota berikutnya.
+    const dp_terpakai = Math.min(final_dp_used, total_net_payout)
+    const dp_dikembalikan = Math.round((final_dp_used - dp_terpakai) * 100) / 100
+    const total_dibayar = Math.round((total_net_payout - dp_terpakai) * 100) / 100
     if (paymentPercent < 100 && (initialPayment <= 0 || initialPayment > total_dibayar || remainingPayment < 0)) {
       return NextResponse.json({ error: "Skema pembayaran termin tidak valid." }, { status: 400 })
     }
@@ -185,6 +194,26 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     // 2. Perform Transaction update
     const updatedPurchase = await prisma.$transaction(async (tx) => {
+      // Pengembalian ikut dalam transaksi yang sama dengan penyimpanan
+      // notanya: kalau dipisah, kegagalan di salah satu sisi menyisakan
+      // saldo kasbon yang tidak cocok dengan nota.
+      if (dp_dikembalikan > 0) {
+        await refundDp(tx, currentPurchase.supplierId, dp_dikembalikan)
+        await createAuditLog({
+          userId: session.user.id,
+          action: "REFUND_DP",
+          table_name: "DownPayment",
+          record_id: currentPurchase.supplierId,
+          new_data: {
+            purchaseId,
+            dp_dialokasikan: final_dp_used,
+            dp_terpakai,
+            dp_dikembalikan,
+            nilai_nota: total_net_payout,
+          },
+        })
+      }
+
       // Clear old items
       await tx.purchaseItem.deleteMany({ where: { purchaseId } })
       
@@ -213,7 +242,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           potongan_karung: final_potongan_karung,
           berat_potongan_karung: toNumber(berat_potongan_karung, "Berat potongan karung"),
           harga_potongan_karung: toNumber(harga_potongan_karung, "Harga potongan karung"),
-          dp_yang_digunakan: final_dp_used,
+          dp_yang_digunakan: dp_terpakai,
           total_dibayar: paymentPercent < 100 ? initialPayment : total_dibayar,
           persentase_pembayaran: paymentPercent,
           nominal_pembayaran_awal: paymentPercent < 100 ? initialPayment : total_dibayar,
