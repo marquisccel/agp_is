@@ -11,7 +11,8 @@
     "postinstall": "prisma generate",
     "test": "tsx --test tests/*.test.ts",
     "test:smoke": "node smoke/api-smoke.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "audit:data": "node scripts/audit-data.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1115.0",

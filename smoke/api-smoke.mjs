@@ -16,6 +16,8 @@ const CREDENTIALS = {
   MANAGER: { email: process.env.SMOKE_MANAGER_EMAIL || "manager@example.com", password: "password123" },
   ADMIN: { email: process.env.SMOKE_ADMIN_EMAIL || "admin.kediri@example.com", password: "password123" },
   STAFF: { email: process.env.SMOKE_STAFF_EMAIL || "staff.kediri@example.com", password: "password123" },
+  // Staff dari gudang lain, untuk menguji isolasi antar gudang.
+  STAFF_LAIN: { email: process.env.SMOKE_STAFF_LAIN_EMAIL || "staff.malang@example.com", password: "password123" },
 }
 
 let passed = 0
@@ -147,6 +149,29 @@ async function main() {
   check("POST /api/suppliers (throwaway) -> 201", createSupplierRes.status === 201, `status ${createSupplierRes.status}`)
   const supplier = await createSupplierRes.json()
   const supplierId = supplier.id
+
+  // Isolasi antar gudang. Dulu /api/purchases/draft memakai supplierId dari
+  // badan permintaan tapi warehouseId dari sesi, tanpa memeriksa keduanya
+  // cocok -- sehingga Staff gudang lain bisa mencatat nota atas lapak ini,
+  // DAN memotong saldo kasbon lapak ini lewat allocateDp.
+  if (supplierId) {
+    const staffLain = await loginAs("STAFF_LAIN")
+    const curiRes = await req(staffLain.jar, "/api/purchases/draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        supplierId,
+        metode_pembayaran_terpilih: "TIMBANGAN_GUDANG",
+        jenis_pengambilan: "AMBIL",
+        items: [{ sku_name: skuName, spec: "Grading", berat_estimasi: 1, harga_per_kg: 1000 }],
+      }),
+    })
+    check(
+      "POST draft atas lapak gudang lain -> 403 (isolasi antar gudang)",
+      curiRes.status === 403,
+      `status ${curiRes.status}`
+    )
+  }
 
   let purchaseId = null
   if (supplierId) {

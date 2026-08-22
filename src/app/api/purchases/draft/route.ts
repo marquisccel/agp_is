@@ -65,6 +65,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User is not assigned to a warehouse" }, { status: 403 })
     }
 
+    // Lapaknya wajib milik gudang si Staff. Tanpa pemeriksaan ini,
+    // supplierId dari badan permintaan dipakai apa adanya sementara
+    // warehouseId diambil dari sesi, sehingga:
+    //   - notanya tercatat di gudang A padahal lapaknya milik gudang B,
+    //     membuat rekap per gudang dan per lapak saling bertentangan;
+    //   - dan yang lebih berat, saldo kasbon lapak gudang B ikut terpotong
+    //     lewat allocateDp di bawah.
+    // Pengajuan kasbon (/api/dp) sudah memeriksa hal ini sejak awal; jalur
+    // pembuatan nota terlewat.
+    const supplier = await prisma.supplier.findUnique({
+      where: { id: supplierId },
+      select: { id: true, warehouseId: true },
+    })
+    if (!supplier) {
+      return NextResponse.json({ error: "Lapak tidak ditemukan." }, { status: 404 })
+    }
+    if (supplier.warehouseId !== warehouseId) {
+      return NextResponse.json({ error: "Lapak ini bukan milik gudang Anda." }, { status: 403 })
+    }
+
     const draftItems = items as DraftPurchaseItemInput[]
     const validatedItems = draftItems.map((item, index) => {
       if (!item.sku_name || typeof item.sku_name !== "string") {
