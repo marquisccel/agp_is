@@ -145,6 +145,9 @@ a[href]:active,
   transition-timing-function: var(--ease-spring);
 }
 
+/* Penanda fokus bawaan untuk elemen yang tidak punya penanda sendiri.
+   Sengaja dibiarkan untuk tombol dan tautan: di sana ini satu-satunya
+   petunjuk bagi pengguna papan tik. */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
@@ -152,6 +155,18 @@ button:focus-visible,
 a:focus-visible {
   outline: 3px solid var(--brand-soft-strong);
   outline-offset: 2px;
+}
+
+/* Kolom .field-input dikecualikan. Aturan di atas menggambar garis hijau
+   3px BERJARAK 2px di luar kolom, sehingga yang terlihat lingkaran hijau
+   dengan celah -- inilah halo yang selama ini terlihat, dan ia datang
+   dari sini, bukan dari box-shadow milik .field-input. Kolom ini sudah
+   punya penanda fokusnya sendiri (latar jadi putih, tepi menghijau,
+   kolomnya terangkat), jadi membuang garis ini tidak menghilangkan
+   petunjuk fokus bagi siapa pun. */
+.field-input:focus,
+.field-input:focus-visible {
+  outline: none;
 }
 
 /* Kartu dasar -- dipakai di 25+ tempat. Flat: border tipis + shadow
