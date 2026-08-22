@@ -60,56 +60,58 @@ export default function PotonganFields({ baris, total, eyebrow, judul, deskripsi
         </div>
       </div>
 
-      <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>{deskripsi}</p>
+      <div className="section-body">
+        <p className="text-xs" style={{ color: "var(--muted-faint)" }}>{deskripsi}</p>
 
-      <div className="mt-4 space-y-2.5">
-        {baris.map((b) => (
-          <div
-            key={b.kunci}
-            className="flex flex-col gap-3 rounded-[var(--radius-md)] border p-3.5 md:flex-row md:items-center"
-            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-          >
-            <div className="text-sm font-bold md:w-[22%]" style={{ color: "var(--foreground)" }}>
-              {b.nama}
-            </div>
-            <div className="grid flex-1 grid-cols-2 gap-3">
-              <div>
-                <label className="field-label">Berat (KG)</label>
-                <NumberInput
-                  aria-label={`Berat ${b.nama} (KG)`}
-                  min="0"
-                  step="0.01"
-                  placeholder="0"
-                  className="field-input"
-                  disabled={readOnly}
-                  value={b.berat}
-                  onValueChange={b.setBerat}
-                />
+        <div className="mt-4 space-y-2.5">
+          {baris.map((b) => (
+            <div
+              key={b.kunci}
+              className="flex flex-col gap-3 rounded-[var(--radius-md)] border p-3.5 md:flex-row md:items-center"
+              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+            >
+              <div className="text-sm font-bold md:w-[22%]" style={{ color: "var(--foreground)" }}>
+                {b.nama}
               </div>
-              <div>
-                <label className="field-label">Harga / KG (Rp)</label>
-                <NumberInput
-                  aria-label={`Harga per KG ${b.nama}`}
-                  min="0"
-                  placeholder="0"
-                  className="field-input"
-                  disabled={readOnly}
-                  value={b.harga}
-                  onValueChange={b.setHarga}
-                />
+              <div className="grid flex-1 grid-cols-2 gap-3">
+                <div>
+                  <label className="field-label">Berat (KG)</label>
+                  <NumberInput
+                    aria-label={`Berat ${b.nama} (KG)`}
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                    className="field-input"
+                    disabled={readOnly}
+                    value={b.berat}
+                    onValueChange={b.setBerat}
+                  />
+                </div>
+                <div>
+                  <label className="field-label">Harga / KG (Rp)</label>
+                  <NumberInput
+                    aria-label={`Harga per KG ${b.nama}`}
+                    min="0"
+                    placeholder="0"
+                    className="field-input"
+                    disabled={readOnly}
+                    value={b.harga}
+                    onValueChange={b.setHarga}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="text-right md:w-[22%]">
-              <span className="field-label" style={{ marginBottom: 2 }}>Nilai Potongan</span>
-              <span
-                className="text-sm font-extrabold"
-                style={{ color: nilaiWarna(b.nilai), fontVariantNumeric: "tabular-nums" }}
-              >
-                {rupiah(b.nilai)}
-              </span>
-            </div>
-          </div>
-        ))}
+              <div className="text-right md:w-[22%]">
+                <span className="field-label" style={{ marginBottom: 2 }}>Nilai Potongan</span>
+                <span
+                  className="text-sm font-extrabold"
+                  style={{ color: nilaiWarna(b.nilai), fontVariantNumeric: "tabular-nums" }}
+                >
+                  {rupiah(b.nilai)}
+                </span>
+              </div>
+              </div>
+            ))}
+        </div>
       </div>
     </div>
   )

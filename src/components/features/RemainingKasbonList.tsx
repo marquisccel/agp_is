@@ -37,19 +37,31 @@ export default function RemainingKasbonList() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 animate-pulse space-y-4">
-        <div className="h-5 bg-slate-200 rounded-lg w-1/3"></div>
-        <div className="h-10 bg-slate-100 rounded-xl"></div>
-        <div className="h-10 bg-slate-100 rounded-xl"></div>
-        <div className="h-10 bg-slate-100 rounded-xl"></div>
+      <div className="section">
+        <div className="section-body animate-pulse space-y-3">
+          <div className="h-5 w-1/3 rounded-[var(--radius-sm)]" style={{ background: "var(--border)" }} />
+          <div className="h-10 rounded-[var(--radius-sm)]" style={{ background: "var(--bg-tint)" }} />
+          <div className="h-10 rounded-[var(--radius-sm)]" style={{ background: "var(--bg-tint)" }} />
+          <div className="h-10 rounded-[var(--radius-sm)]" style={{ background: "var(--bg-tint)" }} />
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 text-red-600 rounded-2xl border border-red-100 text-sm">
-        Peringatan: {error}
+      <div className="notice tone-warning">
+        <span className="notice-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </span>
+        <div>
+          <h3 className="notice-title">Kasbon gagal dimuat</h3>
+          <p className="notice-body">{error}</p>
+        </div>
       </div>
     )
   }
@@ -58,73 +70,99 @@ export default function RemainingKasbonList() {
   const totalOutstanding = data.reduce((sum, item) => sum + item.remaining, 0)
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-5 transition-all">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="section">
+      <div className="section-shell-head">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-rose-500 text-white rounded-xl shadow-md shadow-rose-500/20">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {/* Ikon dulu berlatar merah pekat dengan bayangan berwarna,
+              padahal kartu ini cuma menampilkan daftar -- bukan
+              peringatan. Warnanya disamakan dengan ikon judul bagian di
+              layar lain: brand-soft dengan ikon brand-strong. */}
+          <span
+            className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-[10px]"
+            style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="2" y="4" width="20" height="16" rx="2" />
               <line x1="12" y1="4" x2="12" y2="20" />
               <line x1="2" y1="12" x2="22" y2="12" />
             </svg>
-          </div>
+          </span>
           <div>
-            <h3 className="font-bold text-slate-800 text-base md:text-lg">Kontrol Kasbon Lapak</h3>
-            <p className="text-xs text-slate-500">Daftar lapak yang masih memiliki saldo sisa kasbon aktif.</p>
+            <span className="section-eyebrow">Kasbon</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kontrol Kasbon Lapak</h3>
           </div>
         </div>
 
         {data.length > 0 && (
-          <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100 rounded-xl px-4 py-2 text-right">
-            <span className="text-xs font-semibold text-slate-500 block">Total Sisa Kasbon</span>
-            <span className="text-base font-extrabold text-rose-600">{fmtRp(totalOutstanding)}</span>
+          <div className="text-right">
+            <span className="field-label" style={{ marginBottom: 2 }}>Total Sisa Kasbon</span>
+            <span
+              className="text-base font-extrabold"
+              style={{ color: "var(--warning)", fontVariantNumeric: "tabular-nums" }}
+            >
+              {fmtRp(totalOutstanding)}
+            </span>
           </div>
         )}
       </div>
 
-      {data.length === 0 ? (
-        <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-          <svg className="mx-auto h-10 w-10 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-slate-500 font-semibold text-sm">Semua Kasbon Lunas!</p>
-          <p className="text-slate-400 text-xs mt-0.5">Tidak ada sisa kasbon menggantung dari lapak saat ini.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-100">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Nama Lapak</th>
-                <th className="py-3 px-4 text-right">Total Kasbon</th>
-                <th className="py-3 px-4 text-right">Telah Dipakai</th>
-                <th className="py-3 px-4 text-right">Sisa Kasbon</th>
-                <th className="py-3 px-4 text-center">Pengiriman</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {data.map((item) => (
-                <tr
-                  key={item.supplierId}
-                  className="hover:bg-slate-50/50 transition-colors"
-                >
-                  <td className="py-3 px-4 font-bold text-slate-800">{item.supplierNama}</td>
-                  <td className="py-3 px-4 text-right text-slate-600">{fmtRp(item.totalApproved)}</td>
-                  <td className="py-3 px-4 text-right text-slate-600">{fmtRp(item.totalUsed)}</td>
-                  <td className="py-3 px-4 text-right font-extrabold text-rose-600 bg-rose-50/30">
-                    {fmtRp(item.remaining)}
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
-                      {item.totalDeliveries}x kirim
-                    </span>
-                  </td>
+      <div className="section-body">
+        <p className="text-xs" style={{ color: "var(--muted-faint)" }}>
+          Daftar lapak yang masih memiliki saldo sisa kasbon aktif.
+        </p>
+
+        {data.length === 0 ? (
+          <div
+            className="mt-4 rounded-[var(--radius-md)] border border-dashed py-8 text-center"
+            style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
+          >
+            <svg className="mx-auto mb-2 h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--success)" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Semua kasbon lunas</p>
+            <p className="mt-0.5 text-xs" style={{ color: "var(--muted-faint)" }}>
+              Tidak ada sisa kasbon menggantung dari lapak saat ini.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 overflow-x-auto rounded-[var(--radius-md)] border" style={{ borderColor: "var(--border)" }}>
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b text-[11px] font-bold uppercase tracking-wider" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)", color: "var(--muted)" }}>
+                  <th className="px-4 py-3">Nama Lapak</th>
+                  <th className="px-4 py-3 text-right">Total Kasbon</th>
+                  <th className="px-4 py-3 text-right">Telah Dipakai</th>
+                  <th className="px-4 py-3 text-right">Sisa Kasbon</th>
+                  <th className="px-4 py-3 text-center">Pengiriman</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="divide-y text-sm" style={{ borderColor: "var(--border)" }}>
+                {data.map((item) => (
+                  <tr key={item.supplierId} className="transition-colors hover:bg-[var(--bg-tint)]">
+                    <td className="px-4 py-3 font-bold" style={{ color: "var(--foreground)" }}>{item.supplierNama}</td>
+                    <td className="px-4 py-3 text-right" style={{ color: "var(--muted)", fontVariantNumeric: "tabular-nums" }}>{fmtRp(item.totalApproved)}</td>
+                    <td className="px-4 py-3 text-right" style={{ color: "var(--muted)", fontVariantNumeric: "tabular-nums" }}>{fmtRp(item.totalUsed)}</td>
+                    {/* Sisa kasbon dinilai perhatian, bukan kesalahan --
+                        amber, senada dengan nada "belum tercapai" di layar
+                        target. */}
+                    <td className="px-4 py-3 text-right font-extrabold" style={{ color: "var(--warning)", fontVariantNumeric: "tabular-nums" }}>
+                      {fmtRp(item.remaining)}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className="inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                        style={{ background: "var(--bg-tint)", color: "var(--muted)" }}
+                      >
+                        {item.totalDeliveries}x kirim
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

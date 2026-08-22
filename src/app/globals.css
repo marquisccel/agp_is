@@ -496,6 +496,13 @@ a:focus-visible {
   flex-wrap: wrap;
 }
 
+/* Badan bagian. .section sengaja tanpa padding karena kepalanya
+   (.section-shell-head) membawa padding sendiri dan menempel di atas;
+   isinya harus membawa padding sendiri juga. Tanpa ini isinya mepet ke
+   tepi lalu terpotong sudut membulat .section yang overflow-nya hidden. */
+.section-body { padding: 18px 22px; }
+.section-body.rapat { padding: 14px 16px; }
+
 .section-eyebrow {
   font-size: 10.5px;
   font-weight: 800;
