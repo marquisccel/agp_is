@@ -165,7 +165,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
         <button
           type="submit"
           disabled={loading}
-          className="premium-button btn-brand rounded-xl px-8 py-3 font-bold text-white disabled:opacity-70"
+          className="premium-button btn-primer rounded-xl px-8 py-3 font-bold disabled:opacity-70"
         >
           {loading ? "Memproses..." : "Ajukan Kasbon"}
         </button>

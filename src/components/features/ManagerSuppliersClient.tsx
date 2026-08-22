@@ -689,7 +689,7 @@ export default function ManagerSuppliersClient({
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button btn-brand rounded-[10px] px-4 py-2 text-xs font-bold text-white">
+                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button btn-primer rounded-[10px] px-4 py-2 text-xs font-bold">
                       Detail Lapak
                     </Link>
                     <button
@@ -819,7 +819,7 @@ export default function ManagerSuppliersClient({
               <button
                 onClick={handleSaveLocation}
                 disabled={savingLocation}
-                className="premium-button btn-brand rounded-[10px] px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
+                className="premium-button btn-primer rounded-[10px] px-5 py-3 text-sm font-bold disabled:opacity-60"
               >
                 {savingLocation ? "Menyimpan..." : "Simpan Lokasi"}
               </button>
@@ -915,7 +915,7 @@ export default function ManagerSuppliersClient({
               <button
                 onClick={handleRunImport}
                 disabled={importing}
-                className="premium-button btn-brand rounded-[10px] px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
+                className="premium-button btn-primer rounded-[10px] px-5 py-3 text-sm font-bold disabled:opacity-60"
               >
                 {importing ? "Memproses..." : "Proses Import"}
               </button>

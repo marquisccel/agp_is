@@ -346,18 +346,11 @@ a:focus-visible {
   border-radius: var(--radius-md);
 }
 
-.btn-brand {
-  background: var(--brand);
-  /* Warna teks ikut di sini, bukan diserahkan ke pemanggil. Latar brand
-     selalu gelap, jadi teksnya selalu putih -- kalau diserahkan, satu
-     pemanggil yang lupa langsung menghasilkan tombol tak terbaca. */
-  color: #fff;
-  transition: background-color 160ms var(--ease-system);
-}
-
-.btn-brand:hover {
-  background: var(--brand-strong);
-}
+/* .btn-brand dihapus: dulu ada DUA tombol utama yang bersaing --
+   .btn-brand berlatar --brand dengan hover menggelap, dan .btn-primer
+   berlatar --brand-strong dengan hover berbalik jadi putih. Warnanya
+   beda, perilakunya beda, dan keduanya sama-sama dipakai sebagai aksi
+   utama. Semuanya kini memakai .btn-primer. */
 
 /* Stat strip (Fase 3 model redesign) -- satu grid rapat, bukan kartu
    terpisah dengan gradient/glow. Delta di bawah angka kasih konteks
@@ -1235,9 +1228,9 @@ a:focus-visible {
    bergeser 2px waktu warnanya berbalik.
    --------------------------------------------------------------------- */
 .btn-primer {
-  background: var(--brand-strong);
+  background: var(--brand);
   color: #ffffff;
-  border: 1px solid var(--brand-strong);
+  border: 1px solid var(--brand);
   transition:
     background-color 220ms var(--ease-system),
     color 220ms var(--ease-system),
@@ -1249,8 +1242,8 @@ a:focus-visible {
 .btn-primer:hover:not(:disabled) {
   background: #ffffff;
   color: var(--brand-strong);
-  border-color: var(--brand-strong);
-  box-shadow: 0 8px 20px -10px rgba(3, 96, 48, 0.55);
+  border-color: var(--brand);
+  box-shadow: 0 8px 20px -10px rgba(85, 145, 51, 0.55);
 }
 
 .btn-primer:active:not(:disabled) { transform: scale(0.985); }

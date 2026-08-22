@@ -471,7 +471,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 href={mapHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="premium-button btn-brand flex items-center justify-center gap-2 rounded-[10px] px-4 py-3 text-sm font-bold text-white"
+                className="premium-button btn-primer flex items-center justify-center gap-2 rounded-[10px] px-4 py-3 text-sm font-bold"
               >
                 <MapPin className="h-4 w-4" />
                 Buka di Google Maps

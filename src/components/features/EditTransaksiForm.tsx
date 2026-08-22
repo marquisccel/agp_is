@@ -271,7 +271,7 @@ export default function EditTransaksiForm({
           <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Item Pembelian</h3>
           <button
             onClick={addItem}
-            className="btn-brand flex items-center gap-1.5 rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold"
+            className="btn-primer flex items-center gap-1.5 rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold"
           >
             <span className="text-base leading-none">+</span> Tambah Item
           </button>

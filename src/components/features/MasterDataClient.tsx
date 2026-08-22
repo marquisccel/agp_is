@@ -70,7 +70,7 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
         <button
           type="button"
           onClick={() => setTerbuka(true)}
-          className="premium-button btn-brand flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white"
+          className="premium-button btn-primer flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold"
         >
           <UserPlus className="h-4 w-4" />
           Daftarkan Akun Baru
@@ -80,7 +80,7 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
   }
 
   return (
-    <form onSubmit={simpan} className="interactive-surface space-y-4 border border-slate-200/80 p-5">
+    <form onSubmit={simpan} className="section section-body space-y-4">
       {toastHost}
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-bold text-slate-900">Daftarkan Akun Baru</h3>
@@ -91,32 +91,32 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="space-y-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Nama Lengkap</span>
+          <span className="field-label">Nama Lengkap</span>
           <input
             required value={nama} onChange={(e) => setNama(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none"
+            className="field-input"
           />
         </label>
 
         <label className="space-y-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Email</span>
+          <span className="field-label">Email</span>
           <input
             required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none"
+            className="field-input"
           />
         </label>
 
         <label className="space-y-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Password</span>
+          <span className="field-label">Password</span>
           <input
             required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none"
+            className="field-input"
           />
           <span className="block text-[11px] text-slate-400">Minimal 8 karakter.</span>
         </label>
 
         <div className="space-y-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Role</span>
+          <span className="field-label">Role</span>
           <ElegantSelect
             value={role}
             onChange={(v) => { setRole(v); if (v === "MANAGER") setWarehouseId("") }}
@@ -132,7 +132,7 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
 
         {butuhGudang && (
           <div className="space-y-1.5 sm:col-span-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">Gudang Penugasan</span>
+            <span className="field-label">Gudang Penugasan</span>
             <ElegantSelect
               value={warehouseId}
               onChange={setWarehouseId}
@@ -150,7 +150,7 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
       <button
         type="submit"
         disabled={loading}
-        className="premium-button btn-brand rounded-xl px-6 py-2.5 text-sm font-bold text-white disabled:opacity-70"
+        className="premium-button btn-primer rounded-xl px-6 py-2.5 text-sm font-bold disabled:opacity-70"
       >
         {loading ? "Menyimpan..." : "Buat Akun"}
       </button>
@@ -476,17 +476,18 @@ export default function MasterDataClient({
             {filteredSuppliers.length === 0 ? (
               <EmptyState text="Tidak ada lapak yang cocok." />
             ) : filteredSuppliers.map((supplier, idx) => (
-              <div key={supplier.id} className="interactive-surface border border-slate-200/80 p-5">
+              <div key={supplier.id} className="section section-body">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="truncate text-base font-black text-slate-950">{supplier.nama}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <p className="text-xs text-slate-500">{supplier.warehouse?.nama || "-"}</p>
-                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
-                        supplier.transactionStatus === "GREEN"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-rose-200 bg-rose-50 text-rose-700"
-                      }`}>
+                      <span
+                        className="rounded-full border px-2.5 py-1 text-[10px] font-black"
+                        style={supplier.transactionStatus === "GREEN"
+                          ? { borderColor: "var(--success-soft)", background: "var(--success-soft)", color: "var(--success)" }
+                          : { borderColor: "var(--danger-soft)", background: "var(--danger-soft)", color: "var(--danger)" }}
+                      >
                         {supplier.transactionStatus === "GREEN" ? "Hijau" : "Merah"}
                       </span>
                       {/* Biru di sini tidak menandakan apa pun, dan bersaing
@@ -504,7 +505,7 @@ export default function MasterDataClient({
                       </span>
                     </div>
                   </div>
-                  <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white">#{idx + 1}</span>
+                  <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>#{idx + 1}</span>
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <MiniStat label="Transaksi" value={supplier.totalTransaksi.toString()} />
@@ -512,7 +513,7 @@ export default function MasterDataClient({
                   <MiniStat label="Tonase" value={fmtKg(supplier.totalKg)} />
                   <MiniStat label="Nilai" value={fmtRp(supplier.totalNilai)} />
                 </div>
-                <div className="mt-4 flex flex-wrap justify-between gap-2 border-t border-slate-200/70 pt-4 text-xs text-slate-500">
+                <div className="mt-4 flex flex-wrap justify-between gap-2 border-t pt-4 text-xs" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
                   <span>{supplier.kontak_wa ? `WA ${supplier.kontak_wa}` : "Kontak belum tersedia"}</span>
                   <div className="flex flex-wrap items-center gap-3">
                     <span>Terakhir: {fmtDate(supplier.lastPurchase)}</span>
@@ -546,9 +547,9 @@ export default function MasterDataClient({
             />
           </FilterBar>
 
-          <div className="interactive-surface overflow-hidden border border-slate-200/80">
+          <div className="section overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
+              <thead className="border-b text-[11px] font-bold uppercase tracking-[0.08em]" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)", color: "var(--muted)" }}>
                 <tr>
                   <th className="px-5 py-4 text-left">Nama</th>
                   <th className="px-5 py-4 text-left">Email</th>
@@ -556,14 +557,14 @@ export default function MasterDataClient({
                   <th className="px-5 py-4 text-left">Gudang</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
                 {filteredUsers.length === 0 ? (
                   <tr><td colSpan={4} className="px-5 py-10 text-center text-slate-400">Tidak ada pengguna yang cocok.</td></tr>
                 ) : filteredUsers.map((user) => (
                   <tr key={user.id} className="premium-row">
                     <td className="px-5 py-4 font-bold text-slate-900">{user.nama}</td>
                     <td className="px-5 py-4 font-mono text-xs text-slate-500">{user.email}</td>
-                    <td className="px-5 py-4"><span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-black text-slate-700">{user.role}</span></td>
+                    <td className="px-5 py-4"><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
                     <td className="px-5 py-4 text-slate-600">{user.warehouse?.nama || "-"}</td>
                   </tr>
                 ))}
@@ -594,16 +595,19 @@ export default function MasterDataClient({
               const wSkus = filteredSkuPrices.filter((sku) => sku.warehouse.id === warehouse.id)
               if (wSkus.length === 0) return null
               return (
-                <section key={warehouse.id} className="interactive-surface overflow-hidden border border-slate-200/80">
-                  <div className="flex items-center justify-between border-b border-slate-200/70 p-5">
+                <section key={warehouse.id} className="section">
+                  <div className="section-shell-head">
                     <div>
-                      <h3 className="text-sm font-black text-slate-950">{warehouse.nama}</h3>
-                      <p className="mt-1 text-xs text-slate-500">{wSkus.length} SKU tersimpan</p>
+                      <span className="section-eyebrow">Standar harga</span>
+                      <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{warehouse.nama}</h3>
                     </div>
-                    <Database className="h-5 w-5 text-slate-400" />
+                    <div className="flex items-center gap-2">
+                      <Database className="h-4 w-4" style={{ color: "var(--brand-strong)" }} />
+                      <span className="text-xs font-bold" style={{ color: "var(--muted)" }}>{wSkus.length} SKU</span>
+                    </div>
                   </div>
                   <table className="w-full text-sm">
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
                       {wSkus.map((sku) => (
                         <tr key={sku.id} className="premium-row">
                           <td className="px-5 py-3 font-bold text-slate-900">{sku.sku_name}</td>
@@ -650,7 +654,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function FilterBar({ children }: { children: ReactNode }) {
   return (
-    <div className="interactive-surface border border-slate-200/80 p-4">
+    <div className="section section-body">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {children}
       </div>

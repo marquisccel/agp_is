@@ -713,7 +713,7 @@ export default async function ManagerDashboard({
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
               <Link
                 href="/dashboard/manager/reports"
-                className="premium-button btn-brand text-white px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm flex items-center justify-center gap-2 group whitespace-nowrap"
+                className="premium-button btn-primer px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm flex items-center justify-center gap-2 group whitespace-nowrap"
               >
                 Rekap Laporan
               </Link>
