@@ -1057,19 +1057,22 @@ a:focus-visible {
 
 .field-input::placeholder { color: var(--muted-faint); font-weight: 400; }
 
-/* Glow saat isian disentuh.
-   Sebelumnya satu cincin 3px berwarna --brand-soft (#EAF3E6) yang pekat,
-   sehingga tepinya terbaca sebagai garis keras -- kaku, bukan cahaya.
-   Sekarang tiga lapis translusen yang makin melebar dan makin pudar,
-   jadi tepinya luruh dan terbaca sebagai pendar. Perpindahannya
-   diperlambat dan diberi kurva keluar supaya terasa mengembang, bukan
-   berkedip. */
+/* Tampilan isian saat disentuh.
+   Riwayat singkatnya: mula-mula cincin 3px --brand-soft yang pekat, lalu
+   tiga cincin translusen, lalu bayangan hijau berkabut. Ketiganya sama
+   masalahnya -- semuanya melingkari kolom, jadi yang terbaca selalu
+   "garis kedua" mengitari kotak, bukan cahaya.
+
+   Di sini tidak ada apa pun yang melingkar. Yang menandakan fokus:
+   latarnya naik dari abu ke putih, tepinya menghijau, dan kolomnya
+   sedikit terangkat -- bayangannya jatuh ke bawah saja, dengan sebaran
+   negatif supaya tidak merembet ke samping dan atas. */
 .field-input:focus {
   background: var(--surface);
-  border-color: rgba(85, 145, 51, 0.62);
+  border-color: rgba(85, 145, 51, 0.72);
   box-shadow:
-    0 1px 2px rgba(16, 24, 20, 0.05),
-    0 4px 14px rgba(85, 145, 51, 0.13);
+    inset 0 1px 1.5px rgba(16, 24, 20, 0.035),
+    0 6px 16px -8px rgba(48, 84, 38, 0.4);
 }
 
 .field-input:disabled {
@@ -1080,10 +1083,10 @@ a:focus-visible {
 
 .field-input.is-invalid { border-color: var(--danger); }
 .field-input.is-invalid:focus {
-  border-color: rgba(220, 38, 38, 0.62);
+  border-color: rgba(220, 38, 38, 0.72);
   box-shadow:
-    0 1px 2px rgba(16, 24, 20, 0.05),
-    0 4px 14px rgba(220, 38, 38, 0.14);
+    inset 0 1px 1.5px rgba(16, 24, 20, 0.035),
+    0 6px 16px -8px rgba(150, 26, 26, 0.42);
 }
 
 /* Varian besar -- dipakai untuk kolom utama seperti pemilihan lapak. */
