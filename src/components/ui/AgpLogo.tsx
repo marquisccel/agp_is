@@ -1,110 +1,297 @@
 "use client"
 
-import { useId } from "react"
+import { useEffect, useRef } from "react"
+import {
+  DAUN,
+  GELAP,
+  LEBAR_VB,
+  TINGGI_VB,
+  WARNA_DAUN,
+  WARNA_GELAP,
+} from "@/lib/agpLogoPath"
 
 /**
- * Lambang Agrapana Greenworks Polymer.
+ * Lambang Agrapana Greenworks Polymer, digambar di canvas.
  *
- * Jalur vektornya diambil apa adanya dari berkas logo resmi PT, jadi
- * bentuknya tidak digambar ulang -- dua warna hijau aslinya
- * dipertahankan (#6E934E daun, #325E38 bayangan).
+ * Kenapa canvas dan bukan SVG. Ketebalan logo dibuat dengan menumpuk
+ * bentuk yang sama sambil digeser turun sedikit demi sedikit. Di SVG
+ * tiap salinan adalah elemen tersendiri, jadi masing-masing dihaluskan
+ * (anti-alias) sendiri-sendiri dan tepinya bertumpuk jadi serabut halus
+ * di sepanjang sisi -- bertambah parah makin banyak salinannya.
  *
- * Efek timbul dan kilau dikerjakan di dalam SVG, bukan sebagai lapisan
- * di atasnya: kilaunya dipotong (clipPath) mengikuti bentuk logo,
- * sehingga cahayanya menyapu daunnya saja dan tidak pernah bocor jadi
- * kotak terang di sekelilingnya.
+ * Di canvas seluruh salinan bisa digabung ke dalam SATU Path2D lalu
+ * diisi SEKALI. Penghalusan hanya terjadi di batas luar gabungannya,
+ * bukan di tiap salinan, sehingga badan logo keluar sebagai satu bidang
+ * padat tanpa jahitan.
  *
- * Semua id dibuat lewat useId karena logo ini dirender lebih dari sekali
- * di satu halaman (lockup desktop dan ponsel). Kalau id-nya dipatok,
- * salinan kedua akan merujuk defs milik salinan pertama.
+ * Pecahan kecil sisa auto-trace sudah dibuang di src/lib/agpLogoPath.ts;
+ * kalau tidak, tiap pecahan ikut memanjang jadi serabut tersendiri.
  */
 
-const DAUN =
-  "M2027 4617 c-20 -39 -30 -63 -21 -52 8 11 27 42 40 68 14 27 28 46 31 43 7 -7 -50 -109 -99 -174 -22 -30 -42 -51 -46 -48 -3 3 3 16 14 29 25 28 52 65 37 52 -6 -5 -37 -41 -69 -80 -114 -138 -219 -247 -323 -337 -233 -202 -588 -574 -498 -522 7 4 9 3 4 -2 -5 -5 -14 -9 -20 -9 -28 0 -160 -247 -206 -385 -46 -136 -62 -226 -68 -390 -14 -375 114 -724 394 -1077 67 -84 219 -240 227 -232 3 3 -12 62 -34 131 -57 185 -71 266 -77 433 -8 226 24 457 102 720 45 153 48 167 30 130 -48 -101 36 147 106 313 68 159 240 492 255 492 3 0 2 -5 -2 -12 -4 -6 -8 -21 -9 -32 -2 -12 -21 -75 -43 -141 -88 -260 -210 -741 -226 -890 l-5 -50 14 55 14 55 -7 -65 c-4 -36 -6 -139 -6 -230 2 -224 29 -374 89 -506 13 -28 29 -71 35 -95 6 -24 32 -88 58 -142 34 -73 48 -93 53 -80 7 20 13 -7 24 -108 7 -68 36 -132 110 -243 108 -162 220 -272 395 -388 96 -64 320 -185 320 -173 0 3 -49 29 -108 59 -254 127 -463 302 -592 495 -110 165 -115 181 -115 361 0 134 3 165 23 230 31 99 78 205 113 258 33 50 36 60 12 41 -16 -11 -16 -11 -5 1 7 8 17 15 21 15 4 0 31 25 59 56 52 56 68 84 35 58 -16 -13 -17 -12 -4 3 7 10 17 16 21 13 12 -8 94 88 161 189 118 176 196 360 239 566 28 132 38 403 20 547 -29 241 -115 526 -231 775 -70 151 -176 339 -194 345 -5 1 -27 -30 -48 -70z m-145 -234 c-42 -49 -277 -283 -261 -261 3 4 55 58 115 120 60 62 127 134 148 161 21 26 41 45 44 43 2 -3 -18 -31 -46 -63z m-312 -308 c-24 -25 -46 -45 -49 -45 -3 0 15 20 39 45 24 25 46 45 49 45 3 0 -15 -20 -39 -45z m-540 -585 c-6 -11 -13 -20 -16 -20 -2 0 0 9 6 20 6 11 13 20 16 20 2 0 0 -9 -6 -20z m-46 -81 c-14 -28 -27 -49 -30 -47 -5 5 45 98 52 98 2 0 -7 -23 -22 -51z m-65 -138 c-76 -181 -110 -414 -90 -619 19 -199 51 -317 132 -490 21 -46 39 -88 39 -93 0 -5 5 -9 10 -9 6 0 10 -5 10 -10 0 -6 16 -33 36 -62 20 -28 37 -57 38 -64 1 -7 11 -21 22 -31 11 -10 23 -26 27 -35 3 -10 11 -18 17 -18 6 0 8 -5 5 -10 -3 -6 4 -14 17 -19 13 -6 17 -10 10 -10 -10 -1 -10 -4 0 -15 7 -8 17 -11 22 -8 5 3 6 0 3 -5 -8 -13 27 -55 37 -45 4 4 6 2 4 -4 -3 -12 71 -104 85 -104 4 0 5 5 2 10 -3 6 -1 10 5 10 11 0 3 50 -9 60 -4 3 -6 12 -6 20 1 8 -4 35 -11 60 -21 74 -34 207 -32 330 l1 115 7 -150 c8 -178 27 -281 80 -446 l39 -122 -61 59 c-182 179 -360 446 -449 674 -132 335 -129 743 8 1053 37 83 38 64 2 -22z m488 -473 c-3 -8 -6 -5 -6 6 -1 11 2 17 5 13 3 -3 4 -12 1 -19z m-70 -280 c-3 -8 -6 -5 -6 6 -1 11 2 17 5 13 3 -3 4 -12 1 -19z m-10 -40 c-3 -8 -6 -5 -6 6 -1 11 2 17 5 13 3 -3 4 -12 1 -19z m-10 -70 c-3 -8 -6 -5 -6 6 -1 11 2 17 5 13 3 -3 4 -12 1 -19z m-20 -170 c-3 -7 -5 -2 -5 12 0 14 2 19 5 13 2 -7 2 -19 0 -25z m596 -223 c-15 -30 -29 -53 -31 -51 -4 5 46 106 53 106 3 0 -7 -25 -22 -55z m-69 -169 c-13 -43 -27 -112 -31 -152 -3 -41 -10 -77 -15 -80 -5 -4 -7 9 -4 28 3 18 8 56 12 83 6 52 53 210 59 203 2 -2 -7 -39 -21 -82z M3690 4549 c-85 -51 -270 -160 -410 -243 -140 -84 -342 -199 -447 -255 -171 -91 -193 -106 -193 -128 0 -13 13 -77 29 -141 46 -182 55 -264 48 -456 -9 -266 -74 -531 -184 -749 -57 -114 -75 -143 -198 -307 -130 -173 -195 -270 -233 -345 -31 -62 -62 -157 -61 -184 0 -9 10 18 23 59 38 128 81 201 261 440 161 214 226 328 291 507 73 201 104 364 111 584 6 187 -3 272 -48 451 -16 65 -29 128 -29 140 1 19 31 39 198 127 108 58 319 177 467 266 437 261 531 315 549 315 9 0 74 -33 144 -74 103 -60 702 -395 957 -536 33 -18 56 -28 50 -22 -5 6 -185 108 -400 228 -214 119 -468 261 -563 315 -95 55 -181 99 -190 99 -10 0 -87 -41 -172 -91z M3717 4082 c-228 -118 -420 -235 -584 -356 l-83 -60 2 -231 3 -230 2 227 3 228 51 40 c161 127 699 440 756 440 12 0 106 -47 209 -104 418 -229 810 -450 922 -517 64 -40 216 -130 337 -202 121 -71 249 -147 284 -168 91 -55 101 -53 99 19 l-2 57 -3 -52 c-3 -31 -9 -53 -15 -53 -7 0 -75 38 -152 84 -594 353 -778 460 -1126 653 -217 121 -430 238 -473 261 l-77 43 -153 -79z M5030 3986 c0 -2 100 -62 222 -132 122 -70 276 -160 343 -201 l120 -74 6 -162 5 -162 0 164 -1 164 -105 65 c-86 53 -505 297 -572 333 -10 5 -18 8 -18 5z M1760 3630 c-11 -22 -18 -40 -15 -40 2 0 14 18 25 40 11 22 18 40 15 40 -2 0 -14 -18 -25 -40z M3689 3532 c-97 -54 -184 -103 -193 -111 -15 -12 -16 -108 -14 -1120 l3 -1106 5 1109 5 1109 190 104 c104 57 195 103 203 103 19 0 154 -73 472 -255 296 -170 310 -178 310 -171 0 3 -46 31 -102 62 -57 32 -130 74 -163 94 -159 97 -498 280 -518 279 -12 0 -101 -44 -198 -97z M1669 3459 c-33 -67 -59 -123 -57 -125 2 -2 32 53 66 121 34 69 60 125 57 125 -3 0 -32 -54 -66 -121z M1576 3259 c-15 -34 -25 -63 -23 -65 2 -2 16 24 30 58 15 34 25 63 23 65 -2 2 -15 -24 -30 -58z M3043 3150 c0 -30 2 -43 4 -27 2 15 2 39 0 55 -2 15 -4 2 -4 -28z M4685 3183 c6 -6 75 -46 155 -90 177 -98 558 -314 735 -416 l130 -75 5 -158 6 -159 2 162 2 163 -42 21 c-24 12 -115 63 -203 114 -190 109 -715 405 -765 430 -19 9 -30 13 -25 8z M1526 3140 c-22 -56 -19 -65 5 -11 11 24 18 46 15 48 -2 2 -11 -14 -20 -37z M3892 2463 l3 -718 2 708 c2 389 5 707 7 707 6 0 211 -116 261 -148 22 -14 110 -64 195 -112 85 -48 234 -132 330 -186 96 -55 275 -155 398 -223 l222 -122 0 -427 0 -427 -158 -95 c-133 -80 -466 -274 -607 -355 -137 -77 -221 -128 -230 -137 -7 -7 -7 -9 0 -6 85 45 732 422 910 531 l90 54 2 434 3 434 -218 119 c-220 120 -563 314 -927 524 -110 63 -219 126 -242 139 l-43 24 2 -718z M3032 3060 c0 -19 2 -27 5 -17 2 9 2 25 0 35 -3 9 -5 1 -5 -18z M1481 3019 c-11 -34 -19 -64 -17 -66 2 -2 13 24 25 58 11 34 19 64 17 66 -2 2 -13 -24 -25 -58z M3012 2945 c-7 -43 -10 -80 -8 -82 6 -6 29 134 24 148 -2 7 -9 -23 -16 -66z M2977 2778 c-10 -41 -33 -118 -52 -173 -19 -54 -33 -100 -31 -102 10 -11 111 317 104 339 -2 5 -12 -23 -21 -64z M1505 2535 c-3 -31 -5 -59 -2 -61 3 -3 8 20 12 51 3 31 5 59 2 61 -3 3 -8 -20 -12 -51z M2835 2382 c-58 -125 -131 -239 -238 -372 -43 -52 -96 -133 -120 -179 -35 -71 -42 -94 -42 -145 l0 -60 135 -82 c74 -45 315 -188 535 -319 405 -241 531 -317 730 -440 61 -38 118 -68 128 -67 10 0 64 29 120 63 56 34 128 77 160 96 31 19 57 36 57 39 0 7 -28 -9 -183 -103 -76 -45 -147 -83 -157 -83 -11 0 -51 20 -88 44 -60 38 -833 502 -1226 735 -231 137 -208 117 -203 184 7 82 59 183 154 302 131 164 217 303 277 449 33 79 9 42 -39 -62z M1493 2425 c0 -22 2 -30 4 -17 2 12 2 30 0 40 -3 9 -5 -1 -4 -23z M4312 2214 l3 -216 145 -84 c80 -47 156 -92 169 -101 l25 -16 -40 -19 c-161 -81 -370 -204 -561 -331 l-143 -95 -3 197 -2 196 -3 -202 c-1 -112 1 -203 4 -203 4 0 59 35 123 79 193 130 509 316 608 358 l37 15 -25 18 c-13 11 -85 54 -159 96 -74 43 -143 84 -152 92 -16 13 -18 37 -18 219 0 148 3 203 12 203 11 0 55 -25 333 -190 72 -42 168 -99 215 -126 47 -26 88 -53 92 -58 5 -7 8 -7 8 1 0 7 -15 20 -32 29 -18 9 -114 65 -213 124 -335 198 -391 230 -408 230 -16 0 -17 -18 -15 -216z M1476 2303 c-17 -204 -2 -423 43 -613 22 -95 72 -247 90 -276 14 -22 16 -29 -26 91 -78 225 -107 424 -100 683 3 105 4 192 3 192 -2 0 -6 -34 -10 -77z M5722 1703 l-2 -392 -60 -36 c-33 -20 -60 -39 -60 -41 0 -7 73 35 104 60 l26 21 -2 390 -3 390 -3 -392z M4980 1815 l-5 -220 -93 -61 c-83 -55 -132 -91 -92 -69 52 29 177 114 188 127 9 12 12 68 10 229 l-3 214 -5 -220z M2033 1640 c0 -47 2 -66 4 -42 2 23 2 61 0 85 -2 23 -4 4 -4 -43z M2046 1515 c3 -22 20 -67 37 -100 60 -112 111 -150 513 -385 203 -118 585 -344 848 -502 263 -159 489 -288 502 -288 12 0 25 4 28 9 3 4 -6 6 -20 3 -23 -4 -228 114 -814 468 -100 61 -506 300 -749 440 -209 121 -298 213 -337 348 -14 46 -14 46 -8 7z M4700 1418 c-52 -33 -580 -357 -717 -440 -31 -19 -48 -38 -20 -22 62 36 771 472 792 488 38 29 10 16 -55 -26z M1621 1385 c0 -5 8 -26 19 -45 11 -19 19 -30 19 -25 0 6 -8 26 -19 45 -11 19 -19 31 -19 25z M1695 1230 c14 -27 28 -50 30 -50 3 0 -6 23 -20 50 -14 28 -28 50 -30 50 -3 0 6 -22 20 -50z M5295 1052 c-159 -98 -429 -264 -600 -368 -170 -105 -399 -241 -508 -304 -108 -62 -196 -115 -194 -116 5 -5 354 196 557 321 96 59 276 169 400 245 511 310 654 400 640 400 -3 0 -135 -80 -295 -178z M3490 1181 c0 -16 37 -40 212 -140 132 -75 186 -101 210 -100 l33 1 -36 7 c-41 8 -357 183 -395 218 -13 12 -24 18 -24 14z M1745 1145 c133 -221 368 -441 608 -569 57 -31 108 -56 113 -56 5 0 -34 23 -86 51 -52 28 -117 66 -145 84 -145 93 -339 281 -434 420 -56 83 -89 123 -56 70z M2630 664 c0 -2 87 -47 193 -100 196 -98 307 -160 319 -178 4 -6 10 -7 14 -3 4 4 5 8 3 10 -58 44 -529 285 -529 271z M2500 507 c68 -40 336 -118 400 -116 14 0 -17 9 -67 19 -77 16 -167 43 -338 104 -12 4 -10 1 5 -7z M2978 383 c28 -2 76 -2 105 0 28 2 5 3 -53 3 -58 0 -81 -1 -52 -3z"
+/** Warna badan samping -- satu nada untuk seluruh logo. */
+const SISI = "#2a4f2e"
 
-const GELAP =
-  "M2049 4638 c-31 -60 -72 -120 -148 -213 -35 -44 -67 -82 -70 -85 -3 -3 -53 -55 -111 -115 l-105 -110 118 115 c65 63 154 158 197 212 77 95 158 224 147 234 -3 3 -16 -14 -28 -38z M3755 4577 c-49 -30 -234 -139 -410 -244 -176 -105 -404 -235 -507 -289 -158 -83 -187 -103 -188 -122 0 -12 13 -75 29 -140 45 -179 54 -264 48 -451 -7 -220 -38 -383 -111 -584 -65 -179 -130 -293 -291 -507 -56 -74 -120 -162 -142 -195 -95 -141 -143 -277 -143 -405 0 -202 88 -328 326 -465 300 -174 988 -581 1349 -798 116 -70 218 -127 228 -127 24 0 370 200 767 443 179 110 447 274 595 365 149 90 303 185 343 209 l72 45 -1 467 c-1 256 -4 546 -8 645 l-6 178 -130 75 c-172 100 -539 307 -805 455 -118 66 -318 180 -445 253 -282 162 -418 235 -437 235 -8 0 -99 -46 -203 -103 l-190 -104 -3 -1112 -2 -1112 24 -22 c43 -40 369 -217 399 -217 15 0 54 16 85 36 31 21 172 107 312 192 316 192 594 366 638 399 l32 24 0 217 c0 119 -4 222 -8 228 -4 5 -45 32 -92 58 -47 27 -143 84 -215 126 -278 165 -322 190 -333 190 -9 0 -12 -55 -12 -203 0 -182 2 -206 18 -219 9 -8 78 -49 152 -92 74 -42 146 -85 159 -96 l25 -18 -37 -15 c-99 -42 -415 -228 -610 -360 -65 -44 -121 -77 -124 -74 -3 4 -8 419 -11 923 l-5 917 44 -25 c24 -14 134 -77 244 -140 364 -210 707 -404 927 -524 l218 -119 -3 -434 -2 -434 -90 -54 c-127 -78 -593 -351 -760 -446 -77 -44 -192 -111 -255 -150 -189 -115 -230 -138 -248 -139 -9 -1 -66 29 -127 67 -199 123 -325 199 -730 440 -220 131 -461 274 -535 319 l-135 82 0 60 c0 51 7 74 42 145 24 46 77 127 119 179 155 192 252 367 327 590 91 269 118 437 124 791 l5 277 82 59 c163 120 356 237 583 355 l153 79 77 -43 c43 -23 256 -140 473 -261 348 -193 532 -300 1126 -653 77 -46 145 -84 151 -84 14 0 23 121 23 305 l0 153 -192 115 c-250 148 -520 303 -1003 572 -214 120 -447 251 -517 291 -70 41 -136 74 -145 74 -10 0 -58 -24 -108 -53z M1560 4075 c-24 -25 -42 -45 -39 -45 3 0 25 20 49 45 24 25 42 45 39 45 -3 0 -25 -20 -49 -45z M1752 3633 c-69 -122 -152 -290 -201 -405 -51 -120 -122 -319 -118 -331 1 -5 20 40 41 100 74 211 183 450 296 651 22 39 39 72 36 72 -3 0 -27 -39 -54 -87z M1020 3490 c-6 -11 -8 -20 -6 -20 3 0 10 9 16 20 6 11 8 20 6 20 -3 0 -10 -9 -16 -20z M976 3413 c-15 -25 -24 -48 -22 -51 3 -2 16 19 30 47 33 64 27 67 -8 4z M917 3293 c-137 -310 -140 -718 -8 -1053 89 -228 267 -495 449 -674 l61 -59 -39 122 c-53 165 -72 268 -80 446 l-7 150 -1 -115 c-2 -123 11 -256 32 -330 7 -25 12 -52 11 -60 0 -8 2 -17 6 -20 12 -10 20 -60 9 -60 -6 0 -8 -4 -5 -10 3 -5 2 -10 -2 -10 -14 0 -88 92 -85 104 2 6 0 8 -4 4 -10 -10 -45 32 -37 45 3 5 2 8 -3 5 -5 -3 -15 0 -22 8 -10 11 -10 14 0 15 7 0 3 4 -10 10 -13 5 -20 13 -17 19 3 5 1 10 -5 10 -6 0 -14 8 -17 18 -4 9 -16 25 -27 35 -11 10 -21 24 -22 31 -1 7 -18 36 -38 64 -20 29 -36 56 -36 62 0 5 -4 10 -10 10 -5 0 -10 4 -10 9 0 5 -18 47 -39 93 -81 173 -113 291 -132 490 -20 205 14 438 90 619 36 86 35 105 -2 22z M1401 2804 c0 -11 3 -14 6 -6 3 7 2 16 -1 19 -3 4 -6 -2 -5 -13z M1536 2663 c-55 -323 -70 -591 -42 -783 102 -696 511 -1205 1139 -1415 56 -19 136 -42 177 -51 72 -15 330 -34 330 -24 0 9 -158 94 -445 240 -469 238 -625 358 -790 606 -74 111 -103 175 -110 243 -11 101 -17 128 -24 108 -5 -13 -19 7 -53 80 -26 54 -52 118 -58 142 -6 24 -22 67 -35 95 -13 28 -30 74 -39 101 -43 139 -66 422 -47 589 11 99 10 141 -3 69z M1331 2524 c0 -11 3 -14 6 -6 3 7 2 16 -1 19 -3 4 -6 -2 -5 -13z M1321 2484 c0 -11 3 -14 6 -6 3 7 2 16 -1 19 -3 4 -6 -2 -5 -13z M1311 2414 c0 -11 3 -14 6 -6 3 7 2 16 -1 19 -3 4 -6 -2 -5 -13z M1292 2250 c0 -14 2 -19 5 -12 2 6 2 18 0 25 -3 6 -5 1 -5 -13z M2059 2253 c-13 -16 -12 -17 4 -4 9 7 17 15 17 17 0 8 -8 3 -21 -13z M1949 2123 c-13 -16 -12 -17 4 -4 9 7 17 15 17 17 0 8 -8 3 -21 -13z M1884 2019 c-14 -28 -24 -53 -22 -55 2 -2 16 21 31 51 15 30 25 55 22 55 -3 0 -16 -23 -31 -51z M1817 1853 c-14 -43 -28 -100 -31 -128 -4 -27 -9 -65 -12 -83 -3 -19 -1 -32 4 -28 5 3 12 39 15 80 4 40 18 109 31 152 14 43 23 80 21 82 -2 2 -15 -31 -28 -75z"
+/** Jarak antar salinan penyusun ketebalan, dalam satuan viewBox. */
+const LANGKAH = 0.35
+
+/** Lama satu putaran sapuan cahaya, milidetik. */
+const PUTARAN = 4600
+
+/** Bagian awal putaran yang dipakai untuk diam sebelum menyapu. */
+const JEDA = 0.08
+
+/*
+ * Sapuannya sengaja bergerak rata, tanpa perlambatan di ujung. Kurva
+ * pelan-cepat-pelan justru mempercepat bagian tengah -- padahal di
+ * situlah pita melintasi logo, sehingga cahayanya lewat terlalu cepat
+ * untuk sempat terlihat.
+ */
+
+/** Kemiringan arah sapuan, derajat dari sumbu mendatar. */
+const SUDUT = -62
 
 type Props = {
-  /** Lebar dalam piksel; tingginya mengikuti rasio asli 725:520. */
-  ukuran?: number
-  /** Matikan kilau untuk pemakaian kecil seperti lockup di pojok. */
+  /**
+   * Lebar logo. Boleh angka (piksel) atau panjang CSS apa pun, termasuk
+   * clamp(). Ditulis inline, jadi jangan mengatur lebarnya lewat kelas --
+   * gaya inline selalu menang atas kelas dan aturan itu tidak akan
+   * pernah berlaku.
+   */
+  ukuran?: number | string
+  /** Kilau yang menyapu permukaan. */
   kilau?: boolean
+  /** Tebal badan logo dalam satuan viewBox (0 = rata, tanpa sisi). */
+  kedalaman?: number
   className?: string
 }
 
-export default function AgpLogo({ ukuran = 120, kilau = false, className }: Props) {
-  const uid = useId().replace(/:/g, "")
-  const idClip = `agp-clip-${uid}`
-  const idKilau = `agp-kilau-${uid}`
-  const idTimbul = `agp-timbul-${uid}`
+export default function AgpLogo({ ukuran = 120, kilau = false, kedalaman = 0, className }: Props) {
+  const lebarCssProp = typeof ukuran === "number" ? `${ukuran}px` : ukuran
+  const kanvasRef = useRef<HTMLCanvasElement>(null)
+  const tinggiVb = TINGGI_VB + kedalaman + 6
+
+  useEffect(() => {
+    const kanvas = kanvasRef.current
+    if (!kanvas) return
+    const ctx = kanvas.getContext("2d")
+    if (!ctx) return
+
+    const daun = new Path2D(DAUN)
+    const gelap = new Path2D(GELAP)
+
+    // Bentuk aslinya digambar dalam ruang terbalik dan 10x lebih besar.
+    const keDalam = new DOMMatrix().translate(0, TINGGI_VB).scale(0.1, -0.1)
+
+    // Permukaan atas: dua bentuk digabung supaya bisa dipakai sebagai
+    // satu pemotong untuk pencahayaan dan kilau.
+    const atas = new Path2D()
+    atas.addPath(daun, keDalam)
+    atas.addPath(gelap, keDalam)
+
+    // Badan samping: SEMUA salinan masuk ke satu jalur, lalu diisi sekali.
+    // Ini bagian yang menghapus serabut.
+    const kurangiGerak = window.matchMedia("(prefers-reduced-motion: reduce)")
+
+    const badan = new Path2D()
+    if (kedalaman > 0) {
+      const jumlah = Math.max(2, Math.ceil(kedalaman / LANGKAH))
+      for (let i = 0; i <= jumlah; i++) {
+        const geser = (kedalaman * i) / jumlah
+        const m = new DOMMatrix().translate(0, geser).multiply(keDalam)
+        badan.addPath(daun, m)
+        badan.addPath(gelap, m)
+      }
+    }
+
+    // Bagian yang tidak berubah (badan, permukaan, pencahayaan) digambar
+    // sekali ke kanvas luar-layar. Kalau semuanya digambar ulang tiap
+    // frame, puluhan salinan penyusun ketebalan ikut diisi 60 kali per
+    // detik tanpa perlu.
+    const dasarBesar = document.createElement("canvas")
+    const cDasarBesar = dasarBesar.getContext("2d")
+    const maskerBesar = document.createElement("canvas")
+    const cMaskerBesar = maskerBesar.getContext("2d")
+    const dasar = document.createElement("canvas")
+    const cDasar = dasar.getContext("2d")
+    const masker = document.createElement("canvas")
+    const cMasker = masker.getContext("2d")
+    const lapisKilau = document.createElement("canvas")
+    const cKilau = lapisKilau.getContext("2d")
+    if (!cDasarBesar || !cMaskerBesar || !cDasar || !cMasker || !cKilau) return
+
+    let lebarPiksel = 0
+    let tinggiPiksel = 0
+
+    const siapkan = (w: number, h: number) => {
+      lebarPiksel = w
+      tinggiPiksel = h
+
+      // Digambar berlipat lalu diperkecil. Penghalusan bawaan canvas
+      // hanya menilai satu piksel sekali; dengan menggambar beberapa kali
+      // lebih besar dan mengecilkannya, tiap piksel akhir merangkum
+      // banyak sampel -- tepi miring dan lengkung jadi jauh lebih halus.
+      const SS = Math.max(2, Math.round(4 / Math.max(1, window.devicePixelRatio || 1)))
+      const wS = w * SS
+      const hS = h * SS
+
+      kanvas.width = w
+      kanvas.height = h
+      lapisKilau.width = w
+      lapisKilau.height = h
+      for (const el of [dasarBesar, maskerBesar]) {
+        el.width = wS
+        el.height = hS
+      }
+      dasar.width = w
+      dasar.height = h
+      masker.width = w
+      masker.height = h
+      const k = wS / LEBAR_VB
+
+      // --- kanvas dasar, digambar berlipat ---
+      cDasarBesar.setTransform(k, 0, 0, k, 0, 0)
+      cDasarBesar.clearRect(0, 0, LEBAR_VB, tinggiVb)
+      if (kedalaman > 0) {
+        cDasarBesar.fillStyle = SISI
+        cDasarBesar.fill(badan, "nonzero")
+      }
+      cDasarBesar.save()
+      cDasarBesar.transform(keDalam.a, keDalam.b, keDalam.c, keDalam.d, keDalam.e, keDalam.f)
+      cDasarBesar.fillStyle = WARNA_DAUN
+      cDasarBesar.fill(daun, "nonzero")
+      cDasarBesar.fillStyle = WARNA_GELAP
+      cDasarBesar.fill(gelap, "nonzero")
+      cDasarBesar.restore()
+
+      // Pantulan lembut dari kiri atas, hanya di permukaan atas.
+      cDasarBesar.save()
+      cDasarBesar.clip(atas, "nonzero")
+      cDasarBesar.setTransform(1, 0, 0, 1, 0, 0)
+      const cahaya = cDasarBesar.createLinearGradient(0, 0, wS, hS)
+      cahaya.addColorStop(0, "rgba(255,255,255,0.34)")
+      cahaya.addColorStop(0.35, "rgba(255,255,255,0.09)")
+      cahaya.addColorStop(0.7, "rgba(11,42,20,0.05)")
+      cahaya.addColorStop(1, "rgba(11,42,20,0.18)")
+      cDasarBesar.fillStyle = cahaya
+      cDasarBesar.fillRect(0, 0, wS, hS)
+      cDasarBesar.restore()
+
+      // --- masker permukaan atas, untuk memotong kilau ---
+      cMaskerBesar.setTransform(k, 0, 0, k, 0, 0)
+      cMaskerBesar.clearRect(0, 0, LEBAR_VB, tinggiVb)
+      cMaskerBesar.fillStyle = "#fff"
+      cMaskerBesar.fill(atas, "nonzero")
+
+      // Perkecil sekali ke ukuran tampil.
+      for (const [ke, dari] of [[cDasar, dasarBesar], [cMasker, maskerBesar]] as const) {
+        ke.setTransform(1, 0, 0, 1, 0, 0)
+        ke.clearRect(0, 0, w, h)
+        ke.imageSmoothingEnabled = true
+        ke.imageSmoothingQuality = "high"
+        ke.drawImage(dari, 0, 0, wS, hS, 0, 0, w, h)
+      }
+    }
+
+    const gambar = (waktu: number) => {
+      const kotak = kanvas.getBoundingClientRect()
+      const lebarCss = kotak.width || 120
+      const tinggiCss = (lebarCss * tinggiVb) / LEBAR_VB
+      const dpr = Math.min(window.devicePixelRatio || 1, 3)
+      const w = Math.max(1, Math.round(lebarCss * dpr))
+      const h = Math.max(1, Math.round(tinggiCss * dpr))
+      if (w !== lebarPiksel || h !== tinggiPiksel) siapkan(w, h)
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0)
+      ctx.clearRect(0, 0, w, h)
+      ctx.drawImage(dasar, 0, 0)
+
+      if (!kilau) return
+
+      // Pita cahaya digambar penuh lalu dipotong masker permukaan atas
+      // dengan destination-in -- lebih murah daripada clip jalur rumit
+      // di tiap frame.
+      const putaran = (waktu % PUTARAN) / PUTARAN
+      const mentah = Math.max(0, (putaran - JEDA) / (1 - JEDA))
+      const maju = kurangiGerak.matches ? 0.5 : mentah
+      const rad = (SUDUT * Math.PI) / 180
+      const dx = Math.cos(rad)
+      const dy = Math.sin(rad)
+      // Pita dibuat lebar dan jarak tempuhnya pendek, supaya cahayanya
+      // berada di atas logo selama sebagian besar putaran. Versi
+      // sebelumnya memakai pita sempit dengan jarak tempuh panjang:
+      // secara hitungan menyapu dengan benar, tapi hanya sekitar satu
+      // detik dari tiap 3,6 detik yang benar-benar terlihat -- praktis
+      // tidak pernah tertangkap mata.
+      const jangkauan = (w + h) * 0.62
+      const lebarPita = w * 0.8
+      const px = w / 2 + (maju * 2 - 1) * jangkauan * dx
+      const py = h / 2 + (maju * 2 - 1) * jangkauan * dy
+
+      cKilau.setTransform(1, 0, 0, 1, 0, 0)
+      cKilau.globalCompositeOperation = "source-over"
+      cKilau.clearRect(0, 0, w, h)
+      const pita = cKilau.createLinearGradient(
+        px - (dx * lebarPita) / 2,
+        py - (dy * lebarPita) / 2,
+        px + (dx * lebarPita) / 2,
+        py + (dy * lebarPita) / 2,
+      )
+      // Puncaknya diturunkan dan bahunya dilebarkan: pita yang terlalu
+      // putih terbaca sebagai coretan, bukan pantulan cahaya.
+      pita.addColorStop(0, "rgba(255,255,255,0)")
+      pita.addColorStop(0.18, "rgba(255,255,255,0.04)")
+      pita.addColorStop(0.34, "rgba(255,255,255,0.2)")
+      pita.addColorStop(0.46, "rgba(255,255,255,0.52)")
+      pita.addColorStop(0.5, "rgba(255,255,255,0.66)")
+      pita.addColorStop(0.54, "rgba(255,255,255,0.52)")
+      pita.addColorStop(0.66, "rgba(255,255,255,0.2)")
+      pita.addColorStop(0.82, "rgba(255,255,255,0.04)")
+      pita.addColorStop(1, "rgba(255,255,255,0)")
+      cKilau.fillStyle = pita
+      cKilau.fillRect(0, 0, w, h)
+      cKilau.globalCompositeOperation = "destination-in"
+      cKilau.drawImage(masker, 0, 0)
+
+      ctx.drawImage(lapisKilau, 0, 0)
+    }
+
+    let henti = 0
+    let lepas = false
+
+    const putar = (waktu: number) => {
+      if (lepas) return
+      gambar(waktu)
+      henti = requestAnimationFrame(putar)
+    }
+
+    // Selalu gambar sekali secara langsung, baru animasinya dijalankan.
+    // requestAnimationFrame tidak dipanggil browser saat halamannya tidak
+    // sedang digambar (tab latar, mode hemat daya, jendela tersembunyi);
+    // kalau logonya hanya mengandalkan rAF, yang tampil kotak kosong.
+    gambar(0)
+    if (kilau && !kurangiGerak.matches) {
+      henti = requestAnimationFrame(putar)
+    }
+
+    // Lebar logo diatur lewat clamp terhadap tinggi layar, jadi ukurannya
+    // berubah saat jendela diubah -- gambar ulang supaya tetap tajam.
+    const pengamat = new ResizeObserver(() => gambar(performance.now()))
+    pengamat.observe(kanvas)
+
+    return () => {
+      lepas = true
+      cancelAnimationFrame(henti)
+      pengamat.disconnect()
+    }
+  }, [kilau, kedalaman, tinggiVb])
 
   return (
-    <svg
-      width={ukuran}
-      height={(ukuran * 520) / 725}
-      viewBox="0 0 725 520"
-      xmlns="http://www.w3.org/2000/svg"
+    <canvas
+      ref={kanvasRef}
       role="img"
       aria-label="Logo Agrapana Greenworks Polymer"
       className={className}
-    >
-      <defs>
-        {/* Bentuk logo dipakai ulang sebagai pemotong kilau. */}
-        <clipPath id={idClip}>
-          <g transform="translate(0,520) scale(0.1,-0.1)">
-            <path d={DAUN} />
-            <path d={GELAP} />
-          </g>
-        </clipPath>
-
-        {/* Gradasi tipis dari atas -- meniru permukaan yang disinari dari
-            atas, bukan warna datar. Ini yang memberi kesan timbul. */}
-        <linearGradient id={idTimbul} x1="0.15" y1="0" x2="0.85" y2="1">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="0.52" />
-          <stop offset="0.18" stopColor="#ffffff" stopOpacity="0.2" />
-          <stop offset="0.52" stopColor="#ffffff" stopOpacity="0.02" />
-          <stop offset="0.78" stopColor="#0b2a14" stopOpacity="0.1" />
-          <stop offset="1" stopColor="#0b2a14" stopOpacity="0.26" />
-        </linearGradient>
-
-        {/* Pita cahaya yang menyapu. Tepinya dibuat transparan supaya
-            masuk dan keluar tanpa garis potong yang kelihatan. */}
-        <linearGradient id={idKilau} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="0.38" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="0.46" stopColor="#ffffff" stopOpacity="0.28" />
-          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.78" />
-          <stop offset="0.54" stopColor="#ffffff" stopOpacity="0.28" />
-          <stop offset="0.62" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      <g transform="translate(0,520) scale(0.1,-0.1)">
-        <path d={DAUN} fill="#6E934E" />
-        <path d={GELAP} fill="#325E38" />
-      </g>
-
-      {/* Lapisan timbul + kilau, keduanya dipotong bentuk logo. */}
-      <g clipPath={`url(#${idClip})`}>
-        <rect x="0" y="0" width="725" height="520" fill={`url(#${idTimbul})`} />
-        {/* Kemiringan ditaruh di grup pembungkus, bukan di rect. Pada SVG,
-            transform dari CSS (animasinya) menimpa atribut transform, jadi
-            skew yang ditulis di rect ikut terhapus begitu sapuan berjalan. */}
-        {kilau && (
-          <g transform="skewX(-16)">
-            <rect
-              className="agp-kilau"
-              x="-760"
-              y="-260"
-              width="620"
-              height="1040"
-              fill={`url(#${idKilau})`}
-            />
-          </g>
-        )}
-      </g>
-    </svg>
+      style={{ width: lebarCssProp, aspectRatio: `${LEBAR_VB} / ${tinggiVb}`, height: "auto", display: "block" }}
+    />
   )
 }

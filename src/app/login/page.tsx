@@ -35,43 +35,44 @@ export default function LoginPage() {
       <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-[minmax(0,1fr)_540px]">
         <section className="relative hidden overflow-hidden bg-white/72 backdrop-blur-2xl lg:flex lg:flex-col">
           <div className="absolute inset-y-0 right-0 w-px bg-slate-200" />
-          <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-12 py-10 xl:px-16">
-            {/* Satu kolom utuh yang ditengahkan secara vertikal. Sebelumnya
-                lockup dipatok di atas sementara sisanya ditengahkan, jadi
-                menganga ruang kosong besar di antaranya. */}
+          <div className="mx-auto flex h-full w-full max-w-[660px] flex-col px-10 py-10 xl:max-w-[760px] 2xl:max-w-[860px]">
+            {/* Satu kolom utuh yang ditengahkan secara vertikal. Urutannya:
+                pernyataan dulu, baru lambang sebagai jangkar visual, lalu
+                rincian. Lambang di tengah komposisi -- bukan di kepala --
+                memberi tempat bagi mata untuk berhenti sebelum turun ke
+                deretan kartu. */}
             <div className="flex flex-1 flex-col items-center justify-center text-center">
 
-              {/* Lambang perusahaan jadi kepala komposisi -- cukup besar
-                  untuk dibaca sebagai identitas, bukan ikon di pojok. */}
-              <div className="relative">
-                <span className="agp-pendar" />
-                <AgpLogo ukuran={196} kilau className="agp-mark agp-mark-besar" />
-                <span className="agp-alas" />
-              </div>
-
-              <p className="mt-[clamp(11px,2.3vh,30px)] text-[clamp(17px,2.4vh,22px)] font-black leading-none tracking-[-0.035em] text-slate-950">
-                Agrapana Greenworks Polymer
-              </p>
-              <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">
-                Information System
-              </p>
-
-              <div className="mt-[clamp(13px,3.2vh,42px)] inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em]" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
+              <div className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em]" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Sistem Informasi Gudang Botol
               </div>
 
               {/* text-balance supaya barisnya terbagi rata, bukan satu baris
                   penuh lalu satu kata menggantung di baris terakhir. */}
-              <h1 className="mt-[clamp(9px,2.1vh,26px)] max-w-[16ch] text-balance text-[clamp(32px,4.6vh,50px)] font-black leading-[1.04] tracking-[-0.045em] text-slate-950">
+              <h1 className="mt-[clamp(14px,2.6vh,26px)] max-w-[18ch] text-balance text-[clamp(34px,4.8vh,54px)] font-black leading-[1.03] tracking-[-0.045em] text-slate-950">
                 Kendali pembelian PET dalam satu ruang operasional.
               </h1>
-              <p className="mt-[clamp(8px,1.7vh,22px)] max-w-[44ch] text-pretty text-[clamp(13.5px,1.9vh,16.5px)] leading-[1.65] text-slate-500">
+
+              {/* Lambang perusahaan. */}
+              <div className="relative mt-[clamp(16px,3.4vh,40px)]">
+                <span className="agp-pendar" />
+                <AgpLogo ukuran="clamp(146px, 25.5vh, 260px)" kedalaman={14} kilau className="agp-mark agp-mark-besar" />
+              </div>
+
+              <p className="mt-[clamp(10px,2vh,22px)] text-[clamp(16px,2.2vh,21px)] font-black leading-none tracking-[-0.035em] text-slate-950">
+                Agrapana Greenworks Polymer
+              </p>
+              <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">
+                Information System
+              </p>
+
+              <p className="mt-[clamp(12px,2.4vh,26px)] max-w-[52ch] text-pretty text-[clamp(13.5px,1.9vh,16.5px)] leading-[1.65] text-slate-500">
                 Pantau input pembelian, verifikasi gudang, approval harga, target
                 collection center, dan aktivitas supplier dalam satu alur kerja.
               </p>
 
-              <div className="mt-[clamp(14px,3.6vh,48px)] grid w-full max-w-[560px] grid-cols-3 gap-px overflow-hidden rounded-[20px] border border-slate-200/70 bg-slate-200/70 shadow-[0_16px_44px_rgba(15,23,42,0.055)]">
+              <div className="mt-[clamp(16px,3.4vh,44px)] grid w-full grid-cols-3 gap-px overflow-hidden rounded-[20px] border border-slate-200/70 bg-slate-200/70 shadow-[0_16px_44px_rgba(15,23,42,0.055)]">
                 {[
                   { Ikon: Warehouse, judul: "Input", isi: "Pembelian, supplier, dan nota." },
                   { Ikon: ClipboardCheck, judul: "Validasi", isi: "Verifikasi admin dan approval manager." },
