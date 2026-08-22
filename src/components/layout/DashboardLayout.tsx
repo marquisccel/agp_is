@@ -54,7 +54,7 @@ function SidebarContent({
     <>
       <div className="px-4 py-5 border-b border-slate-200/70">
         <div className="flex items-center gap-3">
-          <AgpMark size={40} className="rounded-xl shadow-sm flex-shrink-0" />
+          <AgpMark size={40} className="flex-shrink-0" />
           <div className="min-w-0">
             <h1 className="text-sm font-black text-slate-950 leading-tight truncate">Agrapana Greenworks</h1>
             <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-[0.08em] truncate">Polymer Information System</p>
@@ -133,12 +133,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     ...(isOperationalRole(role) ? [
       ...(role === "ADMIN" ? [
         { name: "Double Check", href: "/dashboard/admin", icon: ShieldCheck, exact: true },
-      ] : []),
-      { name: "Input Pembelian", href: "/dashboard/staff", icon: Package, exact: true },
-      { name: "Data Lapak", href: "/dashboard/staff/suppliers", icon: Store },
-      ...(role === "ADMIN" ? [
-        { name: "Approval Kasbon", href: "/dashboard/admin/dp", icon: WalletCards },
       ] : [
+        // Admin tidak melakukan pembelian; tugasnya memverifikasi nota
+        // yang dibuat Staff.
+        { name: "Input Pembelian", href: "/dashboard/staff", icon: Package, exact: true },
+      ]),
+      { name: "Data Lapak", href: "/dashboard/staff/suppliers", icon: Store },
+      // Kasbon tidak lagi lewat Admin: pengajuannya dari Staff dan
+      // persetujuannya langsung di Manager.
+      ...(role === "ADMIN" ? [] : [
         { name: "Pengajuan Kasbon", href: "/dashboard/staff/dp", icon: WalletCards },
       ]),
       { name: "Daftar Transaksi", href: "/dashboard/staff/history", icon: ClipboardList },

@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, positiveNumber } from "@/lib/numberValidation"
-import { isOperationalRole } from "@/lib/roles"
 import { allocateDp, InsufficientDpError } from "@/lib/dpAllocation"
 
 type DraftPurchaseItemInput = {
@@ -18,7 +17,11 @@ type DraftPurchaseItemInput = {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !session.user || !isOperationalRole(session.user.role)) {
+    // Hanya Staff yang membuat nota. Kalau ini dibiarkan menerima semua
+    // peran operasional, menghilangkan menunya dari sidebar Admin cuma
+    // jadi penyamaran -- notanya tetap bisa dibuat lewat permintaan
+    // langsung ke alamat ini.
+    if (!session || !session.user || session.user.role !== "STAFF") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

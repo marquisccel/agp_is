@@ -123,6 +123,13 @@ async function main() {
     "PUT double-check sebagai STAFF -> 401 (hanya ADMIN)",
     (await req(staff.jar, "/api/purchases/smoke-test-fake-id/double-check", { method: "PUT", headers: { "Content-Type": "application/json" }, body: "{}" })).status === 401
   )
+  // Admin tidak membuat nota, hanya memverifikasi. Menu "Input Pembelian"
+  // sudah dihilangkan dari sidebar Admin; ini memastikan penghapusan itu
+  // benar-benar menutup akses, bukan sekadar menyembunyikan tombolnya.
+  check(
+    "POST /api/purchases/draft sebagai ADMIN -> 401 (hanya STAFF yang membuat nota)",
+    (await req(admin.jar, "/api/purchases/draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status === 401
+  )
 
   console.log("\n5. Siklus transaksi penuh: buat supplier -> draft -> double-check -> transfer")
   const stamp = Date.now()

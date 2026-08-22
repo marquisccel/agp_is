@@ -8,12 +8,14 @@ import { fmtTon } from "@/lib/format"
 import { redirect } from "next/navigation"
 import { isWorkingDay } from "@/lib/workingDays"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
-import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 
 export default async function StaffDashboard() {
   const session = await getServerSession(authOptions)
-  if (!session || !isOperationalRole(session.user.role)) {
+  // Hanya Staff. Menghapus menunya dari sidebar cuma menyembunyikan
+  // halaman ini; tanpa penjaga di sini, Admin masih bisa membukanya
+  // dengan mengetik alamatnya.
+  if (!session || session.user.role !== "STAFF") {
     redirect("/login")
   }
 

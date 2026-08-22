@@ -59,12 +59,6 @@ export default async function AdminDashboard() {
         eyebrow="Operational workspace"
         title="Double Check Transaksi"
         description="Daftar draft pembelian yang menunggu validasi berat dan retur."
-        actions={(
-          <Link href="/dashboard/admin/dp" className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
-            Manajemen Kasbon
-          </Link>
-        )}
       />
 
       <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
