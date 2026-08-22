@@ -212,14 +212,13 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                 style={{ animationDelay: `${index * 45}ms` }}
               >
                 <div className="flex flex-col gap-3 border-b border-slate-200/70 bg-white/55 p-5 md:flex-row md:items-center md:justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] text-sm font-black" style={{ background: "var(--brand-strong)", color: "#fff" }}>
-                      {cityName.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="font-black text-slate-950">Collection Center {cityName}</h3>
-                      <p className="mt-1 text-xs text-slate-500">Target pembelian bahan baku PET Final</p>
-                    </div>
+                  {/* Tanpa lambang inisial: hurufnya tidak menambah
+                      keterangan apa pun yang belum ada di nama gudangnya
+                      sendiri, dan tiga kartu berjejer dengan lingkaran
+                      berhuruf justru menambah beban baca. */}
+                  <div>
+                    <h3 className="font-black text-slate-950">Collection Center {cityName}</h3>
+                    <p className="mt-1 text-xs text-slate-500">Target pembelian bahan baku PET Final</p>
                   </div>
                   <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-black text-slate-500">
                     {workingDaysThisMonth} hari kerja

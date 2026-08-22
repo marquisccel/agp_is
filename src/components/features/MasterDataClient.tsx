@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { Boxes, Building2, CheckCircle2, CircleDollarSign, Database, MapPin, Package, Search, UserPlus, Users } from "lucide-react"
+import { Database, Search, UserPlus } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useToast } from "@/components/ui/Toast"
 import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
@@ -291,79 +291,149 @@ export default function MasterDataClient({
       <div key={activeTab} className="soft-enter">
       {activeTab === "overview" && (
         <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-            <StatCard icon={<Package />} label="Total Transaksi" value={globalStats.totalPurchases.toLocaleString("id-ID")} sub={`${globalStats.totalCompleted} selesai transfer`} />
-            <StatCard icon={<Boxes />} label="Tonase Selesai" value={fmtKg(globalStats.totalKg)} sub="Seluruh Collection Center" />
-            <StatCard icon={<CircleDollarSign />} label="Nilai Transaksi" value={fmtRp(globalStats.totalNilai)} sub="Approved dan transfer" />
-            <StatCard icon={<Users />} label="Lapak / Supplier" value={globalStats.totalSuppliers.toLocaleString("id-ID")} sub="Terdaftar" />
-            <StatCard icon={<Building2 />} label="Collection Center" value={globalStats.totalWarehouses.toLocaleString("id-ID")} sub="Gudang aktif" />
-            <StatCard
-              icon={<CheckCircle2 />}
-              label="Penyelesaian"
-              value={globalStats.totalPurchases > 0 ? `${((globalStats.totalCompleted / globalStats.totalPurchases) * 100).toFixed(0)}%` : "0%"}
-              sub="Transaksi selesai"
-            />
-            <StatCard icon={<Users />} label="Lapak Hijau" value={globalStats.totalGreenSuppliers.toLocaleString("id-ID")} sub="Sudah transaksi valid" />
-            <StatCard icon={<Users />} label="Lapak Merah" value={globalStats.totalRedSuppliers.toLocaleString("id-ID")} sub="Perlu aktivasi" />
-            <StatCard icon={<MapPin />} label="Lokasi Siap" value={globalStats.totalMapReadySuppliers.toLocaleString("id-ID")} sub="Koordinat tersedia" />
+          {/* Empat angka utama saja. Sebelumnya sembilan kartu berukuran
+              sama berjejer 3x3 -- tanpa hierarki, dan sebagian isinya
+              turunan atau sudah tampil di tempat lain: jumlah Collection
+              Center terbaca dari daftarnya sendiri di bawah, dan status
+              hijau/merah lapak sudah jadi badge di tab Lapak. */}
+          <div className="stat-strip">
+            <div className="stat-tile">
+              <span className="stat-label">Total Transaksi</span>
+              <div className="stat-value-row">
+                <span className="stat-value">{globalStats.totalPurchases.toLocaleString("id-ID")}</span>
+              </div>
+              <span className="stat-delta flat">{globalStats.totalCompleted} selesai transfer</span>
+            </div>
+            <div className="stat-tile">
+              <span className="stat-label">Tonase Selesai</span>
+              <div className="stat-value-row">
+                <span className="stat-value">{fmtKg(globalStats.totalKg)}</span>
+              </div>
+              <span className="stat-delta flat">Seluruh Collection Center</span>
+            </div>
+            <div className="stat-tile">
+              <span className="stat-label">Nilai Transaksi</span>
+              <div className="stat-value-row">
+                <span className="stat-value">{fmtRp(globalStats.totalNilai)}</span>
+              </div>
+              <span className="stat-delta flat">Approved dan transfer</span>
+            </div>
+            <div className="stat-tile">
+              <span className="stat-label">Penyelesaian</span>
+              <div className="stat-value-row">
+                <span className="stat-value">
+                  {globalStats.totalPurchases > 0 ? `${((globalStats.totalCompleted / globalStats.totalPurchases) * 100).toFixed(0)}%` : "0%"}
+                </span>
+              </div>
+              <span className="stat-delta flat">Transaksi selesai</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
-            <section className="interactive-surface border border-slate-200/80 p-5">
-              <h3 className="text-sm font-black text-slate-950">Performa per Collection Center</h3>
-              <p className="mt-1 text-xs text-slate-500">Ringkasan volume, nilai, dan jumlah lapak aktif per gudang.</p>
-              <div className="mt-5 space-y-3">
-                {warehouses.map((warehouse) => {
-                  const wSuppliers = suppliers.filter((supplier) => supplier.warehouseId === warehouse.id)
-                  const wKg = wSuppliers.reduce((sum, supplier) => sum + supplier.totalKg, 0)
-                  const wNilai = wSuppliers.reduce((sum, supplier) => sum + supplier.totalNilai, 0)
-                  const wTrx = wSuppliers.reduce((sum, supplier) => sum + supplier.totalSelesai, 0)
-                  const maxKg = Math.max(...warehouses.map((item) =>
-                    suppliers.filter((supplier) => supplier.warehouseId === item.id).reduce((sum, supplier) => sum + supplier.totalKg, 0)
-                  ), 1)
+          {/* Komposisi lapak: satu baris, bukan tiga kartu terpisah. Hijau,
+              merah, dan berkoordinat adalah pecahan dari satu angka yang
+              sama, jadi lebih terbaca sebagai proporsi daripada sebagai
+              tiga angka yang berdiri sendiri. */}
+          <section className="section">
+            <div className="section-shell-head">
+              <div>
+                <span className="section-eyebrow">Komposisi</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Lapak Terdaftar</h3>
+              </div>
+              <div className="text-right">
+                <span className="field-label" style={{ marginBottom: 2 }}>Total</span>
+                <span className="text-base font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+                  {globalStats.totalSuppliers.toLocaleString("id-ID")} lapak
+                </span>
+              </div>
+            </div>
+            <div className="section-body">
+              <div className="flex h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+                <div style={{ width: `${globalStats.totalSuppliers ? (globalStats.totalGreenSuppliers / globalStats.totalSuppliers) * 100 : 0}%`, background: "var(--success)" }} />
+                <div style={{ width: `${globalStats.totalSuppliers ? (globalStats.totalRedSuppliers / globalStats.totalSuppliers) * 100 : 0}%`, background: "var(--danger)" }} />
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-4">
+                <KomposisiItem warna="var(--success)" nilai={globalStats.totalGreenSuppliers} label="Hijau" sub="Sudah transaksi valid" />
+                <KomposisiItem warna="var(--danger)" nilai={globalStats.totalRedSuppliers} label="Merah" sub="Perlu aktivasi" />
+                <KomposisiItem warna="var(--muted-faint)" nilai={globalStats.totalMapReadySuppliers} label="Berkoordinat" sub="Lokasi siap dipetakan" />
+              </div>
+            </div>
+          </section>
 
-                  return (
-                    <div key={warehouse.id} className="rounded-[var(--radius-md)] border p-4" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-black text-slate-900">{warehouse.nama}</p>
-                          <p className="mt-1 text-xs text-slate-500">{wSuppliers.length} lapak aktif, {wTrx} transaksi selesai</p>
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
+            {/* Keduanya memakai .rank-list -- pola daftar peringkat yang
+                sudah ada di sistem desain tapi belum pernah dipakai.
+                Gudang kini diurutkan menurun, jadi yang terbesar langsung
+                di atas; sebelumnya urutannya mengikuti urutan data dan
+                bar terbesarnya berwarna hitam pekat. */}
+            <section className="section">
+              <div className="section-shell-head">
+                <div>
+                  <span className="section-eyebrow">Per gudang</span>
+                  <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Performa Collection Center</h3>
+                </div>
+              </div>
+              <div className="section-body">
+                <div className="rank-list">
+                  {warehouses
+                    .map((warehouse) => {
+                      const wSuppliers = suppliers.filter((supplier) => supplier.warehouseId === warehouse.id)
+                      return {
+                        warehouse,
+                        jumlahLapak: wSuppliers.length,
+                        kg: wSuppliers.reduce((sum, x) => sum + x.totalKg, 0),
+                        nilai: wSuppliers.reduce((sum, x) => sum + x.totalNilai, 0),
+                        trx: wSuppliers.reduce((sum, x) => sum + x.totalSelesai, 0),
+                      }
+                    })
+                    .sort((a, b) => b.kg - a.kg)
+                    .map((baris, idx, semua) => {
+                      const maxKg = Math.max(semua[0]?.kg ?? 0, 1)
+                      return (
+                        <div key={baris.warehouse.id} className={`rank-row${idx === 0 && baris.kg > 0 ? " rank-first" : ""}`}>
+                          <span className="rank-num">{idx + 1}</span>
+                          <div className="min-w-0">
+                            <div className="rank-name truncate">{baris.warehouse.nama}</div>
+                            <div className="rank-sub">{baris.jumlahLapak} lapak, {baris.trx} transaksi selesai</div>
+                          </div>
+                          <div className="rank-bar-track">
+                            <div className="rank-bar-fill" style={{ width: `${Math.min((baris.kg / maxKg) * 100, 100)}%` }} />
+                          </div>
+                          <div className="rank-value">
+                            {fmtKg(baris.kg)}
+                            <div className="rank-sub">{fmtRp(baris.nilai)}</div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-mono text-sm font-black text-slate-950">{fmtKg(wKg)}</p>
-                          <p className="text-xs text-slate-500">{fmtRp(wNilai)}</p>
-                        </div>
-                      </div>
-                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                        <div className="h-full rounded-full bg-slate-950 transition-all duration-700" style={{ width: `${Math.min((wKg / maxKg) * 100, 100)}%` }} />
-                      </div>
-                    </div>
-                  )
-                })}
+                      )
+                    })}
+                </div>
               </div>
             </section>
 
-            <section className="interactive-surface border border-slate-200/80 p-5">
-              <h3 className="text-sm font-black text-slate-950">Top 5 Lapak by Tonase</h3>
-              <p className="mt-1 text-xs text-slate-500">Lapak dengan kontribusi volume terbesar.</p>
-              <div className="mt-5 space-y-3">
-                {[...suppliers].sort((a, b) => b.totalKg - a.totalKg).slice(0, 5).map((supplier, idx) => {
-                  const maxKg = suppliers[0]?.totalKg || 1
-                  return (
-                    <div key={supplier.id} className="flex items-center gap-3">
-                      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-slate-950 text-xs font-black text-white">{idx + 1}</div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="truncate text-sm font-bold text-slate-900">{supplier.nama}</p>
-                          <span className="shrink-0 text-xs font-bold text-slate-500">{fmtKg(supplier.totalKg)}</span>
+            <section className="section">
+              <div className="section-shell-head">
+                <div>
+                  <span className="section-eyebrow">Kontribusi</span>
+                  <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Lapak Teratas</h3>
+                </div>
+              </div>
+              <div className="section-body">
+                <div className="rank-list">
+                  {[...suppliers].sort((a, b) => b.totalKg - a.totalKg).slice(0, 5).map((supplier, idx, semua) => {
+                    const maxKg = Math.max(semua[0]?.totalKg ?? 0, 1)
+                    return (
+                      <div key={supplier.id} className={`rank-row${idx === 0 && supplier.totalKg > 0 ? " rank-first" : ""}`}>
+                        <span className="rank-num">{idx + 1}</span>
+                        <div className="min-w-0">
+                          <div className="rank-name truncate">{supplier.nama}</div>
                         </div>
-                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                          <div className="h-full rounded-full" style={{ width: `${Math.min((supplier.totalKg / maxKg) * 100, 100)}%`, background: "var(--brand)" }} />
+                        <div className="rank-bar-track">
+                          <div className="rank-bar-fill" style={{ width: `${Math.min((supplier.totalKg / maxKg) * 100, 100)}%` }} />
                         </div>
+                        <div className="rank-value">{fmtKg(supplier.totalKg)}</div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
             </section>
           </div>
@@ -553,18 +623,21 @@ export default function MasterDataClient({
   )
 }
 
-function StatCard({ icon, label, value, sub }: { icon: ReactNode; label: string; value: string; sub: string }) {
+function KomposisiItem({ warna, nilai, label, sub }: { warna: string; nilai: number; label: string; sub: string }) {
   return (
-    <div className="interactive-surface border border-slate-200/80 p-5">
-      <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-[10px] [&_svg]:h-4 [&_svg]:w-4" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-        {icon}
+    <div>
+      <div className="flex items-center gap-2">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: warna }} />
+        <span className="text-lg font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+          {nilai.toLocaleString("id-ID")}
+        </span>
+        <span className="text-xs font-bold" style={{ color: "var(--muted)" }}>{label}</span>
       </div>
-      <div className="text-2xl font-black tracking-[-0.03em] text-slate-950">{value}</div>
-      <div className="mt-1 text-xs font-black uppercase tracking-[0.08em] text-slate-500">{label}</div>
-      <div className="mt-1 text-xs text-slate-400">{sub}</div>
+      <p className="mt-1 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
     </div>
   )
 }
+
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
