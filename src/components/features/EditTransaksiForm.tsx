@@ -360,6 +360,7 @@ export default function EditTransaksiForm({
       </div>
 
       <PotonganFields
+        kartu
         baris={barisPotongan}
         total={totalPotongan}
         eyebrow="Koreksi"

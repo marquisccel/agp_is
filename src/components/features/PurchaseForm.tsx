@@ -555,7 +555,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
           <button
             type="submit"
             disabled={loading}
-            className="btn-invert flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3.5 font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-primer flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3.5 font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading && (
               <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />

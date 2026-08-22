@@ -1218,14 +1218,26 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------------------------------
-   Tombol utama monokrom -- hitam, lalu berbalik jadi putih saat disentuh.
-   Dipakai di halaman masuk. Perbatasan selalu ada (bukan cuma saat
-   hover) supaya lebarnya tidak bergeser 2px waktu warnanya berbalik.
+   Tombol aksi utama.
+
+   Sempat dibuat hitam. Di halaman masuk itu cocok karena tidak ada
+   apa pun berwarna di sekitarnya, tapi di dalam aplikasi hitam
+   berbenturan: seluruh layar memakai aksen hijau (eyebrow, ikon, keadaan
+   aktif), sehingga satu-satunya elemen hitam justru terbaca seperti
+   berasal dari sistem lain.
+
+   Sekarang satu bentuk untuk semua: hijau brand tua. Cukup gelap untuk
+   punya bobot yang sama dengan hitam, tapi tetap warna perusahaan. Saat
+   disentuh warnanya berbalik jadi putih dengan teks hijau -- perilaku
+   yang sama seperti sebelumnya.
+
+   Garis tepinya selalu ada, bukan cuma saat hover, supaya lebarnya tidak
+   bergeser 2px waktu warnanya berbalik.
    --------------------------------------------------------------------- */
-.btn-invert {
-  background: #101413;
+.btn-primer {
+  background: var(--brand-strong);
   color: #ffffff;
-  border: 1px solid #101413;
+  border: 1px solid var(--brand-strong);
   transition:
     background-color 220ms var(--ease-system),
     color 220ms var(--ease-system),
@@ -1234,23 +1246,23 @@ a:focus-visible {
     transform 220ms var(--ease-spring);
 }
 
-.btn-invert:hover:not(:disabled) {
+.btn-primer:hover:not(:disabled) {
   background: #ffffff;
-  color: #101413;
-  border-color: #101413;
-  box-shadow: 0 8px 20px rgba(16, 20, 19, 0.14);
+  color: var(--brand-strong);
+  border-color: var(--brand-strong);
+  box-shadow: 0 8px 20px -10px rgba(3, 96, 48, 0.55);
 }
 
-.btn-invert:active:not(:disabled) { transform: scale(0.985); }
+.btn-primer:active:not(:disabled) { transform: scale(0.985); }
 
-.btn-invert:focus-visible {
+.btn-primer:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--brand-soft), 0 0 0 4px var(--brand);
 }
 
 /* Pemuat di dalam tombol ikut warna teks, jadi tetap terlihat setelah
    tombolnya berbalik jadi putih. */
-.btn-invert .pemuat {
+.btn-primer .pemuat {
   border-color: currentColor;
   border-top-color: transparent;
 }

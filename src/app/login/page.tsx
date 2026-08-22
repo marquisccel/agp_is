@@ -162,7 +162,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="btn-invert inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-primer inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isLoading && <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />}
                   {isLoading ? "Memproses..." : "Masuk"}
