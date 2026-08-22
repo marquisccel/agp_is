@@ -333,6 +333,10 @@ a:focus-visible {
 
 .btn-brand {
   background: var(--brand);
+  /* Warna teks ikut di sini, bukan diserahkan ke pemanggil. Latar brand
+     selalu gelap, jadi teksnya selalu putih -- kalau diserahkan, satu
+     pemanggil yang lupa langsung menghasilkan tombol tak terbaca. */
+  color: #fff;
   transition: background-color 160ms var(--ease-system);
 }
 

@@ -241,7 +241,7 @@ export default function ManagerPurchaseDetailClient({
               </h3>
               <Link
                 href={`/dashboard/manager/suppliers/${purchase.supplier.id}`}
-                className="font-bold text-slate-800 text-base hover:text-cyan-600 transition-colors block"
+                className="font-bold text-slate-800 text-base transition-colors block hover:text-[var(--brand-strong)]"
               >
                 {purchase.supplier.nama}
               </Link>
@@ -274,7 +274,7 @@ export default function ManagerPurchaseDetailClient({
           {/* Items Table */}
           <div className="workflow-card space-y-4 p-6">
             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-cyan-600" />
+              <FileText className="w-5 h-5" style={{ color: "var(--brand-strong)" }} />
               Rincian Item (SKU)
             </h3>
             
@@ -314,7 +314,10 @@ export default function ManagerPurchaseDetailClient({
                           {diff === 0 ? (
                             <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-100">Sesuai</span>
                           ) : (
-                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${diff < 0 ? "text-rose-600 bg-rose-50 border-rose-100" : "text-cyan-600 bg-cyan-50 border-cyan-100"}`}>
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border"
+                              style={diff < 0
+                                ? { color: "var(--danger)", background: "var(--danger-soft)", borderColor: "var(--danger-soft)" }
+                                : { color: "var(--warning)", background: "var(--warning-soft)", borderColor: "var(--warning-soft)" }}>
                               {diff < 0 ? diff.toFixed(1) : `+${diff.toFixed(1)}`}
                             </span>
                           )}
@@ -351,7 +354,8 @@ export default function ManagerPurchaseDetailClient({
               </div>
               <div>
                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Selisih Timbangan</span>
-                <p className={`font-mono font-bold mt-1 ${weightDiff === 0 ? "text-emerald-600" : weightDiff < 0 ? "text-rose-600" : "text-cyan-600"}`}>
+                <p className="font-mono font-bold mt-1"
+                  style={{ color: weightDiff === 0 ? "var(--success)" : weightDiff < 0 ? "var(--danger)" : "var(--warning)" }}>
                   {weightDiff > 0 ? `+${weightDiff.toFixed(1)}` : weightDiff.toFixed(1)} KG
                 </p>
               </div>
@@ -459,7 +463,7 @@ export default function ManagerPurchaseDetailClient({
           {/* Financial Summary */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <DollarSign className="w-4 h-4 text-cyan-600" />
+              <DollarSign className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
               Kalkulasi Keuangan
             </h3>
             
@@ -507,7 +511,7 @@ export default function ManagerPurchaseDetailClient({
               </div>
 
               {(purchase.dp_yang_digunakan || 0) > 0 && (
-                <div className="flex justify-between text-indigo-600">
+                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
                   <span>Potongan Saldo DP/Kasbon</span>
                   <span className="font-mono font-medium">-{fmtRp(purchase.dp_yang_digunakan || 0)}</span>
                 </div>
@@ -515,7 +519,7 @@ export default function ManagerPurchaseDetailClient({
 
               <div className="border-t-2 border-dashed border-slate-200 pt-3 flex justify-between text-sm font-extrabold text-slate-800">
                 <span>Grand Total Dibayar</span>
-                <span className="font-mono text-cyan-600 text-base">{fmtRp(purchase.total_dibayar || 0)}</span>
+                <span className="font-mono text-base" style={{ color: "var(--brand-strong)" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
               </div>
             </div>
 
@@ -547,7 +551,7 @@ export default function ManagerPurchaseDetailClient({
           {/* Transaction Actors */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-3.5">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-              <Shield className="w-4 h-4 text-cyan-600" />
+              <Shield className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
               Pihak Terkait
             </h3>
             
@@ -574,7 +578,7 @@ export default function ManagerPurchaseDetailClient({
           {/* Audit Logs Timeline */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-50 pb-2">
-              <Activity className="w-4 h-4 text-cyan-600" />
+              <Activity className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
               Audit Log (Riwayat Perubahan)
             </h3>
 
@@ -607,7 +611,7 @@ export default function ManagerPurchaseDetailClient({
                 <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
                 {auditLogs.map(log => (
                   <div key={log.id} className="relative pl-6 space-y-1">
-                    <div className="absolute left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-cyan-100 border-2 border-white ring-2 ring-cyan-500/10 flex items-center justify-center" />
+                    <div className="absolute left-1.5 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center" style={{ background: "var(--brand-soft-strong)" }} />
                     <div className="text-xs font-bold text-slate-800">{formatAuditAction(log.action)}</div>
                     <div className="text-[10px] text-slate-400">
                       Oleh: <span className="font-semibold text-slate-600">{log.user.nama} ({log.user.role})</span>

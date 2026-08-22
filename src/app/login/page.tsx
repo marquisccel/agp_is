@@ -36,7 +36,7 @@ export default function LoginPage() {
           <div className="absolute inset-y-0 right-0 w-px bg-slate-200" />
           <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-12 py-10 xl:px-16">
             <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-sm font-bold text-teal-300 shadow-sm">
+              <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-sm font-bold text-white shadow-sm" style={{ background: "var(--brand-strong)" }}>
                 AG
               </div>
               <div>
@@ -47,7 +47,7 @@ export default function LoginPage() {
 
             <div className="flex flex-1 items-center py-12">
               <div className="max-w-2xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50/80 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-teal-700 shadow-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wide" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
                   <ShieldCheck className="h-4 w-4" />
                   Sistem Informasi Gudang Botol
                 </div>
@@ -61,17 +61,17 @@ export default function LoginPage() {
 
                 <div className="mt-12 grid max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-[28px] border border-slate-200/80 bg-slate-200/80 shadow-[0_22px_70px_rgba(15,23,42,0.07)]">
                   <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
-                    <Warehouse className="h-5 w-5 text-teal-700" />
+                    <Warehouse className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
                     <p className="mt-4 text-sm font-black text-slate-950">Input</p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">Pembelian, supplier, dan nota.</p>
                   </div>
                   <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
-                    <ClipboardCheck className="h-5 w-5 text-teal-700" />
+                    <ClipboardCheck className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
                     <p className="mt-4 text-sm font-black text-slate-950">Validasi</p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">Supervisor dan approval manager.</p>
                   </div>
                   <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
-                    <BarChart3 className="h-5 w-5 text-teal-700" />
+                    <BarChart3 className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
                     <p className="mt-4 text-sm font-black text-slate-950">Analitik</p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">Target, performa, dan risiko.</p>
                   </div>
@@ -87,11 +87,11 @@ export default function LoginPage() {
         </section>
 
         <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f5f5f7] px-4 py-8 sm:px-6 lg:px-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,122,115,0.16),transparent_42%),radial-gradient(circle_at_100%_80%,rgba(56,189,248,0.14),transparent_36%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(3,96,48,0.13),transparent_42%),radial-gradient(circle_at_100%_80%,rgba(85,145,51,0.11),transparent_36%)]" />
           <div className="w-full max-w-[420px]">
             <div className="mb-8 lg:hidden">
               <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-sm font-bold text-teal-300">
+                <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-sm font-bold text-white" style={{ background: "var(--brand-strong)" }}>
                   AG
                 </div>
                 <div>
@@ -102,7 +102,7 @@ export default function LoginPage() {
             </div>
 
             <div className="relative mb-7">
-              <p className="text-xs font-bold uppercase tracking-wide text-teal-700">Secure workspace</p>
+              <span className="section-eyebrow">Secure workspace</span>
               <h1 className="mt-3 text-4xl font-black leading-none tracking-[-0.055em] text-slate-950">Masuk ke Information System</h1>
               <p className="mt-2 text-sm leading-6 text-slate-500">
                 Gunakan akun terdaftar untuk membuka panel sesuai role operasional.
@@ -129,7 +129,7 @@ export default function LoginPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-[var(--brand)]/12"
+                      className="field-input h-12 pl-10 pr-3"
                       placeholder="nama@agp.local"
                     />
                   </div>
@@ -147,7 +147,7 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-12 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm font-medium transition-colors placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-3 focus:ring-[var(--brand)]/12"
+                      className="field-input h-12 pl-10 pr-3"
                       placeholder="Masukkan password"
                     />
                   </div>
@@ -156,7 +156,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="premium-button inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-700 focus:outline-none focus:ring-3 focus:ring-[var(--brand)]/25 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="btn-brand premium-button inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 text-sm font-black disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isLoading && <span className="h-4 w-4 rounded-full border-2 border-white/35 border-t-white animate-spin" />}
                   {isLoading ? "Memproses..." : "Masuk"}
@@ -166,7 +166,7 @@ export default function LoginPage() {
 
               <div className="mt-6 border-t border-slate-100 pt-5">
                 <div className="flex items-start gap-3 text-xs leading-5 text-slate-500">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--brand-strong)" }} />
                   <p>Akses hanya untuk staff, supervisor, dan manager yang terdaftar di sistem.</p>
                 </div>
               </div>
