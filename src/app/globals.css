@@ -1259,3 +1259,46 @@ a:focus-visible {
   border-color: currentColor;
   border-top-color: transparent;
 }
+
+/* ---------------------------------------------------------------------
+   Tabel bergaris lembut.
+
+   Versi sebelumnya memberi garis penuh selebar tabel di bawah setiap
+   baris, dengan warna border yang sama tegasnya dengan garis tepi kartu.
+   Hasilnya terbaca sebagai kisi kaku: garisnya sama kuat dengan isinya,
+   padahal fungsinya cuma memisahkan.
+
+   Di sini garisnya dilemahkan jadi separuh pekat, baris terakhir tidak
+   bergaris sama sekali (tepi kartunya sudah menutup), dan barisnya diberi
+   ruang napas lebih. Sorotan baris menggantikan sebagian tugas garis saat
+   mata menyusuri tabel.
+   --------------------------------------------------------------------- */
+.tabel-lembut {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabel-lembut thead th {
+  padding: 12px 20px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabel-lembut tbody td {
+  padding: 14px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.tabel-lembut tbody tr:last-child td { border-bottom: none; }
+
+.tabel-lembut tbody tr {
+  transition: background-color 160ms var(--ease-system);
+}
+
+.tabel-lembut tbody tr:hover { background: var(--bg-tint); }

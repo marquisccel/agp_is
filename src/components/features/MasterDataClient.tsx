@@ -478,30 +478,31 @@ export default function MasterDataClient({
             ) : filteredSuppliers.map((supplier, idx) => (
               <div key={supplier.id} className="section section-body">
                 <div className="flex items-start justify-between gap-4">
+                  {/* Badge "Hijau"/"Merah" dulu cuma menyebut warnanya, jadi
+                      pembacanya harus sudah tahu artinya. Sekarang warnanya
+                      dibawa titik kecil di samping nama, dan artinya ditulis
+                      sebagai teks abu di baris keterangan -- warna untuk
+                      memindai, kata untuk memastikan. */}
                   <div className="min-w-0">
-                    <p className="truncate text-base font-black text-slate-950">{supplier.nama}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <p className="text-xs text-slate-500">{supplier.warehouse?.nama || "-"}</p>
+                    <div className="flex items-center gap-2">
                       <span
-                        className="rounded-full border px-2.5 py-1 text-[10px] font-black"
-                        style={supplier.transactionStatus === "GREEN"
-                          ? { borderColor: "var(--success-soft)", background: "var(--success-soft)", color: "var(--success)" }
-                          : { borderColor: "var(--danger-soft)", background: "var(--danger-soft)", color: "var(--danger)" }}
-                      >
-                        {supplier.transactionStatus === "GREEN" ? "Hijau" : "Merah"}
-                      </span>
-                      {/* Biru di sini tidak menandakan apa pun, dan bersaing
-                          dengan badge merah/hijau di sebelahnya yang memang
-                          semantik. Nadanya dibuat bermakna: koordinat lengkap
-                          = netral (tidak perlu tindakan), belum ada = amber
-                          (data yang masih harus dilengkapi). */}
-                      <span
-                        className="rounded-full border px-2.5 py-1 text-[10px] font-black"
-                        style={hasResolvedSupplierCoordinates(supplier)
-                          ? { borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }
-                          : { borderColor: "var(--warning-soft)", background: "var(--warning-soft)", color: "var(--warning)" }}
-                      >
-                        {hasResolvedSupplierCoordinates(supplier) ? "Map Ready" : "Belum Ada Koordinat"}
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: supplier.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
+                        aria-hidden="true"
+                      />
+                      <p className="truncate text-base font-black text-slate-950">{supplier.nama}</p>
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
+                      <span>{supplier.warehouse?.nama || "-"}</span>
+                      <span aria-hidden="true">&middot;</span>
+                      <span>{supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
+                      <span aria-hidden="true">&middot;</span>
+                      {/* Koordinat yang belum diisi tetap diberi nada amber:
+                          itu data yang masih harus dilengkapi, bukan sekadar
+                          keterangan. Tapi cukup lewat warna teks, tanpa pil
+                          yang menarik perhatian lebih dari nama lapaknya. */}
+                      <span style={hasResolvedSupplierCoordinates(supplier) ? undefined : { color: "var(--warning)", fontWeight: 600 }}>
+                        {hasResolvedSupplierCoordinates(supplier) ? "Koordinat lengkap" : "Belum ada koordinat"}
                       </span>
                     </div>
                   </div>
@@ -548,24 +549,24 @@ export default function MasterDataClient({
           </FilterBar>
 
           <div className="section overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="border-b text-[11px] font-bold uppercase tracking-[0.08em]" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)", color: "var(--muted)" }}>
+            <table className="tabel-lembut text-sm">
+              <thead>
                 <tr>
-                  <th className="px-5 py-4 text-left">Nama</th>
-                  <th className="px-5 py-4 text-left">Email</th>
-                  <th className="px-5 py-4 text-left">Role</th>
-                  <th className="px-5 py-4 text-left">Gudang</th>
+                  <th>Nama</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Gudang</th>
                 </tr>
               </thead>
-              <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <tbody>
                 {filteredUsers.length === 0 ? (
-                  <tr><td colSpan={4} className="px-5 py-10 text-center text-slate-400">Tidak ada pengguna yang cocok.</td></tr>
+                  <tr><td colSpan={4} className="py-10 text-center" style={{ color: "var(--muted-faint)" }}>Tidak ada pengguna yang cocok.</td></tr>
                 ) : filteredUsers.map((user) => (
-                  <tr key={user.id} className="premium-row">
-                    <td className="px-5 py-4 font-bold text-slate-900">{user.nama}</td>
-                    <td className="px-5 py-4 font-mono text-xs text-slate-500">{user.email}</td>
-                    <td className="px-5 py-4"><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
-                    <td className="px-5 py-4 text-slate-600">{user.warehouse?.nama || "-"}</td>
+                  <tr key={user.id}>
+                    <td className="font-bold" style={{ color: "var(--foreground)" }}>{user.nama}</td>
+                    <td className="font-mono text-xs" style={{ color: "var(--muted)" }}>{user.email}</td>
+                    <td><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
+                    <td style={{ color: "var(--muted)" }}>{user.warehouse?.nama || "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -606,12 +607,12 @@ export default function MasterDataClient({
                       <span className="text-xs font-bold" style={{ color: "var(--muted)" }}>{wSkus.length} SKU</span>
                     </div>
                   </div>
-                  <table className="w-full text-sm">
-                    <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+                  <table className="tabel-lembut text-sm">
+                    <tbody>
                       {wSkus.map((sku) => (
-                        <tr key={sku.id} className="premium-row">
-                          <td className="px-5 py-3 font-bold text-slate-900">{sku.sku_name}</td>
-                          <td className="px-5 py-3 text-right font-mono font-black text-slate-950">Rp {sku.max_price_per_kg.toLocaleString("id-ID")}</td>
+                        <tr key={sku.id}>
+                          <td className="font-bold" style={{ color: "var(--foreground)" }}>{sku.sku_name}</td>
+                          <td className="text-right font-mono font-black" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>Rp {sku.max_price_per_kg.toLocaleString("id-ID")}</td>
                         </tr>
                       ))}
                     </tbody>
