@@ -100,12 +100,25 @@ test.describe.serial("Alur transaksi pembelian penuh (draft -> verifikasi -> tra
     await page.getByLabel("Berat Lapak (KG)").first().fill("10")
     await page.getByLabel("Harga/KG (Rp)").first().fill("5000")
 
+    // Tunggu POST-nya benar-benar selesai sebelum pindah halaman. Tanpa
+    // ini, klik dan page.goto berlomba: navigasi bisa memutus permintaan
+    // yang sedang jalan, atau halaman riwayat dimuat sebelum datanya
+    // tersimpan. Dulu lolos karena kebetulan timingnya pas, lalu gagal di
+    // CI yang lebih lambat -- gejalanya menyesatkan, karena notanya
+    // sebenarnya terbentuk.
+    const tanggapanDraft = page.waitForResponse(
+      (r) => r.url().includes("/api/purchases/draft") && r.request().method() === "POST",
+    )
     await page.getByRole("button", { name: "Simpan & Buat Nota Draft" }).click()
+    const draftDibuat = await tanggapanDraft
+    expect(draftDibuat.ok(), await draftDibuat.text()).toBeTruthy()
 
-    // Draft berhasil -> form staff kembali ke kondisi awal / redirect, dan
-    // transaksi baru muncul di riwayat transaksi staff.
+    // Draft berhasil -> transaksi baru muncul di riwayat transaksi staff.
     await page.goto("/dashboard/staff/history")
-    await expect(page.getByText(supplierName, { exact: false }).first()).toBeVisible()
+    // Runner CI jauh lebih lambat dari mesin lokal; 5 detik bawaan sempat
+    // kurang. Pembuktian utama bahwa notanya jadi ada di tanggapan POST
+    // di atas -- pemeriksaan ini soal tampil atau tidaknya di riwayat.
+    await expect(page.getByText(supplierName, { exact: false }).first()).toBeVisible({ timeout: 15000 })
 
     const res = await page.request.get(`/api/auth/session`)
     void res
