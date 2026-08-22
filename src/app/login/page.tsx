@@ -36,52 +36,53 @@ export default function LoginPage() {
         <section className="relative hidden overflow-hidden bg-white/72 backdrop-blur-2xl lg:flex lg:flex-col">
           <div className="absolute inset-y-0 right-0 w-px bg-slate-200" />
           <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-12 py-10 xl:px-16">
-            {/* Lambang perusahaan jadi kepala komposisi: cukup besar untuk
-                dibaca sebagai identitas, bukan ikon kecil di pojok. */}
-            <div className="flex flex-col items-center text-center">
+            {/* Satu kolom utuh yang ditengahkan secara vertikal. Sebelumnya
+                lockup dipatok di atas sementara sisanya ditengahkan, jadi
+                menganga ruang kosong besar di antaranya. */}
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+
+              {/* Lambang perusahaan jadi kepala komposisi -- cukup besar
+                  untuk dibaca sebagai identitas, bukan ikon di pojok. */}
               <div className="relative">
-                <AgpLogo ukuran={132} kilau className="agp-mark" />
+                <span className="agp-pendar" />
+                <AgpLogo ukuran={196} kilau className="agp-mark agp-mark-besar" />
                 <span className="agp-alas" />
               </div>
-              <p className="mt-6 text-xl font-black leading-none tracking-[-0.03em] text-slate-950">
+
+              <p className="mt-[clamp(11px,2.3vh,30px)] text-[clamp(17px,2.4vh,22px)] font-black leading-none tracking-[-0.035em] text-slate-950">
                 Agrapana Greenworks Polymer
               </p>
-              <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+              <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">
                 Information System
               </p>
-            </div>
 
-            <div className="flex flex-1 items-center justify-center py-10">
-              <div className="flex max-w-2xl flex-col items-center text-center">
-                <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wide" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-                  <ShieldCheck className="h-4 w-4" />
-                  Sistem Informasi Gudang Botol
-                </div>
-                <h1 className="mt-7 max-w-[19ch] text-[54px] font-black leading-[1.02] tracking-[-0.045em] text-slate-950">
-                  Kendali pembelian PET dalam satu ruang operasional.
-                </h1>
-                <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-slate-500">
-                  Pantau input pembelian, verifikasi gudang, approval harga, target collection center,
-                  dan aktivitas supplier dengan alur kerja yang lebih tertata.
-                </p>
+              <div className="mt-[clamp(13px,3.2vh,42px)] inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em]" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Sistem Informasi Gudang Botol
+              </div>
 
-                <div className="mt-11 grid w-full max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-[22px] border border-slate-200/70 bg-slate-200/70 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-                  <div className="flex flex-col items-center bg-white/80 p-6 text-center transition-colors hover:bg-white">
-                    <Warehouse className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
-                    <p className="mt-3.5 text-sm font-bold tracking-tight text-slate-950">Input</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">Pembelian, supplier, dan nota.</p>
+              {/* text-balance supaya barisnya terbagi rata, bukan satu baris
+                  penuh lalu satu kata menggantung di baris terakhir. */}
+              <h1 className="mt-[clamp(9px,2.1vh,26px)] max-w-[16ch] text-balance text-[clamp(32px,4.6vh,50px)] font-black leading-[1.04] tracking-[-0.045em] text-slate-950">
+                Kendali pembelian PET dalam satu ruang operasional.
+              </h1>
+              <p className="mt-[clamp(8px,1.7vh,22px)] max-w-[44ch] text-pretty text-[clamp(13.5px,1.9vh,16.5px)] leading-[1.65] text-slate-500">
+                Pantau input pembelian, verifikasi gudang, approval harga, target
+                collection center, dan aktivitas supplier dalam satu alur kerja.
+              </p>
+
+              <div className="mt-[clamp(14px,3.6vh,48px)] grid w-full max-w-[560px] grid-cols-3 gap-px overflow-hidden rounded-[20px] border border-slate-200/70 bg-slate-200/70 shadow-[0_16px_44px_rgba(15,23,42,0.055)]">
+                {[
+                  { Ikon: Warehouse, judul: "Input", isi: "Pembelian, supplier, dan nota." },
+                  { Ikon: ClipboardCheck, judul: "Validasi", isi: "Verifikasi admin dan approval manager." },
+                  { Ikon: BarChart3, judul: "Analitik", isi: "Target, performa, dan risiko." },
+                ].map(({ Ikon, judul, isi }) => (
+                  <div key={judul} className="flex flex-col items-center bg-white/85 px-5 py-[clamp(12px,2.5vh,24px)] text-center transition-colors duration-300 hover:bg-white">
+                    <Ikon className="h-[18px] w-[18px]" style={{ color: "var(--brand-strong)" }} />
+                    <p className="mt-3.5 text-[13px] font-bold tracking-tight text-slate-950">{judul}</p>
+                    <p className="mt-1.5 text-pretty text-[11.5px] leading-[1.5] text-slate-500">{isi}</p>
                   </div>
-                  <div className="flex flex-col items-center bg-white/80 p-6 text-center transition-colors hover:bg-white">
-                    <ClipboardCheck className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
-                    <p className="mt-3.5 text-sm font-bold tracking-tight text-slate-950">Validasi</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">Admin gudang dan approval manager.</p>
-                  </div>
-                  <div className="flex flex-col items-center bg-white/80 p-6 text-center transition-colors hover:bg-white">
-                    <BarChart3 className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
-                    <p className="mt-3.5 text-sm font-bold tracking-tight text-slate-950">Analitik</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">Target, performa, dan risiko.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 

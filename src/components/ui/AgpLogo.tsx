@@ -60,19 +60,23 @@ export default function AgpLogo({ ukuran = 120, kilau = false, className }: Prop
 
         {/* Gradasi tipis dari atas -- meniru permukaan yang disinari dari
             atas, bukan warna datar. Ini yang memberi kesan timbul. */}
-        <linearGradient id={idTimbul} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="0.34" />
-          <stop offset="0.45" stopColor="#ffffff" stopOpacity="0.06" />
-          <stop offset="1" stopColor="#0b2a14" stopOpacity="0.16" />
+        <linearGradient id={idTimbul} x1="0.15" y1="0" x2="0.85" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.52" />
+          <stop offset="0.18" stopColor="#ffffff" stopOpacity="0.2" />
+          <stop offset="0.52" stopColor="#ffffff" stopOpacity="0.02" />
+          <stop offset="0.78" stopColor="#0b2a14" stopOpacity="0.1" />
+          <stop offset="1" stopColor="#0b2a14" stopOpacity="0.26" />
         </linearGradient>
 
         {/* Pita cahaya yang menyapu. Tepinya dibuat transparan supaya
             masuk dan keluar tanpa garis potong yang kelihatan. */}
         <linearGradient id={idKilau} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="0.42" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.72" />
-          <stop offset="0.58" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="0.38" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="0.46" stopColor="#ffffff" stopOpacity="0.28" />
+          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.78" />
+          <stop offset="0.54" stopColor="#ffffff" stopOpacity="0.28" />
+          <stop offset="0.62" stopColor="#ffffff" stopOpacity="0" />
           <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -85,15 +89,20 @@ export default function AgpLogo({ ukuran = 120, kilau = false, className }: Prop
       {/* Lapisan timbul + kilau, keduanya dipotong bentuk logo. */}
       <g clipPath={`url(#${idClip})`}>
         <rect x="0" y="0" width="725" height="520" fill={`url(#${idTimbul})`} />
+        {/* Kemiringan ditaruh di grup pembungkus, bukan di rect. Pada SVG,
+            transform dari CSS (animasinya) menimpa atribut transform, jadi
+            skew yang ditulis di rect ikut terhapus begitu sapuan berjalan. */}
         {kilau && (
-          <rect
-            className="agp-kilau"
-            x="-725"
-            y="-130"
-            width="725"
-            height="780"
-            fill={`url(#${idKilau})`}
-          />
+          <g transform="skewX(-16)">
+            <rect
+              className="agp-kilau"
+              x="-760"
+              y="-260"
+              width="620"
+              height="1040"
+              fill={`url(#${idKilau})`}
+            />
+          </g>
         )}
       </g>
     </svg>

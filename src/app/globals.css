@@ -1100,14 +1100,33 @@ a:focus-visible {
    --------------------------------------------------------------------- */
 .agp-mark {
   filter:
-    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.55))
-    drop-shadow(0 2px 3px rgba(20, 46, 24, 0.18))
-    drop-shadow(0 12px 22px rgba(20, 46, 24, 0.14));
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.7))
+    drop-shadow(0 2px 2px rgba(20, 46, 24, 0.16))
+    drop-shadow(0 8px 12px rgba(20, 46, 24, 0.14))
+    drop-shadow(0 22px 38px rgba(20, 46, 24, 0.16));
   transition: transform 520ms var(--ease-spring), filter 520ms var(--ease-system);
+  will-change: transform;
+}
+
+/* Apungan sangat pelan. Amplitudonya kecil (3px) dan siklusnya panjang --
+   cukup untuk membuat logo terasa punya ruang, tanpa jadi gerakan yang
+   menarik mata terus-menerus. */
+@keyframes agp-apung {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Lebar ikut tinggi layar. Di laptop 720px logo 196px membuat kolomnya
+   lebih tinggi dari layar dan halaman masuk jadi bisa di-scroll -- yang
+   tidak semestinya untuk satu layar tunggal. */
+.agp-mark-besar {
+  width: clamp(128px, 23vh, 212px);
+  height: auto;
+  animation: agp-apung 7s var(--ease-system) infinite;
 }
 
 .agp-mark:hover {
-  transform: translateY(-2px) scale(1.015);
+  transform: translateY(-3px) scale(1.02);
 }
 
 /* Sapuan cahaya. Jeda panjang di antara sapuan disengaja -- kilau yang
@@ -1126,17 +1145,33 @@ a:focus-visible {
 .agp-alas {
   position: absolute;
   left: 50%;
-  bottom: -6px;
-  width: 62%;
-  height: 16px;
+  bottom: -14px;
+  width: 58%;
+  height: 20px;
   transform: translateX(-50%);
   border-radius: 999px;
-  background: radial-gradient(ellipse at center, rgba(20, 46, 24, 0.16), transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(20, 46, 24, 0.2), transparent 72%);
   pointer-events: none;
 }
 
+/* Pendar lembut di belakang logo -- memberi kedalaman tanpa menambah
+   kotak atau garis baru di halaman. */
+.agp-pendar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 190%;
+  height: 190%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 45%, rgba(110, 147, 78, 0.16), rgba(110, 147, 78, 0.05) 42%, transparent 68%);
+  pointer-events: none;
+  z-index: -1;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .agp-kilau { animation: none; }
+  .agp-kilau,
+  .agp-mark-besar { animation: none; }
   .agp-mark { transition: none; }
   .agp-mark:hover { transform: none; }
 }
