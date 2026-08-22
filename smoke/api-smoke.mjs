@@ -426,7 +426,32 @@ async function main() {
     (await req(manager.jar, "/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...akunBody, email: `x.${akunStamp}@example.com`, password: "short" }) })).status === 400
   )
 
-  console.log("\n9. Bersih-bersih data uji")
+  console.log("\n9. Audit keutuhan data (sebelum bersih-bersih)")
+  // Diperiksa DI SINI, sebelum bersih-bersih: inilah satu-satunya saat
+  // basis data berisi rangkaian transaksi utuh hasil smoke -- nota,
+  // verifikasi gudang, transfer, dan kasbon. Kalau auditnya dijalankan
+  // setelah bersih-bersih (atau sebagai langkah tersendiri di CI sesudah
+  // smoke dan e2e), yang diperiksa cuma basis data kosong: lolos tanpa
+  // memeriksa apa pun.
+  {
+    const { PrismaClient } = await import("@prisma/client")
+    const { auditData } = await import("../scripts/audit-data.mjs")
+    const prismaAudit = new PrismaClient()
+    const hasil = await auditData(prismaAudit, { diam: true })
+    await prismaAudit.$disconnect()
+    check(
+      `audit data: tidak ada pelanggaran (${hasil.jumlahNota} nota, ${hasil.jumlahKasbon} kasbon)`,
+      hasil.temuan === 0,
+      hasil.ringkasTemuan.join("; ")
+    )
+    check(
+      "audit data memeriksa nota sungguhan, bukan basis data kosong",
+      hasil.jumlahNota > 0,
+      `${hasil.jumlahNota} nota`
+    )
+  }
+
+  console.log("\n10. Bersih-bersih data uji")
   if (purchaseId) {
     const delPurchase = await req(manager.jar, `/api/manager/purchases/${purchaseId}`, { method: "DELETE" })
     check("DELETE transaksi uji -> 200", delPurchase.status === 200, `status ${delPurchase.status}`)

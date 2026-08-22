@@ -85,14 +85,6 @@ jobs:
       - name: Playwright end-to-end test
         run: npm run test:e2e
 
-      # Dijalankan setelah smoke dan e2e, bukan sebelumnya: pada titik ini
-      # basis data CI sudah berisi hasil alur transaksi penuh, jadi yang
-      # diperiksa bukan cuma data seed melainkan keadaan yang benar-benar
-      # ditinggalkan oleh alur pembelian. Skripnya keluar dengan kode 1
-      # kalau ada saldo kasbon atau angka nota yang saling bertentangan.
-      - name: Audit keutuhan data
-        run: npm run audit:data
-
       - name: Upload Playwright report on failure
         if: failure()
         uses: actions/upload-artifact@v4
