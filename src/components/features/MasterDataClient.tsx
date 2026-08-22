@@ -270,16 +270,18 @@ export default function MasterDataClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-slate-200/70 bg-white/70 p-1 shadow-sm backdrop-blur">
+      {/* Tab memakai .segmented, sama dengan pemilih di dashboard Manager
+          dan filter di Data Lapak -- sebelumnya kotak hitam pekat di atas
+          panel kaca buram, satu-satunya pola seperti itu di aplikasi. */}
+      <div className="segmented" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`min-w-28 flex-1 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
-              activeTab === tab.id
-                ? "bg-slate-950 text-white shadow-sm"
-                : "text-slate-500 hover:bg-white hover:text-slate-950"
-            }`}
+            className={activeTab === tab.id ? "active" : undefined}
           >
             {tab.label}
           </button>
@@ -321,7 +323,7 @@ export default function MasterDataClient({
                   ), 1)
 
                   return (
-                    <div key={warehouse.id} className="rounded-2xl border border-slate-200/70 bg-white/70 p-4">
+                    <div key={warehouse.id} className="rounded-[var(--radius-md)] border p-4" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-black text-slate-900">{warehouse.nama}</p>
@@ -356,7 +358,7 @@ export default function MasterDataClient({
                           <span className="shrink-0 text-xs font-bold text-slate-500">{fmtKg(supplier.totalKg)}</span>
                         </div>
                         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                          <div className="h-full rounded-full bg-teal-700" style={{ width: `${Math.min((supplier.totalKg / maxKg) * 100, 100)}%` }} />
+                          <div className="h-full rounded-full" style={{ width: `${Math.min((supplier.totalKg / maxKg) * 100, 100)}%`, background: "var(--brand)" }} />
                         </div>
                       </div>
                     </div>
@@ -417,11 +419,17 @@ export default function MasterDataClient({
                       }`}>
                         {supplier.transactionStatus === "GREEN" ? "Hijau" : "Merah"}
                       </span>
-                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
-                        hasResolvedSupplierCoordinates(supplier)
-                          ? "border-sky-200 bg-sky-50 text-sky-700"
-                          : "border-slate-200 bg-slate-50 text-slate-500"
-                      }`}>
+                      {/* Biru di sini tidak menandakan apa pun, dan bersaing
+                          dengan badge merah/hijau di sebelahnya yang memang
+                          semantik. Nadanya dibuat bermakna: koordinat lengkap
+                          = netral (tidak perlu tindakan), belum ada = amber
+                          (data yang masih harus dilengkapi). */}
+                      <span
+                        className="rounded-full border px-2.5 py-1 text-[10px] font-black"
+                        style={hasResolvedSupplierCoordinates(supplier)
+                          ? { borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }
+                          : { borderColor: "var(--warning-soft)", background: "var(--warning-soft)", color: "var(--warning)" }}
+                      >
                         {hasResolvedSupplierCoordinates(supplier) ? "Map Ready" : "Belum Ada Koordinat"}
                       </span>
                     </div>
@@ -438,7 +446,7 @@ export default function MasterDataClient({
                   <span>{supplier.kontak_wa ? `WA ${supplier.kontak_wa}` : "Kontak belum tersedia"}</span>
                   <div className="flex flex-wrap items-center gap-3">
                     <span>Terakhir: {fmtDate(supplier.lastPurchase)}</span>
-                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="font-bold text-teal-700 hover:text-teal-800">
+                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="font-bold transition-colors hover:opacity-80" style={{ color: "var(--brand-strong)" }}>
                       Detail lapak
                     </Link>
                   </div>
@@ -548,7 +556,7 @@ export default function MasterDataClient({
 function StatCard({ icon, label, value, sub }: { icon: ReactNode; label: string; value: string; sub: string }) {
   return (
     <div className="interactive-surface border border-slate-200/80 p-5">
-      <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-950 text-white [&_svg]:h-4 [&_svg]:w-4">
+      <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-[10px] [&_svg]:h-4 [&_svg]:w-4" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
         {icon}
       </div>
       <div className="text-2xl font-black tracking-[-0.03em] text-slate-950">{value}</div>
@@ -560,7 +568,7 @@ function StatCard({ icon, label, value, sub }: { icon: ReactNode; label: string;
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white/70 p-3 text-center">
+    <div className="rounded-[var(--radius-md)] border p-3 text-center" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
       <div className="text-sm font-black text-slate-950">{value}</div>
       <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">{label}</div>
     </div>
@@ -586,7 +594,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-4 text-sm font-semibold text-slate-800 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10"
+        className="field-input field-icon"
       />
     </div>
   )
@@ -594,7 +602,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="col-span-full rounded-[24px] border border-dashed border-slate-200 bg-white/60 p-12 text-center text-sm font-semibold text-slate-400">
+    <div className="col-span-full rounded-[var(--radius-lg)] border border-dashed p-12 text-center text-sm font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)", color: "var(--muted-faint)" }}>
       {text}
     </div>
   )

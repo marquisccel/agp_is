@@ -22,7 +22,7 @@ export default async function ManagerTargetPage() {
         title="Setting Target Gudang"
         description={(
           <>
-            Tetapkan target pembelian bahan baku <span className="font-semibold text-teal-700">PET Final</span> per Collection Center.
+            Tetapkan target pembelian bahan baku <span className="font-semibold" style={{ color: "var(--brand-strong)" }}>PET Final</span> per Collection Center.
           </>
         )}
         actions={(

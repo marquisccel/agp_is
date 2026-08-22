@@ -161,7 +161,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
       <section className="interactive-surface border border-slate-200/80 p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-slate-950 text-white">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
               <CalendarDays className="h-4 w-4" />
             </div>
             <div>
@@ -213,7 +213,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
               >
                 <div className="flex flex-col gap-3 border-b border-slate-200/70 bg-white/55 p-5 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-950 text-sm font-black text-white">
+                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] text-sm font-black" style={{ background: "var(--brand-strong)", color: "#fff" }}>
                       {cityName.charAt(0)}
                     </div>
                     <div>
@@ -227,9 +227,9 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                 </div>
 
                 <div className="p-5">
-                  <div className="rounded-[22px] border border-slate-200/80 bg-white/65 p-4">
+                  <div className="rounded-[var(--radius-md)] border p-4" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                     <div className="mb-4 flex items-center gap-2.5">
-                      <div className="grid h-9 w-9 place-items-center rounded-2xl bg-teal-50 text-teal-700">
+                      <div className="grid h-9 w-9 place-items-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
                         <Recycle className="h-4 w-4" />
                       </div>
                       <div>
@@ -272,7 +272,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                   </div>
 
                   {errorMap[warehouse.id] && (
-                    <div className="mt-4 flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                    <div className="notice tone-warning mt-4 text-sm font-semibold">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                       <span>{errorMap[warehouse.id]}</span>
                     </div>
@@ -281,11 +281,8 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                   <button
                     onClick={() => handleSave(warehouse.id)}
                     disabled={isSaving}
-                    className={`premium-button mt-4 flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-black ${
-                      isSaved
-                        ? "bg-emerald-600 text-white shadow-[0_16px_34px_rgba(5,150,105,0.2)]"
-                        : "bg-slate-950 text-white hover:bg-slate-800"
-                    } disabled:opacity-60`}
+                    className={`premium-button mt-4 flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-5 py-3 text-sm font-black disabled:opacity-60 ${isSaved ? "" : "btn-primer"}`}
+                    style={isSaved ? { background: "var(--success)", color: "#fff", border: "1px solid var(--success)" } : undefined}
                   >
                     {isSaving ? (
                       <>
@@ -338,7 +335,7 @@ function TargetInput({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder="0"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 font-mono text-sm font-black text-slate-950 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10"
+          className="field-input field-icon-kanan font-mono text-sm font-black"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">{unit}</span>
       </span>
