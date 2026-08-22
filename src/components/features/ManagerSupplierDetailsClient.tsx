@@ -113,7 +113,7 @@ function resolveAuditStatusLabel(value: unknown) {
 function resolveAuditTriggerLabel(value: unknown) {
   switch (value) {
     case "supervisor_verify_purchase":
-      return "Aktif otomatis saat supervisor menyetujui verifikasi"
+      return "Aktif otomatis saat admin menyetujui verifikasi"
     case "admin_double_check_purchase":
       return "Aktif otomatis saat admin menyelesaikan double check"
     case "manager_approve_purchase":

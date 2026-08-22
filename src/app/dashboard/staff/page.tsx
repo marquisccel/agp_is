@@ -217,7 +217,7 @@ export default async function StaffDashboard() {
             <span className="section-eyebrow">Transaksi</span>
             <h2 className="text-lg font-bold" style={{ color: "var(--foreground)" }}>Input Transaksi Baru</h2>
           </div>
-          <p className="text-xs" style={{ color: "var(--muted-faint)" }}>Disimpan sebagai draft untuk diverifikasi Supervisor gudang.</p>
+          <p className="text-xs" style={{ color: "var(--muted-faint)" }}>Disimpan sebagai draft untuk diverifikasi Admin gudang.</p>
         </div>
         <div className="mt-5" />
         <PurchaseForm suppliers={suppliers} namaGudang={namaGudang} />

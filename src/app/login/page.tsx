@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { ArrowRight, BarChart3, ClipboardCheck, LockKeyhole, Mail, ShieldCheck, Warehouse } from "lucide-react"
+import { BarChart3, ClipboardCheck, LockKeyhole, Mail, ShieldCheck, Warehouse } from "lucide-react"
+import AgpLogo from "@/components/ui/AgpLogo"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -35,44 +36,49 @@ export default function LoginPage() {
         <section className="relative hidden overflow-hidden bg-white/72 backdrop-blur-2xl lg:flex lg:flex-col">
           <div className="absolute inset-y-0 right-0 w-px bg-slate-200" />
           <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-12 py-10 xl:px-16">
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-sm font-bold text-white shadow-sm" style={{ background: "var(--brand-strong)" }}>
-                AG
+            {/* Lambang perusahaan jadi kepala komposisi: cukup besar untuk
+                dibaca sebagai identitas, bukan ikon kecil di pojok. */}
+            <div className="flex flex-col items-center text-center">
+              <div className="relative">
+                <AgpLogo ukuran={132} kilau className="agp-mark" />
+                <span className="agp-alas" />
               </div>
-              <div>
-                <p className="text-base font-black leading-none text-slate-950">Agrapana Greenworks Polymer</p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Information System</p>
-              </div>
+              <p className="mt-6 text-xl font-black leading-none tracking-[-0.03em] text-slate-950">
+                Agrapana Greenworks Polymer
+              </p>
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                Information System
+              </p>
             </div>
 
-            <div className="flex flex-1 items-center py-12">
-              <div className="max-w-2xl">
+            <div className="flex flex-1 items-center justify-center py-10">
+              <div className="flex max-w-2xl flex-col items-center text-center">
                 <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wide" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
                   <ShieldCheck className="h-4 w-4" />
                   Sistem Informasi Gudang Botol
                 </div>
-                <h1 className="mt-8 max-w-2xl text-6xl font-black leading-[0.96] tracking-[-0.06em] text-slate-950">
+                <h1 className="mt-7 max-w-[19ch] text-[54px] font-black leading-[1.02] tracking-[-0.045em] text-slate-950">
                   Kendali pembelian PET dalam satu ruang operasional.
                 </h1>
-                <p className="mt-6 max-w-xl text-lg leading-8 text-slate-500">
+                <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-slate-500">
                   Pantau input pembelian, verifikasi gudang, approval harga, target collection center,
                   dan aktivitas supplier dengan alur kerja yang lebih tertata.
                 </p>
 
-                <div className="mt-12 grid max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-[28px] border border-slate-200/80 bg-slate-200/80 shadow-[0_22px_70px_rgba(15,23,42,0.07)]">
-                  <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
+                <div className="mt-11 grid w-full max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-[22px] border border-slate-200/70 bg-slate-200/70 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+                  <div className="flex flex-col items-center bg-white/80 p-6 text-center transition-colors hover:bg-white">
                     <Warehouse className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
-                    <p className="mt-4 text-sm font-black text-slate-950">Input</p>
+                    <p className="mt-3.5 text-sm font-bold tracking-tight text-slate-950">Input</p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">Pembelian, supplier, dan nota.</p>
                   </div>
-                  <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
+                  <div className="flex flex-col items-center bg-white/80 p-6 text-center transition-colors hover:bg-white">
                     <ClipboardCheck className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
-                    <p className="mt-4 text-sm font-black text-slate-950">Validasi</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">Supervisor dan approval manager.</p>
+                    <p className="mt-3.5 text-sm font-bold tracking-tight text-slate-950">Validasi</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Admin gudang dan approval manager.</p>
                   </div>
-                  <div className="bg-white/80 p-6 transition-colors hover:bg-slate-50">
+                  <div className="flex flex-col items-center bg-white/80 p-6 text-center transition-colors hover:bg-white">
                     <BarChart3 className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
-                    <p className="mt-4 text-sm font-black text-slate-950">Analitik</p>
+                    <p className="mt-3.5 text-sm font-bold tracking-tight text-slate-950">Analitik</p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">Target, performa, dan risiko.</p>
                   </div>
                 </div>
@@ -90,13 +96,11 @@ export default function LoginPage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(3,96,48,0.13),transparent_42%),radial-gradient(circle_at_100%_80%,rgba(85,145,51,0.11),transparent_36%)]" />
           <div className="w-full max-w-[420px]">
             <div className="mb-8 lg:hidden">
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-sm font-bold text-white" style={{ background: "var(--brand-strong)" }}>
-                  AG
-                </div>
+              <div className="flex items-center gap-3.5">
+                <AgpLogo ukuran={46} className="agp-mark shrink-0" />
                 <div>
-                  <p className="text-base font-black leading-none text-slate-950">Agrapana Greenworks Polymer</p>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Information System</p>
+                  <p className="text-base font-black leading-none tracking-[-0.02em] text-slate-950">Agrapana Greenworks Polymer</p>
+                  <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Information System</p>
                 </div>
               </div>
             </div>
@@ -129,7 +133,7 @@ export default function LoginPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="field-input h-12 pl-10 pr-3"
+                      className="field-input field-icon h-12"
                       placeholder="nama@agp.local"
                     />
                   </div>
@@ -147,7 +151,7 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="field-input h-12 pl-10 pr-3"
+                      className="field-input field-icon h-12"
                       placeholder="Masukkan password"
                     />
                   </div>
@@ -156,18 +160,17 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="btn-brand premium-button inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 text-sm font-black disabled:cursor-not-allowed disabled:opacity-70"
+                  className="btn-invert inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isLoading && <span className="h-4 w-4 rounded-full border-2 border-white/35 border-t-white animate-spin" />}
+                  {isLoading && <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />}
                   {isLoading ? "Memproses..." : "Masuk"}
-                  {!isLoading && <ArrowRight className="h-4 w-4" />}
                 </button>
               </form>
 
               <div className="mt-6 border-t border-slate-100 pt-5">
                 <div className="flex items-start gap-3 text-xs leading-5 text-slate-500">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--brand-strong)" }} />
-                  <p>Akses hanya untuk staff, supervisor, dan manager yang terdaftar di sistem.</p>
+                  <p>Akses hanya untuk staff, admin, dan manager yang terdaftar di sistem.</p>
                 </div>
               </div>
             </div>

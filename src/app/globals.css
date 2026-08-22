@@ -1081,3 +1081,100 @@ a:focus-visible {
   color: var(--muted);
   margin-bottom: 5px;
 }
+
+/* ---------------------------------------------------------------------
+   Isian yang berisi ikon di dalamnya.
+   .field-input didefinisikan setelah utilitas Tailwind, jadi padding
+   ringkasnya menang atas pl-10 dan ikon jadi menindih teks. Ruang untuk
+   ikon dinyatakan lewat kelas sendiri supaya tidak bergantung pada
+   urutan cascade.
+   --------------------------------------------------------------------- */
+.field-input.field-icon { padding-left: 40px; }
+.field-input.field-icon-kanan { padding-right: 40px; }
+
+/* ---------------------------------------------------------------------
+   Lambang AGP -- kesan timbul dan kilau yang menyapu.
+   Bayangannya bertingkat: satu rapat dan gelap untuk kaki logo, satu
+   lebar dan lembut sebagai jatuhnya cahaya. Satu bayangan saja terbaca
+   seperti stiker yang ditempel.
+   --------------------------------------------------------------------- */
+.agp-mark {
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.55))
+    drop-shadow(0 2px 3px rgba(20, 46, 24, 0.18))
+    drop-shadow(0 12px 22px rgba(20, 46, 24, 0.14));
+  transition: transform 520ms var(--ease-spring), filter 520ms var(--ease-system);
+}
+
+.agp-mark:hover {
+  transform: translateY(-2px) scale(1.015);
+}
+
+/* Sapuan cahaya. Jeda panjang di antara sapuan disengaja -- kilau yang
+   berulang cepat berubah jadi kedipan yang mengganggu di halaman yang
+   dipandangi sambil mengetik password. */
+@keyframes agp-sapuan {
+  0%, 62% { transform: translateX(0); }
+  100% { transform: translateX(1740px); }
+}
+
+.agp-kilau {
+  animation: agp-sapuan 5.6s var(--ease-system) infinite;
+}
+
+/* Alas cahaya di bawah logo -- memberi pijakan supaya tidak melayang. */
+.agp-alas {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 62%;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(20, 46, 24, 0.16), transparent 70%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agp-kilau { animation: none; }
+  .agp-mark { transition: none; }
+  .agp-mark:hover { transform: none; }
+}
+
+/* ---------------------------------------------------------------------
+   Tombol utama monokrom -- hitam, lalu berbalik jadi putih saat disentuh.
+   Dipakai di halaman masuk. Perbatasan selalu ada (bukan cuma saat
+   hover) supaya lebarnya tidak bergeser 2px waktu warnanya berbalik.
+   --------------------------------------------------------------------- */
+.btn-invert {
+  background: #101413;
+  color: #ffffff;
+  border: 1px solid #101413;
+  transition:
+    background-color 220ms var(--ease-system),
+    color 220ms var(--ease-system),
+    border-color 220ms var(--ease-system),
+    box-shadow 220ms var(--ease-system),
+    transform 220ms var(--ease-spring);
+}
+
+.btn-invert:hover:not(:disabled) {
+  background: #ffffff;
+  color: #101413;
+  border-color: #101413;
+  box-shadow: 0 8px 20px rgba(16, 20, 19, 0.14);
+}
+
+.btn-invert:active:not(:disabled) { transform: scale(0.985); }
+
+.btn-invert:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-soft), 0 0 0 4px var(--brand);
+}
+
+/* Pemuat di dalam tombol ikut warna teks, jadi tetap terlihat setelah
+   tombolnya berbalik jadi putih. */
+.btn-invert .pemuat {
+  border-color: currentColor;
+  border-top-color: transparent;
+}
