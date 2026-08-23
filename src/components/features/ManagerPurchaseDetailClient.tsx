@@ -165,6 +165,12 @@ export default function ManagerPurchaseDetailClient({
   const displayedPaymentPercent = !isTransferred ? 0 : isPendingTermin ? paymentPercent : 100
   const paymentStatusLabel = !isTransferred ? "Menunggu Transfer" : isPendingTermin ? "Termin Belum Lunas" : "Sudah Transfer"
   const paymentTone: StatusTone = isPendingTermin ? "warning" : isTransferred ? "success" : "neutral"
+  /**
+   * Yang benar-benar masih harus diterima lapak setelah saldo kasbonnya
+   * dipotong. Pada nota termin, `total_dibayar` hanya menyimpan cicilan
+   * pertama, jadi angka ini tidak bisa dibaca langsung dari satu kolom.
+   */
+  const kewajibanKeLapak = payableValue + remainingPayment
 
   return (
     <div className="premium-workflow space-y-6">
@@ -213,8 +219,15 @@ export default function ManagerPurchaseDetailClient({
           <Clock className="w-5 h-5 shrink-0 mt-0.5" />
         )}
         <div>
-          <h4 className="font-bold text-sm">Status: {s.label}</h4>
-          <p className="text-xs opacity-90 mt-0.5">{sDesc}</p>
+          <h4 className="text-sm font-bold">Status: {s.label}</h4>
+          {/* Keterangan bawaan untuk "sudah_transfer" berbunyi "Transaksi
+              selesai". Pada nota termin itu tidak benar: uangnya baru
+              sebagian yang berpindah dan sisanya masih utang ke lapak. */}
+          <p className="mt-0.5 text-xs opacity-90">
+            {isPendingTermin
+              ? `Pembayaran pertama sudah ditransfer. Masih kurang ${fmtRp(remainingPayment)} ke lapak.`
+              : sDesc}
+          </p>
           {purchase.status_approval === "dibatalkan" && purchase.rejection_reason && (
             <div className="mt-2 rounded-lg border p-2.5 text-xs" style={{ background: "rgba(255,255,255,0.55)", borderColor: "currentColor" }}>
               <span className="font-bold">Alasan Penolakan:</span> {purchase.rejection_reason}
@@ -418,6 +431,31 @@ export default function ManagerPurchaseDetailClient({
               </div>
             </div>
           )}
+
+        {/* Pihak Terkait */}
+          <div className="section overflow-hidden">
+              <div className="section-shell-head">
+                <div>
+                  <span className="section-eyebrow">Penanggung jawab</span>
+                  <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Pihak Terkait</h3>
+                </div>
+                <Shield className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
+              </div>
+              <div className="section-body space-y-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">Staff Input (Gudang/Lapak)</span>
+                  <span className="font-bold text-slate-800">{purchase.staff.nama}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">Verifikasi Gudang</span>
+                  <span className="font-bold text-slate-800">{purchase.admin?.nama || "-"}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">Manager Approval</span>
+                  <span className="font-bold text-slate-800">{purchase.manager?.nama || "-"}</span>
+                </div>
+            </div>
+            </div>
         </div>
 
         {/* Right Column - Financial Summary, Transaction actors, Audit logs */}
@@ -558,16 +596,36 @@ export default function ManagerPurchaseDetailClient({
 
               {(purchase.dp_yang_digunakan || 0) > 0 && (
                 <div className="flex justify-between" style={{ color: "var(--danger)" }}>
-                  <span>Potongan Saldo DP/Kasbon</span>
+                  <span>Potongan Saldo Kasbon</span>
                   <span className="font-mono font-medium">-{fmtRp(purchase.dp_yang_digunakan || 0)}</span>
                 </div>
+              )}
+
+              {/*
+                Rantai hitungnya dulu putus pada nota termin. Yang tampil:
+                nilai 30 juta, potongan kasbon 15 juta, lalu "Nilai Transfer
+                9 juta" -- 30 dikurangi 15 tidak pernah menghasilkan 9, dan
+                pembaca tidak diberi tahu bahwa 9 juta itu baru cicilan
+                pertama dari 15 juta. Dua baris berikut menutup lompatan itu.
+              */}
+              {hasOpenTermin && (
+                <>
+                  <div className="flex justify-between border-t pt-2 font-semibold" style={{ borderColor: "var(--border)" }}>
+                    <span>Kewajiban ke Lapak</span>
+                    <span className="font-mono" style={{ color: "var(--foreground)" }}>{fmtRp(kewajibanKeLapak)}</span>
+                  </div>
+                  <div className="flex justify-between" style={{ color: "var(--warning)" }}>
+                    <span>Belum dibayar</span>
+                    <span className="font-mono font-medium">-{fmtRp(remainingPayment)}</span>
+                  </div>
+                </>
               )}
 
               <div
                 className="flex justify-between border-t-2 border-dashed pt-3 text-sm font-extrabold"
                 style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
               >
-                <span>Nilai Transfer</span>
+                <span>{hasOpenTermin ? "Sudah Ditransfer" : "Nilai Transfer"}</span>
                 <span className="font-mono text-base" style={{ color: "var(--brand-strong)" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
               </div>
             </div>
@@ -586,33 +644,20 @@ export default function ManagerPurchaseDetailClient({
                 ("Menunggu Transfer" selama belum ditransfer), jadi blok
                 ini dibuang seluruhnya, bukan ditambal. */}
           </div>
+        </div>
+      </div>
 
-          {/* Pihak Terkait */}
-          <div className="section overflow-hidden">
-            <div className="section-shell-head">
-              <div>
-                <span className="section-eyebrow">Penanggung jawab</span>
-                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Pihak Terkait</h3>
-              </div>
-              <Shield className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
-            </div>
-            <div className="section-body space-y-3 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Staff Input (Gudang/Lapak)</span>
-                <span className="font-bold text-slate-800">{purchase.staff.nama}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Verifikasi Gudang</span>
-                <span className="font-bold text-slate-800">{purchase.admin?.nama || "-"}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Manager Approval</span>
-                <span className="font-bold text-slate-800">{purchase.manager?.nama || "-"}</span>
-              </div>
-          </div>
-          </div>
+      {/*
+        Kolom kanan dulu memuat EMPAT kartu bertumpuk -- Pembayaran,
+        Kalkulasi, Pihak Terkait, dan Riwayat Perubahan -- sementara kolom
+        kiri cuma dua. Panjangnya jadi timpang: kolom sempit menjulur jauh
+        melewati kolom lebar di sebelahnya, dan linimasa riwayat, yang
+        justru paling butuh ruang mendatar, terjepit paling sempit.
 
-          {/* Riwayat Perubahan.
+        Sekarang kanan menyisakan dua kartu yang sama-sama soal uang, dan
+        dua kartu "siapa & kapan" turun ke baris sendiri selebar layar.
+      */}
+      {/* Riwayat Perubahan.
 
               Kotak "Riwayat pembayaran" yang dulu berdiri di atas linimasa
               ini menyaring tiga aksi pembayaran dari daftar yang sama, lalu
@@ -621,7 +666,7 @@ export default function ManagerPurchaseDetailClient({
               hasilnya baris kembar persis, berdempetan. Kartu Pembayaran di
               atas layar ini sudah memuat tanggal transfer dan buktinya, jadi
               yang tersisa di sini cukup satu linimasa utuh menurut waktu. */}
-          <div className="section overflow-hidden">
+      <div className="section overflow-hidden">
             <div className="section-shell-head">
               <div>
                 <span className="section-eyebrow">Jejak</span>
@@ -656,8 +701,6 @@ export default function ManagerPurchaseDetailClient({
               <p className="py-4 text-center text-xs italic" style={{ color: "var(--muted-faint)" }}>Tidak ada riwayat perubahan terekam.</p>
             )}
             </div>
-          </div>
-        </div>
       </div>
     </div>
   )

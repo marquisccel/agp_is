@@ -650,6 +650,30 @@ export default async function ManagerDashboard({
     <div className="space-y-6">
       <PendingTerminAlerts initialAlerts={pendingTermins} />
 
+      {/*
+        Hari libur: panel target harian di bawah ini memang tidak
+        ditampilkan, karena tidak ada target yang perlu dikejar. Dulu ia
+        hanya lenyap tanpa keterangan apa pun, sehingga terbaca seperti
+        panelnya rusak. Layar Staff sudah menjelaskannya sejak awal; di
+        sini keterangannya tidak pernah ada.
+      */}
+      {isCurrentMonth && !isWorkingToday && (
+        <div className="notice tone-info">
+          <div className="notice-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </div>
+          <div>
+            <p className="notice-title">Hari libur &mdash; tidak ada target harian</p>
+            <p className="notice-body">
+              Hari ini Minggu atau libur nasional, jadi tidak ada target harian yang dikejar dan laporan pencapaian
+              harian tidak ditampilkan. Target mingguan dan bulanan tetap berjalan.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Alert target harian: hanya tampil di hari kerja */}
       {isCurrentMonth && isWorkingToday && missedTargetWarehouses.length > 0 && (
         <div className="section section-body space-y-4 animate-in fade-in duration-200" style={{ borderLeft: "3px solid var(--warning)" }}>
@@ -670,15 +694,15 @@ export default async function ManagerDashboard({
               return (
                 <div key={index} className="flex flex-col justify-between rounded-[var(--radius-md)] border p-4 transition-all" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-sm font-bold text-slate-800">{w.nama}</span>
+                    <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{w.nama}</span>
                     <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>{pct.toFixed(0)}%</span>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Realisasi: <strong>{(w.actual / 1000).toFixed(2)} Ton</strong> dari target <strong>{(w.target / 1000).toFixed(2)} Ton</strong> (Kurang <strong className="text-rose-650 text-rose-600">{(w.kekurangan / 1000).toFixed(2)} Ton</strong>)
+                    <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+                      Realisasi: <strong>{(w.actual / 1000).toFixed(2)} Ton</strong> dari target <strong>{(w.target / 1000).toFixed(2)} Ton</strong> (Kurang <strong style={{ color: "var(--danger)" }}>{(w.kekurangan / 1000).toFixed(2)} Ton</strong>)
                     </p>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div className="bg-rose-500 h-2 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                    <div className="h-2 w-full rounded-full" style={{ background: "var(--bg-tint)" }}>
+                      <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: "var(--warning)" }} />
                     </div>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Check, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
+import NumberInput from "@/components/ui/NumberInput";
 
 interface PendingTermin {
   id: string;
@@ -42,15 +43,33 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
   // tombolnya membuka pemilih berkas dulu, bukan langsung mengirim.
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  /*
+   * Nominal yang sedang diketik per nota. Kosong berarti "bayar semuanya",
+   * yaitu perilaku lama.
+   */
+  const [nominalBayar, setNominalBayar] = useState<Record<string, number>>({});
+
   const handleSettle = (id: string, file: File) => {
     setLoadingId(id);
     startTransition(async () => {
       try {
         const body = new FormData();
         body.append("nota", file);
+        const nominal = nominalBayar[id];
+        if (nominal && nominal > 0) body.append("nominal", String(nominal));
         const res = await fetch(`/api/purchases/${id}/settle`, { method: "POST", body });
         if (res.ok) {
-          setAlerts((current) => current.filter((a) => a.id !== id));
+          const hasil = await res.json();
+          if (hasil.lunas) {
+            setAlerts((current) => current.filter((a) => a.id !== id));
+          } else {
+            // Masih ada kekurangan: barisnya tetap, angkanya yang turun.
+            setAlerts((current) =>
+              current.map((a) => (a.id === id ? { ...a, nominal_belum_lunas: hasil.sisa } : a)),
+            );
+            setNominalBayar((current) => ({ ...current, [id]: 0 }));
+            toast(`Pembayaran dicatat. Sisa ${formatRp(hasil.sisa)}.`);
+          }
           router.refresh();
         } else {
           const d = await res.json();
@@ -135,6 +154,18 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                     e.target.value = "";
                   }}
                 />
+                {/* Pembayaran boleh dicicil: kolom ini menentukan berapa yang
+                    dicatat sekarang, dan dibiarkan terisi penuh supaya
+                    melunasi sekaligus tetap sekali klik. */}
+                <div className="w-36">
+                  <NumberInput
+                    aria-label={`Nominal pembayaran untuk ${alert.supplier.nama}`}
+                    className="field-input text-right font-mono text-xs"
+                    value={nominalBayar[alert.id] ?? alert.nominal_belum_lunas}
+                    onValueChange={(n) => setNominalBayar((current) => ({ ...current, [alert.id]: n }))}
+                  />
+                </div>
+
                 <button
                   onClick={() => fileInputs.current[alert.id]?.click()}
                   disabled={isPending}
@@ -148,7 +179,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                   ) : (
                     <>
                       <Check className="w-4 h-4" />
-                      Lunasi {remainingPercent}% + Nota
+                      Catat Pembayaran
                     </>
                   )}
                 </button>

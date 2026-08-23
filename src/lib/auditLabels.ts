@@ -73,6 +73,11 @@ export const AUDIT_ACTIONS: Record<string, AuditActionInfo> = {
     description: "melunasi sisa pembayaran termin dan mengunggah notanya",
     tone: TONE.selesai,
   },
+  SETTLE_TERMIN_PARTIAL: {
+    label: "Pembayaran sebagian dicatat",
+    description: "mencatat pembayaran sebagian atas sisa nota; masih ada kekurangan",
+    tone: TONE.perhatian,
+  },
   DELETE_PURCHASE: {
     label: "Transaksi dihapus",
     description: "menghapus transaksi pembelian secara permanen",

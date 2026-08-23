@@ -1,0 +1,77 @@
+/**
+ * Perhitungan pencatatan pembayaran atas sisa sebuah nota.
+ *
+ * Dipisah dari route-nya supaya bisa diuji tanpa basis data maupun
+ * penyimpanan berkas -- lihat tests/settlement.test.ts. Yang diuji di sana
+ * bukan tampilannya, tapi hal yang dulu keliru: berapa pun yang benar-benar
+ * dibayar, notanya langsung ditandai LUNAS, sehingga kekurangannya hilang
+ * dari sistem.
+ */
+
+export class SettlementError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "SettlementError"
+  }
+}
+
+export type HasilPelunasan = {
+  /** Yang dicatat dibayar pada langkah ini. */
+  dibayar: number
+  /** Sisa setelah pembayaran ini. */
+  sisa: number
+  lunas: boolean
+  /** Akumulasi yang sudah dibayar, untuk disimpan ke nominal_pembayaran_awal. */
+  sudahDibayar: number
+  persentasePembayaran: number
+  statusPelunasan: "LUNAS" | "BELUM_LUNAS"
+}
+
+const bulat2 = (n: number) => Math.round(n * 100) / 100
+
+/** Toleransi satu rupiah untuk pembulatan yang datang dari sisi klien. */
+const TOLERANSI = 1
+
+export function hitungPelunasan({
+  sisaSekarang,
+  sudahDibayarSebelumnya,
+  nominal,
+}: {
+  sisaSekarang: number
+  sudahDibayarSebelumnya: number
+  /** Kosong berarti melunasi seluruh sisa. */
+  nominal?: number | null
+}): HasilPelunasan {
+  if (sisaSekarang <= 0) {
+    throw new SettlementError("Transaksi ini tidak memiliki sisa yang perlu dibayar.")
+  }
+
+  let dibayar = sisaSekarang
+  if (nominal != null) {
+    if (!Number.isFinite(nominal) || nominal <= 0) {
+      throw new SettlementError("Nominal pembayaran harus lebih dari nol.")
+    }
+    if (nominal - sisaSekarang > TOLERANSI) {
+      throw new SettlementError(
+        `Nominal melebihi sisa yang harus dibayar (${Math.round(sisaSekarang).toLocaleString("id-ID")}).`,
+      )
+    }
+    dibayar = Math.min(nominal, sisaSekarang)
+  }
+
+  const sisa = bulat2(sisaSekarang - dibayar)
+  // Sisa di bawah satu sen dianggap nol: pembayaran penuh yang dihitung
+  // dari persentase bisa menyisakan pecahan yang tidak akan pernah dibayar.
+  const lunas = sisa <= 0.01
+  const sudahDibayar = bulat2(sudahDibayarSebelumnya + dibayar)
+  const nilaiTransfer = bulat2(sudahDibayar + (lunas ? 0 : sisa))
+
+  return {
+    dibayar,
+    sisa: lunas ? 0 : sisa,
+    lunas,
+    sudahDibayar,
+    persentasePembayaran: lunas || nilaiTransfer <= 0 ? 100 : bulat2((sudahDibayar / nilaiTransfer) * 100),
+    statusPelunasan: lunas ? "LUNAS" : "BELUM_LUNAS",
+  }
+}
