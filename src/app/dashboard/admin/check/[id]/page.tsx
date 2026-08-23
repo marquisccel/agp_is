@@ -26,6 +26,16 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
     return notFound()
   }
 
+  // Halaman ini tidak pernah memeriksa gudangnya. API double-check
+  // menolak nota gudang lain saat disimpan, jadi tidak ada nota yang bisa
+  // diubah lintas gudang -- tapi isinya tetap TERBACA: nama lapak, nama
+  // staff, SKU, berat, dan harga per kg gudang lain, cukup dengan menebak
+  // id di URL. Jalur editnya sudah memeriksa ini sejak dulu; jalur ini
+  // terlewat.
+  if (purchase.warehouseId !== session.user.warehouseId) {
+    return notFound()
+  }
+
   const dps = await prisma.downPayment.aggregate({
     where: { supplierId: purchase.supplierId, status_approval: "approved" },
     _sum: { sisa_dp: true },
@@ -35,17 +45,20 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Receiving control"
+        eyebrow="Verifikasi penerimaan"
         title="Double Check Transaksi"
         description={<>Draft {purchase.id.split("-")[0]} untuk <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>.</>}
         actions={
-          <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
+          <span
+            className="rounded-[var(--radius-sm)] border px-3 py-2 text-xs font-bold"
+            style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
+          >
             Staff: {purchase.staff.nama}
           </span>
         }
       />
 
-      <div className="workflow-card p-5 md:p-6">
+      <div className="section section-body">
         <DoubleCheckForm purchase={purchase} availableDp={availableDp} />
       </div>
     </div>

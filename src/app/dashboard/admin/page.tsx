@@ -56,49 +56,54 @@ export default async function AdminDashboard() {
     <div className="space-y-6">
       <PendingTerminAlerts initialAlerts={pendingTermins} />
       <PageHeader
-        eyebrow="Operational workspace"
+        eyebrow="Ruang operasional"
         title="Double Check Transaksi"
         description="Daftar draft pembelian yang menunggu validasi berat dan retur."
+        actions={
+          <span className="text-sm font-semibold" style={{ color: drafts.length > 0 ? "var(--warning)" : "var(--muted-faint)" }}>
+            {drafts.length > 0 ? `${drafts.length} menunggu dicek` : "Tidak ada antrean"}
+          </span>
+        }
       />
 
-      <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+      <div className="section overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
+          <table className="tabel-lembut text-left text-sm text-slate-600">
+            <thead>
               <tr>
-                <th className="px-6 py-4">Tanggal / Staff</th>
-                <th className="px-6 py-4">Lapak</th>
-                <th className="px-6 py-4">Item (Estimasi)</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
+                <th>Tanggal / Staff</th>
+                <th>Lapak</th>
+                <th>Item (Estimasi)</th>
+                <th className="!text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {drafts.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={4} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
                     Tidak ada transaksi yang menunggu double check.
                   </td>
                 </tr>
               ) : (
                 drafts.map((draft) => (
-                  <tr key={draft.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-slate-900">{new Date(draft.createdAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}</div>
-                      <div className="text-xs text-slate-400 mt-1">Oleh: {draft.staff.nama}</div>
+                  <tr key={draft.id}>
+                    <td>
+                      <div className="font-medium" style={{ color: "var(--foreground)" }}>{new Date(draft.createdAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}</div>
+                      <div className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Oleh: {draft.staff.nama}</div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-700">
+                    <td className="font-medium">
                       {draft.supplier.nama}
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       {draft.items.map(i => (
                         <div key={i.id} className="text-xs">
-                          <span className="font-semibold text-slate-700">{i.sku_name}</span>: {i.berat_final_item} kg
+                          <span className="font-semibold" style={{ color: "var(--foreground)" }}>{i.sku_name}</span>: {i.berat_final_item} kg
                         </div>
                       ))}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="text-center">
                       <Link href={`/dashboard/admin/check/${draft.id}`}>
-                        <button className="bg-white border border-slate-200 text-slate-700 hover:text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50 px-4 py-2 rounded-lg text-xs font-semibold shadow-sm transition-all">
+                        <button className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold">
                           Lakukan Cek
                         </button>
                       </Link>
