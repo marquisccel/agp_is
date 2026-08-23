@@ -168,6 +168,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       { name: "Setting Target", href: "/dashboard/manager/targets", icon: Target },
       { name: "Data Lapak", href: "/dashboard/manager/suppliers", icon: Store },
       { name: "Daftar Transaksi", href: "/dashboard/manager/history", icon: History },
+      // Kalau lapak menagih pelunasan langsung ke Manager, sebelumnya uangnya
+      // harus dititipkan dulu ke Admin supaya pembayarannya tercatat. API-nya
+      // sudah menerima Manager sejak lama; yang tidak ada cuma layarnya.
+      { name: "Transfer Pembayaran", href: "/dashboard/manager/transfer", icon: CreditCard },
       { name: "Audit Trail", href: "/dashboard/manager/audit-trail", icon: ScrollText },
     ] : []),
     { name: "Pengaturan", href: "/dashboard/settings", icon: Settings },

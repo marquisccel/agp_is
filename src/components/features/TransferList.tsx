@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, Clock3, Eye, FileImage, Loader2, ReceiptText, RefreshCw, UploadCloud, X } from "lucide-react"
 import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
+import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import { skemaPembayaran, statusPembayaran } from "@/lib/paymentStatus"
@@ -12,7 +13,12 @@ import { kewajibanKeLapak } from "@/lib/settlement"
 import KoreksiKekurangan from "@/components/features/KoreksiKekurangan"
 
 type TransferFilter = "all" | "pending" | "transferred" | "termin"
-type PurchaseWithRelations = Purchase & { supplier: Supplier; items: PurchaseItem[] }
+type PurchaseWithRelations = Purchase & {
+  supplier: Supplier
+  items: PurchaseItem[]
+  /** Hanya diisi pada tampilan Manager, yang melihat seluruh gudang. */
+  warehouse?: { id: string; nama: string }
+}
 
 function formatRp(n: number) {
   return n.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })
@@ -28,9 +34,16 @@ function formatDateTime(value: string | Date) {
 
 export default function TransferList({
   purchases,
+  warehouses,
   bolehKoreksi = false,
 }: {
   purchases: PurchaseWithRelations[]
+  /**
+   * Diisi hanya untuk Manager, yang melihat seluruh gudang sekaligus.
+   * Kalau kosong, penyaring gudangnya tidak ditampilkan -- Admin memang
+   * cuma punya satu gudang, jadi penyaringnya tidak berarti apa-apa.
+   */
+  warehouses?: { id: string; nama: string }[]
   /**
    * Layar ini juga dibuka Staff, tapi jalur koreksinya hanya untuk Admin
    * gudang dan Manager. Tanpa penanda ini tombolnya tetap tampil untuk
@@ -43,6 +56,7 @@ export default function TransferList({
   const [uploading, setUploading] = useState<string | null>(null)
   const [preview, setPreview] = useState<{ src: string; title: string } | null>(null)
   const [activeFilter, setActiveFilter] = useState<TransferFilter>("all")
+  const [gudangTerpilih, setGudangTerpilih] = useState("all")
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const { confirm, dialog } = useConfirm()
   const { toast, host: toastHost } = useToast()
@@ -68,7 +82,12 @@ export default function TransferList({
     }
   }
 
+  const seGudang = (purchase: PurchaseWithRelations) =>
+    gudangTerpilih === "all" || purchase.warehouseId === gudangTerpilih
+
   const filteredPurchases = purchases.filter((purchase) => {
+    if (!seGudang(purchase)) return false
+
     const isTransferred = purchase.status_approval === "sudah_transfer"
     const isPendingTermin = purchase.status_pelunasan === "BELUM_LUNAS" && (purchase.nominal_belum_lunas || 0) > 0
 
@@ -78,14 +97,15 @@ export default function TransferList({
     return true
   })
 
+  const dalamGudang = purchases.filter(seGudang)
   const filterOptions: { id: TransferFilter; label: string; count: number }[] = [
-    { id: "all", label: "Semua", count: purchases.length },
-    { id: "pending", label: "Menunggu", count: purchases.filter((purchase) => purchase.status_approval !== "sudah_transfer").length },
-    { id: "transferred", label: "Selesai", count: purchases.filter((purchase) => purchase.status_approval === "sudah_transfer").length },
+    { id: "all", label: "Semua", count: dalamGudang.length },
+    { id: "pending", label: "Menunggu", count: dalamGudang.filter((purchase) => purchase.status_approval !== "sudah_transfer").length },
+    { id: "transferred", label: "Selesai", count: dalamGudang.filter((purchase) => purchase.status_approval === "sudah_transfer").length },
     {
       id: "termin",
       label: "Termin",
-      count: purchases.filter((purchase) => purchase.status_pelunasan === "BELUM_LUNAS" && (purchase.nominal_belum_lunas || 0) > 0).length,
+      count: dalamGudang.filter((purchase) => purchase.status_pelunasan === "BELUM_LUNAS" && (purchase.nominal_belum_lunas || 0) > 0).length,
     },
   ]
 
@@ -140,6 +160,16 @@ export default function TransferList({
                 tangan, lengkap dengan bayangan dan warna aktifnya sendiri.
                 Bentuknya jadi mirip tapi tidak sama dengan penyaring di
                 layar lain. */}
+            <div className="flex flex-wrap items-center gap-3">
+            {warehouses && warehouses.length > 0 && (
+              <ElegantSelect
+                value={gudangTerpilih}
+                options={[{ value: "all", label: "Semua Gudang" }, ...warehouses.map((w) => ({ value: w.id, label: w.nama }))]}
+                onChange={setGudangTerpilih}
+                ariaLabel="Pilih gudang"
+                className="w-44"
+              />
+            )}
             <div className="segmented flex-wrap">
               {filterOptions.map((option) => (
                 <button
@@ -157,6 +187,7 @@ export default function TransferList({
                   </span>
                 </button>
               ))}
+            </div>
             </div>
           </div>
         )}
@@ -218,7 +249,8 @@ export default function TransferList({
                       </div>
                       <h3 className="mt-3 truncate text-lg font-black tracking-[-0.02em]" style={{ color: "var(--foreground)" }}>{p.supplier.nama}</h3>
                       <p className="mt-1 text-xs font-semibold" style={{ color: "var(--muted-faint)" }}>
-                        {formatDate(p.createdAt)} / {p.items.length} jenis barang
+                        {p.warehouse ? `${p.warehouse.nama} \u00b7 ` : ""}
+                        {formatDate(p.createdAt)} &middot; {p.items.length} jenis barang
                       </p>
                     </div>
 

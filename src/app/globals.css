@@ -1407,3 +1407,44 @@ a:focus-visible {
    menindih warna kotak di dalamnya. */
 .baris-lapak { transition: background-color 160ms var(--ease-system); }
 .baris-lapak:hover { background: var(--bg-tint); }
+
+/* Garis pemisahnya setipis garis baris tabel, bukan setegas garis tepi
+   kartu. Dengan ketebalan penuh, pemisah antar lapak terbaca sama kuat
+   dengan isinya sendiri -- padahal tugasnya cuma memisahkan. Baris
+   terakhir tidak bergaris: tepi kartunya sudah menutup. */
+.daftar-lapak > .baris-lapak + .baris-lapak {
+  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+/* Kotak angka di dalam baris. Satu bentuk untuk semua rekap per lapak;
+   nada warnanya hanya menyala kalau angkanya memang ada. */
+.kotak-angka {
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: var(--surface-sunken);
+}
+
+.kotak-angka .kotak-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.kotak-angka .kotak-nilai {
+  display: block;
+  margin-top: 3px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.kotak-angka.tone-warning { background: var(--warning-soft); }
+.kotak-angka.tone-warning .kotak-label,
+.kotak-angka.tone-warning .kotak-nilai { color: var(--warning); }
+
+.kotak-angka.tone-danger { background: var(--danger-soft); }
+.kotak-angka.tone-danger .kotak-label,
+.kotak-angka.tone-danger .kotak-nilai { color: var(--danger); }

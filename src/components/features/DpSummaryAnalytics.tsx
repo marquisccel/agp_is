@@ -119,7 +119,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
             <p className="text-xs mt-1">Data saldo akan terisi setelah manager menyetujui pengajuan DP lapak.</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+          <div className="daftar-lapak">
             {filtered.map((row, idx) => (
               /* Sorotan hover dulu memakai hover:bg-slate-50 pada baris yang
                  padding kirinya nol, jadi bidang abunya berhenti sebelum
@@ -151,22 +151,21 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
 
                 {/* Timbangan / DP values */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
-                  {/* Total DP */}
-                  <div className="rounded-lg bg-slate-50 p-3">
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase block">DP Disetujui</span>
-                    <span className="font-mono text-slate-700 font-bold text-sm block mt-1">{fmtRp(row.totalDp)}</span>
+                  <div className="kotak-angka">
+                    <span className="kotak-label">DP Disetujui</span>
+                    <span className="kotak-nilai font-mono">{fmtRp(row.totalDp)}</span>
                   </div>
 
-                  {/* DP Terpakai */}
-                  <div className="rounded-lg bg-slate-50 p-3">
-                    <span className="text-[10px] text-slate-400 font-semibold uppercase block">Terpakai</span>
-                    <span className="font-mono text-slate-600 font-semibold text-sm block mt-1">{fmtRp(row.totalUsed)}</span>
+                  <div className="kotak-angka">
+                    <span className="kotak-label">Terpakai</span>
+                    <span className="kotak-nilai font-mono">{fmtRp(row.totalUsed)}</span>
                   </div>
 
-                  {/* Sisa DP */}
-                  <div className="rounded-[var(--radius-md)] p-3" style={{ background: "var(--warning-soft)" }}>
-                    <span className="block text-[10px] font-semibold uppercase" style={{ color: "var(--warning)" }}>Sisa DP Aktif</span>
-                    <span className="mt-1 block font-mono text-sm font-extrabold" style={{ color: "var(--warning)" }}>{fmtRp(row.sisaDp)}</span>
+                  {/* Kuning hanya kalau memang ada yang menggantung; nol
+                      berarti tidak ada yang perlu ditagih balik. */}
+                  <div className={`kotak-angka${row.sisaDp > 0 ? " tone-warning" : ""}`}>
+                    <span className="kotak-label">Masih Menggantung</span>
+                    <span className="kotak-nilai font-mono">{fmtRp(row.sisaDp)}</span>
                   </div>
                 </div>
 

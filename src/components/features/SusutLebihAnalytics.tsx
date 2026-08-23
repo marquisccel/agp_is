@@ -200,88 +200,77 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         </div>
       </div>
 
-      {/* Table */}
-      <div className="p-5">
+      {/* Daftar per lapak.
+
+          Sebelumnya tiap lapak berupa KARTU tersendiri bertumpuk ke bawah,
+          dengan kotak angka bergaya sendiri dan tombol hijau pekat. Bentuknya
+          kini sama persis dengan Rekap DP: baris dalam satu kartu, dipisah
+          garis tipis, dan kotak angkanya memakai kelas bersama yang warnanya
+          hanya menyala kalau angkanya memang ada. */}
+      <div>
         {sorted.length === 0 ? (
-          <div className="text-center text-slate-400 text-sm py-12">
+          <div className="py-12 text-center text-sm" style={{ color: "var(--muted-faint)" }}>
             <p>Belum ada data timbangan lapak vs gudang untuk periode ini.</p>
-            <p className="text-xs mt-1">Data muncul setelah transaksi melewati proses verifikasi gudang.</p>
+            <p className="mt-1 text-xs">Data muncul setelah transaksi melewati proses verifikasi gudang.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="daftar-lapak">
             {sorted.map((row, idx) => {
               return (
                 <div
                   key={row.supplierId}
-                  className="section section-body flex flex-col justify-between gap-4 transition-all lg:flex-row lg:items-center group"
+                  className="baris-lapak flex flex-col justify-between gap-4 px-[22px] py-4 lg:flex-row lg:items-center"
                 >
                   {/* Info Lapak */}
-                  <div className="flex items-start gap-3 lg:w-1/4 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center font-extrabold text-sm shrink-0 shadow-inner">
+                  <div className="flex min-w-0 items-start gap-3 lg:w-1/4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-600">
                       {idx + 1}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
+                      <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-900 sm:text-base">
                         {row.namaLapak}
                         <span className="rounded-[8px] border px-2 py-0.5 text-[10px] font-bold" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
                           {row.transaksi}x Transaksi
                         </span>
                       </div>
-                      <span className="text-xs text-slate-400 mt-1 block">
+                      <span className="mt-1 block text-xs text-slate-400">
                         CC: <span className="font-bold text-slate-600">{row.warehouseName}</span>
                       </span>
                     </div>
                   </div>
 
                   {/* Rincian Timbangan */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 flex-1">
-                    {/* Lapak */}
-                    <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100/50">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase block">Timbang Lapak</span>
-                      <span className="font-mono text-slate-700 font-bold text-sm block mt-1">{fmtKg(row.totalLapak)}</span>
+                  <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="kotak-angka">
+                      <span className="kotak-label">Timbang Lapak</span>
+                      <span className="kotak-nilai font-mono">{fmtKg(row.totalLapak)}</span>
                     </div>
 
-                    {/* Gudang */}
-                    <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100/50">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase block">Timbang Gudang</span>
-                      <span className="font-mono text-slate-800 font-bold text-sm block mt-1">{fmtKg(row.totalGudang)}</span>
+                    <div className="kotak-angka">
+                      <span className="kotak-label">Timbang Gudang</span>
+                      <span className="kotak-nilai font-mono">{fmtKg(row.totalGudang)}</span>
                     </div>
 
-                    {/* Susut */}
-                    <div className="rounded-[var(--radius-md)] p-3" style={{ background: "var(--danger-soft)", border: "1px solid var(--danger-soft)" }}>
-                      <span className="block text-[10px] font-semibold uppercase" style={{ color: "var(--danger)" }}>Susut (KG)</span>
-                      {row.totalSusut > 0 ? (
-                        <div className="flex items-baseline gap-1 mt-1">
-                          <span className="font-mono text-sm font-extrabold" style={{ color: "var(--danger)" }}>{fmtKg(row.totalSusut)}</span>
-                          <span className="text-[9px] font-bold" style={{ color: "var(--danger)" }}>({fmtPct(row.pctSusut)})</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-300 text-xs block mt-1.5">-</span>
-                      )}
+                    <div className={`kotak-angka${row.totalSusut > 0 ? " tone-danger" : ""}`}>
+                      <span className="kotak-label">Susut</span>
+                      <span className="kotak-nilai font-mono">
+                        {row.totalSusut > 0 ? `${fmtKg(row.totalSusut)} (${fmtPct(row.pctSusut)})` : "Tidak ada"}
+                      </span>
                     </div>
 
-                    {/* Lebih */}
-                    <div className="rounded-[var(--radius-md)] p-3" style={{ background: "var(--warning-soft)", border: "1px solid var(--warning-soft)" }}>
-                      <span className="block text-[10px] font-semibold uppercase" style={{ color: "var(--warning)" }}>Lebih (KG)</span>
-                      {row.totalLebih > 0 ? (
-                        <div className="flex items-baseline gap-1 mt-1">
-                          <span className="font-mono text-sm font-extrabold" style={{ color: "var(--warning)" }}>{fmtKg(row.totalLebih)}</span>
-                          <span className="text-[9px] font-bold" style={{ color: "var(--warning)" }}>({fmtPct(row.pctLebih)})</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-300 text-xs block mt-1.5">-</span>
-                      )}
+                    <div className={`kotak-angka${row.totalLebih > 0 ? " tone-warning" : ""}`}>
+                      <span className="kotak-label">Lebih</span>
+                      <span className="kotak-nilai font-mono">
+                        {row.totalLebih > 0 ? `${fmtKg(row.totalLebih)} (${fmtPct(row.pctLebih)})` : "Tidak ada"}
+                      </span>
                     </div>
                   </div>
 
                   {/* Aksi */}
-                  <div className="flex items-center justify-end lg:w-40 shrink-0">
+                  <div className="flex shrink-0 items-center justify-end lg:w-40">
                     <button
                       onClick={() => setSelectedLapak(row)}
-                      className="w-full sm:w-auto text-white font-bold px-4 py-2.5 rounded-lg text-xs transition-colors shadow-sm flex items-center justify-center gap-1.5"
-                      style={{ background: "var(--brand)" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--brand-strong)" }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "var(--brand)" }}
+                      className="btn-netral premium-button flex w-full items-center justify-center gap-1.5 px-4 py-2.5 text-xs sm:w-auto"
                     >
                       Cek Detail
                     </button>
