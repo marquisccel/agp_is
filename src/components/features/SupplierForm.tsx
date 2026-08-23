@@ -32,9 +32,13 @@ const BANK_OPTIONS = [
   { value: "Dana", label: "DANA" },
   { value: "Lainnya", label: "Lainnya" },
 ]
+/* Labelnya dulu menaruh nama warna di depan ("Merah - belum aktif").
+   Yang perlu dibaca adalah keadaannya; warnanya cuma cara menampilkannya
+   di daftar. Urutannya dibalik supaya kata yang berarti datang lebih
+   dulu. */
 const TRANSACTION_STATUS_OPTIONS = [
-  { value: "RED", label: "Merah - belum aktif" },
-  { value: "GREEN", label: "Hijau - aktif" },
+  { value: "RED", label: "Belum aktif" },
+  { value: "GREEN", label: "Aktif" },
 ]
 
 function resolveBank(val: string | null | undefined): { bank: string; lainnya: string } {
@@ -155,8 +159,8 @@ export default function SupplierForm({
       setHariAmbilanList([])
       // keep warehouseId to default
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan lapak")
     } finally {
       setLoading(false)
     }
@@ -164,15 +168,15 @@ export default function SupplierForm({
 
   return (
     <form onSubmit={handleSubmit} className="premium-workflow space-y-5">
-      {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">{error}</div>}
+      {error && <div className="notice tone-warning text-sm font-medium">{error}</div>}
       {duplicateCandidates && duplicateCandidates.length > 0 && (
-        <div className="p-4 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-sm space-y-3">
+        <div className="notice tone-warning flex-col items-stretch space-y-3 text-sm">
           <p className="font-semibold">Ditemukan supplier dengan nama/lokasi mirip di gudang ini:</p>
           <ul className="list-disc pl-5 space-y-1">
             {duplicateCandidates.map((d) => (
               <li key={d.id}>
                 {d.nama}{" "}
-                <span className="text-xs text-amber-600">
+                <span className="text-xs" style={{ color: "var(--muted)" }}>
                   ({d.reason === "nama_identik" ? "nama identik" : d.reason === "nama_mirip" ? "nama mirip" : "lokasi berdekatan"})
                 </span>
               </li>
@@ -183,14 +187,14 @@ export default function SupplierForm({
               type="button"
               onClick={() => submitSupplier(true)}
               disabled={loading}
-              className="px-4 py-2 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 disabled:opacity-70"
+              className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold disabled:opacity-70"
             >
               Ini bukan duplikat, tetap simpan
             </button>
             <button
               type="button"
               onClick={() => setDuplicateCandidates(null)}
-              className="px-4 py-2 rounded-lg bg-white border border-amber-200 text-xs font-bold text-amber-700 hover:bg-amber-100"
+              className="btn-netral premium-button px-4 py-2 text-xs"
             >
               Batal, saya periksa dulu
             </button>
@@ -198,10 +202,10 @@ export default function SupplierForm({
         </div>
       )}
       {success && (
-        <div className="p-3 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 text-sm font-medium flex items-center gap-2">
+        <div className="flex items-center gap-2 rounded-[var(--radius-md)] border p-3 text-sm font-medium" style={{ borderColor: "var(--success-soft)", background: "var(--success-soft)", color: "var(--success)" }}>
           {success}
           {isEdit && (
-            <button type="button" onClick={() => router.back()} className="ml-auto text-xs underline text-emerald-600 hover:text-emerald-800">
+            <button type="button" onClick={() => router.back()} className="ml-auto text-xs underline">
               Kembali
             </button>
           )}
@@ -209,28 +213,28 @@ export default function SupplierForm({
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">Nama Lapak <span className="text-red-500">*</span></label>
+        <label className="field-label">Nama Lapak <span style={{ color: "var(--danger)" }}>*</span></label>
         <input
           type="text"
           required
           value={nama}
           onChange={(e) => setNama(e.target.value)}
-          className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+          className="field-input"
           placeholder="Misal: Pengepul A"
         />
       </div>
 
       {lockedWarehouse && warehouses.length === 1 ? (
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Opsi Gudang</label>
-          <div className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-100 text-slate-600 font-medium flex items-center gap-2">
+          <label className="field-label">Opsi Gudang</label>
+          <div className="field-input flex items-center gap-2" style={{ cursor: "default" }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Collection Center {warehouses[0].nama.replace(/^Gudang\s+/i, '')}
           </div>
         </div>
       ) : (
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Opsi Gudang <span className="text-red-500">*</span></label>
+          <label className="field-label">Opsi Gudang <span style={{ color: "var(--danger)" }}>*</span></label>
           <ElegantSelect
             value={warehouseId}
             options={warehouseOptions}
@@ -243,64 +247,64 @@ export default function SupplierForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Kontak WA (Opsional)</label>
+          <label className="field-label">Kontak WA (Opsional)</label>
           <input
             type="text"
             value={kontakWa}
             onChange={(e) => setKontakWa(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+            className="field-input"
             placeholder="0812xxxxxx"
           />
-          {waWarning && <p className="text-xs font-medium text-amber-600">{waWarning}</p>}
+          {waWarning && <p className="mt-1.5 text-xs font-medium" style={{ color: "var(--warning)" }}>{waWarning}</p>}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Link Google Maps (Opsional)</label>
+          <label className="field-label">Link Google Maps (Opsional)</label>
           <input
             type="text"
             value={link}
             onChange={(e) => setLink(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+            className="field-input"
             placeholder="https://maps.google.com/..."
           />
           {inferredCoordinates && (
-            <p className="text-xs font-medium text-sky-700">
+            <p className="mt-1.5 text-xs font-medium" style={{ color: "var(--brand-strong)" }}>
               Koordinat terdeteksi otomatis dari link ini: {inferredCoordinates.latitude}, {inferredCoordinates.longitude}
             </p>
           )}
           {needsManualCoordinates && (
-            <p className="rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
+            <p className="mt-1.5 rounded-[var(--radius-sm)] px-3 py-2 text-xs font-semibold" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>
               Link pendek Google Maps tidak menyimpan koordinat di URL. Isi latitude dan longitude agar preview peta aktif.
             </p>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Latitude (Opsional)</label>
+          <label className="field-label">Latitude (Opsional)</label>
           <input
             type="number"
             step="any"
             value={latitude}
             onChange={(e) => setLatitude(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+            className="field-input"
             placeholder="Contoh: -7.8165"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Longitude (Opsional)</label>
+          <label className="field-label">Longitude (Opsional)</label>
           <input
             type="number"
             step="any"
             value={longitude}
             onChange={(e) => setLongitude(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+            className="field-input"
             placeholder="Contoh: 112.0111"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Nama Bank (Opsional)</label>
+          <label className="field-label">Nama Bank (Opsional)</label>
           <ElegantSelect
             value={namaBank}
             options={BANK_OPTIONS}
@@ -315,39 +319,39 @@ export default function SupplierForm({
                 required
                 value={namaBankLainnya}
                 onChange={(e) => setNamaBankLainnya(e.target.value)}
-                className="w-full border-amber-200 bg-amber-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none transition-all text-sm"
+                className="field-input"
                 placeholder="Tulis nama bank / e-wallet di sini..."
               />
-              <p className="text-xs text-amber-600 mt-1">Isi nama bank atau e-wallet yang tidak ada dalam list.</p>
+              <p className="mt-1.5 text-xs" style={{ color: "var(--muted-faint)" }}>Isi nama bank atau e-wallet yang tidak ada dalam daftar.</p>
             </div>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Nomor Rekening (Opsional)</label>
+          <label className="field-label">Nomor Rekening (Opsional)</label>
           <input
             type="text"
             value={nomorRekening}
             onChange={(e) => setNomorRekening(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+            className="field-input"
             placeholder="Contoh: 1234567890"
           />
-          {rekeningWarning && <p className="text-xs font-medium text-amber-600">{rekeningWarning}</p>}
+          {rekeningWarning && <p className="mt-1.5 text-xs font-medium" style={{ color: "var(--warning)" }}>{rekeningWarning}</p>}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Atas Nama (Opsional)</label>
+          <label className="field-label">Atas Nama (Opsional)</label>
           <input
             type="text"
             value={atasNama}
             onChange={(e) => setAtasNama(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+            className="field-input"
             placeholder="Contoh: Budi Santoso"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Status Transaksi Lapak</label>
+          <label className="field-label">Status Transaksi Lapak</label>
           <ElegantSelect
             value={transactionStatus}
             options={TRANSACTION_STATUS_OPTIONS}
@@ -355,43 +359,46 @@ export default function SupplierForm({
             ariaLabel="Pilih status transaksi supplier"
             className="w-full"
           />
-          <p className="text-xs text-slate-500">
-            Default merah. Status akan otomatis menjadi hijau saat transaksi valid pertama berhasil disetujui.
+          <p className="mt-1.5 text-xs" style={{ color: "var(--muted-faint)" }}>
+            Lapak baru dimulai sebagai belum aktif, lalu berpindah sendiri ke aktif begitu transaksi sahnya yang pertama disetujui.
           </p>
         </div>
 
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Target Bulanan (kg)</label>
+          <label className="field-label">Target Bulanan (kg)</label>
           <input
             type="number"
             min="0"
             value={targetBulanan}
             onChange={(e) => setTargetBulanan(e.target.value)}
-            className="w-full border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+            className="field-input"
           />
         </div>
       </div>
 
-      <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Jadwal Ambilan Lapak</h3>
-        <p className="text-xs text-slate-500">Sebutkan berapa kali dalam seminggu dan pilih hari-hari rutin ambilan barang dari lapak ini.</p>
+      <div className="rounded-[var(--radius-lg)] border p-6 space-y-4" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
+        <div>
+          <span className="section-eyebrow">Rutinitas</span>
+          <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Jadwal Ambilan Lapak</h3>
+        </div>
+        <p className="text-xs" style={{ color: "var(--muted-faint)" }}>Sebutkan berapa kali dalam seminggu dan pilih hari-hari rutin ambilan barang dari lapak ini.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Frekuensi Ambilan (Kali / Minggu)</label>
+            <label className="field-label">Frekuensi Ambilan (Kali / Minggu)</label>
             <input
               type="number"
               min="1"
               max="7"
               value={frekuensiAmbilan}
               onChange={(e) => setFrekuensiAmbilan(e.target.value)}
-              className="w-full border-slate-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
+              className="field-input"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 block">Hari Ambilan Rutin</label>
+            <label className="field-label">Hari Ambilan Rutin</label>
             <div className="flex flex-wrap gap-2 pt-1">
               {["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"].map((day) => {
                 const isChecked = hariAmbilanList.includes(day)
@@ -406,11 +413,14 @@ export default function SupplierForm({
                         setHariAmbilanList([...hariAmbilanList, day])
                       }
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
-                      isChecked
-                        ? "bg-cyan-600 border-cyan-600 text-white shadow-sm"
-                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
+                    /* Dulu biru sian -- warna yang tidak dipakai di mana
+                       pun lagi dalam sistem ini. Hari terpilih kini memakai
+                       warna merek, sama seperti pilihan aktif lainnya. */
+                    className="premium-button rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs font-bold transition-all"
+                    style={isChecked
+                      ? { background: "var(--brand)", borderColor: "var(--brand)", color: "#fff" }
+                      : { background: "var(--surface)", borderColor: "var(--border)", color: "var(--muted)" }}
+                    aria-pressed={isChecked}
                   >
                     {day}
                   </button>
@@ -421,12 +431,12 @@ export default function SupplierForm({
         </div>
       </div>
 
-      <div className="pt-4 flex justify-between items-center gap-4 border-t border-slate-100">
+      <div className="flex items-center justify-between gap-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
         {isEdit && (
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-5 py-3 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm"
+            className="btn-netral premium-button px-5 py-3 text-sm"
           >
             Batal
           </button>
@@ -434,7 +444,7 @@ export default function SupplierForm({
         <button
           type="submit"
           disabled={loading}
-          className="premium-button ml-auto rounded-xl bg-slate-950 px-6 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-70"
+          className="btn-primer premium-button ml-auto rounded-[var(--radius-sm)] px-6 py-3 font-bold disabled:opacity-70"
         >
           {loading ? "Menyimpan..." : isEdit ? "Update Lapak" : "Simpan Lapak"}
         </button>

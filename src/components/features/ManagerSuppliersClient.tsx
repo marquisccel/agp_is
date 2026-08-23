@@ -516,8 +516,11 @@ export default function ManagerSuppliersClient({
             })}
           </div>
 
-          {/* Status lapak: hijau/merah punya makna semantik, jadi warnanya
-              tetap dipertahankan -- yang diseragamkan bentuk kontrolnya. */}
+          {/* Label penyaringnya dulu berbunyi "Hijau" dan "Merah" -- nama
+              warna, bukan artinya -- padahal daftar di bawahnya sudah
+              menyebut keadaannya "Aktif"/"Belum aktif". Satu layar, dua
+              nama untuk hal yang sama. Warnanya tetap dipakai sebagai
+              penanda, tapi kata yang membawa artinya. */}
           <div className="segmented mt-4 inline-flex">
             <button
               onClick={() => setSelectedStatusFilter("all")}
@@ -530,14 +533,14 @@ export default function ManagerSuppliersClient({
               className={selectedStatusFilter === "GREEN" ? "active" : ""}
               style={selectedStatusFilter === "GREEN" ? { color: "var(--success)" } : undefined}
             >
-              Hijau {greenSupplierCount}
+              Aktif {greenSupplierCount}
             </button>
             <button
               onClick={() => setSelectedStatusFilter("RED")}
               className={selectedStatusFilter === "RED" ? "active" : ""}
               style={selectedStatusFilter === "RED" ? { color: "var(--danger)" } : undefined}
             >
-              Merah {redSupplierCount}
+              Belum aktif {redSupplierCount}
             </button>
           </div>
         </div>

@@ -18,12 +18,12 @@ export default async function NewSupplierPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Lapak registry"
+        eyebrow="Data lapak"
         title="Tambah Data Lapak"
         description="Lengkapi profil lapak baru agar siap digunakan pada transaksi pembelian."
       />
 
-      <div className="workflow-card p-6 md:p-8">
+      <div className="section section-body">
         <SupplierForm
           warehouses={warehouses}
           defaultWarehouseId={staffWarehouseId}

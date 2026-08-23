@@ -25,17 +25,17 @@ export default async function EditSupplierPage({ params }: { params: Promise<{ i
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Lapak registry"
+        eyebrow="Data lapak"
         title="Edit Lapak"
         description={<>Perbarui data <span className="font-semibold text-slate-700">{supplier.nama}</span>.</>}
         actions={
-          <Link href="/dashboard/staff/suppliers" className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+          <Link href="/dashboard/staff/suppliers" className="btn-netral premium-button px-4 py-2 text-sm">
             Kembali
           </Link>
         }
       />
 
-      <div className="workflow-card p-6 md:p-8">
+      <div className="section section-body">
         <SupplierForm
           warehouses={warehouses}
           defaultWarehouseId={warehouseId}

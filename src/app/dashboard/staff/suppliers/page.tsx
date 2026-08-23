@@ -45,16 +45,29 @@ export default async function StaffSuppliersPage({
   const mapReadyCount = allSuppliers.filter((supplier) => hasResolvedSupplierCoordinates(supplier)).length
   const mapMissingCount = allSuppliers.length - mapReadyCount
 
+  /**
+   * Penyaring bekerja lewat URL, jadi tiap tombol harus membawa pilihan
+   * penyaring yang LAIN apa adanya. Sebelumnya penyusunan tautannya
+   * ditulis ulang enam kali dengan rangkaian ternary yang berbeda-beda.
+   */
+  const href = (status: string, location: string) => {
+    const q = new URLSearchParams()
+    if (status !== "all") q.set("status", status)
+    if (location !== "all") q.set("location", location)
+    const s = q.toString()
+    return s ? `/dashboard/staff/suppliers?${s}` : "/dashboard/staff/suppliers"
+  }
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader
-        eyebrow="Lapak directory"
+        eyebrow="Direktori lapak"
         title="Data Lapak"
         description="Daftar lapak gudang Anda. Gunakan edit untuk memperbarui kontak, rekening, target, dan jadwal ambilan."
         actions={(
           <Link
             href="/dashboard/staff/suppliers/new"
-            className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-slate-950 shadow-sm hover:bg-slate-800 transition-colors"
+            className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
           >
             Tambah Lapak
           </Link>
@@ -62,83 +75,66 @@ export default async function StaffSuppliersPage({
       />
 
       {allSuppliers.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={selectedLocation === "all" ? "/dashboard/staff/suppliers" : `/dashboard/staff/suppliers?location=${selectedLocation}`}
-              className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                selectedStatus === "all" ? "bg-slate-950 text-white" : "border border-slate-200 bg-white text-slate-600"
-              }`}
-            >
-              Semua Status {allSuppliers.length}
+        <div className="section section-body flex flex-wrap items-center gap-3">
+          {/* Dua deret pil berwarna-warni -- hitam, hijau, merah, biru,
+              abu -- diganti satu bentuk kontrol. Yang lebih penting:
+              labelnya dulu berbunyi "Hijau" dan "Merah", yaitu NAMA WARNA,
+              bukan artinya. Pembaca harus sudah tahu artinya sebelum bisa
+              membacanya. Sekarang kata yang menerangkan keadaan, warna
+              cuma pembantu memindai. */}
+          <div className="segmented">
+            <Link href={href("all", selectedLocation)} className={selectedStatus === "all" ? "active" : ""}>
+              Semua {allSuppliers.length}
             </Link>
             <Link
-              href={`/dashboard/staff/suppliers?status=GREEN${selectedLocation !== "all" ? `&location=${selectedLocation}` : ""}`}
-              className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                selectedStatus === "GREEN" ? "bg-emerald-600 text-white" : "border border-emerald-200 bg-emerald-50 text-emerald-700"
-              }`}
+              href={href("GREEN", selectedLocation)}
+              className={selectedStatus === "GREEN" ? "active" : ""}
+              style={selectedStatus === "GREEN" ? { color: "var(--success)" } : undefined}
             >
-              Hijau {greenCount}
+              Aktif {greenCount}
             </Link>
             <Link
-              href={`/dashboard/staff/suppliers?status=RED${selectedLocation !== "all" ? `&location=${selectedLocation}` : ""}`}
-              className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                selectedStatus === "RED" ? "bg-rose-600 text-white" : "border border-rose-200 bg-rose-50 text-rose-700"
-              }`}
+              href={href("RED", selectedLocation)}
+              className={selectedStatus === "RED" ? "active" : ""}
+              style={selectedStatus === "RED" ? { color: "var(--danger)" } : undefined}
             >
-              Merah {redCount}
+              Belum aktif {redCount}
             </Link>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={selectedStatus === "all" ? "/dashboard/staff/suppliers" : `/dashboard/staff/suppliers?status=${selectedStatus}`}
-              className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                selectedLocation === "all" ? "bg-slate-950 text-white" : "border border-slate-200 bg-white text-slate-600"
-              }`}
-            >
-              Semua Lokasi {allSuppliers.length}
+          <div className="segmented">
+            <Link href={href(selectedStatus, "all")} className={selectedLocation === "all" ? "active" : ""}>
+              Semua lokasi {allSuppliers.length}
+            </Link>
+            <Link href={href(selectedStatus, "ready")} className={selectedLocation === "ready" ? "active" : ""}>
+              Koordinat lengkap {mapReadyCount}
             </Link>
             <Link
-              href={`/dashboard/staff/suppliers?location=ready${selectedStatus !== "all" ? `&status=${selectedStatus}` : ""}`}
-              className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                selectedLocation === "ready" ? "bg-sky-600 text-white" : "border border-sky-200 bg-sky-50 text-sky-700"
-              }`}
+              href={href(selectedStatus, "missing")}
+              className={selectedLocation === "missing" ? "active" : ""}
+              style={selectedLocation === "missing" ? { color: "var(--warning)" } : undefined}
             >
-              Map Ready {mapReadyCount}
-            </Link>
-            <Link
-              href={`/dashboard/staff/suppliers?location=missing${selectedStatus !== "all" ? `&status=${selectedStatus}` : ""}`}
-              className={`premium-button rounded-xl px-4 py-2 text-xs font-black ${
-                selectedLocation === "missing" ? "bg-slate-700 text-white" : "border border-slate-200 bg-slate-50 text-slate-600"
-              }`}
-            >
-              Lokasi Belum Lengkap {mapMissingCount}
+              Belum ada koordinat {mapMissingCount}
             </Link>
           </div>
         </div>
       )}
 
       {filteredSuppliers.length === 0 ? (
-        <div className="interactive-surface bg-white rounded-lg border border-dashed border-slate-200 p-12 text-center">
-          <p className="text-slate-400 text-sm">
+        <div
+          className="rounded-[var(--radius-lg)] border border-dashed p-12 text-center"
+          style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+        >
+          <p className="text-sm" style={{ color: "var(--muted-faint)" }}>
             {allSuppliers.length === 0 ? "Belum ada lapak terdaftar." : "Tidak ada lapak pada kombinasi filter yang dipilih."}
           </p>
-          {allSuppliers.length === 0 ? (
-            <Link
-              href="/dashboard/staff/suppliers/new"
-              className="mt-4 inline-block text-teal-700 text-sm font-semibold hover:underline"
-            >
-              Tambah lapak pertama
-            </Link>
-          ) : (
-            <Link
-              href="/dashboard/staff/suppliers"
-              className="mt-4 inline-block text-teal-700 text-sm font-semibold hover:underline"
-            >
-              Lihat semua lapak
-            </Link>
-          )}
+          <Link
+            href={allSuppliers.length === 0 ? "/dashboard/staff/suppliers/new" : "/dashboard/staff/suppliers"}
+            className="mt-4 inline-block text-sm font-semibold hover:underline"
+            style={{ color: "var(--brand-strong)" }}
+          >
+            {allSuppliers.length === 0 ? "Tambah lapak pertama" : "Lihat semua lapak"}
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">
@@ -149,36 +145,48 @@ export default async function StaffSuppliersPage({
             const hasMapSignal = isMapReady || Boolean(supplier.link?.trim())
 
             return (
-              <div
-                key={supplier.id}
-                className="interactive-surface bg-white rounded-lg border border-slate-200 shadow-sm p-5 flex items-center justify-between gap-4"
-              >
+              <div key={supplier.id} className="section section-body flex items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <p className="font-bold text-slate-800 truncate">{supplier.nama}</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                    <span className={`text-xs font-semibold ${
-                      supplier.transactionStatus === "GREEN" ? "text-emerald-700" : "text-rose-600"
-                    }`}>
-                      {supplier.transactionStatus === "GREEN" ? "Status hijau" : "Status merah"}
-                    </span>
-                    <span className={`text-xs font-semibold ${
-                      isMapReady ? "text-sky-700" : "text-slate-500"
-                    }`}>
-                      {isMapReady ? "Map ready" : "Lokasi belum lengkap"}
+                  {/* Pola yang sama dengan Data Lapak Manager: satu titik
+                      berwarna di samping nama untuk memindai, keterangannya
+                      berupa kata di baris abu di bawahnya. */}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: supplier.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
+                      aria-hidden="true"
+                    />
+                    <p className="truncate font-bold" style={{ color: "var(--foreground)" }}>{supplier.nama}</p>
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
+                    <span>{supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
+                    <span aria-hidden="true">&middot;</span>
+                    <span style={isMapReady ? undefined : { color: "var(--warning)", fontWeight: 600 }}>
+                      {isMapReady ? "Koordinat lengkap" : "Belum ada koordinat"}
                     </span>
                     {supplier.kontak_wa && (
-                      <span className="text-xs text-slate-500">WA {supplier.kontak_wa}</span>
+                      <>
+                        <span aria-hidden="true">&middot;</span>
+                        <span>WA {supplier.kontak_wa}</span>
+                      </>
                     )}
                     {bankInfo && (
-                      <span className="text-xs text-slate-500">{bankInfo}</span>
+                      <>
+                        <span aria-hidden="true">&middot;</span>
+                        <span>{bankInfo}</span>
+                      </>
                     )}
                     {supplier.target_bulanan_kg > 0 && (
-                      <span className="text-xs text-teal-700 font-medium">
-                        {supplier.target_bulanan_kg.toLocaleString("id-ID")} kg/bulan
-                      </span>
+                      <>
+                        <span aria-hidden="true">&middot;</span>
+                        <span>{supplier.target_bulanan_kg.toLocaleString("id-ID")} kg/bulan</span>
+                      </>
                     )}
                     {pickupDays && (
-                      <span className="text-xs text-slate-500">{pickupDays}</span>
+                      <>
+                        <span aria-hidden="true">&middot;</span>
+                        <span>{pickupDays}</span>
+                      </>
                     )}
                   </div>
                 </div>
@@ -188,14 +196,14 @@ export default async function StaffSuppliersPage({
                       href={getSupplierMapHref({ ...supplier })}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 rounded-lg text-sm font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors shadow-sm"
+                      className="btn-netral premium-button px-4 py-2 text-sm"
                     >
                       Maps
                     </a>
                   )}
                   <Link
                     href={`/dashboard/staff/suppliers/${supplier.id}/edit`}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm"
+                    className="btn-netral premium-button px-4 py-2 text-sm"
                   >
                     Edit
                   </Link>
