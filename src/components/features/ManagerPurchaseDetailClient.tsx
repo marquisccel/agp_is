@@ -526,29 +526,19 @@ export default function ManagerPurchaseDetailClient({
               </div>
             </div>
 
-            {/* Payment Percentage Details */}
-            {(purchase.persentase_pembayaran !== null || remainingPayment > 0) && (
-              <div className={`${isPendingTermin ? "bg-amber-50 border-amber-100" : "bg-emerald-50 border-emerald-100"} border rounded-xl p-3 text-xs space-y-1 text-slate-700`}>
-                <div className="flex justify-between font-semibold">
-                  <span>Skema Pembayaran</span>
-                  <span className={isPendingTermin ? "text-amber-800" : "text-emerald-700"}>{paymentPercent}% Awal</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Dibayar Awal</span>
-                  <span className="font-mono">{fmtRp(initialPayment)}</span>
-                </div>
-                <div className="flex justify-between font-semibold">
-                  <span>Sisa Belum Lunas</span>
-                  <span className={`font-mono ${isPendingTermin ? "text-rose-600" : "text-emerald-600"}`}>{fmtRp(remainingPayment)}</span>
-                </div>
-                <div className={`flex justify-between pt-1 border-t ${isPendingTermin ? "border-amber-200/50" : "border-emerald-200/50"}`}>
-                  <span>Status Pelunasan</span>
-                  <span className={`font-bold uppercase ${isPendingTermin ? "text-rose-600" : "text-emerald-600"}`}>
-                    {isPendingTermin ? "BELUM LUNAS" : "LUNAS"}
-                  </span>
-                </div>
-              </div>
-            )}
+            {/* Rincian skema pembayaran dulu diulang di sini -- "Dibayar
+                Awal", "Sisa Belum Lunas", dan "Status Pelunasan" -- padahal
+                ketiganya sudah tampil utuh di bagian Pembayaran di atas.
+                Akibatnya angka yang sama muncul empat kali di satu layar.
+
+                Yang lebih berat: baris "Status Pelunasan" di sini menulis
+                LUNAS hanya berdasarkan ada-tidaknya sisa termin, tanpa
+                memeriksa uangnya sudah ditransfer atau belum -- persis
+                cacat yang sudah dibetulkan di layar Transfer dan Daftar
+                Transaksi, tapi terlewat di sini. Kepala bagian Pembayaran
+                di atas sudah menghitungnya dengan benar
+                ("Menunggu Transfer" selama belum ditransfer), jadi blok
+                ini dibuang seluruhnya, bukan ditambal. */}
           </div>
 
           {/* Transaction Actors */}

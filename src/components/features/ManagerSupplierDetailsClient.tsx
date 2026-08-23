@@ -105,8 +105,8 @@ function safeParseAuditData(value: string) {
 }
 
 function resolveAuditStatusLabel(value: unknown) {
-  if (value === "GREEN") return "Hijau"
-  if (value === "RED") return "Merah"
+  if (value === "GREEN") return "Aktif"
+  if (value === "RED") return "Belum aktif"
   return "Belum diketahui"
 }
 
@@ -308,7 +308,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             <p className="mt-1 text-sm text-slate-500">Kontak, target, dan jadwal ambilan supplier dalam satu panel.</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-px bg-slate-100 text-sm md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-px text-sm md:grid-cols-2" style={{ background: "var(--border)" }}>
             <div className="bg-white/90 p-5">
               <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Collection Center</span>
               <span className="mt-1 block font-bold text-slate-950">{supplier.warehouse?.nama || "-"}</span>
@@ -530,7 +530,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                       {log.user.nama} mengubah status dari{" "}
                       <span className="text-slate-500">{fromStatus}</span>{" "}
                       ke{" "}
-                      <span className={toStatus === "Hijau" ? "text-emerald-700" : "text-rose-600"}>{toStatus}</span>
+                      <span style={{ color: toStatus === "Aktif" ? "var(--success)" : "var(--danger)", fontWeight: 700 }}>{toStatus}</span>
                     </p>
 
                     <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
