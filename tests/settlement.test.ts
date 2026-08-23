@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { hitungPelunasan, SettlementError } from "../src/lib/settlement"
+import { hitungPelunasan, hitungKoreksiKekurangan, SettlementError } from "../src/lib/settlement"
 
 /**
  * Kasus yang mendasari semua ini: nota Rp 30.000.000 dipotong kasbon
@@ -81,4 +81,56 @@ test("pecahan sen sisa dianggap lunas", () => {
   const h = hitungPelunasan({ sisaSekarang: 0.004, sudahDibayarSebelumnya: 1_000_000 })
   assert.equal(h.lunas, true)
   assert.equal(h.sisa, 0)
+})
+
+/**
+ * Jalur koreksi: nota terlanjur ditandai lunas padahal transfernya kurang.
+ * Yang dijaga di sini invarian yang juga diperiksa scripts/audit-data.mjs,
+ * yaitu "sudah dibayar + sisa = kewajiban ke lapak" -- kalau kekurangannya
+ * ditulis tanpa mengoreksi sisi yang sudah dibayar, kedua angka itu
+ * berhenti berjumlah sama dengan kewajibannya.
+ */
+
+test("koreksi membuka kembali nota dan angkanya tetap berjumlah utuh", () => {
+  const h = hitungKoreksiKekurangan({ kewajiban: 15_000_000, kurang: 6_000_000 })
+  assert.equal(h.kurang, 6_000_000)
+  assert.equal(h.sudahDibayar, 9_000_000)
+  assert.equal(h.sudahDibayar + h.kurang, 15_000_000)
+  assert.equal(h.persentasePembayaran, 60)
+})
+
+test("koreksi sebesar seluruh kewajiban berarti belum dibayar sama sekali", () => {
+  const h = hitungKoreksiKekurangan({ kewajiban: 15_000_000, kurang: 15_000_000 })
+  assert.equal(h.sudahDibayar, 0)
+  assert.equal(h.persentasePembayaran, 0)
+})
+
+test("kekurangan melebihi kewajiban ditolak", () => {
+  assert.throws(
+    () => hitungKoreksiKekurangan({ kewajiban: 15_000_000, kurang: 15_000_002 }),
+    SettlementError,
+  )
+})
+
+test("kekurangan nol atau negatif ditolak", () => {
+  assert.throws(() => hitungKoreksiKekurangan({ kewajiban: 15_000_000, kurang: 0 }), SettlementError)
+  assert.throws(() => hitungKoreksiKekurangan({ kewajiban: 15_000_000, kurang: -1 }), SettlementError)
+})
+
+test("nota tanpa kewajiban ke lapak tidak bisa dikoreksi", () => {
+  // Nota yang seluruh nilainya tertutup kasbon: tidak ada uang yang
+  // seharusnya ditransfer, jadi tidak ada yang bisa kurang.
+  assert.throws(() => hitungKoreksiKekurangan({ kewajiban: 0, kurang: 100 }), SettlementError)
+})
+
+test("koreksi lalu dicicil sampai lunas kembali", () => {
+  const koreksi = hitungKoreksiKekurangan({ kewajiban: 15_000_000, kurang: 6_000_000 })
+  const bayar = hitungPelunasan({
+    sisaSekarang: koreksi.kurang,
+    sudahDibayarSebelumnya: koreksi.sudahDibayar,
+    nominal: 6_000_000,
+  })
+  assert.equal(bayar.lunas, true)
+  assert.equal(bayar.sudahDibayar, 15_000_000)
+  assert.equal(bayar.sisa, 0)
 })

@@ -73,6 +73,11 @@ export const AUDIT_ACTIONS: Record<string, AuditActionInfo> = {
     description: "melunasi sisa pembayaran termin dan mengunggah notanya",
     tone: TONE.selesai,
   },
+  REOPEN_PELUNASAN: {
+    label: "Nota dibuka kembali",
+    description: "membatalkan status lunas karena pembayarannya ternyata kurang",
+    tone: TONE.perhatian,
+  },
   SETTLE_TERMIN_PARTIAL: {
     label: "Pembayaran sebagian dicatat",
     description: "mencatat pembayaran sebagian atas sisa nota; masih ada kekurangan",

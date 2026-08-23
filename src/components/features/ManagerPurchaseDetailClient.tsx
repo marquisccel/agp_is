@@ -19,6 +19,7 @@ import { formatAuditAction } from "@/lib/auditLabels"
 import { getPurchaseStatus, PURCHASE_STATUS_DESCRIPTIONS, type StatusTone } from "@/lib/purchaseStatusLabels"
 import StatusPill, { TONE_STYLE } from "@/components/ui/StatusPill"
 import PageHeader from "@/components/ui/PageHeader"
+import NumberInput from "@/components/ui/NumberInput"
 
 interface PurchaseItem {
   id: string
@@ -131,6 +132,11 @@ export default function ManagerPurchaseDetailClient({
 }) {
   const router = useRouter()
   const [showProof, setShowProof] = useState(false)
+  const [formKoreksi, setFormKoreksi] = useState(false)
+  const [kurangKoreksi, setKurangKoreksi] = useState(0)
+  const [alasanKoreksi, setAlasanKoreksi] = useState("")
+  const [kirimKoreksi, setKirimKoreksi] = useState(false)
+  const [galatKoreksi, setGalatKoreksi] = useState<string | null>(null)
 
   const s = getPurchaseStatus(purchase.status_approval)
   const sDesc = PURCHASE_STATUS_DESCRIPTIONS[purchase.status_approval] ?? ""
@@ -165,6 +171,36 @@ export default function ManagerPurchaseDetailClient({
   const displayedPaymentPercent = !isTransferred ? 0 : isPendingTermin ? paymentPercent : 100
   const paymentStatusLabel = !isTransferred ? "Menunggu Transfer" : isPendingTermin ? "Termin Belum Lunas" : "Sudah Transfer"
   const paymentTone: StatusTone = isPendingTermin ? "warning" : isTransferred ? "success" : "neutral"
+
+  /*
+   * Koreksi hanya masuk akal untuk nota yang sudah ditransfer DAN tercatat
+   * lunas. Nota yang belum ditransfer sudah menampilkan kekurangannya
+   * sendiri, dan nota yang masih punya sisa cukup dicatat lewat pembayaran
+   * biasa.
+   */
+  const bisaDikoreksi = isTransferred && purchase.status_pelunasan !== "BELUM_LUNAS"
+
+  const kirimKoreksiKekurangan = async () => {
+    setKirimKoreksi(true)
+    setGalatKoreksi(null)
+    try {
+      const res = await fetch(`/api/purchases/${purchase.id}/reopen`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kurang: kurangKoreksi, alasan: alasanKoreksi }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal mencatat kekurangan")
+      setFormKoreksi(false)
+      setAlasanKoreksi("")
+      setKurangKoreksi(0)
+      router.refresh()
+    } catch (e: unknown) {
+      setGalatKoreksi(e instanceof Error ? e.message : "Gagal mencatat kekurangan")
+    } finally {
+      setKirimKoreksi(false)
+    }
+  }
   /**
    * Yang benar-benar masih harus diterima lapak setelah saldo kasbonnya
    * dipotong. Pada nota termin, `total_dibayar` hanya menyimpan cicilan
@@ -502,6 +538,81 @@ export default function ManagerPurchaseDetailClient({
                 </>
               )}
             </div>
+
+            {/*
+              Jalur koreksi. Sekali sebuah nota ditandai lunas, tidak ada
+              lagi tempat mencatat bahwa transfernya ternyata kurang: Admin
+              yang memilih skema bayar penuh lalu mentransfer lebih sedikit
+              tidak punya cara memperbaikinya, dan selisihnya hilang dari
+              sistem sementara lapak tetap menagih.
+            */}
+            {bisaDikoreksi && (
+              <div className="border-t p-5" style={{ borderColor: "var(--border)" }}>
+                {formKoreksi ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="field-label">Kekurangan yang belum dibayar (Rp)</label>
+                      <NumberInput
+                        aria-label="Nominal kekurangan"
+                        className="field-input text-right font-mono"
+                        placeholder="0"
+                        value={kurangKoreksi}
+                        onValueChange={setKurangKoreksi}
+                      />
+                      <p className="mt-1.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>
+                        Maksimal {fmtRp(kewajibanKeLapak)}, yaitu seluruh kewajiban ke lapak setelah potongan kasbon.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="field-label">Alasan koreksi</label>
+                      <textarea
+                        className="field-input text-sm"
+                        rows={2}
+                        value={alasanKoreksi}
+                        onChange={(e) => setAlasanKoreksi(e.target.value)}
+                        placeholder="Contoh: transfer hanya Rp 9.000.000, sisanya belum dikirim."
+                      />
+                      <p className="mt-1.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>
+                        Wajib diisi, minimal 10 karakter. Tercatat di audit log bersama nama Anda.
+                      </p>
+                    </div>
+                    {galatKoreksi && (
+                      <div className="notice tone-warning text-xs font-medium">{galatKoreksi}</div>
+                    )}
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => { setFormKoreksi(false); setGalatKoreksi(null) }}
+                        className="btn-netral premium-button px-3 py-2 text-xs"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        onClick={kirimKoreksiKekurangan}
+                        disabled={kirimKoreksi || kurangKoreksi <= 0 || alasanKoreksi.trim().length < 10}
+                        className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold disabled:opacity-50"
+                      >
+                        {kirimKoreksi ? "Menyimpan..." : "Buka Kembali Nota"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black" style={{ color: "var(--foreground)" }}>Pembayarannya ternyata kurang?</p>
+                      <p className="mt-1 text-xs font-medium" style={{ color: "var(--muted)" }}>
+                        Buka kembali nota ini dan catat berapa yang masih harus dibayar.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { setFormKoreksi(true); setKurangKoreksi(0) }}
+                      className="btn-netral premium-button shrink-0 px-3 py-2 text-xs"
+                    >
+                      Koreksi
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="border-t p-5" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between gap-3">

@@ -75,3 +75,58 @@ export function hitungPelunasan({
     statusPelunasan: lunas ? "LUNAS" : "BELUM_LUNAS",
   }
 }
+
+export type HasilKoreksi = {
+  /** Kekurangan yang dibuka kembali. */
+  kurang: number
+  /** Yang benar-benar sudah dibayar setelah dikoreksi. */
+  sudahDibayar: number
+  /** Total yang harus diterima lapak setelah potongan kasbon. */
+  kewajiban: number
+  persentasePembayaran: number
+}
+
+/**
+ * Membuka kembali nota yang terlanjur ditandai LUNAS karena ternyata
+ * pembayarannya kurang.
+ *
+ * Ini jalur koreksi, bukan alur normal: satu-satunya cara sebuah nota
+ * kembali berstatus BELUM_LUNAS setelah ditutup. Angkanya sengaja
+ * diturunkan dari `kewajiban`, bukan diterima apa adanya, supaya invarian
+ * yang diperiksa scripts/audit-data.mjs tetap terjaga:
+ *
+ *   nominal_pembayaran_awal + nominal_belum_lunas = nilai nota - kasbon
+ *
+ * Kalau kekurangannya ditulis begitu saja tanpa mengoreksi sisi "sudah
+ * dibayar", kedua angka itu berhenti berjumlah sama dengan kewajibannya
+ * dan basis datanya jadi tidak konsisten.
+ */
+export function hitungKoreksiKekurangan({
+  kewajiban,
+  kurang,
+}: {
+  kewajiban: number
+  kurang: number
+}): HasilKoreksi {
+  if (kewajiban <= 0) {
+    throw new SettlementError("Nota ini tidak memiliki kewajiban pembayaran ke lapak.")
+  }
+  if (!Number.isFinite(kurang) || kurang <= 0) {
+    throw new SettlementError("Nominal kekurangan harus lebih dari nol.")
+  }
+  if (kurang - kewajiban > TOLERANSI) {
+    throw new SettlementError(
+      `Kekurangan tidak boleh melebihi kewajiban ke lapak (${Math.round(kewajiban).toLocaleString("id-ID")}).`,
+    )
+  }
+
+  const kurangDipakai = Math.min(kurang, kewajiban)
+  const sudahDibayar = bulat2(kewajiban - kurangDipakai)
+
+  return {
+    kurang: bulat2(kurangDipakai),
+    sudahDibayar,
+    kewajiban: bulat2(kewajiban),
+    persentasePembayaran: bulat2((sudahDibayar / kewajiban) * 100),
+  }
+}
