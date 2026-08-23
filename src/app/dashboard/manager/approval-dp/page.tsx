@@ -132,7 +132,7 @@ export default async function DPApprovalManager() {
                     </td>
                     <td className="px-6 py-4">
                       {dp.status_approval === "approved"
-                        ? <span className="bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-md text-xs font-bold border border-emerald-200">Disetujui</span>
+                        ? <span className="rounded-md border px-2.5 py-1 text-xs font-bold" style={{ borderColor: "var(--success-soft)", background: "var(--success-soft)", color: "var(--success)" }}>Disetujui</span>
                         : <span className="bg-red-50 text-red-600 px-2.5 py-1 rounded-md text-xs font-bold border border-red-200">Ditolak</span>}
                     </td>
                     <td className="px-6 py-4">

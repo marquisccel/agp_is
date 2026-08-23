@@ -121,12 +121,20 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
           <p className="kpi-label">Total Gudang</p>
           <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalGudang)}</p>
         </div>
-        <div className="kpi-tile tone-danger">
+        {/* Nadanya mengikuti KEADAAN, bukan kategori. Susut nol adalah
+            hasil yang justru diharapkan, jadi mewarnainya merah membuat
+            kartu ini selalu terbaca gawat sekalipun tidak ada masalah
+            sama sekali. Merah hanya muncul kalau susutnya memang ada. */}
+        <div className={`kpi-tile${filteredSummary.totalSusut > 0 ? " tone-danger" : ""}`}>
           <p className="kpi-label">Total Susut</p>
           <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalSusut)}</p>
           <p className="text-[11px] mt-0.5 font-semibold">{fmtPct(filteredSusutPct)} dari lapak</p>
         </div>
-        <div className="kpi-tile tone-success">
+        {/* Bernada perhatian, bukan sukses: gudang menimbang lebih berat
+            dari lapak itu selisih yang perlu diperiksa, sama seperti
+            susut -- cuma beda arah. Nadanya kini sama dengan barisnya di
+            bawah dan dengan Detail Transaksi. */}
+        <div className={`kpi-tile${filteredSummary.totalLebih > 0 ? " tone-warning" : ""}`}>
           <p className="kpi-label">Total Lebih</p>
           <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalLebih)}</p>
           <p className="text-[11px] mt-0.5 font-semibold">{fmtPct(filteredLebihPct)} dari lapak</p>
@@ -227,12 +235,12 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                     </div>
 
                     {/* Susut */}
-                    <div className="bg-rose-50/40 rounded-xl p-3 border border-rose-100/50">
-                      <span className="text-[10px] text-rose-500 font-semibold uppercase block">Susut (KG)</span>
+                    <div className="rounded-[var(--radius-md)] p-3" style={{ background: "var(--danger-soft)", border: "1px solid var(--danger-soft)" }}>
+                      <span className="block text-[10px] font-semibold uppercase" style={{ color: "var(--danger)" }}>Susut (KG)</span>
                       {row.totalSusut > 0 ? (
                         <div className="flex items-baseline gap-1 mt-1">
-                          <span className="font-mono text-rose-600 font-extrabold text-sm">{fmtKg(row.totalSusut)}</span>
-                          <span className="text-[9px] font-bold text-rose-500">({fmtPct(row.pctSusut)})</span>
+                          <span className="font-mono text-sm font-extrabold" style={{ color: "var(--danger)" }}>{fmtKg(row.totalSusut)}</span>
+                          <span className="text-[9px] font-bold" style={{ color: "var(--danger)" }}>({fmtPct(row.pctSusut)})</span>
                         </div>
                       ) : (
                         <span className="text-slate-300 text-xs block mt-1.5">-</span>
@@ -240,12 +248,12 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                     </div>
 
                     {/* Lebih */}
-                    <div className="bg-emerald-50/40 rounded-xl p-3 border border-emerald-100/50">
-                      <span className="text-[10px] text-emerald-600 font-semibold uppercase block">Lebih (KG)</span>
+                    <div className="rounded-[var(--radius-md)] p-3" style={{ background: "var(--warning-soft)", border: "1px solid var(--warning-soft)" }}>
+                      <span className="block text-[10px] font-semibold uppercase" style={{ color: "var(--warning)" }}>Lebih (KG)</span>
                       {row.totalLebih > 0 ? (
                         <div className="flex items-baseline gap-1 mt-1">
-                          <span className="font-mono text-emerald-600 font-extrabold text-sm">{fmtKg(row.totalLebih)}</span>
-                          <span className="text-[9px] font-bold text-emerald-550 text-emerald-600">({fmtPct(row.pctLebih)})</span>
+                          <span className="font-mono text-sm font-extrabold" style={{ color: "var(--warning)" }}>{fmtKg(row.totalLebih)}</span>
+                          <span className="text-[9px] font-bold" style={{ color: "var(--warning)" }}>({fmtPct(row.pctLebih)})</span>
                         </div>
                       ) : (
                         <span className="text-slate-300 text-xs block mt-1.5">-</span>

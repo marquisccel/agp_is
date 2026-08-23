@@ -63,7 +63,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
         <button
           onClick={() => handleAction("approve", nominal)}
           disabled={loading}
-          className="bg-emerald-500 text-white p-1.5 rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+          className="rounded-[8px] p-1.5 text-white transition-colors disabled:opacity-50" style={{ background: "var(--success)" }}
           title="Simpan & Setujui"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -87,7 +87,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
       <button
         onClick={() => handleAction("approve")}
         disabled={loading}
-        className="px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 font-bold text-xs rounded-lg border border-emerald-200 transition-colors disabled:opacity-50"
+        className="rounded-[8px] border px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50" style={{ borderColor: "var(--success-soft)", background: "var(--success-soft)", color: "var(--success)" }}
       >
         Setujui
       </button>

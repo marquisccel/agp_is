@@ -797,6 +797,16 @@ a:focus-visible {
 .kpi-tile.tone-success .kpi-label,
 .kpi-tile.tone-success .kpi-value { color: var(--success); }
 
+/* Nada perhatian. Dipakai untuk angka yang bukan kesalahan tapi perlu
+   diperiksa -- misalnya selisih timbangan "lebih", yang dulu memakai
+   tone-success sehingga terbaca sebagai kabar baik. */
+.kpi-tile.tone-warning {
+  background: var(--warning-soft);
+  border-color: color-mix(in srgb, var(--warning) 25%, transparent);
+}
+.kpi-tile.tone-warning .kpi-label,
+.kpi-tile.tone-warning .kpi-value { color: var(--warning); }
+
 .elegant-select-menu {
   scrollbar-width: none;
 }
