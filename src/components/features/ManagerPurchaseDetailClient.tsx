@@ -12,10 +12,8 @@ import {
   Shield,
   XCircle,
   AlertCircle,
-  Activity,
 } from "lucide-react"
 import { fmtRp } from "@/lib/format"
-import { formatAuditAction } from "@/lib/auditLabels"
 import { getPurchaseStatus, PURCHASE_STATUS_DESCRIPTIONS, type StatusTone } from "@/lib/purchaseStatusLabels"
 import StatusPill, { TONE_STYLE } from "@/components/ui/StatusPill"
 import PageHeader from "@/components/ui/PageHeader"
@@ -106,17 +104,6 @@ interface Purchase {
   returs: ReturItem[]
 }
 
-interface AuditLog {
-  id: string
-  action: string
-  createdAt: string
-  user: {
-    nama: string
-    role: string
-    email: string
-  }
-}
-
 interface SkuPriceStandard {
   sku_name: string
   max_price_per_kg: number
@@ -124,11 +111,9 @@ interface SkuPriceStandard {
 
 export default function ManagerPurchaseDetailClient({
   purchase,
-  auditLogs,
   skuPrices
 }: {
   purchase: Purchase
-  auditLogs: AuditLog[]
   skuPrices: SkuPriceStandard[]
 }) {
   const router = useRouter()
@@ -525,7 +510,10 @@ export default function ManagerPurchaseDetailClient({
                 adalah nilai yang ditransfer SETELAH potongan kasbon, bukan
                 nilai tagihan lapaknya. */}
             <div className="mt-4 grid grid-cols-2 gap-px text-xs" style={{ background: "var(--border)" }}>
-              <PaymentMetric label="Sudah Ditransfer" value={fmtRp(payableValue)} />
+              <PaymentMetric
+                label={isTransferred ? "Sudah Ditransfer" : "Akan Ditransfer"}
+                value={fmtRp(payableValue)}
+              />
               <PaymentMetric
                 label="Tanggal Transfer"
                 value={purchase.tanggal_transfer ? new Date(purchase.tanggal_transfer).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" }) : "-"}
@@ -643,51 +631,6 @@ export default function ManagerPurchaseDetailClient({
         (kolom lebar), lalu keadaan pembayaran dan lapaknya (kolom sempit),
         dan terakhir kapan semuanya terjadi (linimasa selebar layar).
       */}
-      {/* Riwayat Perubahan.
-
-              Kotak "Riwayat pembayaran" yang dulu berdiri di atas linimasa
-              ini menyaring tiga aksi pembayaran dari daftar yang sama, lalu
-              linimasa di bawahnya menampilkan ULANG seluruh daftar termasuk
-              ketiganya. Pada nota yang cuma punya satu peristiwa pembayaran,
-              hasilnya baris kembar persis, berdempetan. Kartu Pembayaran di
-              atas layar ini sudah memuat tanggal transfer dan buktinya, jadi
-              yang tersisa di sini cukup satu linimasa utuh menurut waktu. */}
-      <div className="section overflow-hidden">
-            <div className="section-shell-head">
-              <div>
-                <span className="section-eyebrow">Jejak</span>
-                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Riwayat Perubahan</h3>
-              </div>
-              <Activity className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
-            </div>
-            <div className="section-body">
-            {auditLogs.length > 0 ? (
-                <div className="relative space-y-4 before:absolute before:bottom-2 before:left-[6px] before:top-2 before:w-px before:bg-[var(--border)]">
-                {auditLogs.map(log => (
-                  <div key={log.id} className="relative space-y-1 pl-6">
-                    <div
-                      className="absolute left-0 top-1.5 h-3 w-3 rounded-full border-2"
-                      style={{ background: "var(--surface)", borderColor: "var(--brand)" }}
-                    />
-                    <div className="text-xs font-bold" style={{ color: "var(--foreground)" }}>{formatAuditAction(log.action)}</div>
-                    <div className="text-[10px]" style={{ color: "var(--muted-faint)" }}>
-                      Oleh: <span className="font-semibold" style={{ color: "var(--muted)" }}>{log.user.nama} ({log.user.role})</span>
-                    </div>
-                    <div className="font-mono text-[9px]" style={{ color: "var(--muted-faint)" }}>
-                      {new Date(log.createdAt).toLocaleString("id-ID", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                        timeZone: "Asia/Jakarta"
-                      })}
-                    </div>
-                  </div>
-                ))}
-                </div>
-            ) : (
-              <p className="py-4 text-center text-xs italic" style={{ color: "var(--muted-faint)" }}>Tidak ada riwayat perubahan terekam.</p>
-            )}
-            </div>
-      </div>
     </div>
   )
 }

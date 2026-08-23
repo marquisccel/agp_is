@@ -12,10 +12,6 @@ import {
   MapPin,
   MessageCircle,
   Search,
-  Wallet,
-  TrendingUp,
-  Star,
-  Activity,
 } from "lucide-react"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import PageHeader from "@/components/ui/PageHeader"
@@ -110,16 +106,23 @@ function resolveAuditStatusLabel(value: unknown) {
   return "Belum diketahui"
 }
 
+/**
+ * Kenapa statusnya berubah, dalam kalimat yang bisa dibaca siapa saja.
+ *
+ * Sebelumnya barisnya berbunyi "Aktif otomatis saat admin menyelesaikan
+ * double check" dan di sebelahnya "Trigger transaksi: 7c19403" -- kata
+ * "trigger" dan potongan id mentah itu bahasa orang yang membangun
+ * sistemnya, bukan orang yang memakainya. Yang perlu dibaca cukup: ini
+ * terjadi sendiri setelah transaksi pertamanya lolos pemeriksaan.
+ */
 function resolveAuditTriggerLabel(value: unknown) {
   switch (value) {
     case "supervisor_verify_purchase":
-      return "Aktif otomatis saat admin menyetujui verifikasi"
     case "admin_double_check_purchase":
-      return "Aktif otomatis saat admin menyelesaikan double check"
+      return "Terjadi otomatis setelah transaksi pertamanya lolos pemeriksaan gudang."
     case "manager_approve_purchase":
-      return "Aktif otomatis saat manager menyetujui transaksi"
     case "manager_approve_harga":
-      return "Aktif otomatis saat manager menyetujui harga"
+      return "Terjadi otomatis setelah transaksi pertamanya disetujui Manager."
     default:
       return null
   }
@@ -233,25 +236,21 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   let mGrade = "-"
   let mGradeLabel = "Belum Ada Data"
   let mGradeColor = "bg-slate-50 text-slate-400 border-slate-200"
-  let mStars = 0
 
   if (mTransactions > 0) {
     mOpi = (mQtyScore * 0.5) + (mQualityScore * 0.5)
     if (mOpi >= 85) {
       mGrade = "A"
       mGradeLabel = "Sangat Bagus"
-      mGradeColor = "bg-emerald-50 text-emerald-700 border-emerald-250 border-emerald-200"
-      mStars = 3
+      mGradeColor = "bg-emerald-50 text-emerald-700"
     } else if (mOpi >= 60) {
       mGrade = "B"
       mGradeLabel = "Bagus/Cukup"
-      mGradeColor = "border-[color:var(--border)] bg-[color:var(--bg-tint)] text-[color:var(--muted)]"
-      mStars = 2
+      mGradeColor = "bg-[color:var(--bg-tint)] text-[color:var(--muted)]"
     } else {
       mGrade = "C"
       mGradeLabel = "Perlu Evaluasi"
-      mGradeColor = "bg-rose-50 text-rose-700 border-rose-200"
-      mStars = 1
+      mGradeColor = "bg-rose-50 text-rose-700"
     }
   }
 
@@ -292,57 +291,60 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
       {/* Profile & Info Cards */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="workflow-card overflow-hidden p-0 lg:col-span-2">
-          <div className="border-b border-slate-100 px-6 py-5">
+        <div className="section overflow-hidden lg:col-span-2">
+          <div className="section-shell-head">
+            <div>
             <p className="section-eyebrow">Profil lapak</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <h3 className="text-lg font-black text-slate-950">{supplier.nama}</h3>
-              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
-                supplier.transactionStatus === "GREEN"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-rose-200 bg-rose-50 text-rose-700"
-              }`}>
-                {supplier.transactionStatus === "GREEN" ? "Supplier aktif" : "Belum aktif"}
+              <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{supplier.nama}</h3>
+              <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ background: supplier.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
+                  aria-hidden="true"
+                />
+                {supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}
               </span>
             </div>
-            <p className="mt-1 text-sm text-slate-500">Kontak, target, dan jadwal ambilan supplier dalam satu panel.</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>Kontak, target, dan jadwal ambilan lapak dalam satu tempat.</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-px text-sm md:grid-cols-2" style={{ background: "var(--border)" }}>
-            <div className="bg-white/90 p-5">
-              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Collection Center</span>
-              <span className="mt-1 block font-bold text-slate-950">{supplier.warehouse?.nama || "-"}</span>
+            <div className="p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Collection Center</span>
+              <span className="block font-bold" style={{ color: "var(--foreground)" }}>{supplier.warehouse?.nama || "-"}</span>
             </div>
-            <div className="bg-white/90 p-5">
-              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Kontak WhatsApp</span>
-              <span className="mt-1 block font-bold text-slate-950">{supplier.kontak_wa || "Belum ada kontak"}</span>
+            <div className="p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Kontak WhatsApp</span>
+              <span className="block font-bold" style={{ color: "var(--foreground)" }}>{supplier.kontak_wa || "Belum ada kontak"}</span>
             </div>
-            <div className="bg-white/90 p-5">
-              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Target Bulanan</span>
-              <span className="mt-1 block font-bold text-slate-950">
+            <div className="p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Target Bulanan</span>
+              <span className="block font-bold" style={{ color: "var(--foreground)" }}>
                 {supplier.target_bulanan_kg > 0 ? fmtTon(supplier.target_bulanan_kg) : "-"}
                 {supplier.target_bulanan_kg > 0 && (
                   <span className="ml-1 text-xs font-medium text-slate-500">({fmtKg(supplier.target_bulanan_kg)})</span>
                 )}
               </span>
             </div>
-            <div className="bg-white/90 p-5">
-              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Jadwal Ambilan</span>
-              <span className="mt-1 block font-bold text-slate-950">
+            <div className="p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Jadwal Ambilan</span>
+              <span className="block font-bold" style={{ color: "var(--foreground)" }}>
                 {supplier.frekuensi_ambilan_mingguan}x seminggu{supplier.hari_ambilan ? ` (${supplier.hari_ambilan})` : ""}
               </span>
             </div>
-            <div className="bg-white/90 p-5">
-              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Koordinat</span>
-              <span className="mt-1 block font-bold text-slate-950">
+            <div className="p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Koordinat</span>
+              <span className="block font-bold" style={{ color: "var(--foreground)" }}>
                 {resolvedCoordinates
                   ? `${resolvedCoordinates.latitude}, ${resolvedCoordinates.longitude}`
                   : "Belum diisi"}
               </span>
             </div>
-            <div className="bg-white/90 p-5">
-              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Sumber Peta</span>
-              <span className="mt-1 block font-bold text-slate-950">
+            <div className="p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Sumber Peta</span>
+              <span className="block font-bold" style={{ color: "var(--foreground)" }}>
                 {resolvedCoordinates?.source === "manual"
                   ? "Koordinat GPS"
                   : resolvedCoordinates?.source === "link"
@@ -384,10 +386,10 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           </div>
         </div>
 
-        <div className="workflow-card space-y-4 p-6">
+        <div className="section section-body space-y-4">
           <div>
             <p className="section-eyebrow">Rekening</p>
-            <h3 className="mt-1 text-lg font-black text-slate-950">Informasi Pembayaran</h3>
+            <h3 className="mt-1 text-base font-bold" style={{ color: "var(--foreground)" }}>Informasi Pembayaran</h3>
           </div>
           {supplier.nomor_rekening ? (
             <div className="relative overflow-hidden rounded-[var(--radius-lg)] p-5 text-white" style={{ background: "var(--brand-strong)" }}>
@@ -432,11 +434,13 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         </div>
       </div>
 
-      <div className="workflow-card overflow-hidden p-0">
-        <div className="border-b border-slate-100 px-6 py-5">
-          <p className="section-eyebrow">Location preview</p>
-          <h3 className="mt-1 text-lg font-black text-slate-950">Titik Lapak</h3>
-          <p className="mt-1 text-sm text-slate-500">Preview peta akan tampil ketika koordinat sudah diisi. Link Maps tetap tersedia sebagai fallback.</p>
+      <div className="section overflow-hidden">
+        <div className="section-shell-head">
+          <div>
+            <p className="section-eyebrow">Lokasi</p>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Titik Lapak</h3>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>Peta muncul begitu koordinatnya diisi. Tautan Maps tetap bisa dipakai.</p>
+          </div>
         </div>
 
         {resolvedCoordinates ? (
@@ -454,15 +458,15 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             </div>
             <div className="space-y-4 bg-white p-6">
               <div>
-                <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Latitude</span>
+                <span className="field-label">Latitude</span>
                 <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.latitude}</span>
               </div>
               <div>
-                <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Longitude</span>
+                <span className="field-label">Longitude</span>
                 <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.longitude}</span>
               </div>
               <div>
-                <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Sumber</span>
+                <span className="field-label">Sumber</span>
                 <span className="mt-1 block text-sm font-bold text-slate-950">
                   {resolvedCoordinates.source === "manual" ? "Field latitude/longitude" : "Terbaca dari link Maps"}
                 </span>
@@ -496,11 +500,12 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         )}
       </div>
 
-      <div className="workflow-card overflow-hidden p-0">
-        <div className="border-b border-slate-100 px-6 py-5">
-          <p className="section-eyebrow">Status history</p>
-          <h3 className="mt-1 text-lg font-black text-slate-950">Riwayat Perubahan Status Lapak</h3>
-          <p className="mt-1 text-sm text-slate-500">Jejak perubahan manual dan aktivasi otomatis setelah transaksi valid pertama.</p>
+      <div className="section overflow-hidden">
+        <div className="section-shell-head">
+          <div>
+            <span className="section-eyebrow">Riwayat status</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kapan Lapak Ini Jadi Aktif</h3>
+          </div>
         </div>
 
         {parsedAuditLogs.length > 0 ? (
@@ -510,233 +515,184 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
               const toStatus = resolveAuditStatusLabel(log.newData?.transactionStatus)
               const trigger = resolveAuditTriggerLabel(log.newData?.trigger)
 
+              const otomatis = log.action === "SUPPLIER_STATUS_AUTO_GREEN"
+              const judul = toStatus === "Aktif" ? "Lapak jadi aktif" : "Lapak jadi belum aktif"
+              const sebab = otomatis
+                ? trigger ?? "Terjadi otomatis setelah transaksi pertamanya disetujui."
+                : `Diubah sendiri oleh ${log.user.nama}, dari ${fromStatus.toLowerCase()}.`
+
               return (
-                <div key={log.id} className="grid gap-4 px-6 py-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
-                        log.action === "SUPPLIER_STATUS_AUTO_GREEN"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-slate-200 bg-slate-50 text-slate-700"
-                      }`}>
-                        {log.action === "SUPPLIER_STATUS_AUTO_GREEN" ? "Auto hijau" : "Update manual"}
-                      </span>
-                      <span className="text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
-                        {log.user.role}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-sm font-bold text-slate-950">
-                      {log.user.nama} mengubah status dari{" "}
-                      <span className="text-slate-500">{fromStatus}</span>{" "}
-                      ke{" "}
-                      <span style={{ color: toStatus === "Aktif" ? "var(--success)" : "var(--danger)", fontWeight: 700 }}>{toStatus}</span>
-                    </p>
-
-                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
-                      {trigger ? <span>{trigger}</span> : null}
-                      {log.newData?.purchaseId ? <span>Trigger transaksi: {String(log.newData.purchaseId).slice(0, 8)}</span> : null}
-                    </div>
+                /* Barisnya dulu memuat empat hal sekaligus: lencana berwarna,
+                   nama peran berhuruf besar, kalimat "mengubah status dari X
+                   ke Y", dan potongan id transaksi -- lalu tanggalnya
+                   dikurung kotak tersendiri di kanan, sehingga yang paling
+                   menarik mata justru keterangan yang paling tidak penting.
+                   Sekarang tiga baris menurun: apa yang terjadi, kenapa,
+                   kapan. */
+                <div key={log.id} className="flex flex-col gap-1 px-[22px] py-4">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: toStatus === "Aktif" ? "var(--success)" : "var(--danger)" }}
+                      aria-hidden="true"
+                    />
+                    <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{judul}</p>
                   </div>
-
-                  <div className="rounded-[var(--radius-md)] border px-4 py-3 text-sm" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
-                    <p className="font-semibold text-slate-800">
-                      {new Date(log.createdAt).toLocaleDateString("id-ID", {
-                        dateStyle: "medium",
-                        timeZone: "Asia/Jakarta",
-                      })}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {new Date(log.createdAt).toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        timeZone: "Asia/Jakarta",
-                      })}
-                    </p>
-                  </div>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>{sebab}</p>
+                  <p className="text-xs" style={{ color: "var(--muted-faint)" }}>
+                    {new Date(log.createdAt).toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" })}
+                    {", "}
+                    {new Date(log.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" })}
+                    {log.newData?.purchaseId ? (
+                      <>
+                        {" \u00b7 "}
+                        <Link
+                          href={`/dashboard/manager/purchases/${String(log.newData.purchaseId)}`}
+                          className="font-semibold hover:underline"
+                          style={{ color: "var(--brand-strong)" }}
+                        >
+                          Lihat transaksinya
+                        </Link>
+                      </>
+                    ) : null}
+                  </p>
                 </div>
               )
             })}
           </div>
         ) : (
-          <div className="px-6 py-10 text-center">
-            <Activity className="mx-auto mb-3 h-10 w-10 text-slate-300" />
-            <p className="text-sm font-semibold text-slate-700">Belum ada perubahan status tercatat</p>
-            <p className="mt-1 text-sm text-slate-500">Riwayat akan muncul saat status supplier diubah manual atau saat supplier otomatis aktif karena transaksi valid.</p>
+          <div className="section-body text-center">
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Belum pernah berubah status</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+              Lapak ini akan jadi aktif dengan sendirinya begitu transaksi pertamanya lolos pemeriksaan gudang.
+            </p>
           </div>
         )}
       </div>
-      {/* Monthly Performance Dashboard Card */}
-      <div className="workflow-card space-y-5 p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      {/* Rapor kinerja bulan berjalan */}
+      <div className="section overflow-hidden">
+        <div className="section-shell-head">
           <div>
-            <p className="section-eyebrow">Performance report</p>
-            <h3 className="mt-1 text-lg font-black text-slate-950">
-              Rapor Kinerja Bulan Ini
-            </h3>
-            <p className="text-sm text-slate-500 mt-1">
-              Evaluasi kinerja berjalan untuk bulan aktif berdasarkan data timbangan lapak vs CC.
-            </p>
+            <span className="section-eyebrow">Rapor bulan ini</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kinerja Lapak</h3>
           </div>
+          {/* Tiga bintang berdenyut di samping grade dulu mengulang hal yang
+              sama dengan huruf gradenya, cuma dalam bentuk lain -- dan
+              denyutnya menarik mata ke keterangan yang paling sedikit
+              artinya di layar ini. */}
           {mTransactions > 0 && (
-            <div className="flex items-center gap-2 shrink-0">
-              <span className={`px-3 py-1 rounded-xl text-xs font-black border tracking-wide shadow-sm ${mGradeColor}`}>
-                Grade {mGrade} ({mGradeLabel})
-              </span>
-              <div className="flex gap-0.5">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${
-                      i < mStars ? "fill-amber-400 text-amber-400 animate-pulse" : "text-slate-200"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
+            <span className={`rounded-full px-3 py-1 text-xs font-bold ${mGradeColor}`}>
+              Grade {mGrade} &mdash; {mGradeLabel}
+            </span>
           )}
         </div>
 
         {mTransactions === 0 ? (
-          <div className="text-center text-slate-400 text-xs py-8 border border-dashed border-slate-200 rounded-[var(--radius-md)]">
-            <Activity className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-            <p className="font-semibold">Belum ada transaksi di bulan ini.</p>
-            <p className="mt-0.5">Penilaian performa berjalan akan muncul setelah ada pengiriman yang disetujui bulan ini.</p>
+          <div className="section-body text-center">
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Belum ada transaksi bulan ini.</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+              Penilaiannya muncul setelah ada pengiriman yang disetujui.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Indicator 1: Kuantitas (Volume) */}
-            <div className="rounded-[var(--radius-lg)] border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4" style={{ color: "var(--brand)" }} />
-                  Kuantitas (Volume)
-                </span>
-                <span className="text-xs font-extrabold text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded">
-                  Bobot 50%
-                </span>
-              </div>
-              <div className="space-y-1.5">
-                <p className="text-2xl font-black text-slate-950 font-mono">
-                  {fmtKg(mGudangWeight)}
-                  <span className="text-xs text-slate-405 block font-semibold font-sans mt-0.5">({fmtTon(mGudangWeight)}) dikirim</span>
-                </p>
-                {supplier.target_bulanan_kg > 0 ? (
-                  <div className="space-y-1">
-                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          mTargetPct >= 100 ? "bg-emerald-500" : mTargetPct >= 50 ? "bg-[color:var(--brand)]" : "bg-amber-500"
-                        }`}
-                        style={{ width: `${Math.min(mTargetPct, 100)}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-slate-400 font-bold">
-                      <span>Target: {fmtTon(supplier.target_bulanan_kg)}</span>
-                      <span className="text-slate-650">{mTargetPct.toFixed(1)}% Tercapai</span>
-                    </div>
+          <div className="grid gap-px md:grid-cols-3" style={{ background: "var(--border)" }}>
+            {/* Barang masuk */}
+            <div className="space-y-3 p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Barang masuk</span>
+              <p className="font-mono text-2xl font-black" style={{ color: "var(--foreground)" }}>{fmtKg(mGudangWeight)}</p>
+              {supplier.target_bulanan_kg > 0 ? (
+                <div className="space-y-1">
+                  <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(mTargetPct, 100)}%`,
+                        background: mTargetPct >= 100 ? "var(--success)" : mTargetPct >= 50 ? "var(--brand)" : "var(--warning)",
+                      }}
+                    />
                   </div>
-                ) : (
-                  <p className="text-[10px] text-slate-450 italic font-semibold text-slate-400">Target bulanan belum dikonfigurasi.</p>
-                )}
-              </div>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>
+                    {mTargetPct.toFixed(0)}% dari target {fmtTon(supplier.target_bulanan_kg)}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs italic" style={{ color: "var(--muted-faint)" }}>Target bulanan belum diatur.</p>
+              )}
             </div>
 
-            {/* Indicator 2: Kualitas (Susut Timbangan) */}
-            <div className="rounded-[var(--radius-lg)] border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <Activity className="w-4 h-4 text-slate-400" />
-                  Kualitas (Susut)
-                </span>
-                <span className="text-xs font-extrabold text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded">
-                  Bobot 50%
-                </span>
-              </div>
-              <div className="space-y-1.5">
-                <p className="text-2xl font-black text-slate-800 font-mono">
-                  {mPctSusut === 0 ? "0%" : `${mPctSusut.toFixed(2)}%`}
-                  <span className="text-xs text-slate-405 block font-semibold font-sans mt-0.5">Rerata penyusutan timbangan</span>
-                </p>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className={`px-2 py-0.5 rounded-lg font-bold text-[10px] uppercase border ${
-                    mPctSusut <= 1.0 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : mPctSusut <= 3.0 ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-rose-50 text-rose-700 border-rose-200"
-                  }`}>
-                    Grade {mPctSusut <= 1.0 ? "A - Rendah" : mPctSusut <= 3.0 ? "B - Normal" : "C - Tinggi"}
-                  </span>
-                  <span className="text-[10px] text-slate-450 font-bold font-mono">({fmtKg(mTotalSusut)} susut)</span>
-                </div>
-              </div>
+            {/* Susut timbangan. Kartu ini dulu memuat grade keduanya
+                ("Grade A - Rendah") di dalam kartu yang kepalanya sudah
+                memuat grade keseluruhan -- dua huruf grade untuk dua hal
+                berbeda, berdampingan, tanpa penjelasan bedanya. */}
+            <div className="space-y-3 p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Susut timbangan</span>
+              <p
+                className="font-mono text-2xl font-black"
+                style={{ color: mTotalSusut > 0 ? "var(--danger)" : "var(--foreground)" }}
+              >
+                {mPctSusut === 0 ? "0%" : `${mPctSusut.toFixed(2)}%`}
+              </p>
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                {mTotalSusut > 0 ? `${fmtKg(mTotalSusut)} menyusut di gudang` : "Tidak ada selisih timbangan"}
+              </p>
             </div>
 
-            {/* Indicator 3: Harga Beli Rata-rata */}
-            <div className="rounded-[var(--radius-lg)] border border-slate-200 bg-white/80 p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-slate-400" />
-                  Harga Rata-rata
-                </span>
-                <span className="text-xs font-extrabold text-slate-550 bg-slate-200/50 px-2 py-0.5 rounded text-slate-550">
-                  Rerata Beli
-                </span>
-              </div>
-              <div className="space-y-1.5">
-                <p className="text-2xl font-black text-slate-800 font-mono">
-                  {fmtRp(mAvgPrice)}
-                  <span className="text-xs text-slate-405 block font-semibold font-sans mt-0.5">Per kilogram (Rerata Tertimbang)</span>
-                </p>
-                <div className="text-[10px] text-slate-450 font-bold flex items-center gap-1 text-slate-500">
-                  <span>Frekuensi: <strong>{mTransactions}x pengiriman</strong> disetujui</span>
-                </div>
-              </div>
+            {/* Harga rata-rata */}
+            <div className="space-y-3 p-5" style={{ background: "var(--surface)" }}>
+              <span className="field-label">Harga rata-rata per kg</span>
+              <p className="font-mono text-2xl font-black" style={{ color: "var(--foreground)" }}>{fmtRp(mAvgPrice)}</p>
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                Dari {mTransactions} pengiriman yang disetujui bulan ini
+              </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-md)]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-            <TrendingUp className="w-6 h-6" />
+      {/* Ringkasan sepanjang waktu.
+
+          Empat kartu ini dulu masing-masing membawa kotak ikon berwarna di
+          sebelah kiri angkanya. Ikonnya tidak menerangkan apa pun yang
+          belum ditulis labelnya, tapi memakan sepertiga lebar kartu dan
+          membuat keempat angkanya tidak sejajar. Bentuknya kini sama
+          dengan baris ringkasan di dashboard Manager. */}
+      <div className="stat-strip">
+        <div className="stat-tile">
+          <span className="stat-label">Total Volume</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtKg(totalVolumeKg)}</span>
           </div>
-          <div>
-            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Volume</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-1">
-              {fmtKg(totalVolumeKg)}
-              <span className="text-[10px] text-slate-400 block font-normal">({fmtTon(totalVolumeKg)})</span>
-            </p>
-          </div>
+          <span className="stat-delta flat">{fmtTon(totalVolumeKg)}</span>
         </div>
 
-        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-md)]" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
-            <CreditCard className="w-6 h-6" />
+        <div className="stat-tile">
+          <span className="stat-label">Total Transaksi</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{totalTransactions}</span>
+            <span className="stat-unit">kali</span>
           </div>
-          <div>
-            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Transaksi</p>
-            <p className="text-2xl font-extrabold text-slate-900 mt-1">{totalTransactions} kali</p>
-          </div>
+          <span className="stat-delta flat">Sejak lapak terdaftar</span>
         </div>
 
-        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="w-12 h-12 rounded-[var(--radius-md)] bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
-            <Wallet className="w-6 h-6" />
+        <div className="stat-tile">
+          <span className="stat-label">Nilai Pembelian</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(totalValue)}</span>
           </div>
-          <div>
-            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Nilai Pembelian</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-1 font-mono">{fmtRp(totalValue)}</p>
-          </div>
+          <span className="stat-delta flat">Sudah dibayar ke lapak</span>
         </div>
 
-        <div className="bg-white rounded-[var(--radius-md)] p-6 shadow-sm border border-slate-100 flex items-center gap-4 relative overflow-hidden">
-          <div className="grid h-11 w-11 place-items-center rounded-[var(--radius-md)]" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
-            <Wallet className="w-6 h-6" />
+        {/* Saldo kasbon yang masih tersisa adalah uang yang sudah keluar
+            tapi belum jadi barang -- nadanya perhatian, sama seperti di
+            Rekap DP. Nol berarti tidak ada yang menggantung, jadi netral. */}
+        <div className={`stat-tile${remainingDp > 0 ? " tone-warning" : ""}`}>
+          <span className="stat-label">Sisa Saldo Kasbon</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(remainingDp)}</span>
           </div>
-          <div>
-            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Sisa Saldo DP</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-1 font-mono">{fmtRp(remainingDp)}</p>
-          </div>
+          <span className="stat-delta flat">
+            {remainingDp > 0 ? "Belum dipakai di nota mana pun" : "Tidak ada saldo menggantung"}
+          </span>
         </div>
       </div>
 

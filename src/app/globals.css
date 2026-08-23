@@ -433,6 +433,16 @@ a:focus-visible {
 .stat-tile .stat-delta.flat { color: var(--muted-faint); }
 .stat-tile .stat-delta.pending { color: var(--warning); }
 
+/* Nada perhatian pada satu tile. Dipakai untuk angka yang bukan
+   kesalahan tapi menggantung -- misalnya saldo kasbon yang sudah keluar
+   tapi belum jadi barang. Nol tetap netral, supaya warnanya hanya menyala
+   saat memang ada yang perlu dilihat. */
+.stat-tile.tone-warning { background: var(--warning-soft); }
+.stat-tile.tone-warning:hover { background: var(--warning-soft); }
+.stat-tile.tone-warning .stat-label,
+.stat-tile.tone-warning .stat-value,
+.stat-tile.tone-warning .stat-delta { color: var(--warning); }
+
 @media (max-width: 900px) {
   .stat-strip { grid-template-columns: repeat(2, 1fr); }
 }

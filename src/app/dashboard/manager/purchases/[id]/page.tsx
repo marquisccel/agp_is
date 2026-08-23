@@ -30,18 +30,9 @@ export default async function ManagerPurchaseDetailPage({ params }: { params: Pr
     return notFound()
   }
 
-  // Fetch audit logs for this transaction
-  const auditLogs = await prisma.auditLog.findMany({
-    where: {
-      record_id: purchase.id
-    },
-    include: {
-      user: true
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  })
+  // Riwayat perubahan nota tidak lagi ditampilkan di halaman ini; jejaknya
+  // punya menu tersendiri (Audit Trail), jadi kuerinya ikut dilepas
+  // ketimbang mengambil data yang tidak dipakai pada tiap kunjungan.
 
   // Fetch SKU standard prices for the CC to show price standard limits if needed
   const warehouseSkuPrices = await prisma.skuPriceStandard.findMany({
@@ -60,21 +51,10 @@ export default async function ManagerPurchaseDetailPage({ params }: { params: Pr
     tanggal_transfer: purchase.tanggal_transfer?.toISOString() ?? null,
   }
 
-  const serializedAuditLogs = auditLogs.map(log => ({
-    ...log,
-    createdAt: log.createdAt.toISOString(),
-    user: {
-      nama: log.user.nama,
-      role: log.user.role,
-      email: log.user.email
-    }
-  }))
-
   return (
     <div className="max-w-5xl mx-auto">
       <ManagerPurchaseDetailClient
         purchase={serializedPurchase}
-        auditLogs={serializedAuditLogs}
         skuPrices={warehouseSkuPrices}
       />
     </div>
