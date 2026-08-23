@@ -40,8 +40,8 @@ export default async function AdminHistoryPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Transaction archive"
-        title="Riwayat & Daftar Transaksi"
+        eyebrow="Arsip transaksi"
+        title="Daftar Transaksi"
         description="Daftar lengkap seluruh transaksi pembelian PET di Collection Center Anda."
       />
 

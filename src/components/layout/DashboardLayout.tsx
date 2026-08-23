@@ -144,7 +144,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       ...(role === "ADMIN" ? [] : [
         { name: "Pengajuan Kasbon", href: "/dashboard/staff/dp", icon: WalletCards },
       ]),
-      { name: "Daftar Transaksi", href: "/dashboard/staff/history", icon: ClipboardList },
+      // Admin dan Staff melihat daftar yang berbeda. Sebelumnya keduanya
+      // diarahkan ke /dashboard/staff/history -- halaman tanpa pencarian
+      // maupun penyaring, berjudul "Daftar Transaksi Saya" padahal untuk
+      // Admin isinya seluruh nota gudang. Daftar Admin yang lengkap
+      // (/dashboard/admin/history) ada, tapi tidak pernah tercantum di
+      // menu: satu-satunya jalan ke sana adalah tombol Kembali di form
+      // edit.
+      {
+        name: "Daftar Transaksi",
+        href: role === "ADMIN" ? "/dashboard/admin/history" : "/dashboard/staff/history",
+        icon: ClipboardList,
+      },
       { name: "Transfer Pembayaran", href: "/dashboard/admin/transfer", icon: CreditCard },
     ] : []),
     ...(role === "MANAGER" ? [

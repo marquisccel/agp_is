@@ -7,18 +7,23 @@ import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 import StatusPill from "@/components/ui/StatusPill"
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
+import { statusPembayaran } from "@/lib/paymentStatus"
 
 export default async function StaffHistoryPage() {
   const session = await getServerSession(authOptions)
   if (!session || !isOperationalRole(session.user.role)) {
     redirect("/login")
   }
-
-  const userId = session.user.id
-  const warehouseId = session.user.warehouseId
+  // Halaman ini berjudul "Daftar Transaksi Saya" dan isinya nota yang
+  // dibuat sendiri. Dulu untuk Admin kueri diam-diam berpindah ke
+  // seluruh gudang, sehingga judulnya berbohong. Admin punya daftarnya
+  // sendiri yang lengkap dengan pencarian dan penyaring.
+  if (session.user.role === "ADMIN") {
+    redirect("/dashboard/admin/history")
+  }
 
   const purchases = await prisma.purchase.findMany({
-    where: session.user.role === "ADMIN" && warehouseId ? { warehouseId } : { userIdStaff: userId },
+    where: { userIdStaff: session.user.id },
     orderBy: { createdAt: "desc" },
     include: { supplier: true, items: true },
   })
@@ -26,54 +31,56 @@ export default async function StaffHistoryPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Transaction log"
+        eyebrow="Catatan transaksi"
         title="Daftar Transaksi Saya"
         description="Pantau status transaksi yang telah Anda buat."
       />
 
-      <div className="interactive-surface bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+      <div className="section overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50/80 text-xs uppercase text-slate-500 font-semibold border-b border-slate-100">
+          <table className="tabel-lembut text-left text-sm text-slate-600">
+            <thead>
               <tr>
-                <th className="px-6 py-4">Tanggal / Waktu</th>
-                <th className="px-6 py-4">Lapak</th>
-                <th className="px-6 py-4">Metode Bayar</th>
-                <th className="px-6 py-4">Total Item</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-center">Bukti Transfer</th>
-                <th className="px-6 py-4 text-center">Nota</th>
+                <th>Tanggal / Waktu</th>
+                <th>Lapak</th>
+                <th>Metode Bayar</th>
+                <th>Total Item</th>
+                <th>Status</th>
+                <th className="!text-center">Bukti Transfer</th>
+                <th className="!text-center">Nota</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {purchases.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={7} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
                     Belum ada riwayat transaksi.
                   </td>
                 </tr>
               ) : (
                 purchases.map((purchase) => {
                   const status = getPurchaseStatus(purchase.status_approval)
+                  // Status tahapan saja tidak cukup: nota bisa berstatus
+                  // "Sudah Transfer" sementara sisa terminnya belum
+                  // dilunasi. Daftar Manager sudah menampilkannya; pembuat
+                  // notanya sendiri justru tidak pernah diberi tahu.
+                  const bayar = statusPembayaran(purchase)
 
                   return (
-                    <tr key={purchase.id} className="hover:bg-slate-50/40 transition-colors">
-                      <td className="px-6 py-4 font-medium text-slate-900">
+                    <tr key={purchase.id}>
+                      <td className="font-medium" style={{ color: "var(--foreground)" }}>
                         {new Date(purchase.createdAt).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" })}
                       </td>
-                      <td className="px-6 py-4 font-medium text-slate-700">
-                        {purchase.supplier.nama}
+                      <td className="font-medium">{purchase.supplier.nama}</td>
+                      <td>{purchase.metode_pembayaran_terpilih?.replace("_", " ") || "-"}</td>
+                      <td>{purchase.items.length} jenis</td>
+                      <td>
+                        <div className="flex flex-col items-start gap-1.5">
+                          <StatusPill label={status.label} tone={status.tone} />
+                          {bayar.sisa > 0 && <StatusPill label={bayar.label} tone={bayar.tone} />}
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
-                        {purchase.metode_pembayaran_terpilih?.replace("_", " ") || "-"}
-                      </td>
-                      <td className="px-6 py-4">
-                        {purchase.items.length} jenis
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusPill label={status.label} tone={status.tone} />
-                      </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="text-center">
                         {purchase.bukti_transfer ? (
                           <a href={purchase.bukti_transfer} target="_blank" rel="noreferrer">
                             <Image
@@ -82,25 +89,26 @@ export default async function StaffHistoryPage() {
                               unoptimized
                               width={48}
                               height={48}
-                              className="w-12 h-12 object-cover rounded-lg border border-slate-200 mx-auto hover:scale-105 transition-transform shadow-sm"
+                              className="mx-auto h-12 w-12 rounded-[var(--radius-sm)] border object-cover transition-transform hover:scale-105"
+                              style={{ borderColor: "var(--border)" }}
                             />
                           </a>
                         ) : (
-                          <span className="text-slate-300 text-xs">-</span>
+                          <span className="text-xs" style={{ color: "var(--muted-faint)" }}>&mdash;</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="text-center">
                         {["approved", "sudah_transfer"].includes(purchase.status_approval) ? (
                           <a
                             href={`/nota/${purchase.id}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors border border-slate-200 shadow-sm"
+                            className="btn-netral premium-button inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
                           >
                             Lihat Nota
                           </a>
                         ) : (
-                          <span className="text-slate-300 text-xs">-</span>
+                          <span className="text-xs" style={{ color: "var(--muted-faint)" }}>&mdash;</span>
                         )}
                       </td>
                     </tr>
