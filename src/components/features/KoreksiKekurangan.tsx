@@ -80,6 +80,7 @@ export default function KoreksiKekurangan({
         <label className="field-label">Kekurangan yang belum dibayar (Rp)</label>
         <NumberInput
           aria-label="Nominal kekurangan"
+          pemisahRibuan
           className="field-input text-right font-mono"
           placeholder="0"
           value={kurang}

@@ -165,7 +165,7 @@ export default function ManagerPurchaseDetailClient({
   const hasOpenTermin = purchase.status_pelunasan === "BELUM_LUNAS" && remainingPayment > 0
   const isPendingTermin = isTransferred && hasOpenTermin
   const displayedPaymentPercent = !isTransferred ? 0 : isPendingTermin ? paymentPercent : 100
-  const paymentStatusLabel = !isTransferred ? "Menunggu Transfer" : isPendingTermin ? "Termin Belum Lunas" : "Sudah Transfer"
+  const paymentStatusLabel = !isTransferred ? "Belum Ditransfer" : isPendingTermin ? "Belum Lunas" : "Lunas"
   const paymentTone: StatusTone = isPendingTermin ? "warning" : isTransferred ? "success" : "neutral"
 
   /*
@@ -182,6 +182,31 @@ export default function ManagerPurchaseDetailClient({
    * pertama, jadi angka ini tidak bisa dibaca langsung dari satu kolom.
    */
   const kewajibanTampil = payableValue + remainingPayment
+
+  /*
+   * Cerita uangnya, dari nilai barang sampai yang harus dibayar. Sebelumnya
+   * ini berupa daftar menurun di kolom paling sempit, dengan istilah yang
+   * tidak dipakai orang saat bicara ("Nilai Bersih Setelah Potongan",
+   * "Potongan Saldo DP/Kasbon", "Nilai Transfer"). Sekarang dibaca sebagai
+   * satu kalimat mendatar selebar layar, dengan kata sehari-hari.
+   */
+  const nilaiBarang = purchase.total_nilai_sebelum_retur ?? 0
+  const potonganLain =
+    (purchase.potongan_sampah ?? 0) +
+    (purchase.potongan_susut ?? 0) +
+    (purchase.potongan_air ?? 0) +
+    (purchase.potongan_karung ?? 0)
+  const potonganRetur =
+    purchase.total_potongan_retur ?? Math.max(0, nilaiBarang - (purchase.total_nilai_setelah_retur ?? nilaiBarang))
+  const totalPotongan = potonganRetur + potonganLain
+  const dibayarDiMuka = purchase.dp_yang_digunakan ?? 0
+  const rincianPotongan = [
+    { nama: "Sampah", berat: purchase.berat_potongan_sampah ?? 0, nilai: purchase.potongan_sampah ?? 0 },
+    { nama: "Susut timbangan", berat: purchase.berat_potongan_susut ?? 0, nilai: purchase.potongan_susut ?? 0 },
+    { nama: "Kadar air", berat: purchase.berat_potongan_air ?? 0, nilai: purchase.potongan_air ?? 0 },
+    { nama: "Karung", berat: purchase.berat_potongan_karung ?? 0, nilai: purchase.potongan_karung ?? 0 },
+    { nama: "Retur barang", berat: 0, nilai: potonganRetur },
+  ].filter((r) => r.nilai > 0)
 
   return (
     <div className="premium-workflow space-y-6">
@@ -247,55 +272,54 @@ export default function ManagerPurchaseDetailClient({
         </div>
       </div>
 
+      {/*
+        Ringkasan uang. Ini pertanyaan pertama yang dibawa Manager ke layar
+        ini -- berapa nilainya, berapa yang sudah di muka, berapa yang masih
+        harus dibayar -- jadi jawabannya diletakkan paling atas dan dibaca
+        kiri ke kanan seperti kalimat, bukan dicari di daftar menurun pada
+        kolom paling sempit.
+      */}
+      <div className="section overflow-hidden">
+        <div className="section-shell-head">
+          <div>
+            <span className="section-eyebrow">Uang</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Hitungan Pembayaran</h3>
+          </div>
+          <DollarSign className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
+        </div>
+        <div
+          className="grid gap-px"
+          style={{ background: "var(--border)", gridTemplateColumns: `repeat(${remainingPayment > 0 ? 5 : 4}, minmax(0, 1fr))` }}
+        >
+          <UangTile label="Nilai barang" nilai={fmtRp(nilaiBarang)} />
+          <UangTile label="Potongan" nilai={totalPotongan > 0 ? `- ${fmtRp(totalPotongan)}` : "Tidak ada"} warna={totalPotongan > 0 ? "var(--danger)" : undefined} />
+          <UangTile label="Sudah dibayar di muka" nilai={dibayarDiMuka > 0 ? `- ${fmtRp(dibayarDiMuka)}` : "Tidak ada"} warna={dibayarDiMuka > 0 ? "var(--danger)" : undefined} catatan={dibayarDiMuka > 0 ? "diambil dari kasbon lapak" : undefined} />
+          <UangTile label="Total yang harus dilunasi" nilai={fmtRp(kewajibanTampil)} tebal />
+          {remainingPayment > 0 && (
+            <UangTile label="Masih kurang" nilai={fmtRp(remainingPayment)} warna="var(--warning)" tebal />
+          )}
+        </div>
+        {rincianPotongan.length > 0 && (
+          <div
+            className="flex flex-wrap gap-x-5 gap-y-1 border-t px-[22px] py-3 text-xs"
+            style={{ borderColor: "var(--border)", color: "var(--muted)" }}
+          >
+            <span className="font-semibold">Rincian potongan:</span>
+            {rincianPotongan.map((r) => (
+              <span key={r.nama}>
+                {r.nama}
+                {r.berat > 0 ? ` ${r.berat} kg` : ""} &middot;{" "}
+                <strong style={{ color: "var(--danger)" }}>{fmtRp(r.nilai)}</strong>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Grid: 2 Column - Left Main Info, Right Summary and Logs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Columns - Lapak Info, Items Table */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Mitra Lapak. Semua kartu di layar ini memakai satu bentuk kepala
-              yang sama (eyebrow + judul). Sebelumnya ada tiga bentuk berbeda
-              berdampingan: judul kecil abu berhuruf besar di sini, judul tebal
-              berikon warna di kartu item, dan .section-shell-head di kolom
-              kanan -- membuat halaman terbaca seperti tempelan tiga layar. */}
-          <div className="section overflow-hidden">
-            <div className="section-shell-head">
-              <div>
-                <span className="section-eyebrow">Sumber barang</span>
-                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Mitra Lapak</h3>
-              </div>
-            </div>
-            <div className="section-body grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <span className="field-label">Nama lapak</span>
-              <Link
-                href={`/dashboard/manager/suppliers/${purchase.supplier.id}`}
-                className="font-bold text-slate-800 text-base transition-colors block hover:text-[var(--brand-strong)]"
-              >
-                {purchase.supplier.nama}
-              </Link>
-              <span className="text-xs text-slate-400 mt-1 block">ID Supplier: {purchase.supplier.id.split("-")[0]}</span>
-            </div>
-
-            <div>
-              <span className="field-label">Rekening tujuan</span>
-              {purchase.supplier.nomor_rekening ? (
-                <div className="text-xs text-slate-600 space-y-1">
-                  <p>
-                    Bank: <span className="font-bold text-slate-800">{purchase.supplier.nama_bank}</span>
-                  </p>
-                  <p>
-                    No. Rekening: <span className="font-mono font-bold text-slate-800">{purchase.supplier.nomor_rekening}</span>
-                  </p>
-                  <p>
-                    Atas Nama: <span className="font-semibold text-slate-700">{purchase.supplier.atas_nama || "-"}</span>
-                  </p>
-                </div>
-              ) : (
-                <p className="text-xs italic" style={{ color: "var(--muted-faint)" }}>Informasi rekening bank belum diisi.</p>
-              )}
-            </div>
-            </div>
-          </div>
-
           {/* Rincian Item */}
           <div className="section overflow-hidden">
             <div className="section-shell-head">
@@ -478,7 +502,7 @@ export default function ManagerPurchaseDetailClient({
                 <span className="section-eyebrow">Pembayaran</span>
                 <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{paymentStatusLabel}</h3>
               </div>
-              <StatusPill label={`${displayedPaymentPercent}% dibayar`} tone={paymentTone} />
+              <StatusPill label={`${displayedPaymentPercent}% terbayar`} tone={paymentTone} />
             </div>
             <div className="px-[22px] pt-4">
               <div className="h-1.5 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
@@ -501,15 +525,15 @@ export default function ManagerPurchaseDetailClient({
                 adalah nilai yang ditransfer SETELAH potongan kasbon, bukan
                 nilai tagihan lapaknya. */}
             <div className="mt-4 grid grid-cols-2 gap-px text-xs" style={{ background: "var(--border)" }}>
-              <PaymentMetric label="Nilai Transfer" value={fmtRp(payableValue)} />
+              <PaymentMetric label="Sudah Ditransfer" value={fmtRp(payableValue)} />
               <PaymentMetric
                 label="Tanggal Transfer"
                 value={purchase.tanggal_transfer ? new Date(purchase.tanggal_transfer).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" }) : "-"}
               />
               {hasOpenTermin && (
                 <>
-                  <PaymentMetric label="Dibayar Awal" value={fmtRp(initialPayment)} />
-                  <PaymentMetric label="Sisa Termin" value={fmtRp(remainingPayment)} tone={isPendingTermin ? "amber" : "slate"} />
+                  <PaymentMetric label="Pembayaran Pertama" value={fmtRp(initialPayment)} />
+                  <PaymentMetric label="Masih Kurang" value={fmtRp(remainingPayment)} tone={isPendingTermin ? "amber" : "slate"} />
                 </>
               )}
             </div>
@@ -566,120 +590,58 @@ export default function ManagerPurchaseDetailClient({
             </div>
           </div>
 
-          {/* Kalkulasi Keuangan */}
+          {/* Mitra Lapak. Semua kartu di layar ini memakai satu bentuk kepala
+              yang sama (eyebrow + judul). Sebelumnya ada tiga bentuk berbeda
+              berdampingan: judul kecil abu berhuruf besar di sini, judul tebal
+              berikon warna di kartu item, dan .section-shell-head di kolom
+              kanan -- membuat halaman terbaca seperti tempelan tiga layar. */}
           <div className="section overflow-hidden">
             <div className="section-shell-head">
               <div>
-                <span className="section-eyebrow">Uang</span>
-                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kalkulasi</h3>
+                <span className="section-eyebrow">Sumber barang</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Mitra Lapak</h3>
               </div>
-              <DollarSign className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
             </div>
-            <div className="section-body space-y-2.5 text-xs" style={{ color: "var(--muted)" }}>
-              <div className="flex justify-between">
-                <span>Nilai Sebelum Potongan</span>
-                <span className="font-semibold text-slate-800 font-mono">{fmtRp(purchase.total_nilai_sebelum_retur || 0)}</span>
-              </div>
-
-              {/* Deductions breakdown */}
-              {(purchase.potongan_sampah || 0) > 0 && (
-                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
-                  <span>Potongan Sampah ({purchase.berat_potongan_sampah || 0} kg)</span>
-                  <span className="font-mono font-medium">-{fmtRp(purchase.potongan_sampah || 0)}</span>
-                </div>
-              )}
-              {(purchase.potongan_susut || 0) > 0 && (
-                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
-                  <span>Potongan Susut ({purchase.berat_potongan_susut || 0} kg)</span>
-                  <span className="font-mono font-medium">-{fmtRp(purchase.potongan_susut || 0)}</span>
-                </div>
-              )}
-              {(purchase.potongan_air || 0) > 0 && (
-                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
-                  <span>Potongan Air ({purchase.berat_potongan_air || 0} kg)</span>
-                  <span className="font-mono font-medium">-{fmtRp(purchase.potongan_air || 0)}</span>
-                </div>
-              )}
-              {(purchase.potongan_karung || 0) > 0 && (
-                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
-                  <span>Potongan Karung ({purchase.berat_potongan_karung || 0} kg)</span>
-                  <span className="font-mono font-medium">-{fmtRp(purchase.potongan_karung || 0)}</span>
-                </div>
-              )}
-              {(purchase.total_potongan_retur || 0) > 0 && (
-                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
-                  <span>Potongan Retur Barang</span>
-                  <span className="font-mono font-medium">-{fmtRp(purchase.total_potongan_retur || 0)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between border-t pt-2 font-semibold" style={{ borderColor: "var(--border)" }}>
-                <span>Nilai Bersih Setelah Potongan</span>
-                <span className="font-mono" style={{ color: "var(--foreground)" }}>{fmtRp(purchase.total_nilai_setelah_retur || 0)}</span>
-              </div>
-
-              {(purchase.dp_yang_digunakan || 0) > 0 && (
-                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
-                  <span>Potongan Saldo Kasbon</span>
-                  <span className="font-mono font-medium">-{fmtRp(purchase.dp_yang_digunakan || 0)}</span>
-                </div>
-              )}
-
-              {/*
-                Rantai hitungnya dulu putus pada nota termin. Yang tampil:
-                nilai 30 juta, potongan kasbon 15 juta, lalu "Nilai Transfer
-                9 juta" -- 30 dikurangi 15 tidak pernah menghasilkan 9, dan
-                pembaca tidak diberi tahu bahwa 9 juta itu baru cicilan
-                pertama dari 15 juta. Dua baris berikut menutup lompatan itu.
-              */}
-              {hasOpenTermin && (
-                <>
-                  <div className="flex justify-between border-t pt-2 font-semibold" style={{ borderColor: "var(--border)" }}>
-                    <span>Kewajiban ke Lapak</span>
-                    <span className="font-mono" style={{ color: "var(--foreground)" }}>{fmtRp(kewajibanTampil)}</span>
-                  </div>
-                  <div className="flex justify-between" style={{ color: "var(--warning)" }}>
-                    <span>Belum dibayar</span>
-                    <span className="font-mono font-medium">-{fmtRp(remainingPayment)}</span>
-                  </div>
-                </>
-              )}
-
-              <div
-                className="flex justify-between border-t-2 border-dashed pt-3 text-sm font-extrabold"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+            <div className="section-body space-y-4">
+            <div>
+              <span className="field-label">Nama lapak</span>
+              <Link
+                href={`/dashboard/manager/suppliers/${purchase.supplier.id}`}
+                className="font-bold text-slate-800 text-base transition-colors block hover:text-[var(--brand-strong)]"
               >
-                <span>{hasOpenTermin ? "Sudah Ditransfer" : "Nilai Transfer"}</span>
-                <span className="font-mono text-base" style={{ color: "var(--brand-strong)" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
-              </div>
+                {purchase.supplier.nama}
+              </Link>
+              <span className="text-xs text-slate-400 mt-1 block">ID Supplier: {purchase.supplier.id.split("-")[0]}</span>
             </div>
 
-            {/* Rincian skema pembayaran dulu diulang di sini -- "Dibayar
-                Awal", "Sisa Belum Lunas", dan "Status Pelunasan" -- padahal
-                ketiganya sudah tampil utuh di bagian Pembayaran di atas.
-                Akibatnya angka yang sama muncul empat kali di satu layar.
-
-                Yang lebih berat: baris "Status Pelunasan" di sini menulis
-                LUNAS hanya berdasarkan ada-tidaknya sisa termin, tanpa
-                memeriksa uangnya sudah ditransfer atau belum -- persis
-                cacat yang sudah dibetulkan di layar Transfer dan Daftar
-                Transaksi, tapi terlewat di sini. Kepala bagian Pembayaran
-                di atas sudah menghitungnya dengan benar
-                ("Menunggu Transfer" selama belum ditransfer), jadi blok
-                ini dibuang seluruhnya, bukan ditambal. */}
+            <div>
+              <span className="field-label" style={{ marginTop: 4 }}>Rekening tujuan</span>
+              {purchase.supplier.nomor_rekening ? (
+                <div className="text-xs text-slate-600 space-y-1">
+                  <p>
+                    Bank: <span className="font-bold text-slate-800">{purchase.supplier.nama_bank}</span>
+                  </p>
+                  <p>
+                    No. Rekening: <span className="font-mono font-bold text-slate-800">{purchase.supplier.nomor_rekening}</span>
+                  </p>
+                  <p>
+                    Atas Nama: <span className="font-semibold text-slate-700">{purchase.supplier.atas_nama || "-"}</span>
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs italic" style={{ color: "var(--muted-faint)" }}>Informasi rekening bank belum diisi.</p>
+              )}
+            </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/*
-        Kolom kanan dulu memuat EMPAT kartu bertumpuk -- Pembayaran,
-        Kalkulasi, Pihak Terkait, dan Riwayat Perubahan -- sementara kolom
-        kiri cuma dua. Panjangnya jadi timpang: kolom sempit menjulur jauh
-        melewati kolom lebar di sebelahnya, dan linimasa riwayat, yang
-        justru paling butuh ruang mendatar, terjepit paling sempit.
-
-        Sekarang kanan menyisakan dua kartu yang sama-sama soal uang, dan
-        dua kartu "siapa & kapan" turun ke baris sendiri selebar layar.
+        Susunannya mengikuti urutan pertanyaan yang dibawa pembaca: berapa
+        uangnya (pita di atas), apa barangnya dan siapa yang menanganinya
+        (kolom lebar), lalu keadaan pembayaran dan lapaknya (kolom sempit),
+        dan terakhir kapan semuanya terjadi (linimasa selebar layar).
       */}
       {/* Riwayat Perubahan.
 
@@ -726,6 +688,33 @@ export default function ManagerPurchaseDetailClient({
             )}
             </div>
       </div>
+    </div>
+  )
+}
+
+function UangTile({
+  label,
+  nilai,
+  catatan,
+  warna,
+  tebal = false,
+}: {
+  label: string
+  nilai: string
+  catatan?: string
+  warna?: string
+  tebal?: boolean
+}) {
+  return (
+    <div className="px-5 py-4" style={{ background: "var(--surface)" }}>
+      <span className="field-label" style={{ marginBottom: 4 }}>{label}</span>
+      <p
+        className={`font-mono ${tebal ? "text-base font-black" : "text-sm font-bold"}`}
+        style={{ color: warna ?? "var(--foreground)" }}
+      >
+        {nilai}
+      </p>
+      {catatan && <p className="mt-1 text-[11px]" style={{ color: "var(--muted-faint)" }}>{catatan}</p>}
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Check, X } from "lucide-react"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import NumberInput from "@/components/ui/NumberInput"
@@ -52,51 +53,67 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
 
   if (showEdit) {
     return (
-      <div className="flex items-center gap-2 justify-center">
+      <div className="flex items-center justify-end gap-2">
         {dialog}
         {toastHost}
+        {/* Kolomnya dulu berdiri tanpa keterangan apa pun: sebuah kotak
+            berisi "15000000" di sebelah dua ikon. Tidak ada yang memberi
+            tahu bahwa itu nominal yang akan DISETUJUI, bukan yang diajukan. */}
+        <label className="field-label whitespace-nowrap" style={{ marginBottom: 0 }}>
+          Setujui sebesar
+        </label>
         <NumberInput
+          aria-label="Nominal kasbon yang disetujui"
           value={nominal}
           onValueChange={setNominal}
-          className="field-input w-32"
+          pemisahRibuan
+          className="field-input w-40 text-right font-mono"
         />
         <button
           onClick={() => handleAction("approve", nominal)}
-          disabled={loading}
-          className="rounded-[8px] p-1.5 text-white transition-colors disabled:opacity-50" style={{ background: "var(--success)" }}
-          title="Simpan & Setujui"
+          disabled={loading || nominal <= 0}
+          className="btn-primer premium-button rounded-[var(--radius-sm)] p-2 disabled:opacity-50"
+          title="Simpan dan setujui"
+          aria-label="Simpan dan setujui"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <Check className="h-4 w-4" />
         </button>
         <button
           onClick={() => setShowEdit(false)}
           disabled={loading}
-          className="bg-slate-200 text-slate-600 p-1.5 rounded-lg hover:bg-slate-300 transition-colors disabled:opacity-50"
+          className="btn-netral premium-button p-2 disabled:opacity-50"
           title="Batal"
+          aria-label="Batal ubah nominal"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <X className="h-4 w-4" />
         </button>
       </div>
     )
   }
 
+  /*
+   * Tiga tombol, dulu tiga keluarga warna: hijau, indigo, merah -- dan
+   * indigo tidak dipakai di mana pun lagi dalam sistem ini. Sekarang
+   * bentuknya mengikuti aturan yang sama dengan layar lain: satu aksi
+   * utama, sisanya netral, dan yang merusak baru memerah saat disentuh.
+   */
   return (
-    <div className="flex gap-2 justify-center">
+    <div className="flex justify-end gap-2">
       {dialog}
       {toastHost}
       <button
         onClick={() => handleAction("approve")}
         disabled={loading}
-        className="rounded-[8px] border px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50" style={{ borderColor: "var(--success-soft)", background: "var(--success-soft)", color: "var(--success)" }}
+        className="btn-primer premium-button rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-bold disabled:opacity-50"
       >
         Setujui
       </button>
       <button
         onClick={() => setShowEdit(true)}
         disabled={loading}
-        className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 font-bold text-xs rounded-lg border border-indigo-200 transition-colors disabled:opacity-50"
+        className="btn-netral premium-button whitespace-nowrap px-3 py-1.5 text-xs disabled:opacity-50"
       >
-        Revisi Nilai
+        Ubah Nominal
       </button>
       <button
         onClick={async () => {
@@ -109,7 +126,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
           if (ok) handleAction("reject")
         }}
         disabled={loading}
-        className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 font-bold text-xs rounded-lg border border-red-200 transition-colors disabled:opacity-50"
+        className="btn-netral tone-danger premium-button px-3 py-1.5 text-xs disabled:opacity-50"
       >
         Tolak
       </button>

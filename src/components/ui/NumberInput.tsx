@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { isianAwal, ketik, sinkronDariLuar } from "@/lib/numericField"
+import { denganPemisahRibuan, isianAwal, ketik, ketikRibuan, sinkronDariLuar } from "@/lib/numericField"
 
 /**
  * Isian angka yang menyimpan teks mentah selama diketik.
@@ -28,9 +28,16 @@ type Props = Omit<
 > & {
   value: number
   onValueChange: (nilai: number) => void
+  /**
+   * Tampilkan pemisah ribuan ("15.000.000") dan batasi ke bilangan bulat.
+   * Dipakai pada kolom nominal rupiah, tempat "15000000" nyaris mustahil
+   * dibaca sekali lihat. Lihat hanyaAngkaBulat() untuk alasan desimalnya
+   * dimatikan di mode ini.
+   */
+  pemisahRibuan?: boolean
 }
 
-export default function NumberInput({ value, onValueChange, ...rest }: Props) {
+export default function NumberInput({ value, onValueChange, pemisahRibuan = false, ...rest }: Props) {
   const [keadaan, setKeadaan] = useState(() => isianAwal(value))
 
   // Nilai berubah dari luar (form direset, data dimuat ulang) -> teks
@@ -50,9 +57,9 @@ export default function NumberInput({ value, onValueChange, ...rest }: Props) {
       // memunculkan papan tik angka di ponsel.
       type="text"
       inputMode="decimal"
-      value={keadaan.teks}
+      value={pemisahRibuan ? denganPemisahRibuan(keadaan.teks) : keadaan.teks}
       onChange={(e) => {
-        const berikutnya = ketik(e.target.value)
+        const berikutnya = pemisahRibuan ? ketikRibuan(e.target.value) : ketik(e.target.value)
         setKeadaan(berikutnya)
         onValueChange(berikutnya.nilai)
       }}

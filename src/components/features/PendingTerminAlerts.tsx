@@ -160,6 +160,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                 <div className="w-36">
                   <NumberInput
                     aria-label={`Nominal pembayaran untuk ${alert.supplier.nama}`}
+                    pemisahRibuan
                     className="field-input text-right font-mono text-xs"
                     value={nominalBayar[alert.id] ?? alert.nominal_belum_lunas}
                     onValueChange={(n) => setNominalBayar((current) => ({ ...current, [alert.id]: n }))}

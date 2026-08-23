@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { isianAwal, ketik, sinkronDariLuar, nilaiDariTeks, bersihkan } from "../src/lib/numericField"
+import { isianAwal, ketik, sinkronDariLuar, nilaiDariTeks, bersihkan, denganPemisahRibuan, ketikRibuan, hanyaAngkaBulat } from "../src/lib/numericField"
 
 /**
  * Menirukan satu kolom angka terkendali: pengguna menekan tombol satu
@@ -81,4 +81,39 @@ test("karakter yang bukan angka disaring", () => {
   assert.equal(bersihkan("1,2,3"), "1,23")
   assert.equal(bersihkan("--5"), "-5")       // minus hanya boleh di depan
   assert.equal(bersihkan("5-3"), "53")
+})
+
+/**
+ * Mode pemisah ribuan: kolom nominal rupiah. "15000000" nyaris mustahil
+ * dibaca sekali lihat, jadi ditampilkan "15.000.000".
+ */
+
+test("nominal ditampilkan dengan pemisah ribuan", () => {
+  assert.equal(denganPemisahRibuan("15000000"), "15.000.000")
+  assert.equal(denganPemisahRibuan("500"), "500")
+  assert.equal(denganPemisahRibuan("1500"), "1.500")
+  assert.equal(denganPemisahRibuan("250000"), "250.000")
+  assert.equal(denganPemisahRibuan(""), "")
+})
+
+test("nol di depan dibuang", () => {
+  assert.equal(denganPemisahRibuan("007"), "7")
+})
+
+test("mengetik ulang angka yang sudah berpemisah tetap utuh", () => {
+  // Yang dikirim balik oleh input adalah teks yang SUDAH diformat, jadi
+  // titiknya harus dibuang lagi -- kalau tidak, tiap ketukan menambah
+  // pemisah baru dan angkanya membengkak sendiri.
+  assert.equal(ketikRibuan("15.000.000").nilai, 15000000)
+  assert.equal(ketikRibuan("15.000.000").teks, "15000000")
+  assert.equal(ketikRibuan("15.000.0009").nilai, 150000009)
+})
+
+test("pemisah desimal ditolak di mode ribuan", () => {
+  // Titik adalah pemisah ribuan di sini, jadi "1.5" tidak boleh diam-diam
+  // berarti satu setengah -- pada kolom uang salah baca langsung jadi
+  // salah rupiah.
+  assert.equal(hanyaAngkaBulat("1.5"), "15")
+  assert.equal(hanyaAngkaBulat("1,5"), "15")
+  assert.equal(ketikRibuan("abc12x3").nilai, 123)
 })

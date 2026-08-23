@@ -5,6 +5,8 @@ import Link from "next/link"
 import DPApprovalActions from "@/components/features/DPApprovalActions"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
+import StatusPill from "@/components/ui/StatusPill"
+import { getDpStatus } from "@/lib/purchaseStatusLabels"
 
 export default async function DPApprovalManager() {
   const session = await getServerSession(authOptions)
@@ -39,48 +41,61 @@ export default async function DPApprovalManager() {
         title="Approval Kasbon (DP)"
         description="Pengajuan yang menunggu keputusan Manager, beserta riwayat keputusan untuk pemantauan penyetuju."
         actions={(
-          <Link href="/dashboard/manager" className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
+          <Link href="/dashboard/manager" className="btn-netral premium-button px-4 py-2.5 text-sm">
             Kembali ke Dashboard
           </Link>
         )}
       />
 
       <div className="section overflow-hidden">
+        <div className="section-shell-head">
+          <div>
+            <span className="section-eyebrow">Menunggu keputusan</span>
+            <h2 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Antrean Pengajuan</h2>
+          </div>
+          <span className="text-sm font-semibold" style={{ color: dps.length > 0 ? "var(--warning)" : "var(--muted-faint)" }}>
+            {dps.length > 0 ? `${dps.length} menunggu Anda` : "Tidak ada antrean"}
+          </span>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
+          <table className="tabel-lembut text-left text-sm text-slate-600">
+            <thead>
               <tr>
-                <th className="px-6 py-4">Tanggal Pengajuan</th>
-                <th className="px-6 py-4">Lapak</th>
-                <th className="px-6 py-4">Nominal Diajukan</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
+                <th>Tanggal Pengajuan</th>
+                <th>Lapak</th>
+                <th className="!text-right">Nominal Diajukan</th>
+                <th className="!text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {dps.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={4} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
                     Tidak ada pengajuan kasbon yang menunggu persetujuan.
                   </td>
                 </tr>
               ) : (
                 dps.map((dp) => (
-                  <tr key={dp.id} className="premium-row group">
-                    <td className="px-6 py-4 font-bold text-slate-900">
-                      {new Date(dp.tanggal_permintaan).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}
+                  <tr key={dp.id}>
+                    <td className="whitespace-nowrap font-medium" style={{ color: "var(--foreground)" }}>
+                      {new Date(dp.tanggal_permintaan).toLocaleDateString('id-ID', { dateStyle: "medium", timeZone: 'Asia/Jakarta' })}
                     </td>
-                    <td className="px-6 py-4 font-bold text-slate-700">
-                      <div>{dp.supplier.nama}</div>
+                    <td>
+                      <div className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</div>
+                      {/* Keterangannya dulu dibungkus kotak bertepi dan
+                          berlatar putih, sehingga tampak seperti kolom isian
+                          yang bisa diketik -- padahal cuma catatan pengaju.
+                          Sekarang sekadar teks abu. */}
                       {dp.keterangan && (
-                        <div className="mt-1.5 max-w-xs rounded-xl border border-slate-200/70 bg-white/70 p-2 text-xs font-normal italic text-slate-500">
-                          Note: &ldquo;{dp.keterangan}&rdquo;
+                        <div className="mt-1 max-w-xs text-xs italic" style={{ color: "var(--muted)" }}>
+                          &ldquo;{dp.keterangan}&rdquo;
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-mono text-lg font-black text-slate-950">
+                    <td className="whitespace-nowrap text-right font-mono text-base font-black" style={{ color: "var(--foreground)" }}>
                       Rp {dp.nominal_diajukan.toLocaleString('id-ID')}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td>
                       <DPApprovalActions dp={dp} />
                     </td>
                   </tr>
@@ -92,61 +107,69 @@ export default async function DPApprovalManager() {
       </div>
 
       <div className="section overflow-hidden">
-        <div className="border-b border-slate-200/70 bg-white/55 px-6 py-4">
-          <h2 className="text-sm font-black uppercase tracking-[0.08em] text-slate-500">Riwayat Keputusan Kasbon Terbaru</h2>
-          <p className="mt-1 text-xs text-slate-400">Pemantauan penyetuju — mencakup kasbon yang diputus final oleh Admin gudang maupun oleh Manager.</p>
+        <div className="section-shell-head">
+          <div>
+            <span className="section-eyebrow">Jejak keputusan</span>
+            <h2 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Keputusan Terbaru</h2>
+          </div>
+          <span className="text-xs font-semibold" style={{ color: "var(--muted-faint)" }}>
+            20 terakhir, semua gudang
+          </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
+          <table className="tabel-lembut text-left text-sm text-slate-600">
+            <thead>
               <tr>
-                <th className="px-6 py-4">Tanggal Keputusan</th>
-                <th className="px-6 py-4">Lapak</th>
-                <th className="px-6 py-4">Gudang</th>
-                <th className="px-6 py-4">Nominal Disetujui</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Diputuskan Oleh</th>
+                <th>Tanggal Keputusan</th>
+                <th>Lapak</th>
+                <th>Gudang</th>
+                <th className="!text-right">Nominal Disetujui</th>
+                <th>Status</th>
+                <th>Diputuskan Oleh</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {recentDecisions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={6} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
                     Belum ada keputusan kasbon.
                   </td>
                 </tr>
               ) : (
-                recentDecisions.map((dp) => (
-                  <tr key={dp.id} className="premium-row group">
-                    <td className="px-6 py-4 text-slate-700">
-                      {dp.tanggal_approval
-                        ? new Date(dp.tanggal_approval).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })
-                        : '-'}
-                    </td>
-                    <td className="px-6 py-4 font-bold text-slate-700">{dp.supplier.nama}</td>
-                    <td className="px-6 py-4 text-slate-600">{dp.supplier.warehouse?.nama ?? '-'}</td>
-                    <td className="px-6 py-4 font-mono font-bold text-slate-900">
-                      {dp.status_approval === "approved"
-                        ? `Rp ${(dp.nominal_disetujui ?? dp.nominal_diajukan).toLocaleString('id-ID')}`
-                        : '-'}
-                    </td>
-                    <td className="px-6 py-4">
-                      {dp.status_approval === "approved"
-                        ? <span className="rounded-md border px-2.5 py-1 text-xs font-bold" style={{ borderColor: "var(--success-soft)", background: "var(--success-soft)", color: "var(--success)" }}>Disetujui</span>
-                        : <span className="bg-red-50 text-red-600 px-2.5 py-1 rounded-md text-xs font-bold border border-red-200">Ditolak</span>}
-                    </td>
-                    <td className="px-6 py-4">
-                      {dp.approvedBy ? (
-                        <div>
-                          <div className="font-bold text-slate-800">{dp.approvedBy.nama}</div>
-                          <div className="text-xs text-slate-400">{dp.approvedBy.role === "MANAGER" ? "Manager" : "Admin gudang"}</div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                recentDecisions.map((dp) => {
+                  const status = getDpStatus(dp.status_approval)
+                  return (
+                    <tr key={dp.id}>
+                      <td className="whitespace-nowrap">
+                        {dp.tanggal_approval
+                          ? new Date(dp.tanggal_approval).toLocaleDateString('id-ID', { dateStyle: "medium", timeZone: 'Asia/Jakarta' })
+                          : '\u2014'}
+                      </td>
+                      <td className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
+                      <td>{dp.supplier.warehouse?.nama ?? '\u2014'}</td>
+                      <td className="whitespace-nowrap text-right font-mono font-bold" style={{ color: "var(--foreground)" }}>
+                        {dp.status_approval === "approved"
+                          ? `Rp ${(dp.nominal_disetujui ?? dp.nominal_diajukan).toLocaleString('id-ID')}`
+                          : '\u2014'}
+                      </td>
+                      <td>
+                        <StatusPill label={status.label} tone={status.tone} />
+                      </td>
+                      <td>
+                        {dp.approvedBy ? (
+                          <div>
+                            <div className="font-bold" style={{ color: "var(--foreground)" }}>{dp.approvedBy.nama}</div>
+                            <div className="text-xs" style={{ color: "var(--muted-faint)" }}>
+                              {dp.approvedBy.role === "MANAGER" ? "Manager" : "Admin gudang"}
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ color: "var(--muted-faint)" }}>&mdash;</span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>
