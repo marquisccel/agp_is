@@ -90,11 +90,14 @@ export default function KoreksiKekurangan({
 
   return (
     <>
+      {/* Cukup "Koreksi": tombolnya berbagi lebar dengan "Ganti Bukti" di
+          kolom sempit, dan label yang lebih panjang membuat keduanya
+          patah. Isi kotaknya sudah menerangkan koreksi apa yang dimaksud. */}
       <button
         onClick={() => { setTerbuka(true); setKurang(0) }}
-        className="btn-netral premium-button flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm sm:w-auto"
+        className="btn-netral premium-button flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-3 py-2.5 text-sm"
       >
-        Koreksi Pembayaran
+        Koreksi
       </button>
 
       {typeof document !== "undefined" && terbuka && createPortal(

@@ -300,33 +300,35 @@ export default function TransferList({
                           </span>
                         </div>
                       </button>
-                      <button
-                        onClick={async () => {
-                          const ok = await confirm({
-                            title: "Ganti bukti transfer?",
-                            description: "Bukti transfer yang sudah ada tidak akan bisa diakses lagi setelah diganti.",
-                            confirmLabel: "Ya, ganti",
-                          })
-                          if (ok) fileRefs.current[p.id]?.click()
-                        }}
-                        disabled={isUploading}
-                        className="btn-netral premium-button flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:opacity-60"
-                      >
-                        {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                        {isUploading ? "Mengupload..." : "Ganti Bukti"}
-                      </button>
-                      {/* Nota yang sudah ditransfer dan tercatat lunas masih
-                          bisa keliru: nominal yang benar-benar dikirim kadang
-                          lebih kecil dari yang tercatat. Tombolnya berdiri
-                          sebaris dengan "Ganti Bukti" -- keduanya sama-sama
-                          membetulkan catatan pembayaran nota ini. */}
-                      {bolehKoreksi && !isPendingTermin && (
-                        <KoreksiKekurangan
-                          purchaseId={p.id}
-                          kewajiban={kewajibanKeLapak(p)}
-                          namaLapak={p.supplier.nama}
-                        />
-                      )}
+                      {/* Dua aksi sebaris. Keduanya sama-sama membetulkan
+                          catatan pembayaran nota ini, jadi berdiri
+                          berdampingan; kolom kanan ini sempit, jadi tiap
+                          tombol mengambil separuhnya dan labelnya dipendekkan
+                          supaya tidak patah. */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: "Ganti bukti transfer?",
+                              description: "Bukti transfer yang sudah ada tidak akan bisa diakses lagi setelah diganti.",
+                              confirmLabel: "Ya, ganti",
+                            })
+                            if (ok) fileRefs.current[p.id]?.click()
+                          }}
+                          disabled={isUploading}
+                          className="btn-netral premium-button flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-sm disabled:opacity-60"
+                        >
+                          {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                          {isUploading ? "Mengupload..." : "Ganti Bukti"}
+                        </button>
+                        {bolehKoreksi && !isPendingTermin && (
+                          <KoreksiKekurangan
+                            purchaseId={p.id}
+                            kewajiban={kewajibanKeLapak(p)}
+                            namaLapak={p.supplier.nama}
+                          />
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div className="flex h-full min-h-44 flex-col items-center justify-center rounded-[var(--radius-md)] border border-dashed p-5 text-center" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>

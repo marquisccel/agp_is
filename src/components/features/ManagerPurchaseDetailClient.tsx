@@ -534,7 +534,7 @@ export default function ManagerPurchaseDetailClient({
               sistem sementara lapak tetap menagih.
             */}
             {bisaDikoreksi && (
-              <div className="border-t p-5" style={{ borderColor: "var(--border)" }}>
+              <div className="flex border-t p-5" style={{ borderColor: "var(--border)" }}>
                 <KoreksiKekurangan
                   purchaseId={purchase.id}
                   kewajiban={kewajibanKeLapak(purchase)}
