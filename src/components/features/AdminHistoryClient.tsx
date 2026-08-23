@@ -200,11 +200,16 @@ export default function AdminHistoryClient({
                             </Link>
                           ) : null}
 
-                          <Link href={`${basePath}/edit/${purchase.id}`}>
-                            <button className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-1">
-                              Edit
-                            </button>
-                          </Link>
+                          {/* Nota yang sudah ditransfer ditolak oleh API saat
+                              disimpan, jadi tautan ini dulu selalu berakhir
+                              di form yang tidak bisa dituntaskan. */}
+                          {purchase.status_approval !== "sudah_transfer" && (
+                            <Link href={`${basePath}/edit/${purchase.id}`}>
+                              <button className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-1">
+                                Edit
+                              </button>
+                            </Link>
+                          )}
                         </div>
                       </td>
                     </tr>

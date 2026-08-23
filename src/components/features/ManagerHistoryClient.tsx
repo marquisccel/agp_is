@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowRight, Calendar, Filter, Home, Search, User } from "lucide-react"
+import { ArrowRight, Calendar, Filter, Home, Search, Trash2, User } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
@@ -78,8 +78,8 @@ export default function ManagerHistoryClient({
       }
       toast("Transaksi berhasil dihapus.")
       router.refresh()
-    } catch (err: any) {
-      toast(err.message, "error")
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : "Gagal menghapus transaksi", "error")
     } finally {
       setDeletingId(null)
     }
@@ -118,12 +118,13 @@ export default function ManagerHistoryClient({
           </div>
 
           <div className="relative">
-            <Filter className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Filter className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <ElegantSelect
               value={selectedStatus}
               onChange={setSelectedStatus}
               ariaLabel="Filter status transaksi"
-              className="w-full pl-8"
+              triggerClassName="field-icon"
+              className="w-full"
               menuClassName="w-72"
               options={[
                 { value: "all", label: "Semua Status" },
@@ -137,12 +138,13 @@ export default function ManagerHistoryClient({
           </div>
 
           <div className="relative">
-            <Home className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Home className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <ElegantSelect
               value={selectedWarehouse}
               onChange={setSelectedWarehouse}
               ariaLabel="Filter gudang transaksi"
-              className="w-full pl-8"
+              triggerClassName="field-icon"
+              className="w-full"
               menuClassName="w-56"
               options={[
                 { value: "all", label: "Semua Gudang" },
@@ -155,21 +157,24 @@ export default function ManagerHistoryClient({
 
       <div className="section overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
+          <table className="tabel-lembut text-left text-sm text-slate-600">
+            <thead>
               <tr>
-                <th className="px-6 py-4">Gudang / Tanggal</th>
-                <th className="px-6 py-4">Lapak / Supplier</th>
-                <th className="px-6 py-4">Barang</th>
-                <th className="px-6 py-4">Total Nilai</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
+                <th>Gudang / Tanggal</th>
+                <th>Lapak / Supplier</th>
+                <th>Barang</th>
+                {/* Yang ditampilkan adalah total_dibayar -- nilai setelah
+                    potongan kasbon, bukan nilai nota kotornya. Judul
+                    "Total Nilai" membuatnya terbaca sebagai harga barang. */}
+                <th>Nilai Dibayar</th>
+                <th>Status</th>
+                <th className="!text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {filteredPurchases.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={6} className="py-12 text-center text-slate-400">
                     Tidak ada transaksi yang cocok dengan kriteria filter.
                   </td>
                 </tr>
@@ -186,30 +191,30 @@ export default function ManagerHistoryClient({
 
                   return (
                     <tr key={purchase.id} className="premium-row">
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="font-bold text-slate-950">{purchase.warehouse.nama}</div>
                         <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
                           <Calendar className="h-3.5 w-3.5 text-slate-400" />
                           <span>{new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="font-black text-slate-900">{purchase.supplier.nama}</div>
                         <div className="mt-1 flex items-center gap-1 text-xs text-slate-400">
                           <User className="h-3 w-3 text-slate-400" />
                           <span>Staff: {purchase.staff.nama}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="font-bold text-slate-900">{totalBerat.toFixed(1)} KG</div>
                         <div className="mt-0.5 font-mono text-xs text-slate-400">
                           {purchase.items.length} sku - {purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-mono font-black text-slate-950">
+                      <td className="font-mono font-black text-slate-950">
                         {formatRp(totalNilai)}
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="flex flex-col items-start gap-1.5">
                           <StatusPill label={status.label} tone={status.tone} />
                           {bayar.sisa > 0 && (
@@ -217,40 +222,48 @@ export default function ManagerHistoryClient({
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex flex-col items-center gap-2">
+                      {/* Dulu kolom ini menumpuk sampai empat tombol selebar
+                          kolom di SETIAP baris -- benda paling berat di
+                          halaman, mengulang "Detail", "Edit", dan "Hapus"
+                          sebanyak jumlah nota. Sekarang tersisa satu aksi
+                          yang bergantung tahap, satu tautan ke detail, dan
+                          hapus sebagai ikon. Tombol "Edit" dilepas karena
+                          halaman Detail sudah membawanya, dan di sini ia
+                          juga tampil untuk nota yang sudah ditransfer --
+                          padahal nota seperti itu ditolak oleh API. */}
+                      <td className="text-center">
+                        <div className="flex items-center justify-center gap-2">
                           {purchase.status_approval === "menunggu_approval_harga" ? (
-                            <Link href={`/dashboard/manager/approval-harga/${purchase.id}`} className="w-full">
-                              <button className="premium-button w-full rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-1.5 text-xs font-bold text-orange-700 hover:bg-orange-100">
+                            <Link href={`/dashboard/manager/approval-harga/${purchase.id}`}>
+                              <button
+                                className="premium-button whitespace-nowrap rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs font-bold"
+                                style={{ borderColor: "var(--warning-soft)", background: "var(--warning-soft)", color: "var(--warning)" }}
+                              >
                                 Approval Harga <ArrowRight className="inline h-3.5 w-3.5" />
                               </button>
                             </Link>
                           ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
-                            <Link href={`/nota/${purchase.id}`} target="_blank" className="w-full">
-                              <button className="premium-button btn-netral w-full px-3.5 py-1.5 text-xs">
+                            <Link href={`/nota/${purchase.id}`} target="_blank">
+                              <button className="premium-button btn-netral whitespace-nowrap px-3 py-1.5 text-xs">
                                 Lihat Nota
                               </button>
                             </Link>
                           ) : null}
 
-                          <Link href={`/dashboard/manager/purchases/${purchase.id}`} className="w-full">
-                            <button className="premium-button btn-netral w-full px-3.5 py-1.5 text-xs">
+                          <Link href={`/dashboard/manager/purchases/${purchase.id}`}>
+                            <button className="premium-button btn-netral px-3 py-1.5 text-xs">
                               Detail
-                            </button>
-                          </Link>
-
-                          <Link href={`/dashboard/manager/edit/${purchase.id}`} className="w-full">
-                            <button className="premium-button btn-netral w-full px-3.5 py-1.5 text-xs">
-                              Edit
                             </button>
                           </Link>
 
                           <button
                             onClick={() => handleDelete(purchase.id)}
                             disabled={deletingId === purchase.id}
-                            className="premium-button w-full rounded-xl border border-red-200 bg-red-50 px-3.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                            className="premium-button btn-netral tone-danger p-2 disabled:opacity-50"
+                            title="Hapus transaksi"
+                            aria-label={`Hapus transaksi ${purchase.nomor_nota || purchase.id.split("-")[0]}`}
                           >
-                            {deletingId === purchase.id ? "Menghapus..." : "Hapus"}
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       </td>

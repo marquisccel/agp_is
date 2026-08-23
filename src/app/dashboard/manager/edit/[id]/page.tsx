@@ -42,7 +42,7 @@ export default async function ManagerEditTransaksiPage({ params }: { params: Pro
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Transaction editor"
+        eyebrow="Koreksi transaksi"
         title="Edit Transaksi"
         description={
           <>
@@ -52,11 +52,6 @@ export default async function ManagerEditTransaksiPage({ params }: { params: Pro
             {" · "}
             <span className="font-mono text-slate-600">{purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}</span>
           </>
-        }
-        actions={
-          <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">
-            Audit log aktif
-          </span>
         }
       />
 

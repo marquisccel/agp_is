@@ -8,19 +8,16 @@ import {
   ArrowLeft,
   CheckCircle,
   Clock,
-  CreditCard,
   DollarSign,
-  FileText,
   Shield,
-  User,
   XCircle,
   AlertCircle,
   Activity,
 } from "lucide-react"
 import { fmtRp } from "@/lib/format"
 import { formatAuditAction } from "@/lib/auditLabels"
-import { getPurchaseStatus, PURCHASE_STATUS_DESCRIPTIONS } from "@/lib/purchaseStatusLabels"
-import { TONE_STYLE } from "@/components/ui/StatusPill"
+import { getPurchaseStatus, PURCHASE_STATUS_DESCRIPTIONS, type StatusTone } from "@/lib/purchaseStatusLabels"
+import StatusPill, { TONE_STYLE } from "@/components/ui/StatusPill"
 import PageHeader from "@/components/ui/PageHeader"
 
 interface PurchaseItem {
@@ -52,7 +49,7 @@ interface Purchase {
   bukti_transfer: string | null
   tanggal_transfer: string | null
   metode_pembayaran_terpilih: string | null
-  
+
   berat_timbangan_lapak: number | null
   berat_timbangan_gudang: number | null
   berat_final: number | null
@@ -60,23 +57,23 @@ interface Purchase {
   total_nilai_sebelum_retur: number | null
   total_potongan_retur: number | null
   total_nilai_setelah_retur: number | null
-  
+
   potongan_sampah: number | null
   berat_potongan_sampah: number | null
   harga_potongan_sampah: number | null
-  
+
   potongan_susut: number | null
   berat_potongan_susut: number | null
   harga_potongan_susut: number | null
-  
+
   potongan_air: number | null
   berat_potongan_air: number | null
   harga_potongan_air: number | null
-  
+
   potongan_karung: number | null
   berat_potongan_karung: number | null
   harga_potongan_karung: number | null
-  
+
   dp_yang_digunakan: number | null
   total_dibayar: number | null
   persentase_pembayaran: number | null
@@ -167,19 +164,12 @@ export default function ManagerPurchaseDetailClient({
   const isPendingTermin = isTransferred && hasOpenTermin
   const displayedPaymentPercent = !isTransferred ? 0 : isPendingTermin ? paymentPercent : 100
   const paymentStatusLabel = !isTransferred ? "Menunggu Transfer" : isPendingTermin ? "Termin Belum Lunas" : "Sudah Transfer"
-  const paymentStatusClass = isPendingTermin
-    ? "border-amber-200 bg-amber-50 text-amber-700"
-    : isTransferred
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-      : "border-slate-200 bg-slate-50 text-slate-600"
-  const paymentAuditLogs = auditLogs.filter(log =>
-    ["UPLOAD_TRANSFER_PROOF", "REPLACE_TRANSFER_PROOF", "SETTLE_TERMIN"].includes(log.action)
-  )
+  const paymentTone: StatusTone = isPendingTermin ? "warning" : isTransferred ? "success" : "neutral"
 
   return (
     <div className="premium-workflow space-y-6">
       <PageHeader
-        eyebrow="Transaction detail"
+        eyebrow="Detail transaksi"
         title={`Transaksi ${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}`}
         description={
           <>
@@ -192,11 +182,16 @@ export default function ManagerPurchaseDetailClient({
         }
         actions={
           <>
-          <Link href={`/dashboard/manager/edit/${purchase.id}`}>
-            <button className="premium-button btn-netral px-4 py-2 text-xs">
-              Edit Transaksi
-            </button>
-          </Link>
+          {/* API menolak mengedit nota yang sudah ditransfer. Tombolnya dulu
+              tetap tampil dan mengantar ke form yang seluruhnya terkunci --
+              perjalanan yang tidak pernah bisa selesai. */}
+          {!isTransferred && (
+            <Link href={`/dashboard/manager/edit/${purchase.id}`}>
+              <button className="premium-button btn-netral px-4 py-2 text-xs">
+                Edit Transaksi
+              </button>
+            </Link>
+          )}
           <button
             onClick={() => router.back()}
             className="premium-button btn-netral flex items-center gap-2 px-4 py-2 text-xs"
@@ -221,7 +216,7 @@ export default function ManagerPurchaseDetailClient({
           <h4 className="font-bold text-sm">Status: {s.label}</h4>
           <p className="text-xs opacity-90 mt-0.5">{sDesc}</p>
           {purchase.status_approval === "dibatalkan" && purchase.rejection_reason && (
-            <div className="mt-2 bg-white/50 p-2.5 rounded-lg border border-red-200/50 text-xs">
+            <div className="mt-2 rounded-lg border p-2.5 text-xs" style={{ background: "rgba(255,255,255,0.55)", borderColor: "currentColor" }}>
               <span className="font-bold">Alasan Penolakan:</span> {purchase.rejection_reason}
             </div>
           )}
@@ -232,13 +227,21 @@ export default function ManagerPurchaseDetailClient({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Columns - Lapak Info, Items Table */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Supplier Info */}
-          <div className="workflow-card grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
+          {/* Mitra Lapak. Semua kartu di layar ini memakai satu bentuk kepala
+              yang sama (eyebrow + judul). Sebelumnya ada tiga bentuk berbeda
+              berdampingan: judul kecil abu berhuruf besar di sini, judul tebal
+              berikon warna di kartu item, dan .section-shell-head di kolom
+              kanan -- membuat halaman terbaca seperti tempelan tiga layar. */}
+          <div className="section overflow-hidden">
+            <div className="section-shell-head">
+              <div>
+                <span className="section-eyebrow">Sumber barang</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Mitra Lapak</h3>
+              </div>
+            </div>
+            <div className="section-body grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-3">
-                <User className="w-3.5 h-3.5 text-slate-400" />
-                Mitra Lapak
-              </h3>
+              <span className="field-label">Nama lapak</span>
               <Link
                 href={`/dashboard/manager/suppliers/${purchase.supplier.id}`}
                 className="font-bold text-slate-800 text-base transition-colors block hover:text-[var(--brand-strong)]"
@@ -249,10 +252,7 @@ export default function ManagerPurchaseDetailClient({
             </div>
 
             <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-3">
-                <CreditCard className="w-3.5 h-3.5 text-slate-400" />
-                Informasi Pembayaran
-              </h3>
+              <span className="field-label">Rekening tujuan</span>
               {purchase.supplier.nomor_rekening ? (
                 <div className="text-xs text-slate-600 space-y-1">
                   <p>
@@ -266,31 +266,36 @@ export default function ManagerPurchaseDetailClient({
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 italic">Informasi rekening bank belum diisi.</p>
+                <p className="text-xs italic" style={{ color: "var(--muted-faint)" }}>Informasi rekening bank belum diisi.</p>
               )}
+            </div>
             </div>
           </div>
 
-          {/* Items Table */}
-          <div className="workflow-card space-y-4 p-6">
-            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-              <FileText className="w-5 h-5" style={{ color: "var(--brand-strong)" }} />
-              Rincian Item (SKU)
-            </h3>
-            
-            <div className="overflow-x-auto rounded-xl border border-slate-100">
-              <table className="w-full text-left text-sm text-slate-600">
-                <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500 font-semibold">
+          {/* Rincian Item */}
+          <div className="section overflow-hidden">
+            <div className="section-shell-head">
+              <div>
+                <span className="section-eyebrow">Rincian</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Item (SKU)</h3>
+              </div>
+              <span className="text-xs font-semibold" style={{ color: "var(--muted-faint)" }}>
+                Dasar harga: {methodLabel}
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="tabel-lembut text-sm">
+                <thead>
                   <tr>
-                    <th className="px-4 py-3">Nama SKU / Spec</th>
-                    <th className="px-4 py-3 text-right">Lapak (kg)</th>
-                    <th className="px-4 py-3 text-right">Gudang (kg)</th>
-                    <th className="px-4 py-3 text-right">Selisih</th>
-                    <th className="px-4 py-3 text-right">Harga/kg</th>
-                    <th className="px-4 py-3 text-right">Subtotal</th>
+                    <th>Nama SKU / Spec</th>
+                    <th className="!text-right">Lapak (kg)</th>
+                    <th className="!text-right">Gudang (kg)</th>
+                    <th className="!text-right">Selisih</th>
+                    <th className="!text-right">Harga/kg</th>
+                    <th className="!text-right">Subtotal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {purchase.items.map(item => {
                     const lWeight = item.berat_lapak ?? item.berat_final_item ?? 0
                     const gWeight = item.berat_final_item ?? 0
@@ -299,40 +304,52 @@ export default function ManagerPurchaseDetailClient({
                     const maxP = getSkuMaxPrice(item.sku_name)
 
                     return (
-                      <tr key={item.id} className={isOver ? "bg-orange-50/20" : "bg-white hover:bg-slate-50/30"}>
-                        <td className="px-4 py-3">
-                          <div className="font-bold text-slate-800">{item.sku_name}</div>
+                      <tr key={item.id} style={isOver ? { background: "var(--warning-soft)" } : undefined}>
+                        <td>
+                          <div className="font-bold" style={{ color: "var(--foreground)" }}>{item.sku_name}</div>
+                          {/* Spec adalah kategori, bukan keadaan baik-buruk.
+                              Dulu Grading berwarna hijau dan Gabyuk kuning,
+                              jadi separuh nota terbaca seperti sedang
+                              bermasalah padahal cuma beda cara penyortiran. */}
                           {item.spec && (
-                            <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${item.spec === "Grading" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+                            <span
+                              className="mt-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold"
+                              style={{ background: "var(--bg-tint)", color: "var(--muted)" }}
+                            >
                               {item.spec}
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono font-medium">{lWeight.toFixed(1)}</td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-800">{gWeight.toFixed(1)}</td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="text-right font-mono font-medium">{lWeight.toFixed(1)}</td>
+                        <td className="text-right font-mono font-bold" style={{ color: "var(--foreground)" }}>{gWeight.toFixed(1)}</td>
+                        <td className="text-right">
                           {diff === 0 ? (
-                            <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-100">Sesuai</span>
+                            <span
+                              className="rounded px-2 py-0.5 text-[10px] font-bold"
+                              style={{ color: "var(--success)", background: "var(--success-soft)" }}
+                            >
+                              Sesuai
+                            </span>
                           ) : (
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border"
+                            <span className="rounded px-2 py-0.5 font-mono text-[10px] font-bold"
                               style={diff < 0
-                                ? { color: "var(--danger)", background: "var(--danger-soft)", borderColor: "var(--danger-soft)" }
-                                : { color: "var(--warning)", background: "var(--warning-soft)", borderColor: "var(--warning-soft)" }}>
+                                ? { color: "var(--danger)", background: "var(--danger-soft)" }
+                                : { color: "var(--warning)", background: "var(--warning-soft)" }}>
                               {diff < 0 ? diff.toFixed(1) : `+${diff.toFixed(1)}`}
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className={`font-mono font-semibold ${isOver ? "text-orange-600" : "text-slate-700"}`}>
+                        <td className="text-right">
+                          <div className="font-mono font-semibold" style={{ color: isOver ? "var(--warning)" : "var(--foreground)" }}>
                             {fmtRp(item.harga_per_kg)}
                           </div>
                           {isOver && (
-                            <span className="text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full font-bold block text-right mt-0.5">
-                              Standard: {fmtRp(maxP)}
+                            <span className="mt-0.5 block text-right text-[9px] font-bold" style={{ color: "var(--warning)" }}>
+                              Di atas standar {fmtRp(maxP)}
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-800">
+                        <td className="text-right font-mono font-bold" style={{ color: "var(--foreground)" }}>
                           {fmtRp(item.subtotal)}
                         </td>
                       </tr>
@@ -342,20 +359,25 @@ export default function ManagerPurchaseDetailClient({
               </table>
             </div>
 
-            {/* Total Timbangan Comparison */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 grid grid-cols-3 gap-2 text-center">
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Timbangan Lapak</span>
-                <p className="font-mono font-bold text-slate-700 mt-1">{totalWeightLapak.toFixed(1)} KG</p>
+            {/* Ringkasan timbangan. Nadanya mengikuti keadaan, bukan
+                kategori: selisih nol berarti cocok, jadi netral -- tidak
+                perlu dirayakan dengan hijau di setiap nota yang normal. */}
+            <div
+              className="grid grid-cols-3 gap-px border-t text-center"
+              style={{ borderColor: "var(--border)", background: "var(--border)" }}
+            >
+              <div className="px-4 py-4" style={{ background: "var(--surface-sunken)" }}>
+                <span className="field-label" style={{ marginBottom: 4 }}>Timbangan Lapak</span>
+                <p className="font-mono font-bold" style={{ color: "var(--foreground)" }}>{totalWeightLapak.toFixed(1)} KG</p>
               </div>
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Timbangan Gudang</span>
-                <p className="font-mono font-bold text-slate-800 mt-1">{totalWeightGudang.toFixed(1)} KG</p>
+              <div className="px-4 py-4" style={{ background: "var(--surface-sunken)" }}>
+                <span className="field-label" style={{ marginBottom: 4 }}>Timbangan Gudang</span>
+                <p className="font-mono font-bold" style={{ color: "var(--foreground)" }}>{totalWeightGudang.toFixed(1)} KG</p>
               </div>
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Selisih Timbangan</span>
-                <p className="font-mono font-bold mt-1"
-                  style={{ color: weightDiff === 0 ? "var(--success)" : weightDiff < 0 ? "var(--danger)" : "var(--warning)" }}>
+              <div className="px-4 py-4" style={{ background: "var(--surface-sunken)" }}>
+                <span className="field-label" style={{ marginBottom: 4 }}>Selisih</span>
+                <p className="font-mono font-bold"
+                  style={{ color: weightDiff === 0 ? "var(--foreground)" : weightDiff < 0 ? "var(--danger)" : "var(--warning)" }}>
                   {weightDiff > 0 ? `+${weightDiff.toFixed(1)}` : weightDiff.toFixed(1)} KG
                 </p>
               </div>
@@ -364,28 +386,31 @@ export default function ManagerPurchaseDetailClient({
 
           {/* Retur Items List if Any */}
           {purchase.returs.length > 0 && (
-            <div className="workflow-card space-y-4 p-6">
-              <h3 className="text-base font-bold text-rose-700 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-rose-600" />
-                Retur Barang (Pengembalian)
-              </h3>
-              <div className="overflow-x-auto rounded-xl border border-rose-100">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="bg-rose-50/40 text-xs uppercase text-slate-500 font-semibold border-b border-rose-100">
+            <div className="section overflow-hidden">
+              <div className="section-shell-head">
+                <div>
+                  <span className="section-eyebrow">Pengembalian</span>
+                  <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Retur Barang</h3>
+                </div>
+                <AlertCircle className="h-4 w-4" style={{ color: "var(--danger)" }} />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="tabel-lembut text-sm">
+                  <thead>
                     <tr>
-                      <th className="px-4 py-3">Nama SKU</th>
-                      <th className="px-4 py-3 text-right">Berat Retur (kg)</th>
-                      <th className="px-4 py-3 text-right">Potongan Nilai</th>
-                      <th className="px-4 py-3">Alasan Retur</th>
+                      <th>Nama SKU</th>
+                      <th className="!text-right">Berat Retur (kg)</th>
+                      <th className="!text-right">Potongan Nilai</th>
+                      <th>Alasan Retur</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-rose-50/50 bg-white">
+                  <tbody>
                     {purchase.returs.map(ret => (
-                      <tr key={ret.id} className="hover:bg-rose-50/10">
-                        <td className="px-4 py-3 font-bold text-slate-800">{ret.sku_name}</td>
-                        <td className="px-4 py-3 text-right font-mono font-medium text-slate-700">{ret.berat_retur.toFixed(1)} KG</td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-rose-600">-{fmtRp(ret.potongan_nilai)}</td>
-                        <td className="px-4 py-3 text-xs text-slate-500">{ret.alasan || "Tidak ada keterangan"}</td>
+                      <tr key={ret.id}>
+                        <td className="font-bold" style={{ color: "var(--foreground)" }}>{ret.sku_name}</td>
+                        <td className="text-right font-mono font-medium">{ret.berat_retur.toFixed(1)} KG</td>
+                        <td className="text-right font-mono font-bold" style={{ color: "var(--danger)" }}>-{fmtRp(ret.potongan_nilai)}</td>
+                        <td className="text-xs" style={{ color: "var(--muted)" }}>{ret.alasan || "Tidak ada keterangan"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -404,9 +429,7 @@ export default function ManagerPurchaseDetailClient({
                 <span className="section-eyebrow">Pembayaran</span>
                 <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{paymentStatusLabel}</h3>
               </div>
-              <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${paymentStatusClass}`}>
-                {displayedPaymentPercent}%
-              </span>
+              <StatusPill label={`${displayedPaymentPercent}% dibayar`} tone={paymentTone} />
             </div>
             <div className="px-[22px] pt-4">
               <div className="h-1.5 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
@@ -420,18 +443,33 @@ export default function ManagerPurchaseDetailClient({
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-px text-xs md:grid-cols-2" style={{ background: "var(--border)" }}>
-              <PaymentMetric label="Total Tagihan" value={fmtRp(payableValue)} />
-              <PaymentMetric label="Dibayar Awal" value={fmtRp(initialPayment)} />
-              <PaymentMetric label="Sisa Termin" value={fmtRp(remainingPayment)} tone={isPendingTermin ? "amber" : "slate"} />
-              <PaymentMetric label="Tanggal Transfer" value={purchase.tanggal_transfer ? new Date(purchase.tanggal_transfer).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" }) : "-"} />
+            {/* Baris "Dibayar Awal" dan "Sisa Termin" hanya berarti untuk
+                nota termin. Pada nota bayar penuh keduanya persis menyalin
+                nilai transfernya, sehingga angka yang sama berdiri
+                berdampingan dua kali tanpa menambah keterangan apa pun --
+                cacat label yang sama dengan yang sudah dibetulkan di Rekap
+                DP. "Total Tagihan" juga menyesatkan: yang ditampilkan
+                adalah nilai yang ditransfer SETELAH potongan kasbon, bukan
+                nilai tagihan lapaknya. */}
+            <div className="mt-4 grid grid-cols-2 gap-px text-xs" style={{ background: "var(--border)" }}>
+              <PaymentMetric label="Nilai Transfer" value={fmtRp(payableValue)} />
+              <PaymentMetric
+                label="Tanggal Transfer"
+                value={purchase.tanggal_transfer ? new Date(purchase.tanggal_transfer).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" }) : "-"}
+              />
+              {hasOpenTermin && (
+                <>
+                  <PaymentMetric label="Dibayar Awal" value={fmtRp(initialPayment)} />
+                  <PaymentMetric label="Sisa Termin" value={fmtRp(remainingPayment)} tone={isPendingTermin ? "amber" : "slate"} />
+                </>
+              )}
             </div>
 
             <div className="border-t p-5" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-black text-slate-900">Bukti transfer</p>
-                  <p className="mt-1 text-xs font-medium text-slate-500">
+                  <p className="text-xs font-black" style={{ color: "var(--foreground)" }}>Bukti transfer</p>
+                  <p className="mt-1 text-xs font-medium" style={{ color: "var(--muted)" }}>
                     {purchase.bukti_transfer ? "Bukti pembayaran sudah tersimpan." : "Belum ada bukti transfer yang diunggah."}
                   </p>
                 </div>
@@ -443,8 +481,11 @@ export default function ManagerPurchaseDetailClient({
                     {showProof ? "Tutup" : "Lihat bukti"}
                   </button>
                 ) : (
-                  <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500">
-                    Pending
+                  <span
+                    className="rounded-[var(--radius-sm)] border px-3 py-2 text-xs font-black"
+                    style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
+                  >
+                    Belum ada
                   </span>
                 )}
               </div>
@@ -463,14 +504,16 @@ export default function ManagerPurchaseDetailClient({
             </div>
           </div>
 
-          {/* Financial Summary */}
-          <div className="section section-body space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <DollarSign className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
-              Kalkulasi Keuangan
-            </h3>
-            
-            <div className="space-y-2.5 text-xs text-slate-600">
+          {/* Kalkulasi Keuangan */}
+          <div className="section overflow-hidden">
+            <div className="section-shell-head">
+              <div>
+                <span className="section-eyebrow">Uang</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kalkulasi</h3>
+              </div>
+              <DollarSign className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
+            </div>
+            <div className="section-body space-y-2.5 text-xs" style={{ color: "var(--muted)" }}>
               <div className="flex justify-between">
                 <span>Nilai Sebelum Potongan</span>
                 <span className="font-semibold text-slate-800 font-mono">{fmtRp(purchase.total_nilai_sebelum_retur || 0)}</span>
@@ -478,39 +521,39 @@ export default function ManagerPurchaseDetailClient({
 
               {/* Deductions breakdown */}
               {(purchase.potongan_sampah || 0) > 0 && (
-                <div className="flex justify-between text-rose-600">
+                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
                   <span>Potongan Sampah ({purchase.berat_potongan_sampah || 0} kg)</span>
                   <span className="font-mono font-medium">-{fmtRp(purchase.potongan_sampah || 0)}</span>
                 </div>
               )}
               {(purchase.potongan_susut || 0) > 0 && (
-                <div className="flex justify-between text-rose-600">
+                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
                   <span>Potongan Susut ({purchase.berat_potongan_susut || 0} kg)</span>
                   <span className="font-mono font-medium">-{fmtRp(purchase.potongan_susut || 0)}</span>
                 </div>
               )}
               {(purchase.potongan_air || 0) > 0 && (
-                <div className="flex justify-between text-rose-600">
+                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
                   <span>Potongan Air ({purchase.berat_potongan_air || 0} kg)</span>
                   <span className="font-mono font-medium">-{fmtRp(purchase.potongan_air || 0)}</span>
                 </div>
               )}
               {(purchase.potongan_karung || 0) > 0 && (
-                <div className="flex justify-between text-rose-600">
+                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
                   <span>Potongan Karung ({purchase.berat_potongan_karung || 0} kg)</span>
                   <span className="font-mono font-medium">-{fmtRp(purchase.potongan_karung || 0)}</span>
                 </div>
               )}
               {(purchase.total_potongan_retur || 0) > 0 && (
-                <div className="flex justify-between text-rose-600">
+                <div className="flex justify-between" style={{ color: "var(--danger)" }}>
                   <span>Potongan Retur Barang</span>
                   <span className="font-mono font-medium">-{fmtRp(purchase.total_potongan_retur || 0)}</span>
                 </div>
               )}
-              
-              <div className="border-t border-slate-100 pt-2 flex justify-between font-semibold">
+
+              <div className="flex justify-between border-t pt-2 font-semibold" style={{ borderColor: "var(--border)" }}>
                 <span>Nilai Bersih Setelah Potongan</span>
-                <span className="font-mono text-slate-800">{fmtRp(purchase.total_nilai_setelah_retur || 0)}</span>
+                <span className="font-mono" style={{ color: "var(--foreground)" }}>{fmtRp(purchase.total_nilai_setelah_retur || 0)}</span>
               </div>
 
               {(purchase.dp_yang_digunakan || 0) > 0 && (
@@ -520,8 +563,11 @@ export default function ManagerPurchaseDetailClient({
                 </div>
               )}
 
-              <div className="border-t-2 border-dashed border-slate-200 pt-3 flex justify-between text-sm font-extrabold text-slate-800">
-                <span>Grand Total Dibayar</span>
+              <div
+                className="flex justify-between border-t-2 border-dashed pt-3 text-sm font-extrabold"
+                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+              >
+                <span>Nilai Transfer</span>
                 <span className="font-mono text-base" style={{ color: "var(--brand-strong)" }}>{fmtRp(purchase.total_dibayar || 0)}</span>
               </div>
             </div>
@@ -541,14 +587,16 @@ export default function ManagerPurchaseDetailClient({
                 ini dibuang seluruhnya, bukan ditambal. */}
           </div>
 
-          {/* Transaction Actors */}
-          <div className="section section-body space-y-3.5">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-              <Shield className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
-              Pihak Terkait
-            </h3>
-            
-            <div className="space-y-3 text-xs">
+          {/* Pihak Terkait */}
+          <div className="section overflow-hidden">
+            <div className="section-shell-head">
+              <div>
+                <span className="section-eyebrow">Penanggung jawab</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Pihak Terkait</h3>
+              </div>
+              <Shield className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
+            </div>
+            <div className="section-body space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 font-medium">Staff Input (Gudang/Lapak)</span>
                 <span className="font-bold text-slate-800">{purchase.staff.nama}</span>
@@ -561,55 +609,40 @@ export default function ManagerPurchaseDetailClient({
                 <span className="text-slate-500 font-medium">Manager Approval</span>
                 <span className="font-bold text-slate-800">{purchase.manager?.nama || "-"}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium">Metode Timbangan</span>
-                <span className="font-semibold text-slate-700 text-right">{methodLabel}</span>
-              </div>
-            </div>
+          </div>
           </div>
 
-          {/* Audit Logs Timeline */}
-          <div className="section section-body space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-50 pb-2">
-              <Activity className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
-              Audit Log (Riwayat Perubahan)
-            </h3>
+          {/* Riwayat Perubahan.
 
+              Kotak "Riwayat pembayaran" yang dulu berdiri di atas linimasa
+              ini menyaring tiga aksi pembayaran dari daftar yang sama, lalu
+              linimasa di bawahnya menampilkan ULANG seluruh daftar termasuk
+              ketiganya. Pada nota yang cuma punya satu peristiwa pembayaran,
+              hasilnya baris kembar persis, berdempetan. Kartu Pembayaran di
+              atas layar ini sudah memuat tanggal transfer dan buktinya, jadi
+              yang tersisa di sini cukup satu linimasa utuh menurut waktu. */}
+          <div className="section overflow-hidden">
+            <div className="section-shell-head">
+              <div>
+                <span className="section-eyebrow">Jejak</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Riwayat Perubahan</h3>
+              </div>
+              <Activity className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
+            </div>
+            <div className="section-body">
             {auditLogs.length > 0 ? (
-              <div className="space-y-5">
-                {paymentAuditLogs.length > 0 && (
-                  <div className="rounded-[var(--radius-md)] border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">Riwayat pembayaran</p>
-                    <div className="mt-3 space-y-3">
-                      {paymentAuditLogs.map(log => (
-                        <div key={log.id} className="flex items-start justify-between gap-4">
-                          <div>
-                            <p className="text-xs font-black text-slate-900">{formatAuditAction(log.action)}</p>
-                            <p className="mt-0.5 text-[11px] font-medium text-slate-500">
-                              {log.user.nama} ({log.user.role})
-                            </p>
-                          </div>
-                          <span className="shrink-0 text-right font-mono text-[10px] text-slate-400">
-                            {new Date(log.createdAt).toLocaleString("id-ID", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                              timeZone: "Asia/Jakarta"
-                            })}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
+                <div className="relative space-y-4 before:absolute before:bottom-2 before:left-[6px] before:top-2 before:w-px before:bg-[var(--border)]">
                 {auditLogs.map(log => (
-                  <div key={log.id} className="relative pl-6 space-y-1">
-                    <div className="absolute left-1.5 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center" style={{ background: "var(--brand-soft-strong)" }} />
-                    <div className="text-xs font-bold text-slate-800">{formatAuditAction(log.action)}</div>
-                    <div className="text-[10px] text-slate-400">
-                      Oleh: <span className="font-semibold text-slate-600">{log.user.nama} ({log.user.role})</span>
+                  <div key={log.id} className="relative space-y-1 pl-6">
+                    <div
+                      className="absolute left-0 top-1.5 h-3 w-3 rounded-full border-2"
+                      style={{ background: "var(--surface)", borderColor: "var(--brand)" }}
+                    />
+                    <div className="text-xs font-bold" style={{ color: "var(--foreground)" }}>{formatAuditAction(log.action)}</div>
+                    <div className="text-[10px]" style={{ color: "var(--muted-faint)" }}>
+                      Oleh: <span className="font-semibold" style={{ color: "var(--muted)" }}>{log.user.nama} ({log.user.role})</span>
                     </div>
-                    <div className="text-[9px] text-slate-400 font-mono">
+                    <div className="font-mono text-[9px]" style={{ color: "var(--muted-faint)" }}>
                       {new Date(log.createdAt).toLocaleString("id-ID", {
                         dateStyle: "short",
                         timeStyle: "short",
@@ -619,10 +652,10 @@ export default function ManagerPurchaseDetailClient({
                   </div>
                 ))}
                 </div>
-              </div>
             ) : (
-              <p className="text-xs text-slate-400 italic text-center py-4">Tidak ada riwayat perubahan terekam.</p>
+              <p className="py-4 text-center text-xs italic" style={{ color: "var(--muted-faint)" }}>Tidak ada riwayat perubahan terekam.</p>
             )}
+            </div>
           </div>
         </div>
       </div>
@@ -640,9 +673,9 @@ function PaymentMetric({
   tone?: "slate" | "amber"
 }) {
   return (
-    <div className="bg-white p-4">
-      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</p>
-      <p className={`mt-1 font-mono text-sm font-black ${tone === "amber" ? "text-amber-700" : "text-slate-950"}`}>{value}</p>
+    <div className="p-4" style={{ background: "var(--surface)" }}>
+      <span className="field-label" style={{ marginBottom: 4 }}>{label}</span>
+      <p className="font-mono text-sm font-black" style={{ color: tone === "amber" ? "var(--warning)" : "var(--foreground)" }}>{value}</p>
     </div>
   )
 }

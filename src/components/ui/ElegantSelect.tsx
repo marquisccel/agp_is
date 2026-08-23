@@ -16,6 +16,11 @@ type ElegantSelectProps<T extends string | number> = {
   ariaLabel: string
   className?: string
   menuClassName?: string
+  /** Kelas tambahan untuk tombol pemicunya, mis. "field-icon" saat ada
+   *  ikon di sebelah kiri kolom. */
+  triggerClassName?: string
+  /** Kolom dimatikan (mis. nota terkunci); menu tidak bisa dibuka. */
+  disabled?: boolean
 }
 
 export default function ElegantSelect<T extends string | number>({
@@ -25,6 +30,8 @@ export default function ElegantSelect<T extends string | number>({
   ariaLabel,
   className = "",
   menuClassName = "",
+  triggerClassName = "",
+  disabled = false,
 }: ElegantSelectProps<T>) {
   const [open, setOpen] = useState(false)
   const [menuRect, setMenuRect] = useState<{ top: number; left: number; width: number } | null>(null)
@@ -81,14 +88,29 @@ export default function ElegantSelect<T extends string | number>({
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
+        disabled={disabled}
         onClick={() => setOpen(current => !current)}
-        className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-white px-3 py-2 text-left text-sm font-bold text-slate-800 outline-none hover:border-slate-300 ${
-          open ? "border-slate-300" : "border-slate-200"
-        }`}
-        style={open ? { boxShadow: "0 0 0 3px var(--brand-soft)" } : undefined}
+        /* Bentuknya sengaja mengikuti .field-input persis: dulu pemicu ini
+           menulis warnanya sendiri (bg-white + border-slate-200), sehingga
+           di satu baris form kolom teks tampak abu bertepi lembut sementara
+           kolom pilihan tampak putih -- dua kolom bersebelahan terbaca
+           seperti berasal dari dua komponen berbeda. */
+        className={`field-input flex items-center justify-between gap-2 text-left font-bold disabled:cursor-not-allowed ${triggerClassName}`}
+        style={
+          open
+            ? {
+                background: "var(--surface)",
+                borderColor: "rgba(85, 145, 51, 0.72)",
+                boxShadow: "inset 0 1px 1.5px rgba(16, 24, 20, 0.035), 0 6px 16px -8px rgba(48, 84, 38, 0.4)",
+              }
+            : undefined
+        }
       >
         <span className="truncate">{selected?.label}</span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+          style={{ color: "var(--muted-faint)" }}
+        />
       </button>
 
       {typeof document !== "undefined" && open && menuRect && createPortal(
