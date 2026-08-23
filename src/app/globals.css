@@ -1302,3 +1302,42 @@ a:focus-visible {
 }
 
 .tabel-lembut tbody tr:hover { background: var(--bg-tint); }
+
+/* ---------------------------------------------------------------------
+   Tombol sekunder -- aksi pendamping di sebelah tombol utama.
+
+   Polanya sebelumnya ditulis ulang di tiap tempat sebagai rantai
+   "rounded-xl border border-slate-200 bg-white px-4 py-2 ... hover:bg-slate-50",
+   tersebar di 17 tempat pada 7 berkas. Karena ditulis tangan, sudut dan
+   ukurannya sudah mulai berbeda-beda antar halaman.
+   --------------------------------------------------------------------- */
+.btn-netral {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  transition:
+    background-color 180ms var(--ease-system),
+    color 180ms var(--ease-system),
+    border-color 180ms var(--ease-system);
+}
+
+.btn-netral:hover:not(:disabled) {
+  background: var(--bg-tint);
+  color: var(--foreground);
+  border-color: var(--brand-soft-strong);
+}
+
+.btn-netral:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+/* Varian bahaya: sama bentuknya, cuma nadanya yang berubah saat disentuh,
+   supaya tombol hapus tidak jadi bentuk yang berbeda sendiri. */
+.btn-netral.tone-danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger-soft);
+}

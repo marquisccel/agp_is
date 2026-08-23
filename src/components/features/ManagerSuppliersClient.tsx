@@ -368,22 +368,26 @@ export default function ManagerSuppliersClient({
     let opi = 0
     let grade = "-"
     let gradeLabel = "Belum ada data"
-    let gradeColor = "border-slate-200 bg-slate-50 text-slate-500"
+    // Nada huruf, bukan rantai kelas pil: grade kini ditulis sebagai teks
+    // di baris keterangan. Biru untuk "Stabil" juga dibuang -- warna itu
+    // tidak menandakan apa pun di sistem ini, dan netral lebih jujur untuk
+    // keadaan yang memang tidak menuntut tindakan.
+    let gradeTone = "var(--muted)"
 
     if (totalTransactions > 0) {
       opi = qtyScore * 0.4 + qualityScore * 0.4 + priceScore * 0.2
       if (opi >= 85) {
         grade = "A"
         gradeLabel = "Sangat bagus"
-        gradeColor = "border-emerald-200 bg-emerald-50 text-emerald-700"
+        gradeTone = "var(--success)"
       } else if (opi >= 60) {
         grade = "B"
         gradeLabel = "Stabil"
-        gradeColor = "border-blue-200 bg-blue-50 text-blue-700"
+        gradeTone = "var(--muted)"
       } else {
         grade = "C"
         gradeLabel = "Perlu evaluasi"
-        gradeColor = "border-rose-200 bg-rose-50 text-rose-700"
+        gradeTone = "var(--danger)"
       }
     }
 
@@ -398,7 +402,7 @@ export default function ManagerSuppliersClient({
       opi,
       grade,
       gradeLabel,
-      gradeColor,
+      gradeTone,
     }
   }
 
@@ -466,7 +470,7 @@ export default function ManagerSuppliersClient({
             </div>
             <button
               onClick={handleOpenImportModal}
-              className="premium-button rounded-[10px] border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+              className="premium-button btn-netral px-4 py-2 text-xs"
             >
               Import Koordinat
             </button>
@@ -539,7 +543,7 @@ export default function ManagerSuppliersClient({
         </div>
       </section>
 
-      <section className="interactive-surface border border-slate-200/80 p-5">
+      <section className="section section-body">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="segmented flex flex-wrap">
             <button
@@ -581,7 +585,7 @@ export default function ManagerSuppliersClient({
                 placeholder="Cari nama, bank, gudang..."
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-4 text-sm font-semibold text-slate-800 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10"
+                className="field-input field-icon"
               />
             </div>
           </div>
@@ -616,32 +620,50 @@ export default function ManagerSuppliersClient({
             const targetLabel = supplier.target_bulanan_kg > 0 ? `${Math.min(perf.targetPct, 999).toFixed(0)}% dari target ${fmtTon(supplier.target_bulanan_kg)}` : "Target belum diatur"
 
             return (
-              <article key={supplier.id} className="interactive-surface border border-slate-200/80 p-5">
+              <article key={supplier.id} className="section section-body">
+                {/* Empat pil berjejar di baris nama -- status, grade, dan
+                    koordinat -- membuat nama lapaknya sendiri tenggelam.
+                    Warnanya kini dibawa satu titik di samping nama, dan
+                    keterangannya turun ke baris teks abu di bawahnya:
+                    warna untuk memindai, kata untuk memastikan. Grade tetap
+                    diberi nada karena ia memang penilaian, tapi cuma lewat
+                    warna hurufnya. */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="truncate text-lg font-black tracking-[-0.02em] text-slate-950 hover:text-[color:var(--brand-strong)]">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: supplier.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
+                        aria-hidden="true"
+                      />
+                      <Link
+                        href={`/dashboard/manager/suppliers/${supplier.id}`}
+                        className="truncate text-lg font-black tracking-[-0.02em] text-slate-950 hover:text-[color:var(--brand-strong)]"
+                      >
                         {supplier.nama}
                       </Link>
-                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
-                        supplier.transactionStatus === "GREEN"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-rose-200 bg-rose-50 text-rose-700"
-                      }`}>
-                        {supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}
-                      </span>
-                      <span className={`rounded-full border px-2.5 py-1 text-xs font-black ${perf.gradeColor}`}>
-                        Grade {perf.grade} - {perf.gradeLabel}
-                      </span>
-                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${
-                        hasResolvedSupplierCoordinates(supplier)
-                          ? "border-sky-200 bg-sky-50 text-sky-700"
-                          : "border-slate-200 bg-slate-50 text-slate-500"
-                      }`}>
-                        {hasResolvedSupplierCoordinates(supplier) ? "Map Ready" : "Lokasi belum lengkap"}
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
+                      <span>Collection Center {cleanedCity}</span>
+                      <span aria-hidden="true">&middot;</span>
+                      <span>{supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
+                      {/* Grade disembunyikan kalau lapaknya belum punya
+                          transaksi: "Grade - Belum ada data" menyisakan
+                          tanda hubung menggantung, dan keadaannya sudah
+                          tersirat dari "Belum aktif" tepat di sebelahnya. */}
+                      {perf.grade !== "-" && (
+                        <>
+                          <span aria-hidden="true">&middot;</span>
+                          <span style={{ color: perf.gradeTone, fontWeight: 700 }}>
+                            Grade {perf.grade} &mdash; {perf.gradeLabel}
+                          </span>
+                        </>
+                      )}
+                      <span aria-hidden="true">&middot;</span>
+                      <span style={hasResolvedSupplierCoordinates(supplier) ? undefined : { color: "var(--warning)", fontWeight: 600 }}>
+                        {hasResolvedSupplierCoordinates(supplier) ? "Koordinat lengkap" : "Belum ada koordinat"}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-400">Collection Center {cleanedCity}</p>
                   </div>
                   <div className="grid grid-cols-3 gap-3 text-center md:min-w-[270px]">
                     <MiniMetric label="Volume" value={perf.totalGudangWeight > 0 ? fmtKg(perf.totalGudangWeight) : "0 KG"} />
@@ -655,19 +677,25 @@ export default function ManagerSuppliersClient({
                     icon={<TrendingUp className="h-4 w-4" />}
                     label="Kuantitas"
                     value={targetLabel}
-                    tone={perf.targetPct >= 100 ? "good" : perf.targetPct >= 50 ? "neutral" : "warn"}
+                    tone={perf.totalTransactions === 0 ? "neutral" : perf.targetPct >= 100 ? "good" : perf.targetPct >= 50 ? "neutral" : "warn"}
                   />
+                  {/* Lapak tanpa transaksi sebelumnya menampilkan Susut dan
+                      Harga berlatar hijau -- susutnya 0 dan pelanggaran
+                      harganya 0, jadi rumusnya menyimpulkan "baik". Padahal
+                      yang benar bukan baik, melainkan belum ada datanya.
+                      Hijau di situ menyesatkan: Manager membaca lapak yang
+                      belum pernah bertransaksi seolah sudah lolos evaluasi. */}
                   <Signal
                     icon={<Activity className="h-4 w-4" />}
                     label="Susut"
                     value={perf.totalTransactions > 0 ? (perf.pctSusut === 0 ? "Sesuai 0%" : `${perf.pctSusut.toFixed(2)}%`) : "Belum ada data"}
-                    tone={perf.pctSusut <= 1 ? "good" : perf.pctSusut <= 3 ? "warn" : "bad"}
+                    tone={perf.totalTransactions === 0 ? "neutral" : perf.pctSusut <= 1 ? "good" : perf.pctSusut <= 3 ? "warn" : "bad"}
                   />
                   <Signal
                     icon={<CreditCard className="h-4 w-4" />}
                     label="Harga"
-                    value={perf.warningCount > 0 ? `${perf.warningCount} transaksi di atas limit` : "Dalam limit"}
-                    tone={perf.warningCount > 0 ? "bad" : "good"}
+                    value={perf.totalTransactions === 0 ? "Belum ada data" : perf.warningCount > 0 ? `${perf.warningCount} transaksi di atas limit` : "Dalam limit"}
+                    tone={perf.totalTransactions === 0 ? "neutral" : perf.warningCount > 0 ? "bad" : "good"}
                   />
                 </div>
 
@@ -694,7 +722,7 @@ export default function ManagerSuppliersClient({
                     </Link>
                     <button
                       onClick={() => handleOpenLocationEditor(supplier)}
-                      className="premium-button flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-700 hover:bg-slate-50"
+                      className="premium-button btn-netral flex items-center gap-2 px-4 py-2 text-xs"
                     >
                       <MapPin className="h-4 w-4" />
                       Edit Lokasi
@@ -737,7 +765,7 @@ export default function ManagerSuppliersClient({
 
       {editingLocationSupplierId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/20 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+          <div className="w-full max-w-2xl rounded-[var(--radius-lg)] border p-6" style={{ borderColor: "var(--border)", background: "var(--surface)", boxShadow: "0 24px 60px -20px rgba(20, 40, 26, 0.28)" }}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[color:var(--brand-strong)]">Quick edit lokasi</p>
@@ -746,7 +774,7 @@ export default function ManagerSuppliersClient({
               </div>
               <button
                 onClick={handleCloseLocationEditor}
-                className="premium-button rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                className="premium-button btn-netral px-3 py-2 text-sm"
               >
                 Tutup
               </button>
@@ -759,7 +787,7 @@ export default function ManagerSuppliersClient({
                   type="text"
                   value={locationLink}
                   onChange={(event) => setLocationLink(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
+                  className="field-input"
                   placeholder="https://maps.google.com/..."
                 />
               </div>
@@ -771,7 +799,7 @@ export default function ManagerSuppliersClient({
                   step="any"
                   value={locationLatitude}
                   onChange={(event) => setLocationLatitude(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
+                  className="field-input"
                   placeholder="-7.8165"
                 />
               </div>
@@ -783,22 +811,22 @@ export default function ManagerSuppliersClient({
                   step="any"
                   value={locationLongitude}
                   onChange={(event) => setLocationLongitude(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
+                  className="field-input"
                   placeholder="112.0111"
                 />
               </div>
             </div>
 
             {locationError && (
-              <div className="mt-4 rounded-[var(--radius-md)] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              <div className="notice tone-warning mt-4 text-sm font-semibold">
                 {locationError}
               </div>
             )}
 
             {inferredLocation && (
-              <div className="mt-4 rounded-[var(--radius-md)] border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+              <div className="mt-4 rounded-[var(--radius-md)] border px-4 py-3 text-sm" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
                 <p className="font-semibold">Koordinat terdeteksi otomatis dari link Maps.</p>
-                <p className="mt-1 text-xs font-medium text-sky-700">
+                <p className="mt-1 text-xs font-medium" style={{ color: "var(--brand-strong)" }}>
                   Latitude {inferredLocation.latitude}, longitude {inferredLocation.longitude}. Simpan lokasi untuk langsung mengaktifkan preview peta.
                 </p>
               </div>
@@ -812,7 +840,7 @@ export default function ManagerSuppliersClient({
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <button
                 onClick={handleCloseLocationEditor}
-                className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                className="premium-button btn-netral px-4 py-3 text-sm"
               >
                 Batal
               </button>
@@ -830,7 +858,7 @@ export default function ManagerSuppliersClient({
 
       {isImportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/20 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+          <div className="w-full max-w-2xl rounded-[var(--radius-lg)] border p-6" style={{ borderColor: "var(--border)", background: "var(--surface)", boxShadow: "0 24px 60px -20px rgba(20, 40, 26, 0.28)" }}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[color:var(--brand-strong)]">Fase 6 - Kualitas Data</p>
@@ -845,7 +873,7 @@ export default function ManagerSuppliersClient({
               </div>
               <button
                 onClick={handleCloseImportModal}
-                className="premium-button rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                className="premium-button btn-netral px-3 py-2 text-sm"
               >
                 Tutup
               </button>
@@ -866,12 +894,12 @@ export default function ManagerSuppliersClient({
                 onChange={(e) => setImportCsvText(e.target.value)}
                 rows={6}
                 placeholder={"nama;gudang;latitude;longitude\nPengepul A;Kediri;-7.8;112.0"}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-800 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-[color:var(--brand-soft-strong)]"
+                className="field-input font-mono text-xs"
               />
             </div>
 
             {importError && (
-              <div className="mt-4 rounded-[var(--radius-md)] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              <div className="notice tone-warning mt-4 text-sm font-semibold">
                 {importError}
               </div>
             )}
@@ -908,7 +936,7 @@ export default function ManagerSuppliersClient({
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <button
                 onClick={handleCloseImportModal}
-                className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                className="premium-button btn-netral px-4 py-3 text-sm"
               >
                 {importResults?.some((r) => r.status === "updated") ? "Tutup & Refresh" : "Batal"}
               </button>
@@ -931,7 +959,7 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">{label}</p>
-      <p className="mt-1 whitespace-nowrap text-sm font-black tracking-[-0.02em] text-slate-950">{value}</p>
+      <p className="mt-1 whitespace-nowrap text-sm font-black tracking-[-0.02em] text-slate-950" style={{ fontVariantNumeric: "tabular-nums" }}>{value}</p>
     </div>
   )
 }
@@ -948,10 +976,10 @@ function Signal({
   tone: "good" | "neutral" | "warn" | "bad"
 }) {
   const toneClass = {
-    good: "border-emerald-200/80 bg-emerald-50/70 text-emerald-700",
-    neutral: "border-sky-200/80 bg-sky-50/70 text-sky-700",
-    warn: "border-amber-200/80 bg-amber-50/70 text-amber-700",
-    bad: "border-rose-200/80 bg-rose-50/70 text-rose-700",
+    good: "border-[color:var(--success-soft)] bg-[color:var(--success-soft)] text-[color:var(--success)]",
+    neutral: "border-[color:var(--border)] bg-[color:var(--bg-tint)] text-[color:var(--muted)]",
+    warn: "border-[color:var(--warning-soft)] bg-[color:var(--warning-soft)] text-[color:var(--warning)]",
+    bad: "border-[color:var(--danger-soft)] bg-[color:var(--danger-soft)] text-[color:var(--danger)]",
   }[tone]
 
   return (
