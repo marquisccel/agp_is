@@ -58,18 +58,6 @@ interface DownPayment {
   keterangan: string | null
 }
 
-interface SupplierAuditLog {
-  id: string
-  action: string
-  old_data: string | null
-  new_data: string | null
-  createdAt: string
-  user: {
-    nama: string
-    role: string
-  }
-}
-
 interface Supplier {
   id: string
   nama: string
@@ -89,44 +77,8 @@ interface Supplier {
   } | null
   purchases: Purchase[]
   downPayments: DownPayment[]
-  auditLogs: SupplierAuditLog[]
 }
 
-function safeParseAuditData(value: string) {
-  try {
-    return JSON.parse(value) as Record<string, unknown>
-  } catch {
-    return null
-  }
-}
-
-function resolveAuditStatusLabel(value: unknown) {
-  if (value === "GREEN") return "Aktif"
-  if (value === "RED") return "Belum aktif"
-  return "Belum diketahui"
-}
-
-/**
- * Kenapa statusnya berubah, dalam kalimat yang bisa dibaca siapa saja.
- *
- * Sebelumnya barisnya berbunyi "Aktif otomatis saat admin menyelesaikan
- * double check" dan di sebelahnya "Trigger transaksi: 7c19403" -- kata
- * "trigger" dan potongan id mentah itu bahasa orang yang membangun
- * sistemnya, bukan orang yang memakainya. Yang perlu dibaca cukup: ini
- * terjadi sendiri setelah transaksi pertamanya lolos pemeriksaan.
- */
-function resolveAuditTriggerLabel(value: unknown) {
-  switch (value) {
-    case "supervisor_verify_purchase":
-    case "admin_double_check_purchase":
-      return "Terjadi otomatis setelah transaksi pertamanya lolos pemeriksaan gudang."
-    case "manager_approve_purchase":
-    case "manager_approve_harga":
-      return "Terjadi otomatis setelah transaksi pertamanya disetujui Manager."
-    default:
-      return null
-  }
-}
 
 export default function ManagerSupplierDetailsClient({ supplier }: { supplier: Supplier }) {
   const router = useRouter()
@@ -134,15 +86,6 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"transaksi" | "dp">("transaksi")
 
-  const parsedAuditLogs = supplier.auditLogs.map((log) => {
-    const oldData = log.old_data ? safeParseAuditData(log.old_data) : null
-    const newData = log.new_data ? safeParseAuditData(log.new_data) : null
-    return {
-      ...log,
-      oldData,
-      newData,
-    }
-  })
 
   // Copy bank info helper
   const handleCopy = (text: string) => {
@@ -500,75 +443,6 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         )}
       </div>
 
-      <div className="section overflow-hidden">
-        <div className="section-shell-head">
-          <div>
-            <span className="section-eyebrow">Riwayat status</span>
-            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kapan Lapak Ini Jadi Aktif</h3>
-          </div>
-        </div>
-
-        {parsedAuditLogs.length > 0 ? (
-          <div className="divide-y divide-slate-100">
-            {parsedAuditLogs.map((log) => {
-              const fromStatus = resolveAuditStatusLabel(log.oldData?.transactionStatus)
-              const toStatus = resolveAuditStatusLabel(log.newData?.transactionStatus)
-              const trigger = resolveAuditTriggerLabel(log.newData?.trigger)
-
-              const otomatis = log.action === "SUPPLIER_STATUS_AUTO_GREEN"
-              const judul = toStatus === "Aktif" ? "Lapak jadi aktif" : "Lapak jadi belum aktif"
-              const sebab = otomatis
-                ? trigger ?? "Terjadi otomatis setelah transaksi pertamanya disetujui."
-                : `Diubah sendiri oleh ${log.user.nama}, dari ${fromStatus.toLowerCase()}.`
-
-              return (
-                /* Barisnya dulu memuat empat hal sekaligus: lencana berwarna,
-                   nama peran berhuruf besar, kalimat "mengubah status dari X
-                   ke Y", dan potongan id transaksi -- lalu tanggalnya
-                   dikurung kotak tersendiri di kanan, sehingga yang paling
-                   menarik mata justru keterangan yang paling tidak penting.
-                   Sekarang tiga baris menurun: apa yang terjadi, kenapa,
-                   kapan. */
-                <div key={log.id} className="flex flex-col gap-1 px-[22px] py-4">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-2 w-2 shrink-0 rounded-full"
-                      style={{ background: toStatus === "Aktif" ? "var(--success)" : "var(--danger)" }}
-                      aria-hidden="true"
-                    />
-                    <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{judul}</p>
-                  </div>
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>{sebab}</p>
-                  <p className="text-xs" style={{ color: "var(--muted-faint)" }}>
-                    {new Date(log.createdAt).toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" })}
-                    {", "}
-                    {new Date(log.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" })}
-                    {log.newData?.purchaseId ? (
-                      <>
-                        {" \u00b7 "}
-                        <Link
-                          href={`/dashboard/manager/purchases/${String(log.newData.purchaseId)}`}
-                          className="font-semibold hover:underline"
-                          style={{ color: "var(--brand-strong)" }}
-                        >
-                          Lihat transaksinya
-                        </Link>
-                      </>
-                    ) : null}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="section-body text-center">
-            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Belum pernah berubah status</p>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              Lapak ini akan jadi aktif dengan sendirinya begitu transaksi pertamanya lolos pemeriksaan gudang.
-            </p>
-          </div>
-        )}
-      </div>
       {/* Rapor kinerja bulan berjalan */}
       <div className="section overflow-hidden">
         <div className="section-shell-head">

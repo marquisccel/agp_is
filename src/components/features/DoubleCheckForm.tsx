@@ -53,7 +53,21 @@ export default function DoubleCheckForm({
   const staffLapakSum = purchase.berat_timbangan_lapak || purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
 
   const [timbanganLapak] = useState(staffLapakSum)
-  const [timbanganGudang, setTimbanganGudang] = useState(purchase.berat_timbangan_gudang || purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0))
+  /*
+   * Timbangan gudang sengaja dimulai KOSONG.
+   *
+   * Sebelumnya kolom ini -- dan kolom berat per SKU di bawah -- diisi
+   * lebih dulu dengan angka dari Staff. Padahal saat draft dibuat, satu
+   * angka yang diketik Staff ditulis ke DUA kolom sekaligus (berat_lapak
+   * dan berat_final_item). Jadi begitu Admin menyimpan tanpa mengubah
+   * apa pun, kedua kolom tetap sama, selisihnya nol, dan nota melaporkan
+   * "Sesuai" untuk kecocokan yang tidak pernah benar-benar ditimbang.
+   *
+   * Verifikasi gudang hanya berarti kalau angkanya datang dari timbangan
+   * gudang, bukan dari salinan angka lapak. Karena kolomnya wajib diisi,
+   * mengosongkannya memaksa angka itu benar-benar dimasukkan.
+   */
+  const [timbanganGudang, setTimbanganGudang] = useState(purchase.berat_timbangan_gudang || 0)
   const [metodeBayar, setMetodeBayar] = useState(purchase.metode_pembayaran_terpilih || "TIMBANGAN_GUDANG")
   const [persentasePembayaran, setPersentasePembayaran] = useState<number>(purchase.persentase_pembayaran || 100)
 
@@ -61,7 +75,7 @@ export default function DoubleCheckForm({
   const [items, setItems] = useState<WorkingItem[]>(purchase.items.map((i) => ({
     ...i,
     berat_lapak: i.berat_lapak ?? i.berat_final_item, // Timbangan lapak staff
-    berat_final_item: i.berat_final_item // Timbangan gudang (admin inputs this)
+    berat_final_item: 0, // Timbangan gudang; wajib diisi Admin, lihat catatan di atas
   })))
 
   // Returs -- transaksi pada tahap ini selalu menunggu_verifikasi (belum pernah
@@ -182,6 +196,8 @@ export default function DoubleCheckForm({
 
   /* Selisihnya dulu dihitung ulang sepuluh kali di dalam JSX, masing-masing
      dengan rangkaian ternary warnanya sendiri. */
+  const beratGudangBelumLengkap = timbanganGudang <= 0 || items.some((i) => !i.berat_final_item || i.berat_final_item <= 0)
+
   const selisihTimbangan = timbanganGudang - timbanganLapak
   const warnaSelisih =
     selisihTimbangan === 0 ? "var(--foreground)" : selisihTimbangan < 0 ? "var(--danger)" : "var(--warning)"
@@ -198,6 +214,10 @@ export default function DoubleCheckForm({
             <div className="mb-4">
               <span className="section-eyebrow">Verifikasi</span>
               <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Data Timbangan</h3>
+              <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>
+                Isi hasil timbangan gudang apa adanya. Kolomnya sengaja kosong supaya angkanya benar-benar dari
+                timbangan gudang, bukan salinan angka lapak.
+              </p>
             </div>
             <div className="space-y-4">
               <div>
@@ -222,7 +242,7 @@ export default function DoubleCheckForm({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="field-label flex items-center gap-1.5">
+                  <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     Timbangan Lapak (KG)
                     <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>Staff</span>
                   </label>
@@ -233,7 +253,7 @@ export default function DoubleCheckForm({
                   />
                 </div>
                 <div>
-                  <label className="field-label flex items-center gap-1.5">
+                  <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     Timbangan Gudang (KG)
                     <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>Gudang</span>
                   </label>
@@ -354,7 +374,7 @@ export default function DoubleCheckForm({
 
                       {/* Admin input for Warehouse Weight */}
                       <div className="space-y-1">
-                        <label className="field-label flex items-center gap-1">
+                        <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 4 }}>
                           Timbangan Gudang (Admin)
                           <span className="font-bold" style={{ color: "var(--danger)" }}>*</span>
                         </label>
@@ -550,7 +570,8 @@ export default function DoubleCheckForm({
             utama di halaman lain. */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || beratGudangBelumLengkap}
+          title={beratGudangBelumLengkap ? "Isi dulu seluruh hasil timbangan gudang" : undefined}
           className="btn-primer premium-button rounded-[var(--radius-sm)] px-8 py-3 font-bold disabled:opacity-70"
         >
           {loading ? "Menyimpan..." : "Simpan Verifikasi"}

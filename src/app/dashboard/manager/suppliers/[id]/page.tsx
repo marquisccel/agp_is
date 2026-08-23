@@ -39,27 +39,9 @@ export default async function ManagerSupplierDetailPage({ params }: { params: Pr
     return notFound()
   }
 
-  const auditLogs = await prisma.auditLog.findMany({
-    where: {
-      table_name: "Supplier",
-      record_id: id,
-      action: {
-        in: ["SUPPLIER_STATUS_MANUAL_UPDATE", "SUPPLIER_STATUS_AUTO_GREEN"],
-      },
-    },
-    include: {
-      user: {
-        select: {
-          nama: true,
-          role: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 10,
-  })
+  // Riwayat perubahan status lapak tidak lagi ditampilkan di halaman ini;
+  // jejaknya tetap ada di menu Audit Trail. Kuerinya ikut dilepas ketimbang
+  // mengambil data yang tidak dipakai pada tiap kunjungan.
 
   // Serialize all Date objects to ISO strings
   const serializedSupplier = {
@@ -77,10 +59,6 @@ export default async function ManagerSupplierDetailPage({ params }: { params: Pr
       tanggal_permintaan: dp.tanggal_permintaan.toISOString(),
       tanggal_approval: dp.tanggal_approval?.toISOString() ?? null,
       expired_at: dp.expired_at?.toISOString() ?? null,
-    })),
-    auditLogs: auditLogs.map((log) => ({
-      ...log,
-      createdAt: log.createdAt.toISOString(),
     })),
   }
 

@@ -167,14 +167,16 @@ function NotaContent({ data }: { data: NotaData }) {
 
         {dpDigunakan > 0 && (
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-            <span style={{ color: "#64748b" }}>Potongan Kasbon (DP)</span>
+            <span style={{ color: "#64748b" }}>DP yang sudah dibayar di muka</span>
             <span style={{ fontWeight: 700, color: "#dc2626" }}>-{formatRp(dpDigunakan)}</span>
           </div>
         )}
 
         <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: 8, marginTop: 6 }}>
-          <span style={{ color: "#334155", fontWeight: 700 }}>Estimasi Dibayar ke Lapak</span>
-          <span style={{ fontWeight: 900, color: "#036030", fontSize: 13 }}>{formatRp(totalDibayar)}</span>
+          <span style={{ color: "#334155", fontWeight: 700 }}>Perkiraan Harus Dibayar</span>
+          {/* Hitam, bukan hijau: pada nota yang dipegang lapak, hijau
+              terbaca seperti uang yang masuk ke kita. */}
+          <span style={{ fontWeight: 900, color: "#0f172a", fontSize: 13 }}>{formatRp(totalDibayar)}</span>
         </div>
       </div>
 
@@ -267,7 +269,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
       data.potonganKarung > 0 ? `  • Potongan Karung: -${formatRp(data.potonganKarung)}` : "",
       totalDeductions > 0 ? `` : "",
       `Nilai nota setelah potongan: ${formatRp(totalEstimasiSetelahPotongan)}`,
-      dpDigunakan > 0 ? `  • Potongan Kasbon (DP): -${formatRp(dpDigunakan)}` : "",
+      dpDigunakan > 0 ? `  • DP yang sudah dibayar di muka: -${formatRp(dpDigunakan)}` : "",
       `*ESTIMASI DIBAYAR KE LAPAK: ${formatRp(totalDibayar)}*`,
       `_(Menunggu double check & approval harga)_`,
       ``,

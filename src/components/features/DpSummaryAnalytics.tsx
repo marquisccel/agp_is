@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { fmtRp } from "@/lib/format"
-import { Wallet, CreditCard, ChevronRight } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 
 interface DpSupplierRow {
@@ -46,13 +46,10 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       {/* Header */}
       <div className="section-shell-head">
         <div className="min-w-0">
-          <p className="section-eyebrow">Cashflow control</p>
-          <h3 className="flex items-center gap-2 text-[15.5px] font-bold text-slate-950">
-            <Wallet className="h-5 w-5" style={{ color: "var(--brand-strong)" }} />
-            Rekap Saldo DP &amp; Kasbon per Lapak
-          </h3>
-          <p className="mt-1 text-xs leading-5 text-slate-500">
-            Pantau total dana uang muka (down payment) disetujui, terpakai, dan sisa saldo aktif supplier.
+          <p className="section-eyebrow">Kendali kas</p>
+          <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Saldo DP per Lapak</h3>
+          <p className="mt-1 text-xs leading-5" style={{ color: "var(--muted)" }}>
+            Berapa DP yang sudah disetujui, berapa yang sudah terpakai di nota, dan berapa yang masih menggantung.
           </p>
         </div>
         {/* Warehouse filter */}
@@ -68,39 +65,36 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         )}
       </div>
 
-      {/* Global Summary Card Metrics */}
-      <div className={`grid grid-cols-1 gap-3 p-4 sm:p-5 md:grid-cols-3${summaryOnly ? "" : " border-b border-slate-100"}`}>
-        {/* Metric 1: Total Approved DP */}
-        <div className="section section-body flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-            <CreditCard className="w-5 h-5" />
+      {/* Ringkasan. Tiga kartu ini dulu masing-masing membawa kotak ikon
+          berwarna yang tidak menerangkan apa pun yang belum ditulis
+          labelnya, dan kartu ketiga berlatar kuning penuh sepanjang waktu.
+          Bentuknya kini sama dengan baris ringkasan di dashboard Manager,
+          dan warnanya hanya menyala kalau memang ada saldo menggantung. */}
+      <div className="stat-strip" style={{ gridTemplateColumns: "repeat(3, 1fr)", borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
+        <div className="stat-tile">
+          <span className="stat-label">DP Disetujui</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(totalApproved)}</span>
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase">Total DP Disetujui</p>
-            <p className="text-base font-bold text-slate-900 font-mono mt-0.5 break-all">{fmtRp(totalApproved)}</p>
-          </div>
+          <span className="stat-delta flat">Total yang pernah dicairkan</span>
         </div>
 
-        {/* Metric 2: Total Used DP */}
-        <div className="section section-body flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-            <Wallet className="w-5 h-5" />
+        <div className="stat-tile">
+          <span className="stat-label">Sudah Terpakai</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(totalUsed)}</span>
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase">Total DP Terpakai</p>
-            <p className="text-base font-bold text-slate-900 font-mono mt-0.5 break-all">{fmtRp(totalUsed)}</p>
-          </div>
+          <span className="stat-delta flat">Sudah dipotongkan di nota</span>
         </div>
 
-        {/* Metric 3: Total Remaining DP */}
-        <div className="flex items-center gap-3 rounded-[var(--radius-md)] p-4" style={{ border: "1px solid var(--warning-soft)", background: "var(--warning-soft)" }}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]" style={{ background: "var(--surface)", color: "var(--warning)" }}>
-            <Wallet className="w-5 h-5" />
+        <div className={`stat-tile${totalRemaining > 0 ? " tone-warning" : ""}`}>
+          <span className="stat-label">Masih Menggantung</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(totalRemaining)}</span>
           </div>
-          <div>
-            <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--warning)" }}>Sisa Saldo DP Aktif</p>
-            <p className="mt-0.5 break-all font-mono text-base font-bold" style={{ color: "var(--warning)" }}>{fmtRp(totalRemaining)}</p>
-          </div>
+          <span className="stat-delta flat">
+            {totalRemaining > 0 ? "Sudah keluar, belum jadi barang" : "Tidak ada yang menggantung"}
+          </span>
         </div>
       </div>
 
@@ -174,7 +168,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
                 <div className="flex items-center justify-end lg:w-40 shrink-0">
                   <a
                     href={`/dashboard/manager/suppliers/${row.supplierId}`}
-                    className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 font-bold px-4 py-2.5 rounded-lg text-xs transition-all shadow-sm flex items-center justify-center gap-1"
+                    className="btn-netral premium-button flex w-full items-center justify-center gap-1 px-4 py-2.5 text-xs sm:w-auto"
                   >
                     Detail Lapak
                     <ChevronRight className="w-3.5 h-3.5" />

@@ -147,9 +147,13 @@ export default function TransferList({
                   onClick={() => setActiveFilter(option.id)}
                   className={activeFilter === option.id ? "active" : ""}
                 >
-                  {option.label}{" "}
+                  {/* Dulu "Semua" dan "1" menempel jadi "Semua1": keduanya
+                      item flex terpisah, dan spasi di antaranya diciutkan.
+                      Kurung membuat angkanya terbaca sebagai jumlah, bukan
+                      sambungan kata. */}
+                  <span>{option.label}</span>
                   <span style={{ color: activeFilter === option.id ? "var(--brand)" : "var(--muted-faint)" }}>
-                    {option.count}
+                    ({option.count})
                   </span>
                 </button>
               ))}

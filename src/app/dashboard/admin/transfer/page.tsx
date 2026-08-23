@@ -60,6 +60,7 @@ export default async function AdminTransferPage() {
       label: "Menunggu Transfer",
       value: pendingTransfer.length.toLocaleString("id-ID"),
       sub: formatRp(pendingTransfer.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
+      satuan: "nota",
       tone: pendingTransfer.length > 0 ? "tone-warning" : "",
       description: "Perlu upload bukti",
     },
@@ -67,6 +68,7 @@ export default async function AdminTransferPage() {
       label: "Sudah Transfer",
       value: transferred.length.toLocaleString("id-ID"),
       sub: formatRp(transferred.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
+      satuan: "nota",
       tone: "",
       description: "Bukti tersimpan",
     },
@@ -74,6 +76,7 @@ export default async function AdminTransferPage() {
       label: "Termin Belum Lunas",
       value: pendingTermin.length.toLocaleString("id-ID"),
       sub: formatRp(pendingTermin.reduce((sum, purchase) => sum + (purchase.nominal_belum_lunas || 0), 0)),
+      satuan: "nota",
       tone: pendingTermin.length > 0 ? "tone-danger" : "",
       description: "Sisa yang belum dibayar ke lapak",
     },
@@ -86,13 +89,18 @@ export default async function AdminTransferPage() {
         title="Transfer Pembayaran"
         description="Upload dan pantau bukti transfer untuk transaksi yang sudah disetujui."
       />
-      <div className="grid gap-3 md:grid-cols-3">
+      {/* Bentuknya disamakan dengan baris ringkasan di dashboard Manager,
+          supaya angka ringkasan di seluruh aplikasi terbaca dengan cara
+          yang sama. */}
+      <div className="stat-strip" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
         {summaryCards.map((card) => (
-          <div key={card.label} className={`kpi-tile ${card.tone}`}>
-            <p className="kpi-label">{card.label}</p>
-            <p className="kpi-value text-3xl">{card.value}</p>
-            <p className="mt-1 text-sm font-bold" style={{ color: "var(--muted)" }}>{card.sub}</p>
-            <p className="mt-2 text-xs font-semibold" style={{ color: "var(--muted-faint)" }}>{card.description}</p>
+          <div key={card.label} className={`stat-tile ${card.tone}`}>
+            <span className="stat-label">{card.label}</span>
+            <div className="stat-value-row">
+              <span className="stat-value font-mono">{card.value}</span>
+              <span className="stat-unit">{card.satuan}</span>
+            </div>
+            <span className="stat-delta flat">{card.sub} &middot; {card.description}</span>
           </div>
         ))}
       </div>

@@ -179,8 +179,19 @@ export default async function StaffDashboard() {
                 )}
               </div>
 
+              {/* Pada hari libur kartunya dulu melompati baris angka dan
+                  batang kemajuan, menyisakan lubang kosong di tengah yang
+                  terbaca seperti kartunya gagal memuat. Angkanya tetap
+                  ditampilkan -- barang yang masuk hari libur tetap masuk --
+                  yang tidak ada cuma targetnya. */}
               {t.libur ? (
-                <p className="goal-foot">Tidak ada target hari ini karena hari libur.</p>
+                <>
+                  <div className="goal-value">
+                    <b>{fmtTon(t.realisasi)}</b>
+                    <span>masuk hari ini</span>
+                  </div>
+                  <p className="goal-foot">Hari libur, jadi tidak ada target yang dikejar.</p>
+                </>
               ) : (
                 <>
                   <div className="goal-value">

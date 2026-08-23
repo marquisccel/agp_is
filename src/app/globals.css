@@ -443,6 +443,12 @@ a:focus-visible {
 .stat-tile.tone-warning .stat-value,
 .stat-tile.tone-warning .stat-delta { color: var(--warning); }
 
+.stat-tile.tone-danger { background: var(--danger-soft); }
+.stat-tile.tone-danger:hover { background: var(--danger-soft); }
+.stat-tile.tone-danger .stat-label,
+.stat-tile.tone-danger .stat-value,
+.stat-tile.tone-danger .stat-delta { color: var(--danger); }
+
 @media (max-width: 900px) {
   .stat-strip { grid-template-columns: repeat(2, 1fr); }
 }
@@ -642,7 +648,7 @@ a:focus-visible {
   transition: background-color 160ms var(--ease-system), color 160ms var(--ease-system);
 }
 
-.segmented :is(button, a) { text-decoration: none; display: inline-flex; align-items: center; }
+.segmented :is(button, a) { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 
 .segmented :is(button, a).active {
   background: var(--surface);
@@ -964,6 +970,11 @@ a:focus-visible {
    terlihat seperti berasal dari dua aplikasi berbeda. Di sini bentuknya
    satu, yang berubah hanya nadanya.
    --------------------------------------------------------------------- */
+/* Kartu abu polos. Versi sebelumnya berlatar putih dengan pita warna
+   setebal 3px di tepi kiri; pita itu memotong kartu jadi dua bagian yang
+   tidak sama beratnya dan membuat pemberitahuan yang isinya biasa saja
+   tampak seperti peringatan. Nadanya kini dibawa ikonnya saja -- cukup
+   untuk memindai, tanpa mengubah bentuk kartunya. */
 .notice {
   display: flex;
   align-items: flex-start;
@@ -971,8 +982,7 @@ a:focus-visible {
   padding: 14px 16px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background: var(--surface);
-  border-left-width: 3px;
+  background: var(--surface-sunken);
 }
 
 .notice-icon {
@@ -998,9 +1008,7 @@ a:focus-visible {
 .notice-body strong { font-weight: 800; color: var(--foreground); }
 .notice-foot { font-size: 11.5px; color: var(--muted-faint); margin-top: 6px; }
 
-.notice.tone-warning { border-left-color: var(--warning); }
 .notice.tone-warning .notice-icon { background: var(--warning-soft); color: var(--warning); }
-.notice.tone-info { border-left-color: var(--brand); }
 .notice.tone-info .notice-icon { background: var(--brand-soft); color: var(--brand-strong); }
 
 /* ---------------------------------------------------------------------
