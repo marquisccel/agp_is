@@ -67,13 +67,23 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
   if (alerts.length === 0) return toastHost;
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 space-y-4 shadow-sm animate-in fade-in duration-200">
+    /* Panel ini muncul paling atas di dashboard Admin, Staff, dan
+       Manager. Ikonnya dulu berdenyut terus-menerus (animate-pulse)
+       selama masih ada satu saja termin terbuka -- gerakan yang tidak
+       pernah berhenti berhenti diperhatikan, dan mengganggu di layar
+       yang dibuka sepanjang hari. */
+    <div
+      className="animate-in fade-in space-y-4 rounded-[var(--radius-lg)] border p-5 shadow-sm duration-200"
+      style={{ background: "var(--warning-soft)", borderColor: "color-mix(in srgb, var(--warning) 25%, transparent)" }}
+    >
       {toastHost}
-      <div className="flex items-center gap-2.5 border-b border-amber-200 pb-2.5">
-        <AlertCircle className="w-5.5 h-5.5 text-amber-500 shrink-0 animate-pulse" />
+      <div className="flex items-center gap-2.5 border-b pb-2.5" style={{ borderColor: "color-mix(in srgb, var(--warning) 25%, transparent)" }}>
+        <AlertCircle className="h-5 w-5 shrink-0" style={{ color: "var(--warning)" }} />
         <div>
-          <h3 className="text-sm font-bold text-amber-800 uppercase tracking-wider">Pemberitahuan Pelunasan Pending</h3>
-          <p className="text-xs text-amber-600 font-medium">Ada {alerts.length} transaksi termin yang masih menunggu pelunasan sisa</p>
+          <h3 className="field-label" style={{ color: "var(--warning)", marginBottom: 2 }}>Sisa Termin Belum Lunas</h3>
+          <p className="text-xs font-medium" style={{ color: "var(--warning)" }}>
+            Ada {alerts.length} transaksi termin yang sisanya masih kurang dibayar ke lapak
+          </p>
         </div>
       </div>
 
@@ -85,17 +95,18 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
           return (
             <div 
               key={alert.id} 
-              className="bg-white border border-amber-100 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:shadow-md hover:border-amber-200"
+              className="flex flex-col items-start justify-between gap-4 rounded-[var(--radius-md)] border p-4 transition-all hover:shadow-md md:flex-row md:items-center"
+              style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
               <div className="space-y-1.5 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-bold text-slate-800">{alert.supplier.nama}</span>
-                  <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-200/50 px-2.5 py-0.5 rounded-full uppercase">
+                  <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{alert.supplier.nama}</span>
+                  <span className="rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>
                     Termin {alert.persentase_pembayaran}%
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Belum selesai: <strong className="text-amber-700 font-semibold">menunggu pelunasan {remainingPercent}% ({formatRp(alert.nominal_belum_lunas)})</strong> dari total tagihan {formatRp(alert.total_nilai_setelah_retur)}
+                  Kurang <strong className="font-semibold" style={{ color: "var(--warning)" }}>{formatRp(alert.nominal_belum_lunas)} ({remainingPercent}%)</strong> dari nilai nota {formatRp(alert.total_nilai_setelah_retur)}
                 </p>
                 <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
                   <span>{dateFormatted}</span>
@@ -107,7 +118,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
               <div className="flex items-center gap-3.5 w-full md:w-auto shrink-0 justify-end pt-2 md:pt-0 border-t border-slate-100 md:border-0">
                 <Link
                   href={`/nota/${alert.id}`}
-                  className="text-xs font-bold text-slate-600 hover:text-cyan-600 py-2 px-4 bg-slate-100 hover:bg-cyan-50 border border-slate-200 hover:border-cyan-100 rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
+                  className="btn-netral premium-button flex items-center gap-1.5 px-4 py-2 text-xs"
                 >
                   <FileText className="w-4 h-4" />
                   Lihat Nota
@@ -127,7 +138,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                 <button
                   onClick={() => fileInputs.current[alert.id]?.click()}
                   disabled={isPending}
-                  className="bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-450 text-white py-2 px-4.5 rounded-xl text-xs font-bold active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md disabled:opacity-50"
+                  className="btn-primer premium-button flex cursor-pointer items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold disabled:opacity-50"
                 >
                   {loadingId === alert.id ? (
                     <>
