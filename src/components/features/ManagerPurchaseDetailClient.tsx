@@ -535,7 +535,11 @@ export default function ManagerPurchaseDetailClient({
             */}
             {bisaDikoreksi && (
               <div className="border-t p-5" style={{ borderColor: "var(--border)" }}>
-                <KoreksiKekurangan purchaseId={purchase.id} kewajiban={kewajibanKeLapak(purchase)} />
+                <KoreksiKekurangan
+                  purchaseId={purchase.id}
+                  kewajiban={kewajibanKeLapak(purchase)}
+                  namaLapak={purchase.supplier.nama}
+                />
               </div>
             )}
 

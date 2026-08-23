@@ -279,16 +279,6 @@ export default function TransferList({
                 </div>
 
                 <div className="flex flex-col justify-between p-5" style={{ background: "var(--surface)" }}>
-                  {/* Nota yang sudah ditransfer dan tercatat lunas masih
-                      bisa keliru: nominal yang benar-benar dikirim kadang
-                      lebih kecil dari yang tercatat. Admin gudang inilah
-                      yang pertama tahu, jadi jalur koreksinya ada di sini,
-                      bukan cuma di layar Manager. */}
-                  {bolehKoreksi && isTransferred && !isPendingTermin && (
-                    <div className="mb-3 rounded-[var(--radius-md)] border p-3" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
-                      <KoreksiKekurangan purchaseId={p.id} kewajiban={kewajibanKeLapak(p)} />
-                    </div>
-                  )}
                   {isTransferred && buktiTransfer ? (
                     <div className="space-y-3">
                       <button
@@ -325,6 +315,18 @@ export default function TransferList({
                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                         {isUploading ? "Mengupload..." : "Ganti Bukti"}
                       </button>
+                      {/* Nota yang sudah ditransfer dan tercatat lunas masih
+                          bisa keliru: nominal yang benar-benar dikirim kadang
+                          lebih kecil dari yang tercatat. Tombolnya berdiri
+                          sebaris dengan "Ganti Bukti" -- keduanya sama-sama
+                          membetulkan catatan pembayaran nota ini. */}
+                      {bolehKoreksi && !isPendingTermin && (
+                        <KoreksiKekurangan
+                          purchaseId={p.id}
+                          kewajiban={kewajibanKeLapak(p)}
+                          namaLapak={p.supplier.nama}
+                        />
+                      )}
                     </div>
                   ) : (
                     <div className="flex h-full min-h-44 flex-col items-center justify-center rounded-[var(--radius-md)] border border-dashed p-5 text-center" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
