@@ -47,8 +47,8 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
         throw new Error(d.error || "Gagal upload")
       }
       router.refresh()
-    } catch (e: any) {
-      toast(e.message, "error")
+    } catch (e: unknown) {
+      toast(e instanceof Error ? e.message : "Gagal upload bukti transfer", "error")
     } finally {
       setUploading(null)
     }
@@ -82,30 +82,31 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-xl" onClick={() => setPreview(null)}>
           <div
-            className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-white/60 bg-white/92 shadow-[0_32px_90px_rgba(15,23,42,0.28)]"
+            className="w-full max-w-2xl overflow-hidden rounded-[var(--radius-lg)] border shadow-[0_32px_90px_rgba(15,23,42,0.28)]"
+            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-200/70 px-5 py-4">
+            <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: "var(--border)" }}>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">Bukti Transfer</p>
+                <span className="section-eyebrow">Bukti transfer</span>
                 <p className="mt-0.5 text-sm font-black text-slate-950">{preview.title}</p>
               </div>
               <button
                 onClick={() => setPreview(null)}
-                className="premium-button grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950"
+                className="btn-netral premium-button grid h-9 w-9 place-items-center !rounded-full"
                 aria-label="Tutup preview bukti transfer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="relative h-[72vh] w-full bg-slate-100/70 p-3">
+            <div className="relative h-[72vh] w-full p-3" style={{ background: "var(--surface-sunken)" }}>
               <Image
                 src={preview.src}
                 alt="Bukti Transfer"
                 fill
                 unoptimized
                 sizes="(min-width: 768px) 42rem, 100vw"
-                className="rounded-3xl bg-white object-contain shadow-inner"
+                className="rounded-[var(--radius-md)] bg-white object-contain shadow-inner"
               />
             </div>
           </div>
@@ -114,40 +115,43 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
 
       <div className="space-y-4">
         {purchases.length > 0 && (
-          <div className="interactive-surface flex flex-col gap-4 border border-slate-200/80 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="section section-body flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Payment queue</p>
-              <p className="mt-1 text-sm font-semibold text-slate-600">Prioritaskan bukti transfer dan termin yang belum lunas.</p>
+              <span className="section-eyebrow">Antrean pembayaran</span>
+              <p className="mt-1 text-sm font-semibold" style={{ color: "var(--muted)" }}>
+                Prioritaskan bukti transfer dan termin yang belum lunas.
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-1 rounded-[10px] border border-slate-200 p-1 sm:flex" style={{ background: "var(--bg-tint)" }}>
-              {filterOptions.map((option) => {
-                const active = activeFilter === option.id
-                return (
-                  <button
-                    key={option.id}
-                    onClick={() => setActiveFilter(option.id)}
-                    className="premium-button rounded-lg px-3.5 py-2 text-xs font-black transition-all"
-                    style={active
-                      ? { background: "var(--surface)", color: "var(--text, #14181A)", boxShadow: "0 1px 3px rgba(20,24,26,0.12)" }
-                      : { color: "var(--muted, #5B6560)" }}
-                  >
-                    {option.label} <span style={{ color: active ? "var(--brand)" : "var(--muted-faint, #8A938D)" }}>{option.count}</span>
-                  </button>
-                )
-              })}
+            {/* Kontrol ini dulu menyusun ulang tampilan .segmented dengan
+                tangan, lengkap dengan bayangan dan warna aktifnya sendiri.
+                Bentuknya jadi mirip tapi tidak sama dengan penyaring di
+                layar lain. */}
+            <div className="segmented flex-wrap">
+              {filterOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setActiveFilter(option.id)}
+                  className={activeFilter === option.id ? "active" : ""}
+                >
+                  {option.label}{" "}
+                  <span style={{ color: activeFilter === option.id ? "var(--brand)" : "var(--muted-faint)" }}>
+                    {option.count}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         )}
 
         {purchases.length === 0 && (
-          <div className="workflow-card p-12 text-center text-sm font-medium text-slate-400">
+          <div className="section section-body p-12 text-center text-sm font-medium" style={{ color: "var(--muted-faint)" }}>
             Belum ada transaksi yang sudah disetujui.
           </div>
         )}
 
         {purchases.length > 0 && filteredPurchases.length === 0 && (
-          <div className="workflow-card p-12 text-center">
-            <ReceiptText className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+          <div className="section section-body p-12 text-center">
+            <ReceiptText className="mx-auto mb-3 h-10 w-10" style={{ color: "var(--muted-faint)" }} />
             <p className="text-sm font-bold text-slate-700">Tidak ada transaksi pada filter ini.</p>
             <p className="mt-1 text-xs font-medium text-slate-400">Pilih filter lain untuk melihat antrean pembayaran.</p>
           </div>
@@ -161,42 +165,48 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
           const buktiTransfer = p.bukti_transfer
 
           return (
-            <article
-              key={p.id}
-              className={`interactive-surface group overflow-hidden border p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                isTransferred ? "border-emerald-200/80 bg-emerald-50/20" : "border-slate-200/80 bg-white/88"
-              }`}
-            >
-              <div className="grid gap-px bg-slate-200/60 lg:grid-cols-[minmax(0,1fr)_260px]">
-                <div className="bg-white/82 p-5">
+            /* Kartu yang sudah ditransfer dulu diberi tepi dan latar hijau
+               tipis. Karena hampir semua nota lama berakhir di keadaan itu,
+               daftarnya berangsur jadi hijau seluruhnya dan warnanya tidak
+               lagi membedakan apa pun -- sementara nota yang justru perlu
+               dikerjakan tenggelam di antaranya. Keadaannya sudah dinyatakan
+               lencana di dalam kartu. */
+            <article key={p.id} className="section overflow-hidden p-0">
+              <div className="grid gap-px lg:grid-cols-[minmax(0,1fr)_260px]" style={{ background: "var(--border)" }}>
+                <div className="p-5" style={{ background: "var(--surface)" }}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-black ${
-                            isTransferred
-                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                              : "border-amber-200 bg-amber-50 text-amber-700"
-                          }`}
+                          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold"
+                          style={isTransferred
+                            ? { background: "var(--success-soft)", color: "var(--success)" }
+                            : { background: "var(--warning-soft)", color: "var(--warning)" }}
                         >
                           {isTransferred ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Clock3 className="h-3.5 w-3.5" />}
                           {isTransferred ? "Sudah Transfer" : "Menunggu Transfer"}
                         </span>
+                        {/* Sisa termin adalah uang yang masih kurang dibayar
+                            ke lapak. Dulu abu netral, sewarna dengan
+                            keterangan biasa. */}
                         {isPendingTermin && (
-                          <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-black text-slate-700">
-                            Termin {formatRp(p.nominal_belum_lunas || 0)}
+                          <span
+                            className="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
+                            style={{ background: "var(--warning-soft)", color: "var(--warning)" }}
+                          >
+                            Kurang {formatRp(p.nominal_belum_lunas || 0)}
                           </span>
                         )}
                       </div>
-                      <h3 className="mt-3 truncate text-lg font-black tracking-[-0.02em] text-slate-950">{p.supplier.nama}</h3>
-                      <p className="mt-1 text-xs font-semibold text-slate-400">
+                      <h3 className="mt-3 truncate text-lg font-black tracking-[-0.02em]" style={{ color: "var(--foreground)" }}>{p.supplier.nama}</h3>
+                      <p className="mt-1 text-xs font-semibold" style={{ color: "var(--muted-faint)" }}>
                         {formatDate(p.createdAt)} / {p.items.length} jenis barang
                       </p>
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">Total Dibayar</p>
-                      <p className="mt-1 whitespace-nowrap text-xl font-black tracking-[-0.03em] text-slate-950">{formatRp(total)}</p>
+                      <span className="field-label" style={{ marginBottom: 2 }}>Nilai Transfer</span>
+                      <p className="whitespace-nowrap text-xl font-black tracking-[-0.03em]" style={{ color: "var(--foreground)" }}>{formatRp(total)}</p>
                     </div>
                   </div>
 
@@ -218,12 +228,13 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-between bg-white/92 p-5">
+                <div className="flex flex-col justify-between p-5" style={{ background: "var(--surface)" }}>
                   {isTransferred && buktiTransfer ? (
                     <div className="space-y-3">
                       <button
                         onClick={() => setPreview({ src: buktiTransfer, title: p.supplier.nama })}
-                        className="group/preview relative aspect-[16/10] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(15,23,42,0.16)]"
+                        className="group/preview relative aspect-[16/10] w-full overflow-hidden rounded-[var(--radius-md)] border shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(15,23,42,0.16)]"
+                        style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
                       >
                         <Image
                           src={buktiTransfer}
@@ -249,23 +260,23 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                           if (ok) fileRefs.current[p.id]?.click()
                         }}
                         disabled={isUploading}
-                        className="premium-button flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                        className="btn-netral premium-button flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:opacity-60"
                       >
                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                         {isUploading ? "Mengupload..." : "Ganti Bukti"}
                       </button>
                     </div>
                   ) : (
-                    <div className="flex h-full min-h-44 flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 p-5 text-center">
-                      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-slate-500 shadow-sm">
+                    <div className="flex h-full min-h-44 flex-col items-center justify-center rounded-[var(--radius-md)] border border-dashed p-5 text-center" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
+                      <div className="grid h-12 w-12 place-items-center rounded-[var(--radius-sm)] shadow-sm" style={{ background: "var(--surface)", color: "var(--muted)" }}>
                         {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
                       </div>
-                      <p className="mt-3 text-sm font-black text-slate-950">{isUploading ? "Mengupload bukti..." : "Upload Bukti Transfer"}</p>
-                      <p className="mt-1 text-xs font-medium leading-5 text-slate-400">Maksimal 2 MB. Format gambar.</p>
+                      <p className="mt-3 text-sm font-black" style={{ color: "var(--foreground)" }}>{isUploading ? "Mengupload bukti..." : "Upload Bukti Transfer"}</p>
+                      <p className="mt-1 text-xs font-medium leading-5" style={{ color: "var(--muted-faint)" }}>Maksimal 2 MB. Format gambar.</p>
                       <button
                         onClick={() => fileRefs.current[p.id]?.click()}
                         disabled={isUploading}
-                        className="premium-button mt-4 flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-60"
+                        className="btn-primer premium-button mt-4 flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold disabled:opacity-60"
                       >
                         <FileImage className="h-4 w-4" />
                         Pilih File
@@ -296,9 +307,9 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
 
 function PaymentInfo({ label, value, emphasize = false }: { label: string; value: string; emphasize?: boolean }) {
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white/74 px-4 py-3">
-      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</p>
-      <p className={`mt-1 truncate text-sm font-black ${emphasize ? "text-amber-700" : "text-slate-900"}`}>{value}</p>
+    <div className="rounded-[var(--radius-sm)] border px-4 py-3" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
+      <span className="field-label" style={{ marginBottom: 2 }}>{label}</span>
+      <p className="truncate text-sm font-black" style={{ color: emphasize ? "var(--warning)" : "var(--foreground)" }}>{value}</p>
     </div>
   )
 }
