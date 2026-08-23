@@ -111,38 +111,51 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         )}
       </div>
 
-      {/* Global Summary KPI row */}
-      <div className={`kpi-grid p-5${summaryOnly ? "" : " border-b border-slate-100"}`}>
-        <div className="kpi-tile">
-          <p className="kpi-label">Total Lapak</p>
-          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalLapak)}</p>
+      {/* Ringkasan. Bentuknya disamakan dengan Rekap DP dan dashboard
+          Manager: satu pita menyatu, bukan empat kartu terpisah yang
+          masing-masing membawa tepi dan bayangan sendiri.
+
+          Nadanya mengikuti KEADAAN, bukan kategori. Susut nol adalah hasil
+          yang justru diharapkan, jadi mewarnainya merah membuat kartu ini
+          selalu terbaca gawat sekalipun tidak ada masalah. Warna baru
+          muncul kalau selisihnya memang ada. */}
+      <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
+        <div className="stat-tile">
+          <span className="stat-label">Ditimbang di Lapak</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalLapak)}</span>
+          </div>
+          <span className="stat-delta flat">Menurut timbangan lapak</span>
         </div>
-        <div className="kpi-tile">
-          <p className="kpi-label">Total Gudang</p>
-          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalGudang)}</p>
+        <div className="stat-tile">
+          <span className="stat-label">Ditimbang di Gudang</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalGudang)}</span>
+          </div>
+          <span className="stat-delta flat">Menurut timbangan gudang</span>
         </div>
-        {/* Nadanya mengikuti KEADAAN, bukan kategori. Susut nol adalah
-            hasil yang justru diharapkan, jadi mewarnainya merah membuat
-            kartu ini selalu terbaca gawat sekalipun tidak ada masalah
-            sama sekali. Merah hanya muncul kalau susutnya memang ada. */}
-        <div className={`kpi-tile${filteredSummary.totalSusut > 0 ? " tone-danger" : ""}`}>
-          <p className="kpi-label">Total Susut</p>
-          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalSusut)}</p>
-          <p className="text-[11px] mt-0.5 font-semibold">{fmtPct(filteredSusutPct)} dari lapak</p>
+        <div className={`stat-tile${filteredSummary.totalSusut > 0 ? " tone-danger" : ""}`}>
+          <span className="stat-label">Susut</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalSusut)}</span>
+          </div>
+          <span className="stat-delta flat">
+            {filteredSummary.totalSusut > 0 ? `${fmtPct(filteredSusutPct)} dari timbangan lapak` : "Tidak ada yang menyusut"}
+          </span>
         </div>
-        {/* Bernada perhatian, bukan sukses: gudang menimbang lebih berat
-            dari lapak itu selisih yang perlu diperiksa, sama seperti
-            susut -- cuma beda arah. Nadanya kini sama dengan barisnya di
-            bawah dan dengan Detail Transaksi. */}
-        <div className={`kpi-tile${filteredSummary.totalLebih > 0 ? " tone-warning" : ""}`}>
-          <p className="kpi-label">Total Lebih</p>
-          <p className="kpi-value font-mono">{fmtKg(filteredSummary.totalLebih)}</p>
-          <p className="text-[11px] mt-0.5 font-semibold">{fmtPct(filteredLebihPct)} dari lapak</p>
+        <div className={`stat-tile${filteredSummary.totalLebih > 0 ? " tone-warning" : ""}`}>
+          <span className="stat-label">Lebih</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalLebih)}</span>
+          </div>
+          <span className="stat-delta flat">
+            {filteredSummary.totalLebih > 0 ? `${fmtPct(filteredLebihPct)} dari timbangan lapak` : "Tidak ada kelebihan"}
+          </span>
         </div>
       </div>
 
       {summaryOnly && (
-        <div className="px-5 pb-5">
+        <div className="px-[22px] py-4">
           <Link
             href="/dashboard/manager/susut"
             className="inline-block text-[11.5px] font-bold"

@@ -530,7 +530,8 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           belum ditulis labelnya, tapi memakan sepertiga lebar kartu dan
           membuat keempat angkanya tidak sejajar. Bentuknya kini sama
           dengan baris ringkasan di dashboard Manager. */}
-      <div className="stat-strip">
+      <div className="section overflow-hidden">
+      <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
         <div className="stat-tile">
           <span className="stat-label">Total Volume</span>
           <div className="stat-value-row">
@@ -570,28 +571,28 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         </div>
       </div>
 
-      {/* Tabs Control */}
-      <div className="bg-white rounded-[var(--radius-md)] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="flex border-b border-slate-100 bg-slate-50/50">
+      {/* Tab langsung menempel di bawah pita ringkasan, dalam kartu yang
+          sama. */}
+        <div className="flex border-b" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
           <button
             onClick={() => setActiveTab("transaksi")}
-            className={`flex-1 py-4 text-center font-bold text-sm transition-all border-b-2 ${
+            className={`flex-1 border-b-2 py-4 text-center text-sm font-bold transition-all ${
               activeTab === "transaksi"
-                ? "border-[color:var(--brand)] text-[color:var(--brand-strong)] bg-white"
-                : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/30"
+                ? "border-[color:var(--brand)] bg-white text-[color:var(--brand-strong)]"
+                : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
             Riwayat Pembelian ({supplier.purchases.length})
           </button>
           <button
             onClick={() => setActiveTab("dp")}
-            className={`flex-1 py-4 text-center font-bold text-sm transition-all border-b-2 ${
+            className={`flex-1 border-b-2 py-4 text-center text-sm font-bold transition-all ${
               activeTab === "dp"
-                ? "border-[color:var(--brand)] text-[color:var(--brand-strong)] bg-white"
-                : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/30"
+                ? "border-[color:var(--brand)] bg-white text-[color:var(--brand-strong)]"
+                : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
-            Saldo &amp; Kasbon DP ({supplier.downPayments.length})
+            Saldo DP ({supplier.downPayments.length})
           </button>
         </div>
 
@@ -664,18 +665,18 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                               <div className="inline-flex gap-2">
-                                <Link
-                                  href={`/dashboard/manager/purchases/${p.id}`}
-                                  className="border px-3 py-1 rounded-lg text-xs font-bold transition-colors" style={{ background: "var(--bg-tint)", color: "var(--muted)", borderColor: "var(--border)" }}
-                                >
+                                {/* Dua tombol yang berdampingan dulu memakai
+                                    dua warna berbeda tanpa ada bedanya
+                                    tingkat kepentingan; keduanya sama-sama
+                                    aksi pendamping. */}
+                                <Link href={`/dashboard/manager/purchases/${p.id}`} className="btn-netral premium-button px-3 py-1.5 text-xs">
                                   Detail
                                 </Link>
-                                <Link
-                                  href={`/dashboard/manager/edit/${p.id}`}
-                                  className="border px-3 py-1 rounded-lg text-xs font-bold transition-colors" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)", borderColor: "var(--brand-soft-strong)" }}
-                                >
-                                  Edit
-                                </Link>
+                                {p.status_approval !== "sudah_transfer" && (
+                                  <Link href={`/dashboard/manager/edit/${p.id}`} className="btn-netral premium-button px-3 py-1.5 text-xs">
+                                    Edit
+                                  </Link>
+                                )}
                               </div>
                             </td>
                           </tr>

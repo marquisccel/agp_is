@@ -414,6 +414,10 @@ export default function EditTransaksiForm({
         </div>
       </div>
 
+      {/* Total transaksi dulu berdiri sebagai kartu tersendiri tepat di
+          bawah kartu Potongan. Keduanya bicara hal yang sama -- berapa yang
+          dipotong dan berapa sisanya -- jadi memisahkannya cuma menambah
+          satu tepi kartu di antara sebab dan akibatnya. */}
       <PotonganFields
         kartu
         readOnly={terkunci}
@@ -422,23 +426,23 @@ export default function EditTransaksiForm({
         eyebrow="Koreksi"
         judul="Potongan"
         deskripsi="Berat (KG) dikali harga per KG; nilai potongan dihitung otomatis."
+        kaki={
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+            <div>
+              <span className="section-eyebrow">Nilai transaksi</span>
+              <p className="mt-1 text-3xl font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+                {fmtRp(totalAfterCuts)}
+              </p>
+            </div>
+            <div className="space-y-0.5 text-left text-xs font-medium sm:text-right" style={{ color: "var(--muted)" }}>
+              <p>Sebelum potongan: {fmtRp(totalBeforeCuts)}</p>
+              <p>Total potongan: &minus; {fmtRp(totalPotongan)}</p>
+            </div>
+          </div>
+        }
       />
 
       {/* Ringkasan */}
-      <div className="workflow-summary p-5 md:p-6">
-        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-          <div>
-            <span className="section-eyebrow">Nilai transaksi</span>
-            <p className="mt-1 text-3xl font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
-              {fmtRp(totalAfterCuts)}
-            </p>
-          </div>
-          <div className="space-y-0.5 text-left text-xs font-medium sm:text-right" style={{ color: "var(--muted)" }}>
-            <p>Sebelum potongan: {fmtRp(totalBeforeCuts)}</p>
-            <p>Total potongan: − {fmtRp(totalPotongan)}</p>
-          </div>
-        </div>
-      </div>
 
       {error && <div className="notice tone-warning text-sm font-medium">{error}</div>}
       {success && (

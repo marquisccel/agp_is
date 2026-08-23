@@ -213,7 +213,7 @@ export default function AdminHistoryClient({
                               di form yang tidak bisa dituntaskan. */}
                           {purchase.status_approval !== "sudah_transfer" && (
                             <Link href={`${basePath}/edit/${purchase.id}`}>
-                              <button className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-1">
+                              <button className="btn-netral premium-button px-3 py-1.5 text-xs">
                                 Edit
                               </button>
                             </Link>

@@ -99,7 +99,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       </div>
 
       {summaryOnly && (
-        <div className="px-4 pb-5 sm:px-5">
+        <div className="px-[22px] py-4">
           <a
             href="/dashboard/manager/dp"
             className="inline-block text-[11.5px] font-bold"
@@ -119,11 +119,17 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
             <p className="text-xs mt-1">Data saldo akan terisi setelah manager menyetujui pengajuan DP lapak.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
             {filtered.map((row, idx) => (
+              /* Sorotan hover dulu memakai hover:bg-slate-50 pada baris yang
+                 padding kirinya nol, jadi bidang abunya berhenti sebelum
+                 tepi kartu -- terlihat seperti separuh baris saja yang
+                 tersorot. Latar abu itu juga menindih warna kotak "sisa DP
+                 aktif" di dalamnya. Sorotannya kini memakai warna sistem
+                 dan menutupi seluruh lebar barisnya. */
               <div
                 key={row.supplierId}
-                className="group flex flex-col justify-between gap-4 py-4 transition-colors hover:bg-slate-50 lg:flex-row lg:items-center"
+                className="baris-lapak flex flex-col justify-between gap-4 px-[22px] py-4 lg:flex-row lg:items-center"
               >
                 {/* Supplier Info */}
                 <div className="flex items-start gap-3 lg:w-1/4 min-w-0">

@@ -43,9 +43,15 @@ type Props = {
    * overflow induknya, sehingga tepinya terbaca seperti garis putus.
    */
   kartu?: boolean
+  /**
+   * Baris penutup di dalam kartu yang sama, mis. total nilai transaksi.
+   * Dipakai supaya sebab (potongannya) dan akibat (nilai akhirnya) tidak
+   * dipisah oleh tepi kartu.
+   */
+  kaki?: React.ReactNode
 }
 
-export default function PotonganFields({ baris, total, eyebrow, judul, deskripsi, readOnly = false, kartu = false }: Props) {
+export default function PotonganFields({ baris, total, eyebrow, judul, deskripsi, readOnly = false, kartu = false, kaki }: Props) {
   const nilaiWarna = (n: number) => (n > 0 ? "var(--danger)" : "var(--muted-faint)")
   const rupiah = (n: number) => (n > 0 ? `- Rp ${n.toLocaleString("id-ID")}` : "Rp 0")
 
@@ -125,9 +131,17 @@ export default function PotonganFields({ baris, total, eyebrow, judul, deskripsi
 
   if (kartu) {
     return (
-      <div className="section">
+      <div className="section overflow-hidden">
         <div className="section-shell-head">{kepala}</div>
         <div className="section-body">{isi}</div>
+        {kaki && (
+          <div
+            className="border-t px-[22px] py-5"
+            style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
+          >
+            {kaki}
+          </div>
+        )}
       </div>
     )
   }

@@ -120,11 +120,14 @@ export default async function StaffDashboard() {
             </svg>
           </span>
           <div>
-            <h3 className="notice-title">Hari Libur / Tidak Ada Target Harian</h3>
+            {/* Kalimatnya disamakan persis dengan pemberitahuan yang sama
+                di dashboard Manager; dua layar yang menerangkan keadaan
+                yang sama tidak perlu memakai dua susunan kata. */}
+            <h3 className="notice-title">Hari Libur &mdash; Tidak Ada Target Harian</h3>
             <p className="notice-body">
-              Hari ini hari libur (Minggu atau libur nasional), jadi tidak ada target harian yang perlu dikejar.
+              Hari ini Minggu atau libur nasional, jadi tidak ada target harian yang dikejar. Target mingguan dan
+              bulanan tetap berjalan.
             </p>
-            <p className="notice-foot">Selamat beristirahat. Target mingguan tetap berjalan.</p>
           </div>
         </div>
       )}
@@ -158,11 +161,11 @@ export default async function StaffDashboard() {
       />
 
       {/* Target harian / mingguan / bulanan */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="goal-strip">
         {kartuTarget.map((t) => {
           const tercapai = t.target > 0 && t.kurang === 0
           return (
-            <div key={t.kunci} className="goal-card interactive-surface">
+            <div key={t.kunci} className="goal-card">
               <div className="goal-head">
                 <div>
                   <p className="goal-label">{t.label}</p>

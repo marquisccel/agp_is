@@ -458,7 +458,7 @@ export default function ManagerSuppliersClient({
         <div className="section-shell-head">
           <div className="min-w-0">
             <p className="section-eyebrow">Lapak intelligence</p>
-            <h3 className="text-[15.5px] font-bold text-slate-950">Kinerja Lapak</h3>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kinerja Lapak</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Filter performa berdasarkan gudang, periode, grade, dan kata kunci tanpa kehilangan konteks operasional.
             </p>
@@ -477,44 +477,38 @@ export default function ManagerSuppliersClient({
           </div>
         </div>
 
+        {/* Bentuknya disamakan dengan pita ringkasan di layar lain: satu
+            deret menyatu tanpa kotak ikon. Ikonnya tidak menerangkan apa
+            pun yang belum ditulis labelnya, tapi memakan sepertiga lebar
+            tiap kartu dan membuat keempat angkanya tidak sejajar.
+
+            Keempatnya tetap berfungsi sebagai penyaring; yang aktif
+            ditandai latar brand-soft. */}
+        <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
+          {filterCards.map((card) => {
+            const active = selectedGradeFilter === card.id
+            return (
+              <button
+                key={card.id}
+                onClick={() => setSelectedGradeFilter(active ? "all" : card.id)}
+                className="stat-tile text-left"
+                style={active ? { background: "var(--brand-soft)" } : undefined}
+              >
+                <span className="stat-label" style={active ? { color: "var(--brand-strong)" } : undefined}>
+                  {card.label}
+                </span>
+                <div className="stat-value-row">
+                  <span className="stat-value font-mono" style={active ? { color: "var(--brand-strong)" } : undefined}>
+                    {card.value}
+                  </span>
+                </div>
+                <span className="stat-delta flat">{card.sub}</span>
+              </button>
+            )
+          })}
+        </div>
+
         <div className="p-5">
-          {/* Kartu grade sekaligus berfungsi sebagai filter -- yang aktif
-              ditandai rel aksen dan latar brand-soft, bukan blok hitam
-              pekat seperti sebelumnya. */}
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {filterCards.map((card) => {
-              const Icon = card.icon
-              const active = selectedGradeFilter === card.id
-              return (
-                <button
-                  key={card.id}
-                  onClick={() => setSelectedGradeFilter(active ? "all" : card.id)}
-                  className="flex items-center gap-3 rounded-[var(--radius-md)] border p-4 text-left transition-colors"
-                  style={active
-                    ? { background: "var(--brand-soft)", borderColor: "var(--brand-soft-strong)" }
-                    : { background: "var(--surface)", borderColor: "var(--border)" }}
-                >
-                  <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px]"
-                    style={active
-                      ? { background: "var(--brand)", color: "#fff" }
-                      : { background: "var(--bg-tint)", color: "var(--muted)" }}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[10.5px] font-bold uppercase tracking-[0.07em]" style={{ color: active ? "var(--brand-strong)" : "var(--muted)" }}>
-                      {card.label}
-                    </span>
-                    <span className="mt-0.5 block font-mono text-lg font-extrabold tabular-nums" style={{ color: active ? "var(--brand-strong)" : "var(--foreground)" }}>
-                      {card.value}
-                    </span>
-                    <span className="block truncate text-[11px] text-slate-400">{card.sub}</span>
-                  </span>
-                </button>
-              )
-            })}
-          </div>
 
           {/* Label penyaringnya dulu berbunyi "Hijau" dan "Merah" -- nama
               warna, bukan artinya -- padahal daftar di bawahnya sudah
@@ -533,14 +527,14 @@ export default function ManagerSuppliersClient({
               className={selectedStatusFilter === "GREEN" ? "active" : ""}
               style={selectedStatusFilter === "GREEN" ? { color: "var(--success)" } : undefined}
             >
-              Aktif {greenSupplierCount}
+              Aktif ({greenSupplierCount})
             </button>
             <button
               onClick={() => setSelectedStatusFilter("RED")}
               className={selectedStatusFilter === "RED" ? "active" : ""}
               style={selectedStatusFilter === "RED" ? { color: "var(--danger)" } : undefined}
             >
-              Belum aktif {redSupplierCount}
+              Belum aktif ({redSupplierCount})
             </button>
           </div>
         </div>
