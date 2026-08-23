@@ -130,3 +130,34 @@ export function hitungKoreksiKekurangan({
     persentasePembayaran: bulat2((sudahDibayar / kewajiban) * 100),
   }
 }
+
+type NotaKewajiban = {
+  total_nilai_setelah_retur?: number | null
+  potongan_sampah?: number | null
+  potongan_susut?: number | null
+  potongan_air?: number | null
+  potongan_karung?: number | null
+  dp_yang_digunakan?: number | null
+}
+
+/**
+ * Total yang harus diterima lapak untuk sebuah nota, setelah potongan dan
+ * setelah saldo kasbonnya dipakai.
+ *
+ * Rumusnya harus SAMA PERSIS dengan yang dipakai scripts/audit-data.mjs
+ * saat memeriksa "pembayaran awal + sisa = nilai nota - kasbon". Karena
+ * itu ia tinggal di satu tempat: endpoint koreksi memakainya untuk
+ * menentukan batas, dan layar memakainya untuk menampilkan batas yang
+ * sama. Kalau keduanya menghitung sendiri-sendiri, selisih sekecil apa pun
+ * membuat koreksi yang lolos di layar ditolak di server -- atau lebih
+ * buruk, tersimpan lalu dilaporkan melanggar oleh auditnya sendiri.
+ */
+export function kewajibanKeLapak(nota: NotaKewajiban): number {
+  const nilaiNota =
+    (nota.total_nilai_setelah_retur ?? 0) -
+    ((nota.potongan_sampah ?? 0) +
+      (nota.potongan_susut ?? 0) +
+      (nota.potongan_air ?? 0) +
+      (nota.potongan_karung ?? 0))
+  return bulat2(nilaiNota - (nota.dp_yang_digunakan ?? 0))
+}

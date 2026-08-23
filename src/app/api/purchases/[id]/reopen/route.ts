@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
-import { hitungKoreksiKekurangan, SettlementError } from "@/lib/settlement"
+import { hitungKoreksiKekurangan, kewajibanKeLapak, SettlementError } from "@/lib/settlement"
 
 /**
  * Membuka kembali nota yang terlanjur ditandai lunas.
@@ -15,22 +15,40 @@ import { hitungKoreksiKekurangan, SettlementError } from "@/lib/settlement"
  * jalan memperbaikinya -- selisihnya hilang dari sistem, dan lapak
  * menagih sesuatu yang menurut sistem sudah beres.
  *
- * Kenapa hanya Manager: ini membalik catatan keuangan yang sudah ditutup,
- * bukan langkah alur normal. Jalur pembayaran hariannya tetap di tangan
- * Admin lewat /settle; yang membuka kembali catatan tertutup adalah
- * pemegang keputusan keuangan. Alasannya wajib dan tercatat di audit log.
+ * Siapa yang boleh: Admin gudang yang bersangkutan dan Manager. Admin-lah
+ * yang memegang transfer hariannya, jadi dialah yang pertama tahu kalau
+ * nominalnya kurang; memaksanya menunggu Manager hanya menunda pencatatan
+ * dan membuat selisihnya menganggur lebih lama. Admin tetap dikurung ke
+ * gudangnya sendiri. Alasannya wajib dan tercatat di audit log bersama
+ * nama pengoreksinya, karena ini tetap membalik catatan yang sudah ditutup.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== "MANAGER") {
-      return NextResponse.json({ error: "Hanya Manager yang dapat membuka kembali nota yang sudah lunas." }, { status: 401 })
+    const role = session?.user?.role
+    if (!session || (role !== "ADMIN" && role !== "MANAGER")) {
+      return NextResponse.json(
+        { error: "Hanya Admin gudang atau Manager yang dapat membuka kembali nota yang sudah lunas." },
+        { status: 401 },
+      )
     }
 
     const { id: purchaseId } = await params
     const purchase = await prisma.purchase.findUnique({ where: { id: purchaseId } })
     if (!purchase) {
       return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
+    }
+
+    // Admin wajib punya gudang, dan hanya boleh menyentuh notanya sendiri.
+    // Pola `warehouseId &&` sengaja dihindari: Admin tanpa gudang justru
+    // akan MELEWATI pemeriksaan ini, kebalikan dari yang dimaksud.
+    if (role === "ADMIN") {
+      if (!session.user.warehouseId) {
+        return NextResponse.json({ error: "Akun Admin ini belum ditugaskan ke gudang." }, { status: 403 })
+      }
+      if (purchase.warehouseId !== session.user.warehouseId) {
+        return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
+      }
     }
 
     if (purchase.status_approval !== "sudah_transfer") {
@@ -56,19 +74,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       )
     }
 
-    /*
-     * Kewajiban ke lapak dihitung dengan rumus yang sama persis dengan
-     * pemeriksa keutuhan data (scripts/audit-data.mjs). Kalau di sini
-     * dipakai rumus lain, koreksinya bisa menghasilkan baris yang langsung
-     * dilaporkan melanggar oleh auditnya sendiri.
-     */
-    const nilaiNota =
-      (purchase.total_nilai_setelah_retur ?? 0) -
-      ((purchase.potongan_sampah ?? 0) +
-        (purchase.potongan_susut ?? 0) +
-        (purchase.potongan_air ?? 0) +
-        (purchase.potongan_karung ?? 0))
-    const kewajiban = nilaiNota - (purchase.dp_yang_digunakan ?? 0)
+    // Satu rumus untuk server dan layar; lihat kewajibanKeLapak().
+    const kewajiban = kewajibanKeLapak(purchase)
 
     let hasil
     try {

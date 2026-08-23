@@ -96,7 +96,7 @@ export default async function AdminTransferPage() {
           </div>
         ))}
       </div>
-      <TransferList purchases={purchases} />
+      <TransferList purchases={purchases} bolehKoreksi={session.user.role === "ADMIN"} />
     </div>
   )
 }

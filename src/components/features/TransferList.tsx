@@ -8,6 +8,8 @@ import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import { skemaPembayaran, statusPembayaran } from "@/lib/paymentStatus"
+import { kewajibanKeLapak } from "@/lib/settlement"
+import KoreksiKekurangan from "@/components/features/KoreksiKekurangan"
 
 type TransferFilter = "all" | "pending" | "transferred" | "termin"
 type PurchaseWithRelations = Purchase & { supplier: Supplier; items: PurchaseItem[] }
@@ -24,7 +26,19 @@ function formatDateTime(value: string | Date) {
   return new Date(value).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" })
 }
 
-export default function TransferList({ purchases }: { purchases: PurchaseWithRelations[] }) {
+export default function TransferList({
+  purchases,
+  bolehKoreksi = false,
+}: {
+  purchases: PurchaseWithRelations[]
+  /**
+   * Layar ini juga dibuka Staff, tapi jalur koreksinya hanya untuk Admin
+   * gudang dan Manager. Tanpa penanda ini tombolnya tetap tampil untuk
+   * Staff dan berakhir 401 -- perjalanan yang tidak pernah bisa selesai,
+   * pola yang sama dengan tombol Edit pada nota yang sudah ditransfer.
+   */
+  bolehKoreksi?: boolean
+}) {
   const router = useRouter()
   const [uploading, setUploading] = useState<string | null>(null)
   const [preview, setPreview] = useState<{ src: string; title: string } | null>(null)
@@ -229,6 +243,16 @@ export default function TransferList({ purchases }: { purchases: PurchaseWithRel
                 </div>
 
                 <div className="flex flex-col justify-between p-5" style={{ background: "var(--surface)" }}>
+                  {/* Nota yang sudah ditransfer dan tercatat lunas masih
+                      bisa keliru: nominal yang benar-benar dikirim kadang
+                      lebih kecil dari yang tercatat. Admin gudang inilah
+                      yang pertama tahu, jadi jalur koreksinya ada di sini,
+                      bukan cuma di layar Manager. */}
+                  {bolehKoreksi && isTransferred && !isPendingTermin && (
+                    <div className="mb-3 rounded-[var(--radius-md)] border p-3" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
+                      <KoreksiKekurangan purchaseId={p.id} kewajiban={kewajibanKeLapak(p)} />
+                    </div>
+                  )}
                   {isTransferred && buktiTransfer ? (
                     <div className="space-y-3">
                       <button
