@@ -12,7 +12,12 @@ import { formatAuditAction } from "@/lib/auditLabels"
 
 // Helper formatters
 function fmtRp(n: number) {
-  return "Rp " + (n || 0).toLocaleString("id-ID")
+  // Dibulatkan ke rupiah penuh. Tanpa ini harga rata-rata per kg -- satu-
+  // satunya angka di laporan ini yang hasil pembagian -- keluar sebagai
+  // "Rp 6.136,364": pecahan rupiah yang tidak ada artinya, dan pemisah
+  // ribuan bertitik berdampingan dengan desimal berkoma justru bikin
+  // angkanya susah dibaca sekilas.
+  return "Rp " + Math.round(n || 0).toLocaleString("id-ID")
 }
 function fmtKg(n: number) {
   return (n || 0).toLocaleString("id-ID") + " KG"
@@ -170,7 +175,7 @@ export default async function ManagerReportsPage({
               />
               <Link
                 href={`/api/manager/export?bulan=${selectedBulan}&tahun=${selectedTahun}`}
-                className="premium-button flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                className="premium-button btn-netral flex items-center justify-center gap-2 px-4 py-2.5 text-sm"
               >
                 <Download className="h-4 w-4" />
                 Export CSV
@@ -194,58 +199,63 @@ export default async function ManagerReportsPage({
         <p className="text-xs text-slate-400 mt-0.5">Dicetak pada: {new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}</p>
       </div>
 
-      {/* Executive Overview */}
-      <section className="interactive-surface overflow-hidden border border-slate-200/80 bg-white print:hidden">
-        <div className="grid gap-px bg-slate-100 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(180px,1fr))]">
-          <div className="bg-slate-950 p-6 text-white">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Executive overview</p>
-            <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Laporan {selectedPeriodLabel}</h3>
-            <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-slate-300">
-              Ringkasan siap-review untuk performa tonase, target, pembayaran, dan kualitas data operasional.
-            </p>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-black">
-              <span className={`h-2 w-2 rounded-full ${reportIssueCount === 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
-              {reportHealthLabel}
-            </div>
+      {/* Empat angka periode.
+
+          Sebelumnya angka yang sama ditampilkan DUA KALI: panel hitam
+          "Executive overview" menyebut Tonase Periode dan Pencapaian
+          Target, lalu empat kartu di bawahnya mengulang keduanya. Yang
+          panel hanya tampil di layar (print:hidden) dan yang kartu ikut
+          tercetak, jadi duplikasinya cuma terasa saat dibaca di layar --
+          justru saat orang paling banyak membacanya.
+
+          Sekarang satu deret saja, memakai .stat-strip seperti layar
+          Manager lainnya. Catatan kesehatan datanya turun jadi satu baris
+          di bawahnya, bukan kartu tersendiri. */}
+      <div className="stat-strip print:grid-cols-4">
+        <div className="stat-tile">
+          <span className="stat-label">Tonase Periode</span>
+          <div className="stat-value-row">
+            <span className="stat-value">{fmtTon(periodKg)}</span>
           </div>
-
-          <ExecutiveSignal label="Tonase Periode" value={fmtTon(periodKg)} description={`${fmtKg(periodKg)} pada periode aktif`} />
-          <ExecutiveSignal label="Pencapaian Target" value={periodTarget > 0 ? `${periodAchievement.toFixed(1)}%` : "-"} description={periodTarget > 0 ? `${fmtKg(periodTarget)} target bulanan` : "Target belum diset"} />
-          <ExecutiveSignal label="Health Note" value={reportIssueCount.toLocaleString("id-ID")} description={reportHealthDescription} />
+          <span className="stat-delta flat">{fmtKg(periodKg)}</span>
         </div>
-      </section>
-
-      {/* YTD Aggregate Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 print:grid-cols-4 print:gap-3">
-        {/* Tonase Periode */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tonase Periode</span>
-          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtTon(periodKg)}</div>
-          <div className="text-xs text-slate-500 mt-1">{fmtKg(periodKg)}</div>
-        </div>
-
-        {/* Belanja Periode */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Belanja Periode</span>
-          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtRp(periodSpent)}</div>
-          <div className="text-xs text-slate-500 mt-1">Pengeluaran bulan aktif</div>
-        </div>
-
-        {/* Avg Price */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Harga Rata-rata / kg</span>
-          <div className="text-2xl font-black text-slate-800 mt-1.5">{fmtRp(periodAvgPrice)}</div>
-          <div className="text-xs text-slate-500 mt-1">Biaya per-kilogram periode</div>
-        </div>
-
-        {/* Period Achievement */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-4 print:border-slate-300">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target Periode</span>
-          <div className={`text-2xl font-black mt-1.5 ${periodAchievement >= 100 ? 'text-emerald-600' : 'text-cyan-600'}`}>
-            {periodTarget > 0 ? `${periodAchievement.toFixed(1)}%` : "-"}
+        <div className="stat-tile">
+          <span className="stat-label">Belanja Periode</span>
+          <div className="stat-value-row">
+            <span className="stat-value">{fmtRp(periodSpent)}</span>
           </div>
-          <div className="text-xs text-slate-500 mt-1">{periodTarget > 0 ? `${fmtKg(periodTarget)} target` : "Target belum diset"}</div>
+          <span className="stat-delta flat">Pengeluaran bulan aktif</span>
         </div>
+        <div className="stat-tile">
+          <span className="stat-label">Harga Rata-rata</span>
+          <div className="stat-value-row">
+            <span className="stat-value">{fmtRp(periodAvgPrice)}</span>
+          </div>
+          <span className="stat-delta flat">Per kilogram</span>
+        </div>
+        <div className="stat-tile">
+          <span className="stat-label">Pencapaian Target</span>
+          <div className="stat-value-row">
+            <span className="stat-value" style={periodTarget > 0 && periodAchievement >= 100 ? { color: "var(--success)" } : undefined}>
+              {periodTarget > 0 ? `${periodAchievement.toFixed(1)}%` : "-"}
+            </span>
+          </div>
+          <span className="stat-delta flat">{periodTarget > 0 ? `${fmtKg(periodTarget)} target` : "Target belum diset"}</span>
+        </div>
+      </div>
+
+      <div
+        className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[var(--radius-md)] border px-4 py-3 text-sm print:hidden"
+        style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+      >
+        <span
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ background: reportIssueCount === 0 ? "var(--success)" : "var(--warning)" }}
+          aria-hidden="true"
+        />
+        <span className="font-bold" style={{ color: "var(--foreground)" }}>{reportHealthLabel}</span>
+        <span aria-hidden="true" style={{ color: "var(--muted-faint)" }}>&middot;</span>
+        <span style={{ color: "var(--muted)" }}>{reportHealthDescription}</span>
       </div>
 
       {/* Report Integrity Snapshot */}
@@ -281,14 +291,14 @@ export default async function ManagerReportsPage({
       </div>
 
       {/* Period Audit Trail */}
-      <div className="interactive-surface overflow-hidden border border-slate-200/80 bg-white print:hidden">
+      <div className="section overflow-hidden print:hidden">
         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-teal-700">Audit trail</p>
+            <span className="section-eyebrow">Audit trail</span>
             <h3 className="mt-1 text-base font-black text-slate-950">Aktivitas Periode {selectedPeriodLabel}</h3>
             <p className="mt-1 text-xs font-medium text-slate-500">Jejak perubahan penting yang masuk ke periode laporan.</p>
           </div>
-          <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-black text-slate-600">
+          <div className="rounded-full border px-3 py-1 text-xs font-black" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
             {periodAuditLogs.length} aktivitas
           </div>
         </div>
@@ -301,7 +311,7 @@ export default async function ManagerReportsPage({
             periodAuditLogs.map(log => (
               <div key={log.id} className="grid gap-3 px-6 py-4 text-sm md:grid-cols-[minmax(180px,1fr)_minmax(180px,1.2fr)_minmax(140px,0.8fr)] md:items-center">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-500">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
                     <Activity className="h-4 w-4" />
                   </span>
                   <div>
@@ -322,7 +332,7 @@ export default async function ManagerReportsPage({
       </div>
 
       {/* Monthly Recap Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden print:border-slate-300">
+      <div className="section overflow-hidden print:border-slate-300">
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 print:px-4 print:py-2">
           <h3 className="font-bold text-slate-800 text-base">Rincian Performa Bulanan ({selectedTahun})</h3>
           <p className="text-xs text-slate-400 print:hidden">Breakdown tonase, pengeluaran belanja, target dan tingkat pencapaian.</p>
@@ -376,7 +386,7 @@ export default async function ManagerReportsPage({
 
       {/* Bottom Side-by-Side: CC Contributions Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:grid-cols-1 print:gap-4">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:border-slate-300 print:p-4">
+        <div className="section section-body lg:col-span-2 print:border-slate-300 print:p-4">
           <h3 className="font-bold text-slate-800 text-base mb-1">Kontribusi Collection Center (YTD)</h3>
           <p className="text-xs text-slate-400 mb-6 print:hidden">Urutan CC dengan kontribusi pasokan bahan baku PET terbesar tahun ini.</p>
           
@@ -385,7 +395,7 @@ export default async function ManagerReportsPage({
               <div key={cc.nama} className="space-y-2">
                 <div className="flex justify-between items-center text-sm font-semibold">
                   <span className="text-slate-700 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-xs flex items-center justify-center font-bold">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
                       {i + 1}
                     </span>
                     {cc.nama}
@@ -397,8 +407,8 @@ export default async function ManagerReportsPage({
                 {/* Visual contribution bar */}
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"
-                    style={{ width: `${cc.pctContribution}%` }}
+                    className="h-full rounded-full"
+                    style={{ width: `${cc.pctContribution}%`, background: "var(--brand)" }}
                   />
                 </div>
                 <div className="flex justify-between text-[11px] text-slate-400 font-mono">
@@ -411,7 +421,7 @@ export default async function ManagerReportsPage({
         </div>
 
         {/* Notes & Approval section (highly formal for print recaps) */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col justify-between print:border-slate-300 print:p-4">
+        <div className="section section-body flex flex-col justify-between print:border-slate-300 print:p-4">
           <div>
             <h3 className="font-bold text-slate-800 text-base mb-4">Catatan Laporan</h3>
             <p className="text-slate-500 text-xs leading-relaxed space-y-2">
@@ -435,23 +445,6 @@ export default async function ManagerReportsPage({
   )
 }
 
-function ExecutiveSignal({
-  label,
-  value,
-  description,
-}: {
-  label: string
-  value: string
-  description: string
-}) {
-  return (
-    <div className="bg-white p-6">
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-black tracking-[-0.04em] text-slate-950">{value}</p>
-      <p className="mt-2 text-xs font-medium leading-5 text-slate-500">{description}</p>
-    </div>
-  )
-}
 
 function ReportIntegrityCard({
   icon,
@@ -474,8 +467,8 @@ function ReportIntegrityCard({
   }[tone]
 
   return (
-    <div className="interactive-surface flex items-center gap-4 border border-slate-200/80 bg-white p-4 print:shadow-none">
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${toneClass}`}>
+    <div className="section section-body flex items-center gap-4 print:shadow-none">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border ${toneClass}`}>
         {icon}
       </div>
       <div className="min-w-0">
