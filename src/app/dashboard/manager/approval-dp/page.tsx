@@ -35,7 +35,7 @@ export default async function DPApprovalManager() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Manager approval"
+        eyebrow="Persetujuan manager"
         title="Approval Kasbon (DP)"
         description="Pengajuan yang menunggu keputusan Manager, beserta riwayat keputusan untuk pemantauan penyetuju."
         actions={(

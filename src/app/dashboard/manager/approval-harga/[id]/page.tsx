@@ -30,7 +30,7 @@ export default async function ApprovalHargaDetailPage({ params }: { params: Prom
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Price approval"
+        eyebrow="Persetujuan harga"
         title="Review Harga Pembelian"
         description={
           <>

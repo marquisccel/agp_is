@@ -102,7 +102,7 @@ export default async function MasterDataPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Data governance"
+        eyebrow="Tata kelola data"
         title="Master Data"
         description="Kelola gudang, lapak, pengguna operasional, dan standar harga SKU dalam satu pusat data yang konsisten."
       />

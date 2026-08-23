@@ -163,7 +163,7 @@ export default async function ManagerReportsPage({
     <div className="space-y-6 print:p-0 print:space-y-4">
       <div className="print:hidden">
         <PageHeader
-          eyebrow="Executive report"
+          eyebrow="Laporan eksekutif"
           title="Rekap Laporan Performa"
           description="Analisis performa realisasi target bulanan dan tahunan seluruh Collection Center."
           actions={(

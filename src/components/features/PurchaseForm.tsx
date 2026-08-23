@@ -3,8 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react"
 import dynamic from "next/dynamic"
 import type { Supplier } from "@prisma/client"
+import RingkasanLapak from "@/components/features/RingkasanLapak"
 import ElegantSelect from "@/components/ui/ElegantSelect"
-import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 import { SKU_OPTIONS } from "@/lib/skuList"
 import { fmtDigitInput, fmtRp, fmtSkalaRupiah } from "@/lib/format"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
@@ -231,7 +231,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
       )}
 
       <form onSubmit={handleSubmit} className="premium-workflow space-y-6">
-        {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">{error}</div>}
+        {error && <div className="notice tone-warning text-sm font-medium">{error}</div>}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Supplier Search Dropdown */}
@@ -282,17 +282,18 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
                         >
                           <span className="min-w-0">
                             <span className="block truncate">{s.nama}</span>
-                            <span className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-normal">
-                              <span className={`rounded-full border px-2 py-0.5 ${
-                                s.transactionStatus === "GREEN"
-                                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                  : "border-rose-200 bg-rose-50 text-rose-700"
-                              }`}>
-                                {s.transactionStatus === "GREEN" ? "Hijau" : "Merah"}
-                              </span>
-                              <span className="text-slate-400">
-                                Target {Number(s.target_bulanan_kg || 0).toLocaleString("id-ID")} kg
-                              </span>
+                            {/* Pil berbunyi "Hijau"/"Merah" -- nama warna,
+                                bukan artinya. Diganti pola titik + kata,
+                                sama seperti daftar Data Lapak. */}
+                            <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-normal" style={{ color: "var(--muted)" }}>
+                              <span
+                                className="h-1.5 w-1.5 shrink-0 rounded-full"
+                                style={{ background: s.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
+                                aria-hidden="true"
+                              />
+                              <span>{s.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
+                              <span aria-hidden="true">&middot;</span>
+                              <span>Target {Number(s.target_bulanan_kg || 0).toLocaleString("id-ID")} kg</span>
                             </span>
                           </span>
                           {s.kontak_wa && <span className="ml-3 text-[10px] text-slate-400 font-normal">{s.kontak_wa}</span>}
@@ -305,39 +306,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
             </div>
             <input type="hidden" name="supplierId" value={supplierId} required />
             {selectedSupplier && (
-              <div className="mt-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-bold text-slate-900">{selectedSupplier.nama}</span>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                    selectedSupplier.transactionStatus === "GREEN"
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-rose-200 bg-rose-50 text-rose-700"
-                  }`}>
-                    {selectedSupplier.transactionStatus === "GREEN" ? "Status hijau" : "Status merah"}
-                  </span>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                    hasResolvedSupplierCoordinates(selectedSupplier)
-                      ? "border-sky-200 bg-sky-50 text-sky-700"
-                      : "border-slate-200 bg-slate-50 text-slate-500"
-                  }`}>
-                    {hasResolvedSupplierCoordinates(selectedSupplier) ? "Map ready" : "Lokasi belum lengkap"}
-                  </span>
-                </div>
-                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                  {selectedSupplier.kontak_wa ? <span>WA {selectedSupplier.kontak_wa}</span> : <span>Kontak belum diisi</span>}
-                  <span>Target {Number(selectedSupplier.target_bulanan_kg || 0).toLocaleString("id-ID")} kg/bulan</span>
-                  {(selectedSupplier.link || hasResolvedSupplierCoordinates(selectedSupplier)) && (
-                    <a
-                      href={getSupplierMapHref({ ...selectedSupplier, warehouseName: namaGudang })}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-sky-700 hover:text-sky-800"
-                    >
-                      Buka Maps
-                    </a>
-                  )}
-                </div>
-              </div>
+              <RingkasanLapak lapak={selectedSupplier} namaGudang={namaGudang} tampilkanKontak />
             )}
           </div>
 
@@ -430,7 +399,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
                     <button
                       type="button"
                       onClick={() => removeItem(idx)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="btn-netral tone-danger rounded-[var(--radius-sm)] p-2"
                       title="Hapus"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>

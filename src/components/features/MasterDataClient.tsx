@@ -352,8 +352,11 @@ export default function MasterDataClient({
                 <div style={{ width: `${globalStats.totalSuppliers ? (globalStats.totalRedSuppliers / globalStats.totalSuppliers) * 100 : 0}%`, background: "var(--danger)" }} />
               </div>
               <div className="mt-4 grid grid-cols-3 gap-4">
-                <KomposisiItem warna="var(--success)" nilai={globalStats.totalGreenSuppliers} label="Hijau" sub="Sudah transaksi valid" />
-                <KomposisiItem warna="var(--danger)" nilai={globalStats.totalRedSuppliers} label="Merah" sub="Perlu aktivasi" />
+                {/* Dua label terakhir yang masih menyebut nama warna, bukan
+                    artinya. Baris lapak di tab sebelah sudah memakai
+                    "Aktif"/"Belum aktif" untuk keadaan yang sama. */}
+                <KomposisiItem warna="var(--success)" nilai={globalStats.totalGreenSuppliers} label="Aktif" sub="Sudah transaksi valid" />
+                <KomposisiItem warna="var(--danger)" nilai={globalStats.totalRedSuppliers} label="Belum aktif" sub="Perlu aktivasi" />
                 <KomposisiItem warna="var(--muted-faint)" nilai={globalStats.totalMapReadySuppliers} label="Berkoordinat" sub="Lokasi siap dipetakan" />
               </div>
             </div>

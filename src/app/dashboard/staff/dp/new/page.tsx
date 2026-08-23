@@ -23,12 +23,12 @@ export default async function StaffNewDPRequestPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <PageHeader
-        eyebrow="Cashflow request"
+        eyebrow="Pengajuan kasbon"
         title="Pengajuan Kasbon Baru"
         description="Ajukan kasbon supplier untuk gudang Anda dengan alur validasi yang rapi."
       />
 
-      <div className="workflow-card p-6 md:p-8">
+      <div className="section section-body">
         <DPRequestForm suppliers={suppliers} role={session.user.role} />
       </div>
     </div>

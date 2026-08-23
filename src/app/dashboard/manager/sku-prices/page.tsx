@@ -26,7 +26,7 @@ export default async function SkuPricesPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       <PageHeader
-        eyebrow="Pricing governance"
+        eyebrow="Standar harga"
         title="Pengaturan Standar Harga SKU"
         description="Atur harga batas atas per SKU untuk masing-masing Collection Center."
         actions={(

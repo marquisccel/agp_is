@@ -36,7 +36,7 @@ export default async function ManagerAuditTrailPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Compliance & traceability"
+        eyebrow="Kepatuhan dan jejak"
         title="Audit Trail"
         description={`Riwayat aksi operasional lintas Collection Center, ${MAX_ROWS} entri terbaru. Filter berdasarkan tanggal, peran, aksi, dan entitas.`}
       />

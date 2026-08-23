@@ -124,7 +124,7 @@ export default async function ManagerSusutPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Weight control"
+        eyebrow="Kendali timbangan"
         title="Analisis Penyusutan Timbangan"
         description="Pantau susut dan lebih timbangan per lapak, per SKU, dan per Collection Center."
         actions={(

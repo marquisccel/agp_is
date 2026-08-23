@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Supplier } from "@prisma/client"
+import RingkasanLapak from "@/components/features/RingkasanLapak"
 import ElegantSelect from "@/components/ui/ElegantSelect"
-import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 import { fmtDigitInput, fmtSkalaRupiah } from "@/lib/format"
 
 export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers: Supplier[], role?: string }) {
@@ -22,7 +22,9 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
     { value: "", label: "Pilih supplier" },
     ...suppliers.map(s => ({
       value: s.id as string,
-      label: `${s.nama} - ${s.transactionStatus === "GREEN" ? "Hijau" : "Merah"} - Target ${s.target_bulanan_kg} kg`,
+      // Nama warna, bukan artinya -- keluhan yang sudah dibetulkan di
+      // Master Data dan Data Lapak, tapi masih tersisa di daftar pilihan.
+      label: `${s.nama} - ${s.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"} - Target ${s.target_bulanan_kg} kg`,
     })),
   ]
 
@@ -60,18 +62,18 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
       // Admin tidak lagi punya halaman kasbon, jadi cabangnya dihapus.
       router.push(role === "MANAGER" ? "/dashboard/manager/dp" : "/dashboard/staff/dp")
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Gagal mengajukan kasbon")
       setLoading(false)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">{error}</div>}
+      {error && <div className="notice tone-warning text-sm font-medium">{error}</div>}
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Pilih Lapak</label>
+        <label className="field-label">Pilih Lapak</label>
         <ElegantSelect
           value={supplierId}
           options={supplierOptions}
@@ -79,46 +81,13 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
           ariaLabel="Pilih supplier"
           className="w-full"
         />
-        {selectedSupplier && (
-          <div className="mt-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-slate-900">{selectedSupplier.nama}</span>
-              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                selectedSupplier.transactionStatus === "GREEN"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-rose-200 bg-rose-50 text-rose-700"
-              }`}>
-                {selectedSupplier.transactionStatus === "GREEN" ? "Status hijau" : "Status merah"}
-              </span>
-              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                hasResolvedSupplierCoordinates(selectedSupplier)
-                  ? "border-sky-200 bg-sky-50 text-sky-700"
-                  : "border-slate-200 bg-slate-50 text-slate-500"
-              }`}>
-                {hasResolvedSupplierCoordinates(selectedSupplier) ? "Map ready" : "Lokasi belum lengkap"}
-              </span>
-            </div>
-            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-              <span>Target {Number(selectedSupplier.target_bulanan_kg || 0).toLocaleString("id-ID")} kg per bulan</span>
-              {(selectedSupplier.link || hasResolvedSupplierCoordinates(selectedSupplier)) && (
-                <a
-                  href={getSupplierMapHref({ ...selectedSupplier })}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-sky-700 hover:text-sky-800"
-                >
-                  Buka Maps
-                </a>
-              )}
-            </div>
-          </div>
-        )}
+        {selectedSupplier && <RingkasanLapak lapak={selectedSupplier} />}
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Nominal Kasbon (Rp)</label>
+        <label className="field-label">Nominal Kasbon (Rp)</label>
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 font-semibold">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 font-semibold" style={{ color: "var(--muted-faint)" }}>
             Rp
           </div>
           <input
@@ -127,7 +96,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
             required
             value={fmtDigitInput(nominal)}
             onChange={(e) => setNominal(e.target.value.replace(/\D/g, ""))}
-            className="w-full border-slate-200 rounded-xl pl-12 pr-4 py-3 bg-slate-50 focus:bg-white outline-none transition-all font-mono text-lg font-bold tabular-nums tracking-wide"
+            className="field-input field-icon font-mono text-lg font-bold tabular-nums tracking-wide"
             placeholder="Contoh: 1.500.000"
             aria-describedby="nominal-skala"
           />
@@ -140,32 +109,34 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
             Nominal minimal Rp 10.000.
           </p>
         )}
-        <p className="text-xs text-slate-500 mt-2">Catatan: Semua pengajuan kasbon memerlukan persetujuan, berapa pun nominalnya — pengajuan Staff diputus oleh Admin gudang, pengajuan Admin diputus oleh Manager.</p>
+        <p className="mt-2 text-xs" style={{ color: "var(--muted-faint)" }}>
+          Semua pengajuan kasbon diputus Manager, berapa pun nominalnya. Tingkat verifikasi Admin sudah dihapus.
+        </p>
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Keterangan untuk Manager (Opsional)</label>
+        <label className="field-label">Keterangan untuk Manager (Opsional)</label>
         <textarea
           value={keterangan}
           onChange={(e) => setKeterangan(e.target.value)}
-          className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all text-sm"
+          className="field-input text-sm"
           placeholder="Tulis alasan pengajuan kasbon agar memudahkan Manager menyetujui..."
           rows={3}
         />
       </div>
 
-      <div className="pt-4 flex justify-end gap-4 border-t border-slate-100">
+      <div className="flex justify-end gap-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-3 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+          className="btn-netral premium-button px-6 py-3"
         >
           Batal
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="premium-button btn-primer rounded-xl px-8 py-3 font-bold disabled:opacity-70"
+          className="btn-primer premium-button rounded-[var(--radius-sm)] px-8 py-3 font-bold disabled:opacity-70"
         >
           {loading ? "Memproses..." : "Ajukan Kasbon"}
         </button>

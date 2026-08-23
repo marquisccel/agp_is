@@ -24,7 +24,7 @@ export default async function ApprovalHargaList() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Manager approval"
+        eyebrow="Persetujuan manager"
         title="Approval Harga"
         description="Daftar transaksi yang melebihi standar harga maksimum."
         actions={(

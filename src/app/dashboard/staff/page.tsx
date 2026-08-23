@@ -152,7 +152,7 @@ export default async function StaffDashboard() {
       )}
 
       <PageHeader
-        eyebrow="Operational input"
+        eyebrow="Input operasional"
         title="Input Pembelian PET"
         description={`Kelola transaksi pembelian dan target harian untuk ${namaGudang}.`}
       />

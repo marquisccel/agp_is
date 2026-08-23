@@ -51,7 +51,7 @@ export default async function ManagerSuppliersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Lapak performance"
+        eyebrow="Kinerja lapak"
         title="Data Lapak"
         description="Pantau kualitas, volume, harga, dan kelengkapan data lapak dengan ritme visual yang konsisten."
       />

@@ -276,7 +276,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
   return (
     <div className="premium-workflow space-y-6">
       <PageHeader
-        eyebrow="Lapak detail"
+        eyebrow="Profil lapak"
         title={`Detail Lapak ${supplier.nama}`}
         description={`Collection Center ${supplier.warehouse?.nama.replace(/^Gudang\s+/i, "") || "CC"}`}
         actions={

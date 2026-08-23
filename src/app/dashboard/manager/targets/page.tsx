@@ -18,7 +18,7 @@ export default async function ManagerTargetPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <PageHeader
-        eyebrow="Performance planning"
+        eyebrow="Rencana kinerja"
         title="Setting Target Gudang"
         description={(
           <>

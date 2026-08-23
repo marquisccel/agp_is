@@ -46,7 +46,7 @@ export default async function ManagerHistoryPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Transaction ledger"
+        eyebrow="Catatan transaksi"
         title="Daftar Transaksi"
         description="Pantau dan filter seluruh transaksi pembelian PET di semua Collection Center dengan status yang mudah dipindai."
       />

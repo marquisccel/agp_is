@@ -69,7 +69,7 @@ export default async function ManagerDpPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Cashflow control"
+        eyebrow="Kendali kasbon"
         title="Rekap Saldo Uang Muka (DP) & Kasbon"
         description="Pantau dan analisis detail pemakaian serta sisa saldo dana kasbon supplier."
         actions={(
