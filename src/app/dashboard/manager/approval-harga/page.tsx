@@ -34,7 +34,7 @@ export default async function ApprovalHargaList() {
         )}
       />
 
-      <div className="interactive-surface overflow-hidden border border-slate-200/80">
+      <div className="section overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">

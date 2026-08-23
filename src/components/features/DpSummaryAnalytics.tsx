@@ -71,8 +71,8 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       {/* Global Summary Card Metrics */}
       <div className={`grid grid-cols-1 gap-3 p-4 sm:p-5 md:grid-cols-3${summaryOnly ? "" : " border-b border-slate-100"}`}>
         {/* Metric 1: Total Approved DP */}
-        <div className="interactive-surface flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+        <div className="section section-body flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
             <CreditCard className="w-5 h-5" />
           </div>
           <div>
@@ -82,8 +82,8 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         </div>
 
         {/* Metric 2: Total Used DP */}
-        <div className="interactive-surface flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+        <div className="section section-body flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
             <Wallet className="w-5 h-5" />
           </div>
           <div>
@@ -120,7 +120,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       /* List Card Section (No Horizontal Scroll) */
       <div className="space-y-4 p-4 sm:p-6">
         {filtered.length === 0 ? (
-          <div className="text-center text-slate-400 text-sm py-12 border border-dashed border-slate-200 rounded-2xl">
+          <div className="rounded-[var(--radius-lg)] border border-dashed py-12 text-center text-sm" style={{ borderColor: "var(--border)", color: "var(--muted-faint)" }}>
             <p className="font-semibold">Belum ada data DP / Kasbon disetujui.</p>
             <p className="text-xs mt-1">Data saldo akan terisi setelah manager menyetujui pengajuan DP lapak.</p>
           </div>
@@ -139,7 +139,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
                   <div className="min-w-0">
                     <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
                       {row.namaLapak}
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100/50">
+                      <span className="rounded-[8px] border px-2 py-0.5 text-[10px] font-bold" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
                         {row.transaksiDp}x DP disetujui
                       </span>
                     </div>

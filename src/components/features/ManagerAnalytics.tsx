@@ -246,7 +246,7 @@ export default function ManagerAnalytics({
 
   if (!activeData) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-slate-100 text-center text-slate-400">
+      <div className="section section-body text-center" style={{ color: "var(--muted-faint)" }}>
         Belum ada data untuk dianalisis.
       </div>
     )

@@ -755,7 +755,7 @@ export default function ManagerSuppliersClient({
       ) : (
         <div
           key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedMonth}-${selectedYear}-${searchQuery}-empty`}
-          className="interactive-surface border border-dashed border-slate-200/90 p-12 text-center soft-enter"
+          className="section section-body border-dashed p-12 text-center soft-enter"
         >
           <Users className="mx-auto mb-3 h-10 w-10 text-slate-300" />
           <h4 className="font-black text-slate-800">Lapak tidak ditemukan</h4>

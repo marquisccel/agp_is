@@ -652,26 +652,26 @@ export default async function ManagerDashboard({
 
       {/* Alert target harian: hanya tampil di hari kerja */}
       {isCurrentMonth && isWorkingToday && missedTargetWarehouses.length > 0 && (
-        <div className="bg-rose-50 border border-rose-200 rounded-3xl p-5 space-y-4 shadow-sm animate-in fade-in duration-200">
-          <div className="flex items-center gap-2.5 border-b border-rose-200 pb-2.5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-rose-500 shrink-0 animate-pulse">
+        <div className="section section-body space-y-4 animate-in fade-in duration-200" style={{ borderLeft: "3px solid var(--warning)" }}>
+          <div className="flex items-center gap-2.5 border-b pb-2.5" style={{ borderColor: "var(--border)" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0" style={{ color: "var(--warning)" }}>
               <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
               <line x1="12" y1="9" x2="12" y2="13"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             <div>
-              <h3 className="text-sm font-bold text-rose-800 uppercase tracking-wider">Laporan Target Harian Belum Tercapai</h3>
-              <p className="text-xs text-rose-600 font-medium">Ada {missedTargetWarehouses.length} Collection Center yang belum mencapai target harian hari ini</p>
+              <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--foreground)" }}>Laporan Target Harian Belum Tercapai</h3>
+              <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>Ada {missedTargetWarehouses.length} Collection Center yang belum mencapai target harian hari ini</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {missedTargetWarehouses.map((w, index) => {
               const pct = w.target > 0 ? (w.actual / w.target) * 100 : 0
               return (
-                <div key={index} className="bg-white border border-rose-100 p-4 rounded-2xl flex flex-col justify-between hover:shadow-md transition-all">
+                <div key={index} className="flex flex-col justify-between rounded-[var(--radius-md)] border p-4 transition-all" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-sm font-bold text-slate-800">{w.nama}</span>
-                    <span className="text-xs font-bold text-rose-600 px-2.5 py-0.5 bg-rose-50 rounded-full">{pct.toFixed(0)}%</span>
+                    <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>{pct.toFixed(0)}%</span>
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs text-slate-600 leading-relaxed">
@@ -702,7 +702,7 @@ export default async function ManagerDashboard({
               Pantau tonase, target, approval, dan risiko seluruh Collection Center dalam satu tampilan kerja.
             </p>
           </div>
-          <div className="w-full rounded-[26px] border border-slate-200/80 bg-white/72 p-4 shadow-sm backdrop-blur-xl xl:w-[540px]">
+          <div className="section section-body w-full xl:w-[540px]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Periode Laporan</p>
@@ -713,19 +713,19 @@ export default async function ManagerDashboard({
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
               <Link
                 href="/dashboard/manager/reports"
-                className="premium-button btn-primer px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm flex items-center justify-center gap-2 group whitespace-nowrap"
+                className="premium-button btn-primer flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-semibold group"
               >
                 Rekap Laporan
               </Link>
               <Link
                 href="/dashboard/manager/sku-prices"
-                className="premium-button bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300 hover:bg-slate-50 px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 group whitespace-nowrap"
+                className="premium-button btn-netral flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-semibold group"
               >
                 Harga Standar SKU
               </Link>
               <a
                 href={`/api/manager/export?bulan=${selectedBulan}&tahun=${selectedTahun}`}
-                className="premium-button bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300 hover:bg-slate-50 px-4 py-3 rounded-2xl text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 group whitespace-nowrap"
+                className="premium-button btn-netral flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-semibold group"
               >
                 Export Excel
               </a>

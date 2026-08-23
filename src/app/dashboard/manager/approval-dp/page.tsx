@@ -45,7 +45,7 @@ export default async function DPApprovalManager() {
         )}
       />
 
-      <div className="interactive-surface overflow-hidden border border-slate-200/80">
+      <div className="section overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
@@ -91,7 +91,7 @@ export default async function DPApprovalManager() {
         </div>
       </div>
 
-      <div className="interactive-surface overflow-hidden border border-slate-200/80">
+      <div className="section overflow-hidden">
         <div className="border-b border-slate-200/70 bg-white/55 px-6 py-4">
           <h2 className="text-sm font-black uppercase tracking-[0.08em] text-slate-500">Riwayat Keputusan Kasbon Terbaru</h2>
           <p className="mt-1 text-xs text-slate-400">Pemantauan penyetuju — mencakup kasbon yang diputus final oleh Admin gudang maupun oleh Manager.</p>

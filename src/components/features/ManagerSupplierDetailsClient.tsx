@@ -245,7 +245,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
     } else if (mOpi >= 60) {
       mGrade = "B"
       mGradeLabel = "Bagus/Cukup"
-      mGradeColor = "bg-blue-50 text-blue-700 border-blue-200"
+      mGradeColor = "border-[color:var(--border)] bg-[color:var(--bg-tint)] text-[color:var(--muted)]"
       mStars = 2
     } else {
       mGrade = "C"
@@ -282,7 +282,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         actions={
           <button
             onClick={() => router.back()}
-            className="premium-button flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+            className="premium-button btn-netral flex items-center gap-2 px-4 py-2.5 text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             Kembali
@@ -376,7 +376,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
               href={mapHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="premium-button flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+              className="premium-button btn-netral flex items-center justify-center gap-1.5 px-4 py-2 text-xs"
             >
               <MapPin className="h-4 w-4 shrink-0" />
               Lokasi Maps
@@ -487,7 +487,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
               href={mapHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="premium-button mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              className="premium-button btn-netral mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-sm"
             >
               <MapPin className="h-4 w-4" />
               Buka link Maps
@@ -539,7 +539,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                     </div>
                   </div>
 
-                  <div className="rounded-[var(--radius-md)] border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                  <div className="rounded-[var(--radius-md)] border px-4 py-3 text-sm" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
                     <p className="font-semibold text-slate-800">
                       {new Date(log.createdAt).toLocaleDateString("id-ID", {
                         dateStyle: "medium",

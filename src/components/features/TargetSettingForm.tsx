@@ -158,7 +158,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
 
   return (
     <div className="space-y-6">
-      <section className="interactive-surface border border-slate-200/80 p-5">
+      <section className="section section-body">
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <div className="flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
@@ -193,7 +193,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
       </section>
 
       {loading ? (
-        <div className="interactive-surface flex items-center justify-center gap-2 border border-slate-200/80 p-8 text-sm font-bold text-slate-500 soft-enter">
+        <div className="section section-body flex items-center justify-center gap-2 text-sm font-bold soft-enter" style={{ color: "var(--muted)" }}>
           <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
           Memuat target periode...
         </div>
@@ -208,7 +208,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
             return (
               <section
                 key={warehouse.id}
-                className="interactive-surface overflow-hidden border border-slate-200/80"
+                className="section overflow-hidden"
                 style={{ animationDelay: `${index * 45}ms` }}
               >
                 <div className="flex flex-col gap-3 border-b border-slate-200/70 bg-white/55 p-5 md:flex-row md:items-center md:justify-between">
@@ -220,7 +220,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                     <h3 className="font-black text-slate-950">Collection Center {cityName}</h3>
                     <p className="mt-1 text-xs text-slate-500">Target pembelian bahan baku PET Final</p>
                   </div>
-                  <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-black text-slate-500">
+                  <div className="rounded-full border px-3 py-1 text-xs font-black" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
                     {workingDaysThisMonth} hari kerja
                   </div>
                 </div>

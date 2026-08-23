@@ -115,7 +115,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
 
   return (
     <div className="space-y-4">
-      <section className="interactive-surface border border-slate-200/80 p-4">
+      <section className="section section-body">
         <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
@@ -125,7 +125,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
                 placeholder="Cari pengguna, record ID, aksi..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-4 text-sm font-semibold text-slate-800 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10"
+                className="field-input field-icon"
               />
             </div>
             <ElegantSelect value={selectedRole} options={roleOptions} onChange={setSelectedRole} ariaLabel="Filter peran" className="w-full" />
@@ -145,7 +145,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
           <button
             onClick={handleExportCsv}
             disabled={filteredLogs.length === 0}
-            className="premium-button flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="premium-button btn-netral flex items-center gap-2 px-4 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download className="h-3.5 w-3.5" />
             Export CSV (hasil filter)
@@ -153,7 +153,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
         </div>
       </section>
 
-      <section className="interactive-surface overflow-hidden border border-slate-200/80">
+      <section className="section overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">

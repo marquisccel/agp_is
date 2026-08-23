@@ -105,9 +105,9 @@ export default function SettingsPage() {
       />
 
       {/* Profile Card */}
-      <div className="interactive-surface bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <div className="w-9 h-9 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600">
+      <div className="section overflow-hidden">
+        <div className="flex items-center gap-3 border-b px-6 py-4" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
+          <div className="flex h-9 w-9 items-center justify-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
             <User className="w-5 h-5" />
           </div>
           <div>
@@ -162,11 +162,8 @@ export default function SettingsPage() {
           <button
             onClick={handleProfileSave}
             disabled={profileStatus === "saving"}
-            className={`premium-button flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold ${
-              profileStatus === "success"
-                ? "bg-emerald-500 text-white"
-                : "bg-slate-950 text-white hover:bg-slate-800"
-            } disabled:opacity-60`}
+            className={`premium-button flex items-center gap-2 rounded-[var(--radius-md)] px-5 py-2.5 text-sm font-bold disabled:opacity-60 ${profileStatus === "success" ? "" : "btn-primer"}`}
+            style={profileStatus === "success" ? { background: "var(--success)", color: "#fff", border: "1px solid var(--success)" } : undefined}
           >
             {profileStatus === "saving" ? (
               <span>Menyimpan...</span>
@@ -180,8 +177,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Password Card */}
-      <div className="interactive-surface bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
+      <div className="section overflow-hidden">
+        <div className="flex items-center gap-3 border-b px-6 py-4" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
           <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
             <Lock className="w-5 h-5" />
           </div>

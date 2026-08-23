@@ -192,7 +192,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
               return (
                 <div
                   key={row.supplierId}
-                  className="interactive-surface bg-white hover:bg-slate-50/50 rounded-lg p-4 border border-slate-200 shadow-sm transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4 group"
+                  className="section section-body flex flex-col justify-between gap-4 transition-all lg:flex-row lg:items-center group"
                 >
                   {/* Info Lapak */}
                   <div className="flex items-start gap-3 lg:w-1/4 min-w-0">
@@ -202,7 +202,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                     <div className="min-w-0">
                       <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
                         {row.namaLapak}
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100/50">
+                        <span className="rounded-[8px] border px-2 py-0.5 text-[10px] font-bold" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
                           {row.transaksi}x Transaksi
                         </span>
                       </div>

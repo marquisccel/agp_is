@@ -104,7 +104,7 @@ export default function ManagerHistoryClient({
     <div className="space-y-6">
       {dialog}
       {toastHost}
-      <div className="interactive-surface border border-slate-200/80 p-4">
+      <div className="section section-body">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -113,7 +113,7 @@ export default function ManagerHistoryClient({
               placeholder="Cari supplier, no. nota, staff..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-4 text-sm font-semibold text-slate-800 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10"
+              className="field-input field-icon"
             />
           </div>
 
@@ -153,7 +153,7 @@ export default function ManagerHistoryClient({
         </div>
       </div>
 
-      <div className="interactive-surface overflow-hidden border border-slate-200/80">
+      <div className="section overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">
@@ -227,20 +227,20 @@ export default function ManagerHistoryClient({
                             </Link>
                           ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
                             <Link href={`/nota/${purchase.id}`} target="_blank" className="w-full">
-                              <button className="premium-button w-full rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">
+                              <button className="premium-button btn-netral w-full px-3.5 py-1.5 text-xs">
                                 Lihat Nota
                               </button>
                             </Link>
                           ) : null}
 
                           <Link href={`/dashboard/manager/purchases/${purchase.id}`} className="w-full">
-                            <button className="premium-button w-full rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">
+                            <button className="premium-button btn-netral w-full px-3.5 py-1.5 text-xs">
                               Detail
                             </button>
                           </Link>
 
                           <Link href={`/dashboard/manager/edit/${purchase.id}`} className="w-full">
-                            <button className="premium-button w-full rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">
+                            <button className="premium-button btn-netral w-full px-3.5 py-1.5 text-xs">
                               Edit
                             </button>
                           </Link>

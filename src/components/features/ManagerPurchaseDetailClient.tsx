@@ -193,13 +193,13 @@ export default function ManagerPurchaseDetailClient({
         actions={
           <>
           <Link href={`/dashboard/manager/edit/${purchase.id}`}>
-            <button className="premium-button rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
+            <button className="premium-button btn-netral px-4 py-2 text-xs">
               Edit Transaksi
             </button>
           </Link>
           <button
             onClick={() => router.back()}
-            className="premium-button flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+            className="premium-button btn-netral flex items-center gap-2 px-4 py-2 text-xs"
           >
             <ArrowLeft className="w-4 h-4" />
             Kembali
@@ -398,33 +398,36 @@ export default function ManagerPurchaseDetailClient({
         {/* Right Column - Financial Summary, Transaction actors, Audit logs */}
         <div className="space-y-6">
           {/* Payment Control */}
-          <div className="interactive-surface overflow-hidden border border-slate-200/80 bg-white p-0">
-            <div className="bg-slate-950 p-5 text-white">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Payment control</p>
-                  <h3 className="mt-1 text-lg font-black">{paymentStatusLabel}</h3>
-                </div>
-                <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${paymentStatusClass}`}>
-                  {displayedPaymentPercent}%
-                </span>
+          <div className="section overflow-hidden">
+            <div className="section-shell-head">
+              <div>
+                <span className="section-eyebrow">Pembayaran</span>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{paymentStatusLabel}</h3>
               </div>
-              <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+              <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${paymentStatusClass}`}>
+                {displayedPaymentPercent}%
+              </span>
+            </div>
+            <div className="px-[22px] pt-4">
+              <div className="h-1.5 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${isPendingTermin ? "bg-amber-400" : "bg-emerald-400"}`}
-                  style={{ width: `${Math.min(100, Math.max(0, displayedPaymentPercent))}%` }}
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, displayedPaymentPercent))}%`,
+                    background: isPendingTermin ? "var(--warning)" : "var(--success)",
+                  }}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-px bg-slate-100 text-xs md:grid-cols-2">
+            <div className="mt-4 grid grid-cols-2 gap-px text-xs md:grid-cols-2" style={{ background: "var(--border)" }}>
               <PaymentMetric label="Total Tagihan" value={fmtRp(payableValue)} />
               <PaymentMetric label="Dibayar Awal" value={fmtRp(initialPayment)} />
               <PaymentMetric label="Sisa Termin" value={fmtRp(remainingPayment)} tone={isPendingTermin ? "amber" : "slate"} />
               <PaymentMetric label="Tanggal Transfer" value={purchase.tanggal_transfer ? new Date(purchase.tanggal_transfer).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" }) : "-"} />
             </div>
 
-            <div className="border-t border-slate-100 p-5">
+            <div className="border-t p-5" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black text-slate-900">Bukti transfer</p>
@@ -435,7 +438,7 @@ export default function ManagerPurchaseDetailClient({
                 {purchase.bukti_transfer ? (
                   <button
                     onClick={() => setShowProof(!showProof)}
-                    className="premium-button rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-50"
+                    className="premium-button btn-netral px-3 py-2 text-xs"
                   >
                     {showProof ? "Tutup" : "Lihat bukti"}
                   </button>
@@ -446,7 +449,7 @@ export default function ManagerPurchaseDetailClient({
                 )}
               </div>
               {showProof && purchase.bukti_transfer && (
-                <div className="relative mt-4 h-96 w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                <div className="relative mt-4 h-96 w-full overflow-hidden rounded-[var(--radius-md)] border" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
                   <Image
                     src={purchase.bukti_transfer}
                     alt="Bukti Transfer"
@@ -461,7 +464,7 @@ export default function ManagerPurchaseDetailClient({
           </div>
 
           {/* Financial Summary */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
+          <div className="section section-body space-y-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
               <DollarSign className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
               Kalkulasi Keuangan
@@ -549,7 +552,7 @@ export default function ManagerPurchaseDetailClient({
           </div>
 
           {/* Transaction Actors */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-3.5">
+          <div className="section section-body space-y-3.5">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
               <Shield className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
               Pihak Terkait
@@ -576,7 +579,7 @@ export default function ManagerPurchaseDetailClient({
           </div>
 
           {/* Audit Logs Timeline */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
+          <div className="section section-body space-y-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-50 pb-2">
               <Activity className="w-4 h-4" style={{ color: "var(--brand-strong)" }} />
               Audit Log (Riwayat Perubahan)
@@ -585,7 +588,7 @@ export default function ManagerPurchaseDetailClient({
             {auditLogs.length > 0 ? (
               <div className="space-y-5">
                 {paymentAuditLogs.length > 0 && (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <div className="rounded-[var(--radius-md)] border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
                     <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">Riwayat pembayaran</p>
                     <div className="mt-3 space-y-3">
                       {paymentAuditLogs.map(log => (
