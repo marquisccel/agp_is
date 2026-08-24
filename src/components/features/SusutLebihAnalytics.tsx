@@ -88,7 +88,8 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
   ]
 
   return (
-    <div className="section">
+    <>
+    <div className="section overflow-hidden">
       {/* Header */}
       <div className="section-shell-head">
         <div className="min-w-0">
@@ -119,7 +120,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
           yang justru diharapkan, jadi mewarnainya merah membuat kartu ini
           selalu terbaca gawat sekalipun tidak ada masalah. Warna baru
           muncul kalau selisihnya memang ada. */}
-      <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
+      <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderTop: "1px solid var(--border)", boxShadow: "none" }}>
         <div className="stat-tile">
           <span className="stat-label">Ditimbang di Lapak</span>
           <div className="stat-value-row">
@@ -170,9 +171,14 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         </div>
       )}
 
-      {!summaryOnly && (<>
-      {/* Controls */}
-      <div className="px-5 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      </div>
+
+      {/* Daftar per lapak berdiri sebagai kartu tersendiri; pita ringkasan
+          dan daftar dibaca dengan cara berbeda, jadi tidak dijejalkan ke
+          satu kartu. */}
+      {!summaryOnly && (
+      <div className="section overflow-hidden">
+      <div className="section-shell-head flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Show mode toggle */}
         <div className="segmented w-full overflow-x-auto sm:w-auto flex">
           {([
@@ -244,7 +250,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                   </div>
 
                   {/* Rincian Timbangan */}
-                  <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="blok-angka grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <div className="kotak-angka">
                       <span className="kotak-label">Timbang Lapak</span>
                       <span className="kotak-nilai font-mono">{fmtKg(row.totalLapak)}</span>
@@ -285,7 +291,8 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
           </div>
         )}
       </div>
-      </>)}
+      </div>
+      )}
 
       {/* Modal Detail Susut per Lapak */}
       {typeof document !== "undefined" && selectedLapak && createPortal(
@@ -396,6 +403,6 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         </div>,
         document.body
       )}
-    </div>
+    </>
   )
 }

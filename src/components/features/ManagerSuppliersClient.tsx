@@ -9,9 +9,9 @@ import {
   Award,
   Check,
   Copy,
-  CreditCard,
+  MessageCircle,
   Search,
-  TrendingUp,
+  Trash2,
   Users,
 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
@@ -671,9 +671,11 @@ export default function ManagerSuppliersClient({
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                <div
+                  className="mt-4 grid gap-px overflow-hidden rounded-[var(--radius-md)] border md:grid-cols-3"
+                  style={{ background: "var(--border)", borderColor: "var(--border)" }}
+                >
                   <Signal
-                    icon={<TrendingUp className="h-4 w-4" />}
                     label="Kuantitas"
                     value={targetLabel}
                     tone={perf.totalTransactions === 0 ? "neutral" : perf.targetPct >= 100 ? "good" : perf.targetPct >= 50 ? "neutral" : "warn"}
@@ -685,13 +687,11 @@ export default function ManagerSuppliersClient({
                       Hijau di situ menyesatkan: Manager membaca lapak yang
                       belum pernah bertransaksi seolah sudah lolos evaluasi. */}
                   <Signal
-                    icon={<Activity className="h-4 w-4" />}
                     label="Susut"
                     value={perf.totalTransactions > 0 ? (perf.pctSusut === 0 ? "Sesuai 0%" : `${perf.pctSusut.toFixed(2)}%`) : "Belum ada data"}
                     tone={perf.totalTransactions === 0 ? "neutral" : perf.pctSusut <= 1 ? "good" : perf.pctSusut <= 3 ? "warn" : "bad"}
                   />
                   <Signal
-                    icon={<CreditCard className="h-4 w-4" />}
                     label="Harga"
                     value={perf.totalTransactions === 0 ? "Belum ada data" : perf.warningCount > 0 ? `${perf.warningCount} transaksi di atas limit` : "Dalam limit"}
                     tone={perf.totalTransactions === 0 ? "neutral" : perf.warningCount > 0 ? "bad" : "good"}
@@ -731,22 +731,32 @@ export default function ManagerSuppliersClient({
                     >
                       Lokasi
                     </button>
+                    {/* Dua aksi ini jadi ikon: keduanya jarang dipakai
+                        dibanding Detail dan Lokasi, dan sebagai teks
+                        keempatnya tampak sama pentingnya. Judulnya tetap
+                        ada untuk pembaca layar dan tooltip. */}
                     {supplier.kontak_wa ? (
                       <a
                         href={getWaLink(supplier.kontak_wa)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="premium-button btn-netral px-3 py-2 text-xs"
+                        className="premium-button btn-netral grid h-[34px] w-[34px] place-items-center"
+                        title="Chat WhatsApp"
+                        aria-label={`Chat WhatsApp ${supplier.nama}`}
                       >
-                        WhatsApp
+                        <MessageCircle className="h-4 w-4" />
                       </a>
                     ) : null}
                     <button
                       onClick={() => handleDelete(supplier.id)}
                       disabled={deletingId === supplier.id}
-                      className="premium-button btn-netral tone-danger px-3 py-2 text-xs disabled:opacity-50"
+                      className="premium-button btn-netral tone-danger grid h-[34px] w-[34px] place-items-center disabled:opacity-50"
+                      title="Hapus lapak"
+                      aria-label={`Hapus lapak ${supplier.nama}`}
                     >
-                      {deletingId === supplier.id ? "Menghapus..." : "Hapus"}
+                      {deletingId === supplier.id
+                        ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        : <Trash2 className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -965,31 +975,36 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
   )
 }
 
+/**
+ * Satu indikator kinerja di kartu lapak.
+ *
+ * Sebelumnya tiap indikator berupa blok berwarna penuh selebar sepertiga
+ * kartu. Tiga blok berjajar itu jadi benda paling berat di kartunya --
+ * lebih menarik mata daripada nama lapaknya sendiri -- dan latarnya
+ * menyala hijau bahkan untuk lapak yang cuma "belum ada data". Sekarang
+ * latarnya rata dan warna hanya dipakai pada angkanya, yaitu satu-satunya
+ * bagian yang memang berubah menurut keadaan.
+ */
 function Signal({
-  icon,
   label,
   value,
   tone,
 }: {
-  icon: React.ReactNode
   label: string
   value: string
   tone: "good" | "neutral" | "warn" | "bad"
 }) {
-  const toneClass = {
-    good: "border-[color:var(--success-soft)] bg-[color:var(--success-soft)] text-[color:var(--success)]",
-    neutral: "border-[color:var(--border)] bg-[color:var(--bg-tint)] text-[color:var(--muted)]",
-    warn: "border-[color:var(--warning-soft)] bg-[color:var(--warning-soft)] text-[color:var(--warning)]",
-    bad: "border-[color:var(--danger-soft)] bg-[color:var(--danger-soft)] text-[color:var(--danger)]",
+  const warna = {
+    good: "var(--success)",
+    neutral: "var(--muted)",
+    warn: "var(--warning)",
+    bad: "var(--danger)",
   }[tone]
 
   return (
-    <div className={`rounded-[var(--radius-md)] border px-4 py-3 ${toneClass}`}>
-      <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.08em] opacity-80">
-        {icon}
-        {label}
-      </div>
-      <p className="mt-2 text-sm font-black text-slate-950">{value}</p>
+    <div className="px-4 py-3" style={{ background: "var(--surface)" }}>
+      <span className="field-label">{label}</span>
+      <p className="text-sm font-bold" style={{ color: warna }}>{value}</p>
     </div>
   )
 }

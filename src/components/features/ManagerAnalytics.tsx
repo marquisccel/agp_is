@@ -514,21 +514,22 @@ export default function ManagerAnalytics({
         <div className="section-shell-head">
           <div className="min-w-0">
             <p className="section-eyebrow">SKU pricing</p>
-            <h4 className="text-[15.5px] font-bold text-slate-950">Harga Rata-rata per SKU</h4>
+            <h4 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Harga Rata-rata per SKU</h4>
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Rata-rata tertimbang per kilogram &middot; {selectedWarehouseId === "all" ? "semua gudang" : (dataMap[selectedWarehouseId]?.nama || "gudang")}
             </p>
           </div>
         </div>
 
-        <div className="p-5">
         {hasSKUData ? (
-          <div className="space-y-4">
-            {/* Ringkasan periode -- strip tipis, bukan blok gelap penuh:
-                aksen brand sengaja minor di dashboard ini. */}
+          <div>
+            {/* Pita ringkasan menempel penuh ke tepi kartu.
+                Sebelumnya ia kartu bersudut membulat di dalam kartu lain,
+                jadi sudutnya tampak menggantung di kiri dan kanan --
+                dua lengkung bersarang tanpa alasan. */}
             <div
-              className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-[var(--radius-md)] px-4 py-3"
-              style={{ background: "var(--brand-soft)" }}
+              className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b px-[22px] py-3"
+              style={{ background: "var(--brand-soft)", borderColor: "var(--border)" }}
             >
               <span className="text-[10.5px] font-bold uppercase tracking-[0.07em]" style={{ color: "var(--brand-strong)" }}>
                 Harga rata-rata periode ini
@@ -539,29 +540,27 @@ export default function ManagerAnalytics({
               <span className="text-xs text-slate-500">{fmtKg(grandTotalAllKg)} total volume</span>
             </div>
 
-            <SkuPriceChart rows={skuRows} avgPrice={grandAvgAllPrice} />
+            <div className="p-5">
+              <SkuPriceChart rows={skuRows} avgPrice={grandAvgAllPrice} />
 
-            {skuTersembunyi > 0 && (
-              <button
-                type="button"
-                onClick={() => setSkuExpanded(v => !v)}
-                className="text-[11.5px] font-bold"
-                style={{ color: "var(--brand-strong)" }}
-              >
-                {skuExpanded ? "Tampilkan lebih sedikit" : `Tampilkan ${skuTersembunyi} SKU lainnya`}
-              </button>
-            )}
+              {skuTersembunyi > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSkuExpanded(v => !v)}
+                  className="mt-4 text-[11.5px] font-bold"
+                  style={{ color: "var(--brand-strong)" }}
+                >
+                  {skuExpanded ? "Tampilkan lebih sedikit" : `Tampilkan ${skuTersembunyi} SKU lainnya`}
+                </button>
+              )}
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50">
-            <svg className="w-10 h-10 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="text-sm font-medium text-slate-400">Belum ada data harga SKU</p>
-            <p className="text-xs text-slate-300 mt-1">Data akan muncul setelah ada transaksi pembelian</p>
+          <div className="section-body py-12 text-center">
+            <p className="text-sm font-medium" style={{ color: "var(--muted)" }}>Belum ada data harga SKU</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Data muncul setelah ada transaksi pembelian.</p>
           </div>
         )}
-      </div>
     </div>
     </div>
   )

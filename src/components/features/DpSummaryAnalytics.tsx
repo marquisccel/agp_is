@@ -42,7 +42,8 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
   ]
 
   return (
-    <div className="section">
+    <>
+    <div className="section overflow-hidden">
       {/* Header */}
       <div className="section-shell-head">
         <div className="min-w-0">
@@ -110,9 +111,25 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         </div>
       )}
 
+      </div>
+
+      {/* Daftar per lapak berdiri sebagai kartu tersendiri.
+          Digabung dengan pita ringkasan di atasnya, satu kartu memuat dua
+          hal yang dibaca dengan cara berbeda -- angka gabungan yang dipindai
+          sekilas, dan daftar yang ditelusuri baris demi baris. Dipisah,
+          keduanya punya ruang napasnya sendiri. */}
       {!summaryOnly && (
-      /* List Card Section (No Horizontal Scroll) */
-      <div className="space-y-4 p-4 sm:p-6">
+      <div className="section overflow-hidden">
+        <div className="section-shell-head">
+          <div>
+            <span className="section-eyebrow">Rincian</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Saldo per Lapak</h3>
+          </div>
+          <span className="text-xs font-semibold" style={{ color: "var(--muted-faint)" }}>
+            {filtered.length} lapak
+          </span>
+        </div>
+        <div>
         {filtered.length === 0 ? (
           <div className="rounded-[var(--radius-lg)] border border-dashed py-12 text-center text-sm" style={{ borderColor: "var(--border)", color: "var(--muted-faint)" }}>
             <p className="font-semibold">Belum ada data DP / Kasbon disetujui.</p>
@@ -153,7 +170,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
                 </div>
 
                 {/* Timbangan / DP values */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
+                <div className="blok-angka grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="kotak-angka">
                     <span className="kotak-label">DP Disetujui</span>
                     <span className="kotak-nilai font-mono">{fmtRp(row.totalDp)}</span>
@@ -187,7 +204,8 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
           </div>
         )}
       </div>
+      </div>
       )}
-    </div>
+    </>
   )
 }

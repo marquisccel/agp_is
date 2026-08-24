@@ -467,7 +467,10 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           )}
         </div>
 
-        <div className="border-b px-[22px] pb-2 pt-4" style={{ borderColor: "var(--border)" }}>
+        {/* Label pita berlatar, bukan sekadar teks menggantung. Tanpa
+            latar, dua kelompok angka yang berbeda periodenya cuma dipisah
+            spasi -- dan yang membaca cepat tidak melihat pemisahnya. */}
+        <div className="border-b px-[22px] py-2" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
           <span className="field-label" style={{ marginBottom: 0 }}>Sepanjang waktu</span>
         </div>
       <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
@@ -510,7 +513,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         </div>
       </div>
 
-        <div className="border-b px-[22px] pb-2 pt-4" style={{ borderColor: "var(--border)" }}>
+        <div className="border-b border-t px-[22px] py-2" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
           <span className="field-label" style={{ marginBottom: 0 }}>Bulan ini</span>
         </div>
         {mTransactions === 0 ? (
@@ -574,8 +577,16 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           </div>
         )}
 
-      {/* Tab langsung menempel di bawah pita ringkasan, dalam kartu yang
-          sama. */}
+      </div>
+
+      {/* Riwayat berdiri sebagai kartu tersendiri.
+
+          Digabung dengan pita angka di atasnya, satu kartu memuat dua hal
+          yang dibaca dengan cara berbeda: angka ringkas yang dipindai
+          sekilas, dan daftar transaksi yang ditelusuri baris demi baris.
+          Berdempetan tanpa jeda, keduanya terbaca sebagai satu tumpukan
+          panjang dan tidak ada yang menonjol. */}
+      <div className="section overflow-hidden">
         <div className="flex border-b" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
           <button
             onClick={() => setActiveTab("transaksi")}

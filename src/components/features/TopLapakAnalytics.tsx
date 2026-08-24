@@ -24,19 +24,40 @@ interface Props {
 }
 
 export default function TopLapakAnalytics({ warehouseTopData }: Props) {
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState(warehouseTopData[0]?.warehouseId || "")
+  /*
+   * "Semua Gudang" jadi pilihan bawaan.
+   *
+   * Sebelumnya penyaringnya hanya memuat gudang satu per satu, dan yang
+   * terpilih saat halaman dibuka adalah gudang pertama menurut urutan
+   * data. Akibatnya peringkat lapak terbaik yang dilihat Manager selalu
+   * peringkat SATU gudang, tanpa ada yang menyebutkan gudang mana --
+   * padahal seluruh layar Manager lainnya memang bekerja lintas gudang.
+   */
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState("all")
   const [mode, setMode] = useState<"volume" | "harga">("volume")
 
+  const gabungLintasGudang = (ambil: (w: WarehouseTopData) => TopSupplier[]) => {
+    const semua = warehouseTopData.flatMap(ambil)
+    const urut = mode === "volume"
+      ? [...semua].sort((a, b) => b.totalKg - a.totalKg)
+      : [...semua].sort((a, b) => b.avgHarga - a.avgHarga)
+    return urut.slice(0, 10)
+  }
+
   const activeWarehouse = warehouseTopData.find(w => w.warehouseId === selectedWarehouseId)
-  const suppliers = mode === "volume"
-    ? activeWarehouse?.topByVolume || []
-    : activeWarehouse?.topByHarga || []
-  // topByVolume/topByHarga sudah diurutkan menurun di manager/page.tsx, jadi
-  // elemen pertama adalah nilai maksimum -- dipakai sebagai acuan lebar bar.
-  const warehouseOptions = warehouseTopData.map(w => ({
-    value: w.warehouseId,
-    label: `Gudang ${w.warehouseName}`,
-  }))
+  const suppliers = selectedWarehouseId === "all"
+    ? gabungLintasGudang((w) => (mode === "volume" ? w.topByVolume : w.topByHarga))
+    : mode === "volume"
+      ? activeWarehouse?.topByVolume || []
+      : activeWarehouse?.topByHarga || []
+
+  const warehouseOptions = [
+    { value: "all", label: "Semua Gudang" },
+    ...warehouseTopData.map(w => ({
+      value: w.warehouseId,
+      label: `Gudang ${w.warehouseName}`,
+    })),
+  ]
 
   return (
     <div className="section">
@@ -44,7 +65,7 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
       <div className="section-shell-head">
         <div className="min-w-0">
           <p className="section-eyebrow">Lapak performance</p>
-          <h3 className="text-[15.5px] font-bold text-slate-950">Top 10 Lapak / Supplier</h3>
+          <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Top 10 Lapak</h3>
           <p className="mt-1 text-xs leading-5 text-slate-500">Peringkat supplier berdasarkan volume atau harga rata-rata per gudang.</p>
         </div>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
@@ -66,7 +87,7 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
       <div className="p-5">
         {suppliers.length === 0 ? (
           <div className="text-center text-slate-400 text-sm py-12">
-            <p>Belum ada data transaksi untuk gudang ini.</p>
+            <p>Belum ada data transaksi untuk pilihan ini.</p>
           </div>
         ) : (
           <table className="w-full text-left text-xs">
