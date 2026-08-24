@@ -1447,16 +1447,38 @@ a:focus-visible {
   color: var(--foreground);
 }
 
-/* Pemisah antara blok angka dan keterangan lapak di sebelahnya. Tanpa
-   garis, nama lapak dan deret angkanya terbaca sebagai satu kalimat
-   panjang; dengan garis, mata tahu di mana keterangan berhenti dan angka
-   mulai. Hanya pada layar lebar -- saat baris menumpuk ke bawah, garis
-   tegak justru salah arah. */
+/* Garis pemisah tegak di dalam baris lapak: satu setelah nomor urut, satu
+   sebelum blok angka. Tanpa keduanya, nomor, nama lapak, dan deret
+   angkanya terbaca sebagai satu kalimat panjang; dengan garis, mata tahu
+   di mana tiap bagian berhenti. Hanya pada layar lebar -- saat baris
+   menumpuk ke bawah, garis tegak justru salah arah. */
 @media (min-width: 1024px) {
   .baris-lapak > .blok-angka {
     border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
     padding-left: 20px;
   }
+
+  .baris-lapak .nomor-lapak {
+    border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    padding-right: 14px;
+    margin-right: 2px;
+  }
+}
+
+/* Nomor urutnya sewarna nama lapaknya: abu terlalu pudar untuk angka yang
+   dipakai menyebut baris ("lapak nomor tiga"), sementara kotak abu di
+   sekelilingnya justru membuatnya terbaca sepenting namanya. */
+.baris-lapak .nomor-lapak {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 26px;
+  justify-content: flex-end;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
 }
 
 .kotak-angka.tone-warning { background: var(--warning-soft); }

@@ -93,7 +93,7 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b" style={{ borderColor: "var(--border)" }}>
-                <th className="w-8 pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">#</th>
+                <th className="w-10 pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">No</th>
                 <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Lapak</th>
                 <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Volume</th>
                 <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Harga rata-rata</th>

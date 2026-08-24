@@ -191,15 +191,9 @@ export default function KoreksiKekurangan({
                   onChange={(e) => setAlasan(e.target.value)}
                   placeholder="Contoh: transfer hanya Rp 9.000.000, sisanya belum dikirim."
                 />
-                <div className="mt-1.5 flex items-start justify-between gap-3 text-xs" style={{ color: "var(--muted-faint)" }}>
-                  <span>Tercatat di audit log bersama nama Anda.</span>
-                  <span
-                    className="shrink-0 font-mono"
-                    style={alasan.trim().length >= 10 ? undefined : { color: "var(--warning)" }}
-                  >
-                    {alasan.trim().length}/10
-                  </span>
-                </div>
+                <p className="mt-1.5 text-xs" style={{ color: "var(--muted-faint)" }}>
+                  Tercatat di audit log bersama nama Anda.
+                </p>
               </div>
 
               {galat && <div className="notice tone-warning text-sm font-medium">{galat}</div>}

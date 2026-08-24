@@ -120,7 +120,15 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
           yang justru diharapkan, jadi mewarnainya merah membuat kartu ini
           selalu terbaca gawat sekalipun tidak ada masalah. Warna baru
           muncul kalau selisihnya memang ada. */}
-      <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderTop: "1px solid var(--border)", boxShadow: "none" }}>
+      <div
+        className="stat-strip"
+        style={{
+          borderRadius: 0,
+          border: "none",
+          borderBottom: summaryOnly ? "1px solid var(--border)" : "none",
+          boxShadow: "none",
+        }}
+      >
         <div className="stat-tile">
           <span className="stat-label">Ditimbang di Lapak</span>
           <div className="stat-value-row">
@@ -233,9 +241,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                 >
                   {/* Info Lapak */}
                   <div className="flex min-w-0 items-start gap-3 lg:w-1/4">
-                    <span className="w-5 shrink-0 pt-0.5 text-right font-mono text-xs" style={{ color: "var(--muted-faint)" }}>
-                      {idx + 1}
-                    </span>
+                    <span className="nomor-lapak">{idx + 1}</span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-900 sm:text-base">
                         {row.namaLapak}

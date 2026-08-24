@@ -71,7 +71,16 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
           labelnya, dan kartu ketiga berlatar kuning penuh sepanjang waktu.
           Bentuknya kini sama dengan baris ringkasan di dashboard Manager,
           dan warnanya hanya menyala kalau memang ada saldo menggantung. */}
-      <div className="stat-strip" style={{ gridTemplateColumns: "repeat(3, 1fr)", borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
+      <div
+        className="stat-strip"
+        style={{
+          gridTemplateColumns: "repeat(3, 1fr)",
+          borderRadius: 0,
+          border: "none",
+          borderBottom: summaryOnly ? "1px solid var(--border)" : "none",
+          boxShadow: "none",
+        }}
+      >
         <div className="stat-tile">
           <span className="stat-label">DP Disetujui</span>
           <div className="stat-value-row">
@@ -153,9 +162,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
                   {/* Nomor urut cukup angka, tanpa kotak. Kotak abu di
                       sebelah nama membuat urutannya terbaca sepenting
                       nama lapaknya sendiri. */}
-                  <span className="w-5 shrink-0 pt-0.5 text-right font-mono text-xs" style={{ color: "var(--muted-faint)" }}>
-                    {idx + 1}
-                  </span>
+                  <span className="nomor-lapak">{idx + 1}</span>
                   <div className="min-w-0">
                     <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
                       {row.namaLapak}
