@@ -443,6 +443,12 @@ a:focus-visible {
 .stat-tile.tone-warning .stat-value,
 .stat-tile.tone-warning .stat-delta { color: var(--warning); }
 
+.stat-tile.tone-success { background: var(--success-soft); }
+.stat-tile.tone-success:hover { background: var(--success-soft); }
+.stat-tile.tone-success .stat-label,
+.stat-tile.tone-success .stat-value,
+.stat-tile.tone-success .stat-delta { color: var(--success); }
+
 .stat-tile.tone-danger { background: var(--danger-soft); }
 .stat-tile.tone-danger:hover { background: var(--danger-soft); }
 .stat-tile.tone-danger .stat-label,
@@ -1444,6 +1450,10 @@ a:focus-visible {
 .kotak-angka.tone-warning { background: var(--warning-soft); }
 .kotak-angka.tone-warning .kotak-label,
 .kotak-angka.tone-warning .kotak-nilai { color: var(--warning); }
+
+.kotak-angka.tone-success { background: var(--success-soft); }
+.kotak-angka.tone-success .kotak-label,
+.kotak-angka.tone-success .kotak-nilai { color: var(--success); }
 
 .kotak-angka.tone-danger { background: var(--danger-soft); }
 .kotak-angka.tone-danger .kotak-label,

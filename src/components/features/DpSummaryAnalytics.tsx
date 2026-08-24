@@ -133,9 +133,12 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
               >
                 {/* Supplier Info */}
                 <div className="flex items-start gap-3 lg:w-1/4 min-w-0">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-600">
+                  {/* Nomor urut cukup angka, tanpa kotak. Kotak abu di
+                      sebelah nama membuat urutannya terbaca sepenting
+                      nama lapaknya sendiri. */}
+                  <span className="w-5 shrink-0 pt-0.5 text-right font-mono text-xs" style={{ color: "var(--muted-faint)" }}>
                     {idx + 1}
-                  </div>
+                  </span>
                   <div className="min-w-0">
                     <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
                       {row.namaLapak}

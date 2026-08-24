@@ -64,7 +64,19 @@ export default async function ManagerDpPage() {
     entry.transaksiDp += 1
   }
 
-  const dpSummaryData = Object.values(dpSummaryMap).sort((a, b) => b.sisaDp - a.sisaDp)
+  /*
+   * Diurutkan menurut gudang lalu nama lapak, bukan menurut sisa saldonya.
+   *
+   * Sebelumnya urutannya mengikuti `sisaDp` menurun, jadi barisnya
+   * berpindah tempat sendiri setiap kali ada kasbon terpakai -- lapak yang
+   * kemarin di urutan dua tiba-tiba naik ke atas tanpa ada yang berubah
+   * pada lapaknya. Daftar yang dipakai untuk menelusuri lapak tertentu
+   * harus berada di tempat yang sama tiap kali dibuka. Siapa yang saldonya
+   * masih menggantung tetap terlihat dari kotak berwarna di barisnya.
+   */
+  const dpSummaryData = Object.values(dpSummaryMap).sort(
+    (a, b) => a.warehouseName.localeCompare(b.warehouseName, "id") || a.namaLapak.localeCompare(b.namaLapak, "id"),
+  )
 
   return (
     <div className="space-y-6">

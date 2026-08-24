@@ -443,17 +443,23 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         )}
       </div>
 
-      {/* Rapor kinerja bulan berjalan */}
+      {/*
+        Satu kartu ringkasan, dua pita berlabel.
+
+        Sebelumnya angka lapak tersebar di DUA kartu berbentuk sama yang
+        bertumpuk: satu "Kinerja Lapak" berisi angka bulan berjalan, satu
+        lagi berisi angka sepanjang waktu. Karena bentuknya identik dan
+        tidak ada yang menyebut jendela waktunya, "3.020 KG" di kartu atas
+        dan "3.020 KG" di kartu bawah terbaca seperti angka yang sama
+        diulang -- padahal artinya berbeda. Kini keduanya satu kartu, dan
+        tiap pita menyebut periodenya sendiri.
+      */}
       <div className="section overflow-hidden">
         <div className="section-shell-head">
           <div>
-            <span className="section-eyebrow">Rapor bulan ini</span>
-            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kinerja Lapak</h3>
+            <span className="section-eyebrow">Ringkasan lapak</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Angka Lapak Ini</h3>
           </div>
-          {/* Tiga bintang berdenyut di samping grade dulu mengulang hal yang
-              sama dengan huruf gradenya, cuma dalam bentuk lain -- dan
-              denyutnya menarik mata ke keterangan yang paling sedikit
-              artinya di layar ini. */}
           {mTransactions > 0 && (
             <span className={`rounded-full px-3 py-1 text-xs font-bold ${mGradeColor}`}>
               Grade {mGrade} &mdash; {mGradeLabel}
@@ -461,6 +467,52 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           )}
         </div>
 
+        <div className="border-b px-[22px] pb-2 pt-4" style={{ borderColor: "var(--border)" }}>
+          <span className="field-label" style={{ marginBottom: 0 }}>Sepanjang waktu</span>
+        </div>
+      <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
+        <div className="stat-tile">
+          <span className="stat-label">Total Volume</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtKg(totalVolumeKg)}</span>
+          </div>
+          <span className="stat-delta flat">{fmtTon(totalVolumeKg)}</span>
+        </div>
+
+        <div className="stat-tile">
+          <span className="stat-label">Total Transaksi</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{totalTransactions}</span>
+            <span className="stat-unit">kali</span>
+          </div>
+          <span className="stat-delta flat">Sejak lapak terdaftar</span>
+        </div>
+
+        <div className="stat-tile">
+          <span className="stat-label">Nilai Pembelian</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(totalValue)}</span>
+          </div>
+          <span className="stat-delta flat">Sudah dibayar ke lapak</span>
+        </div>
+
+        {/* Saldo kasbon yang masih tersisa adalah uang yang sudah keluar
+            tapi belum jadi barang -- nadanya perhatian, sama seperti di
+            Rekap DP. Nol berarti tidak ada yang menggantung, jadi netral. */}
+        <div className={`stat-tile${remainingDp > 0 ? " tone-warning" : ""}`}>
+          <span className="stat-label">Sisa Saldo Kasbon</span>
+          <div className="stat-value-row">
+            <span className="stat-value font-mono">{fmtRp(remainingDp)}</span>
+          </div>
+          <span className="stat-delta flat">
+            {remainingDp > 0 ? "Belum dipakai di nota mana pun" : "Tidak ada saldo menggantung"}
+          </span>
+        </div>
+      </div>
+
+        <div className="border-b px-[22px] pb-2 pt-4" style={{ borderColor: "var(--border)" }}>
+          <span className="field-label" style={{ marginBottom: 0 }}>Bulan ini</span>
+        </div>
         {mTransactions === 0 ? (
           <div className="section-body text-center">
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Belum ada transaksi bulan ini.</p>
@@ -521,55 +573,6 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
             </div>
           </div>
         )}
-      </div>
-
-      {/* Ringkasan sepanjang waktu.
-
-          Empat kartu ini dulu masing-masing membawa kotak ikon berwarna di
-          sebelah kiri angkanya. Ikonnya tidak menerangkan apa pun yang
-          belum ditulis labelnya, tapi memakan sepertiga lebar kartu dan
-          membuat keempat angkanya tidak sejajar. Bentuknya kini sama
-          dengan baris ringkasan di dashboard Manager. */}
-      <div className="section overflow-hidden">
-      <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
-        <div className="stat-tile">
-          <span className="stat-label">Total Volume</span>
-          <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtKg(totalVolumeKg)}</span>
-          </div>
-          <span className="stat-delta flat">{fmtTon(totalVolumeKg)}</span>
-        </div>
-
-        <div className="stat-tile">
-          <span className="stat-label">Total Transaksi</span>
-          <div className="stat-value-row">
-            <span className="stat-value font-mono">{totalTransactions}</span>
-            <span className="stat-unit">kali</span>
-          </div>
-          <span className="stat-delta flat">Sejak lapak terdaftar</span>
-        </div>
-
-        <div className="stat-tile">
-          <span className="stat-label">Nilai Pembelian</span>
-          <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(totalValue)}</span>
-          </div>
-          <span className="stat-delta flat">Sudah dibayar ke lapak</span>
-        </div>
-
-        {/* Saldo kasbon yang masih tersisa adalah uang yang sudah keluar
-            tapi belum jadi barang -- nadanya perhatian, sama seperti di
-            Rekap DP. Nol berarti tidak ada yang menggantung, jadi netral. */}
-        <div className={`stat-tile${remainingDp > 0 ? " tone-warning" : ""}`}>
-          <span className="stat-label">Sisa Saldo Kasbon</span>
-          <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(remainingDp)}</span>
-          </div>
-          <span className="stat-delta flat">
-            {remainingDp > 0 ? "Belum dipakai di nota mana pun" : "Tidak ada saldo menggantung"}
-          </span>
-        </div>
-      </div>
 
       {/* Tab langsung menempel di bawah pita ringkasan, dalam kartu yang
           sama. */}

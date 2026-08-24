@@ -21,14 +21,28 @@ export type AuditActionInfo = {
   tone: string
 }
 
+/*
+ * Semua lencana aktivitas bernada abu yang sama.
+ *
+ * Sebelumnya tiap jenis aksi punya warnanya sendiri -- biru, hijau, ungu,
+ * merah, oranye -- sehingga satu daftar aktivitas memuat lima warna
+ * sekaligus. Warnanya tidak menandai apa pun yang perlu ditindak: seluruh
+ * baris di sana adalah hal yang SUDAH terjadi, bukan tugas yang menunggu.
+ * Yang tersisa cuma pelangi yang membuat mata melompat-lompat, sementara
+ * kalimat di sebelahnya sudah menerangkan aksinya dengan jelas.
+ *
+ * Nada tetap disimpan sebagai konsep supaya pemanggilnya tidak berubah dan
+ * pembedaan warna bisa dihidupkan lagi kalau memang dibutuhkan.
+ */
+const ABU = "bg-slate-50 text-slate-700 border-slate-100"
 const TONE = {
-  netral: "bg-slate-50 text-slate-700 border-slate-100",
-  masuk: "bg-sky-50 text-sky-700 border-sky-100",
-  selesai: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  uang: "bg-violet-50 text-violet-700 border-violet-100",
-  tolak: "bg-rose-50 text-rose-700 border-rose-100",
-  hapus: "bg-rose-50 text-rose-700 border-rose-100",
-  perhatian: "bg-orange-50 text-orange-700 border-orange-100",
+  netral: ABU,
+  masuk: ABU,
+  selesai: ABU,
+  uang: ABU,
+  tolak: ABU,
+  hapus: ABU,
+  perhatian: ABU,
 } as const
 
 export const AUDIT_ACTIONS: Record<string, AuditActionInfo> = {

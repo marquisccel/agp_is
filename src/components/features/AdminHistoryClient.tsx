@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Filter, Search, Tag, User } from "lucide-react"
+import { Filter, Search, Tag, User } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import StatusPill from "@/components/ui/StatusPill"
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
@@ -193,11 +193,13 @@ export default function AdminHistoryClient({
                         <div className="flex items-center justify-center gap-2 flex-wrap">
                           {purchase.status_approval === "menunggu_verifikasi" ? (
                             <Link href={`${basePath}/check/${purchase.id}`}>
-                              <button
-                                className="premium-button flex items-center gap-1 whitespace-nowrap rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs font-bold"
-                                style={{ borderColor: "var(--warning-soft)", background: "var(--warning-soft)", color: "var(--warning)" }}
-                              >
-                                Cek <ArrowRight className="w-3.5 h-3.5" />
+                              {/* Dulu kuning berpanah, berdampingan dengan
+                                  tombol netral -- dua bentuk berbeda untuk
+                                  dua aksi yang sama-sama sekadar membuka
+                                  halaman lain. Status "menunggu verifikasi"
+                                  sudah dibawa lencana di kolom sebelahnya. */}
+                              <button className="btn-netral premium-button px-3 py-1.5 text-xs">
+                                Cek
                               </button>
                             </Link>
                           ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (

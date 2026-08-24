@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import { User, Lock, Save, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
+import { Lock, Save, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
 import PageHeader from "@/components/ui/PageHeader"
 
 export default function SettingsPage() {
@@ -106,55 +106,56 @@ export default function SettingsPage() {
 
       {/* Profile Card */}
       <div className="section overflow-hidden">
-        <div className="flex items-center gap-3 border-b px-6 py-4" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
-          <div className="flex h-9 w-9 items-center justify-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-            <User className="w-5 h-5" />
-          </div>
+        {/* Kepala kartu memakai .section-shell-head seperti seluruh layar
+            lain; kotak ikon berwarna dilepas -- ikonnya tidak menerangkan
+            apa pun yang belum ditulis judulnya. */}
+        <div className="section-shell-head">
           <div>
-            <h3 className="font-bold text-slate-800 text-sm">Informasi Profil</h3>
-            <p className="text-xs text-slate-400">Ubah nama tampilan dan alamat email akun.</p>
+            <span className="section-eyebrow">Identitas</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Informasi Profil</h3>
+            <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Ubah nama tampilan dan alamat email akun.</p>
           </div>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="section-body space-y-5">
           {/* Identitas akun (tanpa avatar -- foto profil dihapus atas permintaan) */}
           <div>
-            <p className="font-bold text-slate-800">{nama || "-"}</p>
-            <p className="text-xs text-slate-400">{email || "-"}</p>
+            <p className="font-bold" style={{ color: "var(--foreground)" }}>{nama || "-"}</p>
+            <p className="text-xs" style={{ color: "var(--muted-faint)" }}>{email || "-"}</p>
             <span
-              className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider mt-1 inline-block"
-              style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}
+              className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+              style={{ background: "var(--bg-tint)", color: "var(--muted)" }}
             >
               {role}
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Nama Lengkap</label>
+            <div>
+              <label className="field-label">Nama Lengkap</label>
               <input
                 type="text"
                 value={nama}
                 onChange={e => setNama(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none text-slate-800 font-semibold text-sm transition-all"
+                className="field-input"
                 placeholder="Nama lengkap Anda"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Alamat Email</label>
+            <div>
+              <label className="field-label">Alamat Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[var(--brand)] outline-none text-slate-800 font-semibold text-sm transition-all"
+                className="field-input"
                 placeholder="email@domain.com"
               />
             </div>
           </div>
 
           {profileStatus === "error" && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-4 py-3 rounded-xl">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="notice tone-warning text-xs font-medium">
+              <AlertCircle className="h-4 w-4 shrink-0" style={{ color: "var(--warning)" }} />
               {profileError}
             </div>
           )}
@@ -162,8 +163,7 @@ export default function SettingsPage() {
           <button
             onClick={handleProfileSave}
             disabled={profileStatus === "saving"}
-            className={`premium-button flex items-center gap-2 rounded-[var(--radius-md)] px-5 py-2.5 text-sm font-bold disabled:opacity-60 ${profileStatus === "success" ? "" : "btn-primer"}`}
-            style={profileStatus === "success" ? { background: "var(--success)", color: "#fff", border: "1px solid var(--success)" } : undefined}
+            className="btn-primer premium-button flex items-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
           >
             {profileStatus === "saving" ? (
               <span>Menyimpan...</span>
@@ -178,32 +178,30 @@ export default function SettingsPage() {
 
       {/* Password Card */}
       <div className="section overflow-hidden">
-        <div className="flex items-center gap-3 border-b px-6 py-4" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}>
-          <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
-            <Lock className="w-5 h-5" />
-          </div>
+        <div className="section-shell-head">
           <div>
-            <h3 className="font-bold text-slate-800 text-sm">Ubah Password</h3>
-            <p className="text-xs text-slate-400">Perbarui kata sandi untuk keamanan akun Anda.</p>
+            <span className="section-eyebrow">Keamanan</span>
+            <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Ubah Password</h3>
+            <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Perbarui kata sandi untuk keamanan akun Anda.</p>
           </div>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="section-body space-y-4">
           {/* Old Password */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Password Lama</label>
+          <div>
+            <label className="field-label">Password Lama</label>
             <div className="relative">
               <input
                 type={showOld ? "text" : "password"}
                 value={oldPassword}
                 onChange={e => setOldPassword(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none text-slate-800 font-semibold text-sm pr-11 transition-all"
+                className="field-input field-icon-kanan"
                 placeholder="Masukkan password lama"
               />
               <button
                 type="button"
                 onClick={() => setShowOld(!showOld)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted-faint)" }}
               >
                 {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -212,20 +210,20 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* New Password */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Password Baru</label>
+            <div>
+              <label className="field-label">Password Baru</label>
               <div className="relative">
                 <input
                   type={showNew ? "text" : "password"}
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none text-slate-800 font-semibold text-sm pr-11 transition-all"
+                  className="field-input field-icon-kanan"
                   placeholder="Minimal 6 karakter"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted-faint)" }}
                 >
                   {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -233,20 +231,20 @@ export default function SettingsPage() {
             </div>
 
             {/* Confirm Password */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Konfirmasi Password</label>
+            <div>
+              <label className="field-label">Konfirmasi Password</label>
               <div className="relative">
                 <input
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-400 outline-none text-slate-800 font-semibold text-sm pr-11 transition-all"
+                  className="field-input field-icon-kanan"
                   placeholder="Ulangi password baru"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted-faint)" }}
                 >
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -259,22 +257,26 @@ export default function SettingsPage() {
             <div className="space-y-1">
               <div className="flex gap-1">
                 {[1,2,3,4].map(i => (
-                  <div key={i} className={`h-1 flex-1 rounded-full transition-all ${
-                    newPassword.length >= i * 3
-                      ? newPassword.length >= 10 ? "bg-emerald-500" : newPassword.length >= 6 ? "bg-orange-400" : "bg-red-400"
-                      : "bg-slate-100"
-                  }`} />
+                  <div
+                    key={i}
+                    className="h-1 flex-1 rounded-full transition-all"
+                    style={{
+                      background: newPassword.length >= i * 3
+                        ? newPassword.length >= 10 ? "var(--success)" : newPassword.length >= 6 ? "var(--warning)" : "var(--danger)"
+                        : "var(--bg-tint)",
+                    }}
+                  />
                 ))}
               </div>
-              <p className="text-[10px] text-slate-400">
+              <p className="text-[10px]" style={{ color: "var(--muted-faint)" }}>
                 {newPassword.length < 6 ? "Terlalu pendek" : newPassword.length < 10 ? "Cukup kuat" : "Sangat kuat"}
               </p>
             </div>
           )}
 
           {pwStatus === "error" && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-4 py-3 rounded-xl">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="notice tone-warning text-xs font-medium">
+              <AlertCircle className="h-4 w-4 shrink-0" style={{ color: "var(--warning)" }} />
               {pwError}
             </div>
           )}
@@ -282,11 +284,10 @@ export default function SettingsPage() {
           <button
             onClick={handlePasswordSave}
             disabled={pwStatus === "saving"}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
-              pwStatus === "success"
-                ? "bg-emerald-500 text-white"
-                : "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-400 hover:to-amber-400 shadow-md shadow-orange-500/20"
-            } disabled:opacity-60`}
+            /* Gradasi oranye-kuning membuat tombol ini satu-satunya yang
+               berbeda bentuk di seluruh aplikasi, dan warnanya menyiratkan
+               bahaya padahal mengganti kata sandi adalah tindakan biasa. */
+            className="btn-primer premium-button flex items-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
           >
             {pwStatus === "saving" ? (
               <span>Mengubah...</span>

@@ -10,10 +10,7 @@ import {
   Check,
   Copy,
   CreditCard,
-  MapPin,
-  MessageCircle,
   Search,
-  Trash2,
   TrendingUp,
   Users,
 } from "lucide-react"
@@ -701,52 +698,55 @@ export default function ManagerSuppliersClient({
                   />
                 </div>
 
-                <div className="mt-5 flex flex-col gap-3 border-t border-slate-200/70 pt-4 md:flex-row md:items-center md:justify-between">
+                <div className="mt-5 flex flex-col gap-3 border-t pt-4 md:flex-row md:items-center md:justify-between" style={{ borderColor: "var(--border)" }}>
                   <div className="min-w-0 text-sm">
-                    <p className="text-xs font-black uppercase tracking-[0.1em] text-slate-400">Rekening</p>
+                    <span className="field-label">Rekening</span>
                     {supplier.nomor_rekening ? (
                       <button
                         onClick={() => handleCopy(supplier.id, supplier.nomor_rekening || "")}
-                        className="mt-1 flex min-w-0 items-center gap-2 text-left font-bold text-slate-800 hover:text-[color:var(--brand-strong)]"
+                        className="flex min-w-0 items-center gap-2 text-left font-bold text-slate-800 hover:text-[color:var(--brand-strong)]"
                         title="Salin nomor rekening"
                       >
                         <span className="truncate">{supplier.nama_bank} - {supplier.nomor_rekening}</span>
                         {copiedId === supplier.id ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4 text-slate-400" />}
                       </button>
                     ) : (
-                      <p className="mt-1 text-sm text-slate-400">Belum ada rekening</p>
+                      <p className="text-sm" style={{ color: "var(--muted-faint)" }}>Belum ada rekening</p>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button btn-primer rounded-[10px] px-4 py-2 text-xs font-bold">
-                      Detail Lapak
+                  {/* Lima tombol dengan empat bentuk berbeda: hijau pekat,
+                      netral berikon, ikon telanjang, dan ikon merah. Yang
+                      terakhir -- hapus, satu-satunya yang tidak bisa
+                      dibatalkan -- justru paling kecil dan paling mudah
+                      tersenggol. Sekarang semuanya satu bentuk, dan hapus
+                      baru memerah saat disentuh. */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button btn-netral px-3 py-2 text-xs">
+                      Detail
                     </Link>
                     <button
                       onClick={() => handleOpenLocationEditor(supplier)}
-                      className="premium-button btn-netral flex items-center gap-2 px-4 py-2 text-xs"
+                      className="premium-button btn-netral px-3 py-2 text-xs"
                     >
-                      <MapPin className="h-4 w-4" />
-                      Edit Lokasi
+                      Lokasi
                     </button>
                     {supplier.kontak_wa ? (
                       <a
                         href={getWaLink(supplier.kontak_wa)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="premium-button grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-emerald-600"
-                        title="Chat WhatsApp"
+                        className="premium-button btn-netral px-3 py-2 text-xs"
                       >
-                        <MessageCircle className="h-4 w-4" />
+                        WhatsApp
                       </a>
                     ) : null}
                     <button
                       onClick={() => handleDelete(supplier.id)}
                       disabled={deletingId === supplier.id}
-                      className="premium-button grid h-9 w-9 place-items-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50"
-                      title="Hapus Lapak"
+                      className="premium-button btn-netral tone-danger px-3 py-2 text-xs disabled:opacity-50"
                     >
-                      {deletingId === supplier.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" /> : <Trash2 className="h-4 w-4" />}
+                      {deletingId === supplier.id ? "Menghapus..." : "Hapus"}
                     </button>
                   </div>
                 </div>
@@ -759,9 +759,8 @@ export default function ManagerSuppliersClient({
           key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedMonth}-${selectedYear}-${searchQuery}-empty`}
           className="section section-body border-dashed p-12 text-center soft-enter"
         >
-          <Users className="mx-auto mb-3 h-10 w-10 text-slate-300" />
-          <h4 className="font-black text-slate-800">Lapak tidak ditemukan</h4>
-          <p className="mt-1 text-sm text-slate-400">Tidak ada mitra yang cocok dengan filter atau kata kunci pencarian.</p>
+          <h4 className="font-bold" style={{ color: "var(--foreground)" }}>Lapak tidak ditemukan</h4>
+          <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>Tidak ada lapak yang cocok dengan penyaring atau kata kunci pencarian.</p>
         </div>
       )}
 

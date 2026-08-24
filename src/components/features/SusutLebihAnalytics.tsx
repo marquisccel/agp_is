@@ -143,7 +143,11 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
             {filteredSummary.totalSusut > 0 ? `${fmtPct(filteredSusutPct)} dari timbangan lapak` : "Tidak ada yang menyusut"}
           </span>
         </div>
-        <div className={`stat-tile${filteredSummary.totalLebih > 0 ? " tone-warning" : ""}`}>
+        {/* Hijau, bukan kuning. Nada kuning dipakai sebentar karena "lebih"
+            secara teknis juga selisih yang perlu diperiksa; Manager memutuskan
+            barang yang datang lebih banyak dari catatan lapak bukan hal yang
+            perlu diwaspadai di layar ini. */}
+        <div className={`stat-tile${filteredSummary.totalLebih > 0 ? " tone-success" : ""}`}>
           <span className="stat-label">Lebih</span>
           <div className="stat-value-row">
             <span className="stat-value font-mono">{fmtKg(filteredSummary.totalLebih)}</span>
@@ -223,9 +227,9 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                 >
                   {/* Info Lapak */}
                   <div className="flex min-w-0 items-start gap-3 lg:w-1/4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-600">
+                    <span className="w-5 shrink-0 pt-0.5 text-right font-mono text-xs" style={{ color: "var(--muted-faint)" }}>
                       {idx + 1}
-                    </div>
+                    </span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-900 sm:text-base">
                         {row.namaLapak}
@@ -258,7 +262,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                       </span>
                     </div>
 
-                    <div className={`kotak-angka${row.totalLebih > 0 ? " tone-warning" : ""}`}>
+                    <div className={`kotak-angka${row.totalLebih > 0 ? " tone-success" : ""}`}>
                       <span className="kotak-label">Lebih</span>
                       <span className="kotak-nilai font-mono">
                         {row.totalLebih > 0 ? `${fmtKg(row.totalLebih)} (${fmtPct(row.pctLebih)})` : "Tidak ada"}
