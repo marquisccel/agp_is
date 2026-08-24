@@ -37,6 +37,16 @@ export default async function StaffDashboard() {
 
   // Cek apakah hari ini adalah hari kerja (bukan Minggu / libur nasional)
   const todayDateObj = new Date(Date.UTC(localYear, localMonth, localDate))
+  /* Batas harga per SKU dipakai server untuk memutuskan apakah nota
+     lolos langsung atau naik ke persetujuan Manager. Tanpa dikirim ke
+     layar ini, Staff mengetik harga tanpa tahu batasnya. */
+  const standarHarga = warehouseId
+    ? await prisma.skuPriceStandard.findMany({
+        where: { warehouseId },
+        select: { sku_name: true, max_price_per_kg: true },
+      })
+    : []
+
   const isWorkingToday = isWorkingDay(todayDateObj)
 
   // Calculate today's range (00:00 WIB is 17:00 UTC of previous day)
@@ -236,7 +246,7 @@ export default async function StaffDashboard() {
           <p className="text-xs" style={{ color: "var(--muted-faint)" }}>Disimpan sebagai draft untuk diverifikasi Admin gudang.</p>
         </div>
         <div className="section-body">
-          <PurchaseForm suppliers={suppliers} namaGudang={namaGudang} />
+          <PurchaseForm suppliers={suppliers} namaGudang={namaGudang} standarHarga={standarHarga} />
         </div>
       </div>
     </div>

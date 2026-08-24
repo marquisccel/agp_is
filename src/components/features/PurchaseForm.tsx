@@ -9,6 +9,7 @@ import { SKU_OPTIONS } from "@/lib/skuList"
 import { fmtDigitInput, fmtRp, fmtSkalaRupiah } from "@/lib/format"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 import NumberInput from "@/components/ui/NumberInput"
+import BatasHargaSku, { type StandarHargaSku } from "@/components/features/BatasHargaSku"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
@@ -56,7 +57,15 @@ interface NotaData {
   dpDigunakan: number
 }
 
-export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Supplier[], namaGudang: string }) {
+export default function PurchaseForm({
+  suppliers,
+  namaGudang,
+  standarHarga = [],
+}: {
+  suppliers: Supplier[]
+  namaGudang: string
+  standarHarga?: StandarHargaSku[]
+}) {
   const [supplierId, setSupplierId] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
@@ -393,6 +402,7 @@ export default function PurchaseForm({ suppliers, namaGudang }: { suppliers: Sup
                     value={item.harga_per_kg}
                     onValueChange={(n) => updateItem(idx, "harga_per_kg", n)}
                   />
+                  <BatasHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
                 </div>
                 {items.length > 1 && (
                   <div className="w-full md:w-auto pt-6 flex justify-end">

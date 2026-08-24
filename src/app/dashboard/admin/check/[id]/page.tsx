@@ -42,6 +42,15 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
   })
   const availableDp = dps._sum.sisa_dp || 0
 
+  /* Batas harga per SKU gudang ini. Server memakainya untuk memutuskan
+     apakah nota lolos langsung atau naik ke persetujuan harga Manager;
+     tanpa dikirim ke layar, Admin baru tahu setelah menekan simpan dan
+     melihat statusnya tidak jadi "approved". */
+  const standarHarga = await prisma.skuPriceStandard.findMany({
+    where: { warehouseId: purchase.warehouseId },
+    select: { sku_name: true, max_price_per_kg: true },
+  })
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <PageHeader
@@ -59,7 +68,7 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
       />
 
       <div className="section section-body">
-        <DoubleCheckForm purchase={purchase} availableDp={availableDp} />
+        <DoubleCheckForm purchase={purchase} availableDp={availableDp} standarHarga={standarHarga} />
       </div>
     </div>
   )

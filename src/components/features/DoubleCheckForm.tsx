@@ -6,6 +6,8 @@ import type { Purchase, PurchaseItem, Supplier, User } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 import NumberInput from "@/components/ui/NumberInput"
+import { fmtRp } from "@/lib/format"
+import BatasHargaSku, { batasHargaSku, type StandarHargaSku } from "@/components/features/BatasHargaSku"
 
 type PurchaseForDoubleCheck = Purchase & {
   items: PurchaseItem[]
@@ -42,10 +44,12 @@ const PAYMENT_PERCENTAGE_OPTIONS = [
 export default function DoubleCheckForm({
   purchase,
   availableDp,
+  standarHarga = [],
   successRedirect = "/dashboard/admin",
 }: {
   purchase: PurchaseForDoubleCheck
   availableDp: number
+  standarHarga?: StandarHargaSku[]
   successRedirect?: string
 }) {
   const router = useRouter()
@@ -196,6 +200,11 @@ export default function DoubleCheckForm({
 
   /* Selisihnya dulu dihitung ulang sepuluh kali di dalam JSX, masing-masing
      dengan rangkaian ternary warnanya sendiri. */
+  const adaHargaDiAtasBatas = items.some((i) => {
+    const batas = batasHargaSku(i.sku_name, standarHarga)
+    return batas !== null && i.harga_per_kg > batas
+  })
+
   const beratGudangBelumLengkap = timbanganGudang <= 0 || items.some((i) => !i.berat_final_item || i.berat_final_item <= 0)
 
   const selisihTimbangan = timbanganGudang - timbanganLapak
@@ -340,10 +349,26 @@ export default function DoubleCheckForm({
                             {item.spec}
                           </span>
                         )}
+                        {/* Harga yang diketik Staff ikut ditampilkan: Admin
+                            tidak mengubahnya di sini, tapi harga itulah yang
+                            menentukan notanya lolos atau naik ke Manager. */}
+                        <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+                          Harga {fmtRp(item.harga_per_kg)}/kg
+                        </p>
+                        <BatasHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
                       </div>
 
                       {/* SKU Delta indicator */}
-                      {diff !== 0 ? (
+                      {/* Selisihnya baru berarti setelah berat gudangnya
+                          diisi. Karena kolomnya kini mulai kosong, tanpa
+                          penjagaan ini tiap item langsung melaporkan
+                          "Susut -100%" -- peringatan atas angka yang belum
+                          dimasukkan. */}
+                      {gudangWeight <= 0 ? (
+                        <span className="rounded-[var(--radius-sm)] px-2 py-0.5 text-[10px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted-faint)" }}>
+                          Menunggu timbangan gudang
+                        </span>
+                      ) : diff !== 0 ? (
                         <span
                           className="flex items-center gap-1 rounded-[var(--radius-sm)] px-2 py-0.5 font-mono text-xs font-bold"
                           style={diff < 0
@@ -559,6 +584,29 @@ export default function DoubleCheckForm({
           </div>
         )}
       </div>
+
+      {/* Kalau ada harga yang melewati batas, notanya TIDAK langsung
+          disetujui. Dulu itu baru ketahuan setelah tombol simpan ditekan
+          dan statusnya ternyata bukan "approved" -- dari layar ini terbaca
+          seperti sistem menolak tanpa sebab. */}
+      {adaHargaDiAtasBatas && (
+        <div className="notice tone-warning text-sm">
+          <div className="notice-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <p className="notice-title">Ada harga di atas batas</p>
+            <p className="notice-body">
+              Verifikasi tetap bisa disimpan, tapi notanya akan menunggu persetujuan harga dari Manager, bukan langsung
+              disetujui.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end gap-4 border-t pt-6" style={{ borderColor: "var(--border)" }}>
         <button type="button" onClick={() => router.back()} className="btn-netral premium-button px-6 py-3">
