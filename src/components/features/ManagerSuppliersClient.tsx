@@ -375,7 +375,7 @@ export default function ManagerSuppliersClient({
       opi = qtyScore * 0.4 + qualityScore * 0.4 + priceScore * 0.2
       if (opi >= 85) {
         grade = "A"
-        gradeLabel = "Sangat bagus"
+        gradeLabel = "Bagus"
         gradeTone = "var(--success)"
       } else if (opi >= 60) {
         grade = "B"
@@ -383,7 +383,7 @@ export default function ManagerSuppliersClient({
         gradeTone = "var(--muted)"
       } else {
         grade = "C"
-        gradeLabel = "Perlu evaluasi"
+        gradeLabel = "Evaluasi"
         gradeTone = "var(--danger)"
       }
     }
@@ -646,28 +646,27 @@ export default function ManagerSuppliersClient({
                       <span>Collection Center {cleanedCity}</span>
                       <span aria-hidden="true">&middot;</span>
                       <span>{supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
-                      {/* Grade disembunyikan kalau lapaknya belum punya
-                          transaksi: "Grade - Belum ada data" menyisakan
-                          tanda hubung menggantung, dan keadaannya sudah
-                          tersirat dari "Belum aktif" tepat di sebelahnya. */}
-                      {perf.grade !== "-" && (
-                        <>
-                          <span aria-hidden="true">&middot;</span>
-                          <span style={{ color: perf.gradeTone, fontWeight: 700 }}>
-                            Grade {perf.grade} &mdash; {perf.gradeLabel}
-                          </span>
-                        </>
-                      )}
                       <span aria-hidden="true">&middot;</span>
                       <span style={hasResolvedSupplierCoordinates(supplier) ? undefined : { color: "var(--warning)", fontWeight: 600 }}>
                         {hasResolvedSupplierCoordinates(supplier) ? "Koordinat lengkap" : "Belum ada koordinat"}
                       </span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-center md:min-w-[270px]">
+                  {/* Grade berdiri sebagai angka keempat di sini, bukan
+                      diselipkan di baris keterangan bersama nama gudang dan
+                      status. Di baris itu ia satu-satunya yang berwarna,
+                      jadi menarik mata lebih dulu daripada nama lapaknya --
+                      padahal ia kesimpulan dari ketiga angka di sebelahnya
+                      dan paling masuk akal dibaca bersama mereka. */}
+                  <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4 md:min-w-[340px]">
                     <MiniMetric label="Volume" value={perf.totalGudangWeight > 0 ? fmtKg(perf.totalGudangWeight) : "0 KG"} />
                     <MiniMetric label="Harga Avg" value={perf.avgPrice > 0 ? `${fmtRp(perf.avgPrice)}/KG` : "-"} />
                     <MiniMetric label="Transaksi" value={String(perf.totalTransactions)} />
+                    <MiniMetric
+                      label="Grade"
+                      value={perf.grade === "-" ? "-" : `${perf.grade} (${perf.gradeLabel})`}
+                      warna={perf.grade === "-" ? undefined : perf.gradeTone}
+                    />
                   </div>
                 </div>
 
@@ -686,10 +685,15 @@ export default function ManagerSuppliersClient({
                       yang benar bukan baik, melainkan belum ada datanya.
                       Hijau di situ menyesatkan: Manager membaca lapak yang
                       belum pernah bertransaksi seolah sudah lolos evaluasi. */}
+                  {/* Susut yang kecil dulu diberi nada "good" alias hijau --
+                      padahal susut berapa pun berarti barang yang dibayar
+                      tidak sampai utuh di gudang; itu kerugian, bukan
+                      prestasi. Hijau hanya benar untuk "lebih". Nol berarti
+                      cocok, jadi netral -- sama dengan Analisis Susut. */}
                   <Signal
                     label="Susut"
-                    value={perf.totalTransactions > 0 ? (perf.pctSusut === 0 ? "Sesuai 0%" : `${perf.pctSusut.toFixed(2)}%`) : "Belum ada data"}
-                    tone={perf.totalTransactions === 0 ? "neutral" : perf.pctSusut <= 1 ? "good" : perf.pctSusut <= 3 ? "warn" : "bad"}
+                    value={perf.totalTransactions > 0 ? (perf.pctSusut === 0 ? "Tidak ada" : `${perf.pctSusut.toFixed(2)}%`) : "Belum ada data"}
+                    tone={perf.totalTransactions === 0 || perf.pctSusut === 0 ? "neutral" : perf.pctSusut <= 3 ? "warn" : "bad"}
                   />
                   <Signal
                     label="Harga"
@@ -966,11 +970,16 @@ export default function ManagerSuppliersClient({
   )
 }
 
-function MiniMetric({ label, value }: { label: string; value: string }) {
+function MiniMetric({ label, value, warna }: { label: string; value: string; warna?: string }) {
   return (
     <div>
       <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">{label}</p>
-      <p className="mt-1 whitespace-nowrap text-sm font-black tracking-[-0.02em] text-slate-950" style={{ fontVariantNumeric: "tabular-nums" }}>{value}</p>
+      <p
+        className="mt-1 whitespace-nowrap text-sm font-black tracking-[-0.02em]"
+        style={{ fontVariantNumeric: "tabular-nums", color: warna ?? "var(--foreground)" }}
+      >
+        {value}
+      </p>
     </div>
   )
 }
