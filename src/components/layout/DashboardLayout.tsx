@@ -3,7 +3,7 @@
 import type { Session } from "next-auth"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
   BarChart3,
@@ -105,7 +105,8 @@ function SidebarContent({
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
@@ -114,6 +115,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const timer = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // Hampir semua halaman dashboard adalah Server Component yang memeriksa
+  // sesinya sendiri dan mengalihkan ke /login. Pengaturan tidak: ia
+  // Client Component, jadi tanpa penjaga di sini pengunjung tanpa sesi
+  // hanya melihat "Memuat..." yang tidak pernah selesai. Yang dijaga
+  // adalah tampilannya; datanya sendiri sudah dijaga di /api/user/settings.
+  useEffect(() => {
+    if (status === "unauthenticated") router.replace("/login")
+  }, [status, router])
 
   if (!session) return (
     <div className="liquid-shell flex h-screen items-center justify-center">
