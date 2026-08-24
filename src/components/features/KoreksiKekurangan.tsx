@@ -87,6 +87,11 @@ export default function KoreksiKekurangan({
   }
 
   const belumLayak = mengirim || kurang <= 0 || alasan.trim().length < 10
+  /* Pratinjau akibatnya. Yang diketik adalah kekurangannya, tapi yang
+     tersimpan juga sisi sebaliknya -- berapa yang berarti sudah dibayar.
+     Menampilkannya di sini menghindarkan pengoreksi menghitung sendiri
+     lalu keliru arah. */
+  const sudahDibayar = Math.max(0, kewajiban - kurang)
 
   return (
     <>
@@ -136,34 +141,65 @@ export default function KoreksiKekurangan({
               </button>
             </div>
 
-            <div className="space-y-4 p-5">
+            <div className="space-y-5 p-5">
               <div>
-                <label className="field-label">Kekurangan yang belum dibayar (Rp)</label>
-                <NumberInput
-                  aria-label="Nominal kekurangan"
-                  pemisahRibuan
-                  className="field-input field-lg text-right font-mono text-lg font-bold"
-                  placeholder="0"
-                  value={kurang}
-                  onValueChange={setKurang}
-                />
-                <p className="mt-1.5 text-xs" style={{ color: "var(--muted-faint)" }}>
-                  Maksimal {fmtRp(kewajiban)}, yaitu seluruh kewajiban ke lapak setelah potongan DP.
-                </p>
+                <div className="flex items-baseline justify-between gap-3">
+                  <label className="field-label" style={{ marginBottom: 0 }}>Kekurangan yang belum dibayar</label>
+                  <span className="text-xs" style={{ color: "var(--muted-faint)" }}>
+                    maks. {fmtRp(kewajiban)}
+                  </span>
+                </div>
+                <div className="relative mt-1.5">
+                  <span
+                    className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-sm font-bold"
+                    style={{ color: "var(--muted-faint)" }}
+                  >
+                    Rp
+                  </span>
+                  <NumberInput
+                    aria-label="Nominal kekurangan"
+                    pemisahRibuan
+                    className="field-input field-lg field-icon text-right font-mono text-lg font-bold"
+                    placeholder="0"
+                    value={kurang}
+                    onValueChange={setKurang}
+                  />
+                </div>
+                {/* Akibatnya disebut begitu angkanya masuk, bukan disimpan
+                    sampai setelah disimpan. */}
+                {kurang > 0 && kurang <= kewajiban && (
+                  <div
+                    className="mt-2 flex items-center justify-between rounded-[var(--radius-sm)] px-3 py-2 text-xs"
+                    style={{ background: "var(--surface-sunken)", color: "var(--muted)" }}
+                  >
+                    <span>Berarti yang sudah dibayar</span>
+                    <strong className="font-mono" style={{ color: "var(--foreground)" }}>{fmtRp(sudahDibayar)}</strong>
+                  </div>
+                )}
               </div>
 
               <div>
                 <label className="field-label">Alasan koreksi</label>
+                {/* Pegangan ubah-ukuran bawaan textarea muncul sebagai
+                    segitiga kecil menonjol di pojok kanan bawah kolom.
+                    Tingginya sudah cukup untuk kalimat sepanjang ini, jadi
+                    pegangannya cuma menambah benda yang tidak dipakai. */}
                 <textarea
-                  className="field-input text-sm"
+                  className="field-input resize-none text-sm"
                   rows={3}
                   value={alasan}
                   onChange={(e) => setAlasan(e.target.value)}
                   placeholder="Contoh: transfer hanya Rp 9.000.000, sisanya belum dikirim."
                 />
-                <p className="mt-1.5 text-xs" style={{ color: "var(--muted-faint)" }}>
-                  Wajib diisi, minimal 10 karakter. Tercatat di audit log bersama nama Anda.
-                </p>
+                <div className="mt-1.5 flex items-start justify-between gap-3 text-xs" style={{ color: "var(--muted-faint)" }}>
+                  <span>Tercatat di audit log bersama nama Anda.</span>
+                  <span
+                    className="shrink-0 font-mono"
+                    style={alasan.trim().length >= 10 ? undefined : { color: "var(--warning)" }}
+                  >
+                    {alasan.trim().length}/10
+                  </span>
+                </div>
               </div>
 
               {galat && <div className="notice tone-warning text-sm font-medium">{galat}</div>}

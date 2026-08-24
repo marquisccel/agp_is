@@ -609,7 +609,12 @@ export default function ManagerSuppliersClient({
       {filteredSuppliers.length > 0 ? (
         <div
           key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedMonth}-${selectedYear}-${searchQuery}`}
-          className="grid grid-cols-1 gap-4 xl:grid-cols-2 soft-enter"
+          /* Satu lapak per baris (permintaan Manager). Dua kolom membuat
+             tiap kartu cuma dapat separuh lebar layar, sehingga nama lapak,
+             tiga kotak nilai, dan lima tombol aksinya berdesakan -- di
+             tangkapan layar yang dikirim, nama gudang dan keterangan
+             koordinat bahkan patah ke baris berikutnya. */
+          className="grid grid-cols-1 gap-4 soft-enter"
         >
           {filteredSuppliers.map((supplier) => {
             const perf = supplier.performance

@@ -676,34 +676,64 @@ export default async function ManagerDashboard({
 
       {/* Alert target harian: hanya tampil di hari kerja */}
       {isCurrentMonth && isWorkingToday && missedTargetWarehouses.length > 0 && (
-        <div className="section section-body space-y-4 animate-in fade-in duration-200" style={{ borderLeft: "3px solid var(--warning)" }}>
-          <div className="flex items-center gap-2.5 border-b pb-2.5" style={{ borderColor: "var(--border)" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0" style={{ color: "var(--warning)" }}>
-              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
+        /* Kartunya bernada merah utuh, bukan putih dengan rel oranye di
+           tepi. Ini satu-satunya pemberitahuan di dashboard yang menuntut
+           tindakan hari itu juga -- kalau bentuknya sama dengan kartu lain,
+           ia ikut tenggelam di antara panel-panel ringkasan. */
+        <div
+          className="animate-in fade-in space-y-4 rounded-[var(--radius-lg)] border p-5 duration-200"
+          style={{ background: "var(--danger-soft)", borderColor: "color-mix(in srgb, var(--danger) 30%, transparent)" }}
+        >
+          <div
+            className="flex items-center gap-2.5 border-b pb-3"
+            style={{ borderColor: "color-mix(in srgb, var(--danger) 22%, transparent)" }}
+          >
+            <span
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px]"
+              style={{ background: "var(--surface)", color: "var(--danger)" }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </span>
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--foreground)" }}>Laporan Target Harian Belum Tercapai</h3>
-              <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>Ada {missedTargetWarehouses.length} Collection Center yang belum mencapai target harian hari ini</p>
+              <h3 className="field-label" style={{ color: "var(--danger)", marginBottom: 2 }}>Target Harian Belum Tercapai</h3>
+              <p className="text-xs font-medium" style={{ color: "var(--danger)" }}>
+                {missedTargetWarehouses.length} Collection Center belum mencapai target hari ini
+              </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {missedTargetWarehouses.map((w, index) => {
               const pct = w.target > 0 ? (w.actual / w.target) * 100 : 0
               return (
-                <div key={index} className="flex flex-col justify-between rounded-[var(--radius-md)] border p-4 transition-all" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                  <div className="flex justify-between items-start mb-2">
+                <div
+                  key={index}
+                  className="flex flex-col justify-between rounded-[var(--radius-md)] p-4"
+                  style={{ background: "var(--surface)" }}
+                >
+                  <div className="mb-2 flex items-start justify-between gap-2">
                     <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{w.nama}</span>
-                    <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>{pct.toFixed(0)}%</span>
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-xs font-bold"
+                      style={{ background: "var(--danger-soft)", color: "var(--danger)" }}
+                    >
+                      {pct.toFixed(0)}%
+                    </span>
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                      Realisasi: <strong>{(w.actual / 1000).toFixed(2)} Ton</strong> dari target <strong>{(w.target / 1000).toFixed(2)} Ton</strong> (Kurang <strong style={{ color: "var(--danger)" }}>{(w.kekurangan / 1000).toFixed(2)} Ton</strong>)
+                      Baru <strong style={{ color: "var(--foreground)" }}>{(w.actual / 1000).toFixed(2)} ton</strong> dari{" "}
+                      <strong style={{ color: "var(--foreground)" }}>{(w.target / 1000).toFixed(2)} ton</strong>
                     </p>
-                    <div className="h-2 w-full rounded-full" style={{ background: "var(--bg-tint)" }}>
-                      <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: "var(--warning)" }} />
+                    <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: "var(--danger)" }} />
                     </div>
+                    <p className="text-xs font-bold" style={{ color: "var(--danger)" }}>
+                      Kurang {(w.kekurangan / 1000).toFixed(2)} ton
+                    </p>
                   </div>
                 </div>
               )
