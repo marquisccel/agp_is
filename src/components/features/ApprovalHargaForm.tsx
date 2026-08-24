@@ -57,7 +57,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
     <div className="premium-workflow space-y-6">
       {dialog}
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
+        <div className="notice tone-warning text-sm font-medium">
           {error}
         </div>
       )}
@@ -82,7 +82,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                 <th className="px-3 py-3 font-semibold text-slate-700 text-xs text-right whitespace-nowrap">Subtotal</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {purchase.items.map((item) => {
                 const standard = purchase.warehouse.skuPrices.find((s) => s.sku_name === item.sku_name)
                 const maxPrice = standard ? standard.max_price_per_kg : 0
@@ -94,12 +94,12 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                 return (
                   <tr
                     key={item.id}
-                    className={isOver ? "bg-orange-50/30 hover:bg-orange-50/50 transition-colors" : "bg-white hover:bg-slate-50/50 transition-colors"}
+                    style={isOver ? { background: "var(--warning-soft)" } : undefined}
                   >
                     <td className="px-3 py-3">
                       <div className="font-semibold text-slate-800 text-sm">{item.sku_name}</div>
                       {item.spec && (
-                        <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${item.spec === "Grading" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                        <span className="mt-0.5 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
                           {item.spec}
                         </span>
                       )}
@@ -108,11 +108,11 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                     <td className="px-3 py-3 text-slate-700 font-mono font-bold text-sm">{gudangW.toFixed(2)}</td>
                     <td className="px-3 py-3">
                       {diff === 0 ? (
-                        <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold">Sama</span>
+                        <span className="rounded px-2 py-0.5 text-xs font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>Sama</span>
                       ) : (
                         <span
-                          className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${diff < 0 ? "text-rose-600 bg-rose-50" : ""}`}
-                          style={diff > 0 ? { background: "var(--brand-soft)", color: "var(--brand-strong)" } : undefined}
+                          className="rounded px-2 py-0.5 font-mono text-xs font-bold"
+                          style={diff < 0 ? { color: "var(--danger)", background: "var(--danger-soft)" } : { color: "var(--warning)", background: "var(--warning-soft)" }}
                         >
                           {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
                           {lapakW > 0 ? ` (${((diff / lapakW) * 100).toFixed(1)}%)` : ""}
@@ -120,11 +120,11 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                       )}
                     </td>
                     <td className="px-3 py-3">
-                      <span className={`font-semibold text-sm ${isOver ? "text-orange-600" : "text-slate-700"}`}>
+                      <span className="text-sm font-semibold" style={{ color: isOver ? "var(--warning)" : "var(--foreground)" }}>
                         Rp {item.harga_per_kg.toLocaleString("id-ID")}
                       </span>
                       {isOver && (
-                        <span className="ml-1 text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full font-bold">OVER</span>
+                        <span className="ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>Di atas standar</span>
                       )}
                     </td>
                     <td className="px-3 py-3 text-slate-500 font-mono text-sm">Rp {maxPrice.toLocaleString("id-ID")}</td>
@@ -151,20 +151,21 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
             return (
               <div
                 key={item.id}
-                className={`rounded-xl border p-4 space-y-3 ${isOver ? "border-orange-200 bg-orange-50/30" : "border-slate-200 bg-white"}`}
+                className="space-y-3 rounded-[var(--radius-md)] border p-4"
+                style={isOver ? { borderColor: "var(--warning-soft)", background: "var(--warning-soft)" } : { borderColor: "var(--border)", background: "var(--surface)" }}
               >
                 {/* SKU Header */}
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-bold text-slate-800 text-sm">{item.sku_name}</div>
                     {item.spec && (
-                      <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded mt-1 ${item.spec === "Grading" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                      <span className="mt-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
                         {item.spec}
                       </span>
                     )}
                   </div>
                   {isOver && (
-                    <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-bold">OVER LIMIT</span>
+                    <span className="rounded-full px-2 py-1 text-[10px] font-bold" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>Di atas standar</span>
                   )}
                 </div>
 
@@ -181,9 +182,9 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                   <div className="text-center">
                     <div className="text-[10px] text-slate-400 font-medium mb-1">Selisih</div>
                     {diff === 0 ? (
-                      <div className="text-xs text-emerald-600 font-bold">Sama</div>
+                      <div className="text-xs font-bold" style={{ color: "var(--muted)" }}>Sama</div>
                     ) : (
-                      <div className={`text-xs font-bold font-mono ${diff < 0 ? "text-rose-600" : ""}`} style={diff > 0 ? { color: "var(--brand-strong)" } : undefined}>
+                      <div className="font-mono text-xs font-bold" style={{ color: diff < 0 ? "var(--danger)" : "var(--warning)" }}>
                         {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
                       </div>
                     )}
@@ -194,7 +195,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-white border border-slate-100 rounded-lg p-2.5">
                     <div className="text-[10px] text-slate-400 font-medium">Harga Beli / kg</div>
-                    <div className={`text-sm font-bold mt-0.5 ${isOver ? "text-orange-600" : "text-slate-800"}`}>
+                    <div className="mt-0.5 text-sm font-bold" style={{ color: isOver ? "var(--warning)" : "var(--foreground)" }}>
                       Rp {item.harga_per_kg.toLocaleString("id-ID")}
                     </div>
                   </div>
@@ -244,20 +245,24 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
           </div>
           <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-center">
             <div className="text-[10px] text-slate-400 font-medium leading-tight">Selisih / Susut</div>
-            <div className={`text-base font-bold mt-1 font-mono ${selisihTotal === 0 ? "text-emerald-600" : selisihTotal < 0 ? "text-rose-600" : ""}`} style={selisihTotal > 0 ? { color: "var(--brand-strong)" } : undefined}>
+            <div className="mt-1 font-mono text-base font-bold" style={{ color: selisihTotal === 0 ? "var(--foreground)" : selisihTotal < 0 ? "var(--danger)" : "var(--warning)" }}>
               {selisihTotal > 0 ? `+${selisihTotal.toFixed(2)}` : selisihTotal.toFixed(2)}
               <span className="text-[10px] font-normal ml-0.5">KG</span>
             </div>
             {beratTimbanganLapak > 0 && (
-              <div className={`text-[10px] font-semibold mt-0.5 ${selisihTotal === 0 ? "text-emerald-500" : selisihTotal < 0 ? "text-rose-500" : ""}`} style={selisihTotal > 0 ? { color: "var(--brand)" } : undefined}>
+              <div className="mt-0.5 text-[10px] font-semibold" style={{ color: selisihTotal === 0 ? "var(--muted-faint)" : selisihTotal < 0 ? "var(--danger)" : "var(--warning)" }}>
                 ({((selisihTotal / beratTimbanganLapak) * 100).toFixed(1)}%)
               </div>
             )}
           </div>
         </div>
         <div
-          className={`text-xs py-2.5 px-4 rounded-xl border font-semibold text-center ${selisihTotal === 0 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : selisihTotal < 0 ? "bg-rose-50 text-rose-700 border-rose-100" : ""}`}
-          style={selisihTotal > 0 ? { background: "var(--brand-soft)", color: "var(--brand-strong)", borderColor: "var(--brand-soft-strong)" } : undefined}
+          className="rounded-[var(--radius-sm)] px-4 py-2.5 text-center text-xs font-semibold"
+          style={selisihTotal === 0
+            ? { background: "var(--bg-tint)", color: "var(--muted)" }
+            : selisihTotal < 0
+              ? { background: "var(--danger-soft)", color: "var(--danger)" }
+              : { background: "var(--warning-soft)", color: "var(--warning)" }}
         >
           {selisihTotal === 0
             ? "Hasil timbangan staff (lapak) dan admin (gudang) sesuai sempurna."
@@ -279,7 +284,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
           <button
             onClick={() => handleAction("reject")}
             disabled={loading}
-            className="flex-1 px-5 py-3 rounded-xl font-bold text-sm text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 transition-colors disabled:opacity-50"
+            className="btn-netral tone-danger premium-button flex-1 px-5 py-3 text-sm disabled:opacity-50"
           >
             {loading ? "Memproses..." : "Tolak (Dibatalkan)"}
           </button>

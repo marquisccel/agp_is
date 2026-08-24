@@ -297,7 +297,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
           </p>
           <button
             onClick={onClose}
-            className="premium-button w-full rounded-xl bg-slate-950 py-3 font-bold text-white hover:bg-slate-800"
+            className="btn-primer premium-button w-full rounded-[var(--radius-sm)] py-3 font-bold"
           >
             Selesai
           </button>
@@ -361,7 +361,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="premium-button flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60"
+                className="btn-primer premium-button flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] py-3 text-sm font-bold disabled:opacity-60"
               >
                 {downloading ? (
                   <>

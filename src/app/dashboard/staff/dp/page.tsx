@@ -89,7 +89,7 @@ export default async function DPListStaff() {
                         className="font-mono font-medium"
                         style={{ color: dp.status_approval === 'approved' && sisa > 0 ? "var(--warning)" : "var(--muted-faint)" }}
                       >
-                        {dp.status_approval === 'approved' ? `Rp ${sisa.toLocaleString('id-ID')}` : '\u2014'}
+                        {dp.status_approval === 'approved' ? `Rp ${sisa.toLocaleString('id-ID')}` : '-'}
                       </td>
                       <td>
                         <StatusPill label={status.label} tone={status.tone} />

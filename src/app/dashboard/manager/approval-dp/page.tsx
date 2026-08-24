@@ -143,14 +143,14 @@ export default async function DPApprovalManager() {
                       <td className="whitespace-nowrap">
                         {dp.tanggal_approval
                           ? new Date(dp.tanggal_approval).toLocaleDateString('id-ID', { dateStyle: "medium", timeZone: 'Asia/Jakarta' })
-                          : '\u2014'}
+                          : '-'}
                       </td>
                       <td className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
-                      <td>{dp.supplier.warehouse?.nama ?? '\u2014'}</td>
+                      <td>{dp.supplier.warehouse?.nama ?? '-'}</td>
                       <td className="whitespace-nowrap text-right font-mono font-bold" style={{ color: "var(--foreground)" }}>
                         {dp.status_approval === "approved"
                           ? `Rp ${(dp.nominal_disetujui ?? dp.nominal_diajukan).toLocaleString('id-ID')}`
-                          : '\u2014'}
+                          : '-'}
                       </td>
                       <td>
                         <StatusPill label={status.label} tone={status.tone} />
@@ -164,7 +164,7 @@ export default async function DPApprovalManager() {
                             </div>
                           </div>
                         ) : (
-                          <span style={{ color: "var(--muted-faint)" }}>&mdash;</span>
+                          <span style={{ color: "var(--muted-faint)" }}>-</span>
                         )}
                       </td>
                     </tr>

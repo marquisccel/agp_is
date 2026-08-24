@@ -361,7 +361,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                               <th className="px-4 py-2 text-right">Selisih</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100 bg-white">
+                          <tbody className="divide-y divide-[var(--border)] bg-white">
                             {tx.skus.map((sku, sIdx) => {
                               const sDiff = sku.selisih
                               return (

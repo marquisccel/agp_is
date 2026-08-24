@@ -133,7 +133,7 @@ export default async function StaffDashboard() {
             {/* Kalimatnya disamakan persis dengan pemberitahuan yang sama
                 di dashboard Manager; dua layar yang menerangkan keadaan
                 yang sama tidak perlu memakai dua susunan kata. */}
-            <h3 className="notice-title">Hari Libur &mdash; Tidak Ada Target Harian</h3>
+            <h3 className="notice-title">Hari Libur · Tidak Ada Target Harian</h3>
             <p className="notice-body">
               Hari ini Minggu atau libur nasional, jadi tidak ada target harian yang dikejar. Target mingguan dan
               bulanan tetap berjalan.

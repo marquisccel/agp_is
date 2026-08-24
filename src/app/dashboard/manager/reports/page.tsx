@@ -302,9 +302,9 @@ export default async function ManagerReportsPage({
             {periodAuditLogs.length} aktivitas
           </div>
         </div>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[var(--border)]">
           {periodAuditLogs.length === 0 ? (
-            <div className="px-6 py-8 text-center text-sm font-medium text-slate-400">
+            <div className="px-6 py-8 text-center text-sm font-medium" style={{ color: "var(--muted-faint)" }}>
               Belum ada aktivitas audit pada periode ini.
             </div>
           ) : (
@@ -460,10 +460,10 @@ function ReportIntegrityCard({
   tone: "slate" | "emerald" | "amber" | "rose"
 }) {
   const toneClass = {
-    slate: "bg-white text-slate-500 border-slate-200",
-    emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    amber: "bg-amber-50 text-amber-700 border-amber-100",
-    rose: "bg-rose-50 text-rose-700 border-rose-100",
+    slate: "bg-[color:var(--surface)] text-[color:var(--muted)] border-[color:var(--border)]",
+    emerald: "bg-[color:var(--success-soft)] text-[color:var(--success)] border-[color:var(--success-soft)]",
+    amber: "bg-[color:var(--warning-soft)] text-[color:var(--warning)] border-[color:var(--warning-soft)]",
+    rose: "bg-[color:var(--danger-soft)] text-[color:var(--danger)] border-[color:var(--danger-soft)]",
   }[tone]
 
   return (

@@ -331,7 +331,7 @@ export default function NotaViewerClient({
       {toastHost}
       {/* Page header */}
       <div className="w-full max-w-md mb-6 text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl mb-4">
+        <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-[var(--radius-md)]" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
         <h1 className="text-2xl font-extrabold text-slate-800">Transaksi Disetujui!</h1>
@@ -352,7 +352,7 @@ export default function NotaViewerClient({
         <button
           onClick={handleDownloadJpg}
           disabled={jpgLoading}
-          className="premium-button flex w-full items-center justify-center gap-2.5 rounded-2xl bg-slate-950 py-3.5 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60"
+          className="btn-primer premium-button flex w-full items-center justify-center gap-2.5 rounded-[var(--radius-md)] py-3.5 text-sm font-bold disabled:opacity-60"
         >
           {jpgLoading ? (
             <>

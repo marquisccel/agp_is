@@ -185,7 +185,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
     if (mOpi >= 85) {
       mGrade = "A"
       mGradeLabel = "Sangat Bagus"
-      mGradeColor = "bg-emerald-50 text-emerald-700"
+      mGradeColor = "bg-[color:var(--success-soft)] text-[color:var(--success)]"
     } else if (mOpi >= 60) {
       mGrade = "B"
       mGradeLabel = "Bagus/Cukup"
@@ -193,7 +193,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
     } else {
       mGrade = "C"
       mGradeLabel = "Perlu Evaluasi"
-      mGradeColor = "bg-rose-50 text-rose-700"
+      mGradeColor = "bg-[color:var(--danger-soft)] text-[color:var(--danger)]"
     }
   }
 
@@ -305,7 +305,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 href={getWaLink(supplier.kontak_wa)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="premium-button flex items-center justify-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100"
+                className="btn-netral premium-button flex items-center justify-center gap-1.5 px-4 py-2 text-xs"
               >
                 <MessageCircle className="h-4 w-4 shrink-0" />
                 Chat WhatsApp
@@ -462,7 +462,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
           </div>
           {mTransactions > 0 && (
             <span className={`rounded-full px-3 py-1 text-xs font-bold ${mGradeColor}`}>
-              Grade {mGrade} &mdash; {mGradeLabel}
+              Grade {mGrade} ({mGradeLabel})
             </span>
           )}
         </div>
@@ -639,7 +639,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                         <th className="px-6 py-4 text-center">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 bg-white">
+                    <tbody className="divide-y divide-[var(--border)] bg-white">
                       {filteredPurchases.map(p => {
                         const totalBerat = p.items.reduce((s, i) => s + (i.berat_final_item || 0), 0)
                         const totalNilai = p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
@@ -721,7 +721,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                         <th className="px-6 py-4">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 bg-white">
+                    <tbody className="divide-y divide-[var(--border)] bg-white">
                       {supplier.downPayments.map(dp => {
                         const badge = getDpStatus(dp.status_approval)
 

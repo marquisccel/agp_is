@@ -665,7 +665,7 @@ export default async function ManagerDashboard({
             </svg>
           </div>
           <div>
-            <p className="notice-title">Hari libur &mdash; tidak ada target harian</p>
+            <p className="notice-title">Hari libur · tidak ada target harian</p>
             <p className="notice-body">
               Hari ini Minggu atau libur nasional, jadi tidak ada target harian yang dikejar dan laporan pencapaian
               harian tidak ditampilkan. Target mingguan dan bulanan tetap berjalan.
@@ -912,7 +912,7 @@ export default async function ManagerDashboard({
                 <span>Detail</span>
                 <span />
               </div>
-              <ul className="max-h-[320px] divide-y divide-slate-100 overflow-auto bg-white">
+              <ul className="max-h-[320px] divide-y divide-[var(--border)] overflow-auto bg-white">
               {recentLogs.map(log => {
                 const activity = getAuditAction(log.action)
                 const scope = formatActivityScope(log.table_name)

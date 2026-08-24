@@ -41,7 +41,7 @@ export default async function ApprovalHargaDetailPage({ params }: { params: Prom
         }
       />
 
-      <div className="workflow-card p-5 md:p-6">
+      <div className="section section-body">
         <ApprovalHargaForm purchase={purchase} />
       </div>
     </div>

@@ -119,7 +119,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
         <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="field-icon-gambar absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--muted-faint)" }} />
               <input
                 type="text"
                 placeholder="Cari pengguna, record ID, aksi..."
@@ -138,7 +138,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+          <p className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--muted)" }}>
             <Filter className="h-3.5 w-3.5" />
             {filteredLogs.length} dari {logs.length} entri
           </p>
@@ -155,36 +155,36 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
 
       <section className="section overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50">
+          <table className="tabel-lembut w-full text-left text-sm">
+            <thead>
               <tr>
-                <th className="px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">Waktu</th>
-                <th className="px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">Pengguna</th>
-                <th className="px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">Aksi</th>
-                <th className="px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">Entitas</th>
-                <th className="px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">Record ID</th>
+                <th>Waktu</th>
+                <th>Pengguna</th>
+                <th>Aksi</th>
+                <th>Entitas</th>
+                <th>Record ID</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">
+                  <td colSpan={5} className="py-10 text-center text-sm" style={{ color: "var(--muted-faint)" }}>
                     Tidak ada aktivitas yang cocok dengan kriteria filter.
                   </td>
                 </tr>
               ) : (
                 filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/70">
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-500">{formatDateTime(log.createdAt)}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-bold text-slate-800">{log.user?.nama || "Sistem"}</div>
+                  <tr key={log.id}>
+                    <td className="whitespace-nowrap" style={{ color: "var(--muted)" }}>{formatDateTime(log.createdAt)}</td>
+                    <td>
+                      <div className="font-bold" style={{ color: "var(--foreground)" }}>{log.user?.nama || "Sistem"}</div>
                       {log.user?.role && (
-                        <span className="text-[10px] font-black uppercase tracking-wide text-slate-400">{log.user.role}</span>
+                        <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: "var(--muted-faint)" }}>{log.user.role}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-semibold text-slate-700">{formatAuditAction(log.action)}</td>
-                    <td className="px-4 py-3 text-slate-500">{log.table_name}</td>
-                    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-400">{log.record_id.slice(0, 8)}</td>
+                    <td className="font-semibold" style={{ color: "var(--foreground)" }}>{formatAuditAction(log.action)}</td>
+                    <td style={{ color: "var(--muted)" }}>{log.table_name}</td>
+                    <td className="whitespace-nowrap font-mono text-xs" style={{ color: "var(--muted-faint)" }}>{log.record_id.slice(0, 8)}</td>
                   </tr>
                 ))
               )}

@@ -7,7 +7,7 @@ import ElegantSelect from "@/components/ui/ElegantSelect"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 import NumberInput from "@/components/ui/NumberInput"
 import { fmtRp } from "@/lib/format"
-import BatasHargaSku, { batasHargaSku, type StandarHargaSku } from "@/components/features/BatasHargaSku"
+import StandarHargaSku, { standarHargaSku, type StandarHarga } from "@/components/features/StandarHargaSku"
 
 type PurchaseForDoubleCheck = Purchase & {
   items: PurchaseItem[]
@@ -49,7 +49,7 @@ export default function DoubleCheckForm({
 }: {
   purchase: PurchaseForDoubleCheck
   availableDp: number
-  standarHarga?: StandarHargaSku[]
+  standarHarga?: StandarHarga[]
   successRedirect?: string
 }) {
   const router = useRouter()
@@ -201,7 +201,7 @@ export default function DoubleCheckForm({
   /* Selisihnya dulu dihitung ulang sepuluh kali di dalam JSX, masing-masing
      dengan rangkaian ternary warnanya sendiri. */
   const adaHargaDiAtasBatas = items.some((i) => {
-    const batas = batasHargaSku(i.sku_name, standarHarga)
+    const batas = standarHargaSku(i.sku_name, standarHarga)
     return batas !== null && i.harga_per_kg > batas
   })
 
@@ -355,7 +355,7 @@ export default function DoubleCheckForm({
                         <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
                           Harga {fmtRp(item.harga_per_kg)}/kg
                         </p>
-                        <BatasHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
+                        <StandarHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
                       </div>
 
                       {/* SKU Delta indicator */}
@@ -585,7 +585,7 @@ export default function DoubleCheckForm({
         )}
       </div>
 
-      {/* Kalau ada harga yang melewati batas, notanya TIDAK langsung
+      {/* Kalau ada harga yang melewati standar, notanya TIDAK langsung
           disetujui. Dulu itu baru ketahuan setelah tombol simpan ditekan
           dan statusnya ternyata bukan "approved" -- dari layar ini terbaca
           seperti sistem menolak tanpa sebab. */}
@@ -599,7 +599,7 @@ export default function DoubleCheckForm({
             </svg>
           </div>
           <div>
-            <p className="notice-title">Ada harga di atas batas</p>
+            <p className="notice-title">Ada harga di atas standar</p>
             <p className="notice-body">
               Verifikasi tetap bisa disimpan, tapi notanya akan menunggu persetujuan harga dari Manager, bukan langsung
               disetujui.

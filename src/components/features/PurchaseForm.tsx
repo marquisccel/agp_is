@@ -9,7 +9,7 @@ import { SKU_OPTIONS } from "@/lib/skuList"
 import { fmtDigitInput, fmtRp, fmtSkalaRupiah } from "@/lib/format"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 import NumberInput from "@/components/ui/NumberInput"
-import BatasHargaSku, { type StandarHargaSku } from "@/components/features/BatasHargaSku"
+import StandarHargaSku, { type StandarHarga } from "@/components/features/StandarHargaSku"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
@@ -64,7 +64,7 @@ export default function PurchaseForm({
 }: {
   suppliers: Supplier[]
   namaGudang: string
-  standarHarga?: StandarHargaSku[]
+  standarHarga?: StandarHarga[]
 }) {
   const [supplierId, setSupplierId] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
@@ -273,7 +273,8 @@ export default function PurchaseForm({
                     setSearchQuery(currentSupplier ? currentSupplier.nama : "")
                   }} />
                   
-                  <div className="absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl z-20 divide-y divide-slate-50">
+                  <div className="absolute left-0 right-0 z-20 mt-1.5 max-h-60 divide-y divide-[var(--border)] overflow-y-auto rounded-[var(--radius-sm)] border shadow-xl"
+                    style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     {filteredSuppliers.length === 0 ? (
                       <div className="px-4 py-3 text-sm text-slate-400 italic">Lapak tidak ditemukan</div>
                     ) : (
@@ -402,7 +403,7 @@ export default function PurchaseForm({
                     value={item.harga_per_kg}
                     onValueChange={(n) => updateItem(idx, "harga_per_kg", n)}
                   />
-                  <BatasHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
+                  <StandarHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
                 </div>
                 {items.length > 1 && (
                   <div className="w-full md:w-auto pt-6 flex justify-end">

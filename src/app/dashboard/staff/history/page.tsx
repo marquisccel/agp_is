@@ -94,7 +94,7 @@ export default async function StaffHistoryPage() {
                             />
                           </a>
                         ) : (
-                          <span className="text-xs" style={{ color: "var(--muted-faint)" }}>&mdash;</span>
+                          <span className="text-xs" style={{ color: "var(--muted-faint)" }}>-</span>
                         )}
                       </td>
                       <td className="text-center">
@@ -108,7 +108,7 @@ export default async function StaffHistoryPage() {
                             Lihat Nota
                           </a>
                         ) : (
-                          <span className="text-xs" style={{ color: "var(--muted-faint)" }}>&mdash;</span>
+                          <span className="text-xs" style={{ color: "var(--muted-faint)" }}>-</span>
                         )}
                       </td>
                     </tr>

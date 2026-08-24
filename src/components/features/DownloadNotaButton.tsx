@@ -25,7 +25,7 @@ export default function DownloadNotaButton({ purchase, qrCodeUrl }: { purchase: 
             Menyiapkan PDF...
           </button>
         ) : (
-          <button className="premium-button rounded-xl bg-slate-950 px-6 py-3 font-bold text-white hover:bg-slate-800">
+          <button className="btn-primer premium-button rounded-[var(--radius-sm)] px-6 py-3 font-bold">
             Download PDF Nota
           </button>
         )

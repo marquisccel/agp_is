@@ -936,7 +936,7 @@ export default function ManagerSuppliersClient({
                         <td className="px-3 py-2 text-slate-500">{r.rowNumber}</td>
                         <td className="px-3 py-2 font-semibold text-slate-800">{r.nama}</td>
                         <td className="px-3 py-2">
-                          <span className={`rounded-full px-2 py-0.5 font-black ${r.status === "updated" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                          <span className="rounded-full px-2 py-0.5 font-black" style={r.status === "updated" ? { background: "var(--success-soft)", color: "var(--success)" } : { background: "var(--bg-tint)", color: "var(--muted)" }}>
                             {r.status === "updated" ? "Diperbarui" : "Dilewati"}
                           </span>
                         </td>
