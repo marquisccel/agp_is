@@ -1492,3 +1492,17 @@ a:focus-visible {
 .kotak-angka.tone-danger { background: var(--danger-soft); }
 .kotak-angka.tone-danger .kotak-label,
 .kotak-angka.tone-danger .kotak-nilai { color: var(--danger); }
+
+/* Batang penanda gambar latar di halaman masuk, terisi seiring waktu
+   tunggu sebelum gambarnya berganti. */
+@keyframes latar-isi {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* Zum lambat pada foto latar yang sedang tampil, supaya gambar diam
+   tidak terasa beku selama menunggu gilirannya berganti. */
+@keyframes latar-zum {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}

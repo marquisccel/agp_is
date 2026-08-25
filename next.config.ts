@@ -59,6 +59,17 @@ const nextConfig: NextConfig = {
   // menyalin seluruh node_modules dari tahap build.
   output: "standalone",
 
+  /*
+   * Next 16 mengubah bawaan images.qualities menjadi hanya [75], dan
+   * nilai quality di luar daftar ini DIAM-DIAM dibulatkan ke nilai
+   * terdekat yang diizinkan. Foto latar halaman masuk ditampilkan
+   * selebar panel, jadi 75 meninggalkan pola kotak yang terlihat di
+   * bidang langit dan tumpukan botol.
+   */
+  images: {
+    qualities: [75, 90],
+  },
+
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]
   },
