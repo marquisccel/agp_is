@@ -417,7 +417,7 @@ export default function SupplierForm({
                     /* Dulu biru sian -- warna yang tidak dipakai di mana
                        pun lagi dalam sistem ini. Hari terpilih kini memakai
                        warna merek, sama seperti pilihan aktif lainnya. */
-                    className="premium-button rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs font-bold transition-all"
+                    className="premium-button min-h-[38px] rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs font-bold transition-all"
                     style={isChecked
                       ? { background: "var(--brand)", borderColor: "var(--brand)", color: "#fff" }
                       : { background: "var(--surface)", borderColor: "var(--border)", color: "var(--muted)" }}

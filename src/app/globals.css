@@ -1506,3 +1506,40 @@ a:focus-visible {
   from { transform: scale(1); }
   to   { transform: scale(1.08); }
 }
+
+/* ── Layar kecil dan layar sentuh ──────────────────────────────────
+   Aturan di bawah ini bukan soal selera, melainkan soal hal-hal yang
+   membuat situs terasa rusak di HP. */
+@media (max-width: 767px) {
+  /*
+   * Safari di iPhone MEMBESARKAN seluruh halaman secara paksa begitu
+   * kolom isian berhuruf di bawah 16px disentuh, dan halamannya tidak
+   * pernah kembali ke ukuran semula setelah kolomnya dilepas. Angka 16
+   * di sini syarat, bukan pilihan tampilan. Di layar lebar kolomnya
+   * tetap 13,5px seperti semula.
+   */
+  input,
+  select,
+  textarea,
+  .field-input,
+  /* .field-input.field-lg menetapkan 14px dengan kekhususan dua kelas,
+     jadi selektor satu kelas di sini akan kalah betapa pun urutannya. */
+  .field-input.field-lg {
+    font-size: 16px;
+  }
+
+  /*
+   * Jari bukan tetikus. Tombol setinggi 30 sampai 31 piksel sering
+   * meleset, apalagi tombol pengganti tampilan yang berjejer rapat.
+   */
+  .segmented :is(button, a) {
+    min-height: 38px;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .btn-primer,
+  .btn-netral {
+    min-height: 40px;
+  }
+}

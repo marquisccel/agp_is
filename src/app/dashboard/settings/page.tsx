@@ -201,7 +201,8 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowOld(!showOld)}
-                className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted-faint)" }}
+                aria-label="Tampilkan atau sembunyikan kata sandi"
+                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
               >
                 {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -223,7 +224,8 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted-faint)" }}
+                  aria-label="Tampilkan atau sembunyikan kata sandi"
+                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
                 >
                   {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -244,7 +246,8 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted-faint)" }}
+                  aria-label="Tampilkan atau sembunyikan kata sandi"
+                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
                 >
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

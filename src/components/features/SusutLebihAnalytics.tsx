@@ -172,7 +172,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         <div className="px-[22px] py-4">
           <Link
             href="/dashboard/manager/susut"
-            className="inline-block text-[11.5px] font-bold"
+            className="inline-flex min-h-[38px] items-center text-[11.5px] font-bold"
             style={{ color: "var(--brand-strong)" }}
           >
             Lihat rincian per lapak →

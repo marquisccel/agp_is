@@ -259,7 +259,7 @@ export default function ManagerHistoryClient({
                           <button
                             onClick={() => handleDelete(purchase.id)}
                             disabled={deletingId === purchase.id}
-                            className="premium-button btn-netral tone-danger p-2 disabled:opacity-50"
+                            className="premium-button btn-netral tone-danger min-w-[38px] justify-center p-2 disabled:opacity-50"
                             title="Hapus transaksi"
                             aria-label={`Hapus transaksi ${purchase.nomor_nota || purchase.id.split("-")[0]}`}
                           >
