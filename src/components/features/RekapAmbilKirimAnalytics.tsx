@@ -15,7 +15,7 @@ export interface RekapAmbilKirimRow {
 }
 
 /**
- * Rekap Ambil / Kirim per Collection Center.
+ * Rekap Ambil / Kirim per gudang.
  *
  * Dipakai Manager untuk menilai seberapa efektif armada pengambilan bisa
  * berangkat: makin besar porsi AMBIL, makin aktif armada menjemput ke lapak.
@@ -252,7 +252,7 @@ export default function RekapAmbilKirimAnalytics({
               )}
             </div>
 
-            {/* Rincian per gudang -- semua Collection Center selalu tampil,
+            {/* Rincian per gudang -- semua gudang selalu tampil,
                 termasuk yang belum ada aktivitas, supaya Manager langsung
                 lihat gudang mana yang armadanya sama sekali belum jalan. */}
             <div className="mt-5 overflow-x-auto">

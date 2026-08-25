@@ -4,6 +4,7 @@ import { useState } from "react"
 import { fmtRp } from "@/lib/format"
 import { ChevronRight } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { namaGudang } from "@/lib/namaGudang"
 
 interface DpSupplierRow {
   supplierId: string
@@ -171,7 +172,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
                       </span>
                     </div>
                     <span className="mt-1 block text-xs text-slate-400">
-                      CC: <span className="font-bold text-slate-600">{row.warehouseName}</span>
+                      Gudang: <span className="font-bold text-slate-600">{namaGudang(row.warehouseName)}</span>
                     </span>
                   </div>
                 </div>

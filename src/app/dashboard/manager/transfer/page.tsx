@@ -86,7 +86,7 @@ export default async function ManagerTransferPage() {
       <PageHeader
         eyebrow="Kendali pembayaran"
         title="Transfer Pembayaran"
-        description="Bayar dan pantau pelunasan ke lapak untuk seluruh Collection Center."
+        description="Bayar dan pantau pelunasan ke lapak untuk seluruh gudang."
       />
 
       <div className="stat-strip" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>

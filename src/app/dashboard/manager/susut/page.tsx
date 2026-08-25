@@ -126,7 +126,7 @@ export default async function ManagerSusutPage({
       <PageHeader
         eyebrow="Kendali timbangan"
         title="Analisis Penyusutan Timbangan"
-        description="Pantau susut dan lebih timbangan per lapak, per SKU, dan per Collection Center."
+        description="Pantau susut dan lebih timbangan per lapak, per SKU, dan per gudang."
         actions={(
           <>
             <MonthYearFilter selectedBulan={selectedBulan} selectedTahun={selectedTahun} />

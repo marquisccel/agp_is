@@ -5,6 +5,7 @@ import Link from "next/link"
 import { createPortal } from "react-dom"
 import { fmtKg, fmtPct } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { namaGudang } from "@/lib/namaGudang"
 
 export interface SkuSusutDetail {
   skuName: string
@@ -250,7 +251,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                         </span>
                       </div>
                       <span className="mt-1 block text-xs text-slate-400">
-                        CC: <span className="font-bold text-slate-600">{row.warehouseName}</span>
+                        Gudang: <span className="font-bold text-slate-600">{namaGudang(row.warehouseName)}</span>
                       </span>
                     </div>
                   </div>
@@ -309,7 +310,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
               <div>
                 <h3 className="text-lg font-bold text-slate-800">Detail Susut &amp; Lebih: {selectedLapak.namaLapak}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Collection Center: <span className="font-semibold text-slate-700">{selectedLapak.warehouseName}</span>
+                  Gudang: <span className="font-semibold text-slate-700">{namaGudang(selectedLapak.warehouseName)}</span>
                 </p>
               </div>
               <button

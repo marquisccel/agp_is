@@ -45,7 +45,7 @@ export default function LoginPage() {
 
               <div className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em]" style={{ borderColor: "var(--brand-soft-strong)", background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Sistem Informasi Gudang Botol
+                Sistem Informasi Pembelian PET
               </div>
 
               {/* text-balance supaya barisnya terbagi rata, bukan satu baris

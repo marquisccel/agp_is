@@ -6,6 +6,7 @@ import { AlertTriangle, CalendarDays, CheckCircle2, Loader2, Recycle, Save } fro
 import type { Warehouse, WarehouseTarget } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getWorkingDaysInMonth } from "@/lib/workingDays"
+import { namaGudang } from "@/lib/namaGudang"
 
 interface TargetValues {
   pet_bulanan: string
@@ -165,7 +166,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
               <CalendarDays className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-950">Periode Target CC</h3>
+              <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-950">Periode Target Gudang</h3>
               <p className="mt-1 text-sm leading-6 text-slate-500">
                 {workingDaysThisMonth} hari kerja efektif untuk periode ini. Target mingguan dan harian dihitung otomatis dari target bulanan.
               </p>
@@ -200,7 +201,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
       ) : (
         <div key={`${selectedBulan}-${selectedTahun}`} className="space-y-5 soft-enter">
           {warehouses.map((warehouse, index) => {
-            const cityName = warehouse.nama.replace(/^Gudang\s+/i, "")
+            const labelGudang = namaGudang(warehouse.nama)
             const isSaving = saving === warehouse.id
             const isSaved = savedMap[warehouse.id]
             const value = values[warehouse.id]
@@ -217,7 +218,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                       sendiri, dan tiga kartu berjejer dengan lingkaran
                       berhuruf justru menambah beban baca. */}
                   <div>
-                    <h3 className="font-black text-slate-950">Collection Center {cityName}</h3>
+                    <h3 className="font-black text-slate-950">{labelGudang}</h3>
                     <p className="mt-1 text-xs text-slate-500">Target pembelian bahan baku PET Final</p>
                   </div>
                   <div className="rounded-full border px-3 py-1 text-xs font-black" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>

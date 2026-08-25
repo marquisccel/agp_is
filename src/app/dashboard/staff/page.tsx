@@ -9,6 +9,7 @@ import { redirect } from "next/navigation"
 import { isWorkingDay } from "@/lib/workingDays"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 import PageHeader from "@/components/ui/PageHeader"
+import { namaGudang } from "@/lib/namaGudang"
 
 export default async function StaffDashboard() {
   const session = await getServerSession(authOptions)
@@ -102,7 +103,7 @@ export default async function StaffDashboard() {
   const warehouseInfo = warehouseId
     ? await prisma.warehouse.findUnique({ where: { id: warehouseId } })
     : null
-  const namaGudang = warehouseInfo ? `Collection Center ${warehouseInfo.nama.replace(/^Gudang\s+/i, '')}` : "Gudang Anda"
+  const labelGudang = warehouseInfo ? namaGudang(warehouseInfo.nama) : "Gudang Anda"
 
   const rentangMinggu = `${weekStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })} - ${new Date(weekEnd.getTime() - 1).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}`
   const namaBulan = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })
@@ -110,7 +111,7 @@ export default async function StaffDashboard() {
   // Ketiga target mengukur hal yang sama pada jendela waktu berbeda, jadi
   // dirakit dari satu bentuk data dan dirender oleh satu potong markup.
   const kartuTarget = [
-    { kunci: 'harian',   label: 'Target Hari Ini',  rentang: namaGudang,     realisasi: beratHariIni,   target: targetHarian,   progres: progressHarian,   kurang: kekuranganHarian,   libur: !isWorkingToday },
+    { kunci: 'harian',   label: 'Target Hari Ini',  rentang: labelGudang,    realisasi: beratHariIni,   target: targetHarian,   progres: progressHarian,   kurang: kekuranganHarian,   libur: !isWorkingToday },
     { kunci: 'mingguan', label: 'Target Minggu Ini', rentang: rentangMinggu,  realisasi: beratMingguIni, target: targetMingguan, progres: progressMingguan, kurang: kekuranganMingguan, libur: false },
     { kunci: 'bulanan',  label: 'Target Bulan Ini',  rentang: namaBulan,      realisasi: beratBulanIni,  target: targetBulanan,  progres: progressBulanan,  kurang: kekuranganBulanan,  libur: false },
   ]
@@ -167,7 +168,7 @@ export default async function StaffDashboard() {
       <PageHeader
         eyebrow="Input operasional"
         title="Input Pembelian PET"
-        description={`Kelola transaksi pembelian dan target harian untuk ${namaGudang}.`}
+        description={`Kelola transaksi pembelian dan target harian untuk ${labelGudang}.`}
       />
 
       {/* Target harian / mingguan / bulanan */}
@@ -246,7 +247,7 @@ export default async function StaffDashboard() {
           <p className="text-xs" style={{ color: "var(--muted-faint)" }}>Disimpan sebagai draft untuk diverifikasi Admin gudang.</p>
         </div>
         <div className="section-body">
-          <PurchaseForm suppliers={suppliers} namaGudang={namaGudang} standarHarga={standarHarga} />
+          <PurchaseForm suppliers={suppliers} namaGudang={labelGudang} standarHarga={standarHarga} />
         </div>
       </div>
     </div>

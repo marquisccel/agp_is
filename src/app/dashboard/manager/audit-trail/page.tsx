@@ -38,7 +38,7 @@ export default async function ManagerAuditTrailPage() {
       <PageHeader
         eyebrow="Kepatuhan dan jejak"
         title="Audit Trail"
-        description={`Riwayat aksi operasional lintas Collection Center, ${MAX_ROWS} entri terbaru. Filter berdasarkan tanggal, peran, aksi, dan entitas.`}
+        description={`Riwayat aksi operasional lintas gudang, ${MAX_ROWS} entri terbaru. Filter berdasarkan tanggal, peran, aksi, dan entitas.`}
       />
       <AuditTrailClient logs={formattedLogs} />
     </div>

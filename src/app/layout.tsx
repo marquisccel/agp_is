@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PET Recycle System",
-  description: "Management and Monitoring System for PET Recycle",
+  title: "AGP IS",
+  description:
+    "Sistem informasi pembelian PET lintas gudang PT Agrapana Greenworks Polymer.",
 };
 
 export default function RootLayout({
@@ -25,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">

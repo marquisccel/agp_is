@@ -34,7 +34,7 @@ export default function PickupReminders({ suppliers }: { suppliers: Supplier[] }
     if (cleanPhone.startsWith("0")) {
       cleanPhone = "62" + cleanPhone.slice(1)
     }
-    const message = `Halo ${name}, kami dari Collection Center ingin mengonfirmasi jadwal ambilan untuk besok. Apakah barangnya siap diambil? Terima kasih.`
+    const message = `Halo ${name}, kami dari gudang ingin mengonfirmasi jadwal ambilan untuk besok. Apakah barangnya siap diambil? Terima kasih.`
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
   }
 

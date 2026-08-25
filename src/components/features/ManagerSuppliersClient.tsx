@@ -19,6 +19,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import { hasResolvedSupplierCoordinates, isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
+import { namaGudang } from "@/lib/namaGudang"
 
 interface SkuPriceStandard {
   id: string
@@ -552,7 +553,7 @@ export default function ManagerSuppliersClient({
                 onClick={() => setSelectedWarehouseId(warehouse.id)}
                 className={selectedWarehouseId === warehouse.id ? "active" : ""}
               >
-                {warehouse.nama.replace(/^Gudang\s+/i, "CC ")}
+                {namaGudang(warehouse.nama)}
               </button>
             ))}
           </div>
@@ -615,7 +616,7 @@ export default function ManagerSuppliersClient({
         >
           {filteredSuppliers.map((supplier) => {
             const perf = supplier.performance
-            const cleanedCity = supplier.warehouse?.nama.replace(/^Gudang\s+/i, "") || "CC"
+            const labelGudang = namaGudang(supplier.warehouse?.nama)
             const targetLabel = supplier.target_bulanan_kg > 0 ? `${Math.min(perf.targetPct, 999).toFixed(0)}% dari target ${fmtTon(supplier.target_bulanan_kg)}` : "Target belum diatur"
 
             return (
@@ -643,7 +644,7 @@ export default function ManagerSuppliersClient({
                       </Link>
                     </div>
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
-                      <span>Collection Center {cleanedCity}</span>
+                      <span>{labelGudang}</span>
                       <span aria-hidden="true">&middot;</span>
                       <span>{supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
                       <span aria-hidden="true">&middot;</span>

@@ -23,7 +23,7 @@ const formatActivityScope = (tableName: string) => {
     PurchaseItem: "Item pembelian",
     DownPayment: "DP lapak",
     Supplier: "Data lapak",
-    Warehouse: "Collection Center",
+    Warehouse: "Gudang",
     WarehouseTarget: "Target gudang",
   }
 
@@ -358,7 +358,7 @@ export default async function ManagerDashboard({
   })
 
   // ──────────────────────────────────────────
-  // 8b. Rekap Ambil / Kirim per Collection Center (bulan terpilih)
+  // 8b. Rekap Ambil / Kirim per gudang (bulan terpilih)
   // Transaksi yang tercatat sebelum field jenis_pengambilan ada bernilai
   // null -- sengaja TIDAK ditebak, cuma dihitung sebagai "belum dicatat".
   // ──────────────────────────────────────────
@@ -536,7 +536,7 @@ export default async function ManagerDashboard({
   const dpSummaryData = Object.values(dpSummaryMap).sort((a, b) => b.sisaDp - a.sisaDp)
 
   // ──────────────────────────────────────────
-  // 9. SKU Average Prices by Spec (Gabyuk / Grading) per Warehouse / Collection Center
+  // 9. Rata-rata harga SKU per spesifikasi (Gabyuk / Grading) per gudang
   // ──────────────────────────────────────────
   const skuPricesMap: Record<string, {
     sku_name: string
@@ -701,7 +701,7 @@ export default async function ManagerDashboard({
             <div>
               <h3 className="field-label" style={{ color: "var(--danger)", marginBottom: 2 }}>Target Harian Belum Tercapai</h3>
               <p className="text-xs font-medium" style={{ color: "var(--danger)" }}>
-                {missedTargetWarehouses.length} Collection Center belum mencapai target hari ini
+                {missedTargetWarehouses.length} gudang belum mencapai target hari ini
               </p>
             </div>
           </div>
@@ -753,7 +753,7 @@ export default async function ManagerDashboard({
               {getGreeting(now)}, <span className="font-black">{displayName}</span>.
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
-              Pantau tonase, target, approval, dan risiko seluruh Collection Center dalam satu tampilan kerja.
+              Pantau tonase, target, approval, dan risiko seluruh gudang dalam satu tampilan kerja.
             </p>
           </div>
           <div className="section section-body w-full xl:w-[540px]">

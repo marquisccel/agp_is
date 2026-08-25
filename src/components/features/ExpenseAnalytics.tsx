@@ -24,7 +24,7 @@ export default function ExpenseAnalytics({ warehouseExpenses }: ExpenseAnalytics
       <div className="section-shell-head">
         <div className="min-w-0">
           <p className="section-eyebrow">Cost breakdown</p>
-          <h3 className="text-[15.5px] font-bold text-slate-900">Pengeluaran per Collection Center</h3>
+          <h3 className="text-[15.5px] font-bold text-slate-900">Pengeluaran per Gudang</h3>
           <p className="mt-1 text-xs leading-5 text-slate-400">
             Total nilai transaksi dibayar ke supplier -- ringkasan global sudah ada di baris statistik atas.
           </p>

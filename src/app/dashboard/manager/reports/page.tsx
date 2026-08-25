@@ -142,7 +142,7 @@ export default async function ManagerReportsPage({
     ? "Tidak ada isu transfer, termin, atau bukti pada periode ini."
     : `${pendingTransferPurchases.length} menunggu transfer, ${openTerminPurchases.length} termin terbuka, ${missingProofPurchases.length} bukti kosong.`
 
-  // 6. CC Year Contribution Breakdown
+  // 6. Rincian kontribusi tiap gudang sepanjang tahun
   const ccContributions = warehouses.map(w => {
     const wPurchases = purchases.filter(p => p.warehouseId === w.id)
     const totalKg = wPurchases.flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
@@ -165,7 +165,7 @@ export default async function ManagerReportsPage({
         <PageHeader
           eyebrow="Laporan eksekutif"
           title="Rekap Laporan Performa"
-          description="Analisis performa realisasi target bulanan dan tahunan seluruh Collection Center."
+          description="Analisis performa realisasi target bulanan dan tahunan seluruh gudang."
           actions={(
             <>
               <ReportYearSelect
@@ -384,11 +384,11 @@ export default async function ManagerReportsPage({
         </div>
       </div>
 
-      {/* Bottom Side-by-Side: CC Contributions Breakdown */}
+      {/* Bagian bawah: rincian kontribusi tiap gudang */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:grid-cols-1 print:gap-4">
         <div className="section section-body lg:col-span-2 print:border-slate-300 print:p-4">
-          <h3 className="font-bold text-slate-800 text-base mb-1">Kontribusi Collection Center (YTD)</h3>
-          <p className="text-xs text-slate-400 mb-6 print:hidden">Urutan CC dengan kontribusi pasokan bahan baku PET terbesar tahun ini.</p>
+          <h3 className="font-bold text-slate-800 text-base mb-1">Kontribusi Gudang (YTD)</h3>
+          <p className="text-xs text-slate-400 mb-6 print:hidden">Urutan gudang dengan kontribusi pasokan bahan baku PET terbesar tahun ini.</p>
           
           <div className="space-y-4">
             {ccContributions.map((cc, i) => (
@@ -425,7 +425,7 @@ export default async function ManagerReportsPage({
           <div>
             <h3 className="font-bold text-slate-800 text-base mb-4">Catatan Laporan</h3>
             <p className="text-slate-500 text-xs leading-relaxed space-y-2">
-              Laporan ini merangkum seluruh transaksi pembelian PET Recycle yang telah disetujui (Approved) dan sudah ditransfer. Target bulanan yang tercantum adalah akumulasi target seluruh CC untuk masing-masing periode.
+              Laporan ini merangkum seluruh transaksi pembelian yang sudah disetujui dan sudah ditransfer. Target bulanan yang tercantum adalah gabungan target seluruh gudang untuk masing-masing periode.
             </p>
           </div>
           

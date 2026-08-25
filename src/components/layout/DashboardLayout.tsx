@@ -56,8 +56,8 @@ function SidebarContent({
         <div className="flex items-center gap-3">
           <AgpMark size={40} className="flex-shrink-0" />
           <div className="min-w-0">
-            <h1 className="text-sm font-black text-slate-950 leading-tight truncate">Agrapana Greenworks</h1>
-            <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-[0.08em] truncate">Polymer Information System</p>
+            <h1 className="text-sm font-black text-slate-950 leading-tight truncate">AGP IS</h1>
+            <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-[0.08em] truncate">Agrapana Greenworks Polymer</p>
           </div>
         </div>
       </div>

@@ -28,7 +28,7 @@ export default async function SkuPricesPage() {
       <PageHeader
         eyebrow="Standar harga"
         title="Pengaturan Standar Harga SKU"
-        description="Atur harga batas atas per SKU untuk masing-masing Collection Center."
+        description="Atur standar harga per SKU untuk masing-masing gudang."
         actions={(
           <Link
             href="/dashboard/manager"

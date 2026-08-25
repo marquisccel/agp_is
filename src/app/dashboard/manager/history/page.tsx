@@ -48,7 +48,7 @@ export default async function ManagerHistoryPage() {
       <PageHeader
         eyebrow="Catatan transaksi"
         title="Daftar Transaksi"
-        description="Pantau dan filter seluruh transaksi pembelian PET di semua Collection Center dengan status yang mudah dipindai."
+        description="Pantau dan filter seluruh transaksi pembelian PET di semua gudang dengan status yang mudah dipindai."
       />
 
       <ManagerHistoryClient 

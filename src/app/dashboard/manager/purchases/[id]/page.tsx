@@ -34,7 +34,7 @@ export default async function ManagerPurchaseDetailPage({ params }: { params: Pr
   // punya menu tersendiri (Audit Trail), jadi kuerinya ikut dilepas
   // ketimbang mengambil data yang tidak dipakai pada tiap kunjungan.
 
-  // Fetch SKU standard prices for the CC to show price standard limits if needed
+  // Standar harga SKU gudang ini, untuk menandai harga di atas standar
   const warehouseSkuPrices = await prisma.skuPriceStandard.findMany({
     where: {
       warehouseId: purchase.warehouseId

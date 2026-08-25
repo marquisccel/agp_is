@@ -309,7 +309,7 @@ export default function MasterDataClient({
               <div className="stat-value-row">
                 <span className="stat-value">{fmtKg(globalStats.totalKg)}</span>
               </div>
-              <span className="stat-delta flat">Seluruh Collection Center</span>
+              <span className="stat-delta flat">Seluruh gudang</span>
             </div>
             <div className="stat-tile">
               <span className="stat-label">Nilai Transaksi</span>
@@ -372,7 +372,7 @@ export default function MasterDataClient({
               <div className="section-shell-head">
                 <div>
                   <span className="section-eyebrow">Per gudang</span>
-                  <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Performa Collection Center</h3>
+                  <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Performa Gudang</h3>
                 </div>
               </div>
               <div className="section-body">

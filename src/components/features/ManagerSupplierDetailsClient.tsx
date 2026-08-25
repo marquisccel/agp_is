@@ -18,6 +18,7 @@ import PageHeader from "@/components/ui/PageHeader"
 import StatusPill from "@/components/ui/StatusPill"
 import { getPurchaseStatus, getDpStatus } from "@/lib/purchaseStatusLabels"
 import { getSupplierMapHref, resolveSupplierCoordinates } from "@/lib/supplierLocation"
+import { namaGudang } from "@/lib/namaGudang"
 
 interface PurchaseItem {
   id: string
@@ -220,7 +221,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
       <PageHeader
         eyebrow="Profil lapak"
         title={`Detail Lapak ${supplier.nama}`}
-        description={`Collection Center ${supplier.warehouse?.nama.replace(/^Gudang\s+/i, "") || "CC"}`}
+        description={namaGudang(supplier.warehouse?.nama)}
         actions={
           <button
             onClick={() => router.back()}
@@ -255,7 +256,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
           <div className="grid grid-cols-1 gap-px text-sm md:grid-cols-2" style={{ background: "var(--border)" }}>
             <div className="p-5" style={{ background: "var(--surface)" }}>
-              <span className="field-label">Collection Center</span>
+              <span className="field-label">Gudang</span>
               <span className="block font-bold" style={{ color: "var(--foreground)" }}>{supplier.warehouse?.nama || "-"}</span>
             </div>
             <div className="p-5" style={{ background: "var(--surface)" }}>
@@ -618,7 +619,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Cari transaksi (No. Nota, CC, Staff)..."
+                  placeholder="Cari transaksi (No. Nota, gudang, staff)..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-soft-strong)] focus:bg-white text-slate-800 transition-all font-medium"
@@ -632,7 +633,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                       <tr>
                         <th className="px-6 py-4">Tanggal / Waktu</th>
                         <th className="px-6 py-4">Nomor Nota / Draft</th>
-                        <th className="px-6 py-4">Gudang / CC</th>
+                        <th className="px-6 py-4">Gudang</th>
                         <th className="px-6 py-4 text-right">Berat Final</th>
                         <th className="px-6 py-4 text-right">Total Bayar</th>
                         <th className="px-6 py-4">Status</th>

@@ -6,6 +6,7 @@ import type { Supplier, Warehouse } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 import { isValidBankAccountNumber, isValidIndonesianWaNumber } from "@/lib/supplierValidation"
+import { namaGudang } from "@/lib/namaGudang"
 
 const KNOWN_BANKS = ["BCA","BNI","BRI","BSI","BTN","Mandiri","CIMB Niaga","Danamon","Permata","Panin","OCBC NISP","Maybank","Mega","Muamalat","Jago","SeaBank","Jenius","Gopay","OVO","Dana"]
 const BANK_OPTIONS = [
@@ -91,7 +92,7 @@ export default function SupplierForm({
   const rekeningWarning = nomorRekening.trim() && !isValidBankAccountNumber(nomorRekening) ? "Nomor rekening harus 5-20 digit angka." : ""
   const warehouseOptions = [
     { value: "", label: "Pilih lokasi gudang" },
-    ...warehouses.map(w => ({ value: w.id as string, label: `Collection Center ${w.nama.replace(/^Gudang\s+/i, "")}` })),
+    ...warehouses.map(w => ({ value: w.id as string, label: namaGudang(w.nama) })),
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -229,7 +230,7 @@ export default function SupplierForm({
           <label className="field-label">Opsi Gudang</label>
           <div className="field-input flex items-center gap-2" style={{ cursor: "default" }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Collection Center {warehouses[0].nama.replace(/^Gudang\s+/i, '')}
+            {namaGudang(warehouses[0].nama)}
           </div>
         </div>
       ) : (

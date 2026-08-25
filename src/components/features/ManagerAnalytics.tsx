@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
   Area,
 } from "recharts"
+import { namaGudang } from "@/lib/namaGudang"
 
 export interface WarehouseData {
   id: string
@@ -352,7 +353,7 @@ export default function ManagerAnalytics({
     { value: "all", label: "Semua Gudang" },
     ...warehouses.map(w => ({
       value: w.id,
-      label: `Collection Center ${w.nama.replace(/^Gudang\s+/i, "")}`,
+      label: namaGudang(w.nama),
     })),
   ]
 
@@ -363,7 +364,7 @@ export default function ManagerAnalytics({
         <div className="section-shell-head">
           <div className="min-w-0">
             <p className="section-eyebrow">Performance cockpit</p>
-            <h3 className="text-[15.5px] font-bold text-slate-950">Target vs Realisasi Collection Center</h3>
+            <h3 className="text-[15.5px] font-bold text-slate-950">Target vs Realisasi Gudang</h3>
             <p className="mt-1 text-xs text-slate-500">
               Bandingkan realisasi tonase terhadap target operasional untuk periode aktif.
             </p>

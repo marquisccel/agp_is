@@ -140,7 +140,7 @@ export default function ManagerPurchaseDetailClient({
   }
 
   // Render method label
-  const methodLabel = purchase.metode_pembayaran_terpilih === "TIMBANGAN_GUDANG" ? "Timbangan Gudang (CC)" : "Timbangan Lapak"
+  const methodLabel = purchase.metode_pembayaran_terpilih === "TIMBANGAN_GUDANG" ? "Timbangan Gudang" : "Timbangan Lapak"
   const netValue = purchase.total_nilai_setelah_retur || purchase.total_dibayar || 0
   const payableValue = purchase.total_dibayar || netValue
   const initialPayment = purchase.nominal_pembayaran_awal ?? payableValue
