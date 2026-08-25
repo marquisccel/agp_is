@@ -44,7 +44,7 @@ const GAMBAR_LATAR: GambarLatar[] = [
   {
     berkas: "/latar-login/05-angkut-bal.jpg",
     alt: "Dua pekerja memindahkan bal hasil press di dalam gudang",
-    posisi: "45% 50%",
+    posisi: "72% 50%",
   },
 ]
 
