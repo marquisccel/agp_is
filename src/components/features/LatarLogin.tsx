@@ -6,21 +6,25 @@ import Image from "next/image"
 /**
  * Latar bergambar untuk panel kiri halaman masuk.
  *
- * Gambarnya berganti dengan bergeser ke kiri: yang lama keluar ke kiri,
- * yang baru masuk dari kanan, keduanya bergerak bersamaan sehingga
- * terbaca sebagai satu lembar yang digeser, bukan dua gambar yang
- * saling menimpa.
+ * Seluruh gambar berbaris dalam satu pita mendatar, dan yang digeser
+ * adalah pitanya, bukan gambarnya satu per satu.
  *
- * Kenapa hanya dua lapis yang diberi transisi. Sisa gambar diparkir di
- * kanan tanpa transisi, jadi saat gambar yang keluar dikembalikan ke
- * posisi parkir, perpindahannya terjadi di luar layar dan tidak terlihat.
- * Kalau semua lapis diberi transisi, gambar yang baru saja keluar akan
- * terlihat meluncur balik melintasi layar.
+ * Versi sebelumnya menggeser tiap gambar sendiri-sendiri: yang aktif ke
+ * posisi nol, yang ditinggalkan ke minus seratus persen, sisanya
+ * diparkir di kanan TANPA transisi. Cara itu menyimpan dua kelemahan.
+ * Pertama, gambar yang masuk harus mengubah transform DAN menyalakan
+ * transisinya dalam satu perubahan gaya yang sama, dan peramban tidak
+ * dijamin menganimasikannya -- kalau gagal, gambarnya meloncat begitu
+ * saja. Kedua, pengembalian gambar yang keluar ke posisi parkir
+ * bergantung pada setTimeout yang berpacu dengan animasinya; kalau
+ * meleset, ada kedipan.
  *
- * Gerakan zum lambat (efek Ken Burns) ditaruh di elemen DALAM, terpisah
- * dari elemen yang menggeser. Kalau keduanya di elemen yang sama, satu
- * properti transform harus memuat dua gerakan dengan tempo berbeda dan
- * keduanya saling menimpa.
+ * Dengan satu pita, transisinya selalu menyala dan tidak ada satu pun
+ * elemen yang perlu dikembalikan diam-diam. Untuk perputarannya, gambar
+ * pertama DIULANG di ujung pita: setelah geser terakhir mendarat di
+ * salinan itu, posisinya dipindah ke gambar pertama yang asli tanpa
+ * transisi. Perpindahan itu tidak terlihat karena keduanya gambar yang
+ * sama persis.
  */
 
 export type GambarLatar = {
@@ -28,13 +32,30 @@ export type GambarLatar = {
   alt: string
   /**
    * Bagian gambar yang dipertahankan saat dipotong, ditulis seperti
-   * nilai object-position CSS. Panelnya nyaris persegi sedangkan
-   * fotonya tidak, jadi selalu ada bagian yang terbuang. Titik
-   * pentingnya berbeda tiap foto -- wajah orang biasanya di atas,
-   * tumpukan barang di tengah -- sehingga satu nilai untuk semua pasti
-   * memotong salah satunya. Kosongkan untuk memakai "50% 50%".
+   * nilai object-position CSS.
+   *
+   * Perhatikan sumbunya. Panel ini nyaris persegi, jadi pada gambar
+   * MELEBAR yang berlebih adalah sisi kiri-kanan dan hanya angka
+   * pertama yang berpengaruh; pada gambar MENINGGI kebalikannya, hanya
+   * angka kedua. Menggeser sumbu yang salah terlihat seperti nilainya
+   * tidak berlaku sama sekali.
    */
   posisi?: string
+  /**
+   * Perbesaran dasar, 1 berarti apa adanya. Dipakai kalau pokok
+   * gambarnya terlalu kecil setelah dipotong. Perbesarannya berpusat di
+   * tengah bingkai, jadi setelah nilainya diubah, posisi biasanya perlu
+   * ditinjau ulang.
+   */
+  zum?: number
+  /**
+   * Titik yang tetap diam saat gambar diperbesar, ditulis seperti nilai
+   * transform-origin CSS. Bawaannya tengah, yang memotong atas dan bawah
+   * sama banyak. Untuk memotong bagian bawah saja -- misalnya membuang
+   * kaki dan menyisakan badan -- taruh titiknya di atas, seperti
+   * "50% 25%".
+   */
+  titikZum?: string
 }
 
 /** Lama satu gambar bertahan sebelum berganti. */
@@ -44,15 +65,9 @@ const JEDA = 6500
 const GESER = 1150
 
 export default function LatarLogin({ gambar }: { gambar: GambarLatar[] }) {
-  const [aktif, setAktif] = useState(0)
-  const [keluar, setKeluar] = useState<number | null>(null)
-  const sebelumnya = useRef(0)
-
   // Dibaca lewat useSyncExternalStore, bukan disimpan ke state dari
-  // dalam effect. matchMedia tidak ada di server, jadi kalau nilainya
-  // ditulis ke state saat mount, React menandainya sebagai pembaruan
-  // beruntun; cara ini membaca nilainya langsung dari sumbernya dan
-  // ikut berubah kalau pengaturannya diubah saat halaman terbuka.
+  // dalam effect. matchMedia tidak ada di server, dan cara ini ikut
+  // berubah kalau pengaturannya diubah saat halaman terbuka.
   const kurangiGerak = useSyncExternalStore(
     (ubah) => {
       const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -65,76 +80,102 @@ export default function LatarLogin({ gambar }: { gambar: GambarLatar[] }) {
 
   const bergerak = gambar.length > 1 && !kurangiGerak
 
+  // Salinan gambar pertama di ujung pita, khusus untuk perputarannya.
+  const pita = bergerak ? [...gambar, gambar[0]] : gambar
+  const langkah = 100 / pita.length
+
+  const [indeks, setIndeks] = useState(0)
+  const [mulus, setMulus] = useState(true)
+  const frameCadangan = useRef<number | null>(null)
+
   useEffect(() => {
     if (!bergerak) return
-    const jam = setInterval(() => {
-      setAktif((i) => (i + 1) % gambar.length)
-    }, JEDA)
+    const jam = setInterval(() => setIndeks((i) => i + 1), JEDA)
     return () => clearInterval(jam)
-  }, [bergerak, gambar.length])
+  }, [bergerak])
 
-  // Catat gambar mana yang baru saja ditinggalkan, supaya ia yang
-  // digeser keluar. Ditulis di effect, bukan di dalam pembaru state,
-  // agar tidak ada efek samping yang ikut terpanggil dua kali.
+  // Setelah mendarat di salinan, posisinya dikembalikan ke gambar
+  // pertama yang asli tanpa transisi, lalu transisinya dinyalakan lagi.
   useEffect(() => {
-    if (sebelumnya.current === aktif) return
-    setKeluar(sebelumnya.current)
-    sebelumnya.current = aktif
-    const jam = setTimeout(() => setKeluar(null), GESER)
-    return () => clearTimeout(jam)
-  }, [aktif])
+    if (mulus) return
+    // Dua frame: satu supaya peramban sempat menggambar keadaan tanpa
+    // transisi, satu lagi baru menyalakannya kembali. Kalau hanya satu,
+    // keduanya bisa tergabung dalam satu perhitungan gaya dan pitanya
+    // terlihat meluncur balik melintasi seluruh gambar.
+    const f1 = requestAnimationFrame(() => {
+      frameCadangan.current = requestAnimationFrame(() => setMulus(true))
+    })
+    return () => {
+      cancelAnimationFrame(f1)
+      if (frameCadangan.current !== null) cancelAnimationFrame(frameCadangan.current)
+    }
+  }, [mulus])
 
-  const posisi = (i: number) => {
-    if (i === aktif) return "translate3d(0,0,0)"
-    if (i === keluar) return "translate3d(-100%,0,0)"
-    return "translate3d(100%,0,0)"
+  const selesaiGeser = () => {
+    if (indeks >= pita.length - 1) {
+      setMulus(false)
+      setIndeks(0)
+    }
   }
+
+  const aktif = indeks % gambar.length
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {gambar.map((g, i) => {
-        const sedangBergeser = i === aktif || i === keluar
-        return (
-          <div
-            key={g.berkas}
-            className="absolute inset-0"
-            style={{
-              transform: posisi(i),
-              transition: sedangBergeser
-                ? `transform ${GESER}ms cubic-bezier(0.65, 0, 0.35, 1)`
-                : "none",
-              willChange: sedangBergeser ? "transform" : undefined,
-            }}
-          >
+      <div
+        className="flex h-full"
+        style={{
+          width: `${pita.length * 100}%`,
+          transform: `translate3d(-${langkah * indeks}%, 0, 0)`,
+          transition:
+            mulus && bergerak ? `transform ${GESER}ms cubic-bezier(0.65, 0, 0.35, 1)` : "none",
+          willChange: "transform",
+        }}
+        onTransitionEnd={selesaiGeser}
+      >
+        {pita.map((g, i) => (
+          <div key={`${g.berkas}-${i}`} className="relative h-full" style={{ width: `${langkah}%` }}>
+            {/* Perbesaran dasar dipisahkan dari zum lambat di dalamnya,
+                karena satu properti transform tidak bisa memuat dua
+                gerakan dengan tempo berbeda. */}
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 overflow-hidden"
               style={{
-                animation:
-                  i === aktif && bergerak
-                    ? `latar-zum ${JEDA + GESER}ms linear forwards`
-                    : "none",
+                transform: `scale(${g.zum ?? 1})`,
+                transformOrigin: g.titikZum ?? "center",
               }}
             >
-              <Image
-                src={g.berkas}
-                alt={g.alt}
-                fill
-                priority={i === 0}
-                quality={90}
-                /* Panelnya seluruh lebar layar dikurangi kolom form
-                   selebar 540px, dan di bawah lg panelnya disembunyikan.
-                   Ditulis apa adanya begini supaya peramban memilih
-                   berkas seukuran yang benar-benar dipakai; nilai
-                   perkiraan seperti 60vw membuatnya memilih yang terlalu
-                   kecil lalu gambarnya dibesarkan paksa. */
-                sizes="(max-width: 1023px) 1px, calc(100vw - 540px)"
-                className="object-cover"
-                style={{ objectPosition: g.posisi ?? "50% 50%" }}
-              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  animation:
+                    i === indeks && bergerak
+                      ? `latar-zum ${JEDA + GESER}ms linear forwards`
+                      : "none",
+                }}
+              >
+                <Image
+                  src={g.berkas}
+                  alt={g.alt}
+                  fill
+                  priority={i === 0}
+                  quality={90}
+                  /* Panelnya seluruh lebar layar dikurangi kolom form
+                     selebar 540px, dan di bawah lg panelnya
+                     disembunyikan. Ditulis apa adanya begini supaya
+                     peramban memilih berkas seukuran yang benar-benar
+                     dipakai; nilai perkiraan seperti 60vw membuatnya
+                     memilih yang terlalu kecil lalu gambarnya dibesarkan
+                     paksa. */
+                  sizes="(max-width: 1023px) 1px, calc(100vw - 540px)"
+                  className="object-cover"
+                  style={{ objectPosition: g.posisi ?? "50% 50%" }}
+                />
+              </div>
             </div>
           </div>
-        )
-      })}
+        ))}
+      </div>
 
       {/*
         Dua lapis penggelap, bukan satu. Lapis rata menurunkan seluruh
@@ -168,16 +209,12 @@ export default function LatarLogin({ gambar }: { gambar: GambarLatar[] }) {
               style={{ background: "rgba(255,255,255,0.26)" }}
             >
               <span
-                key={`${g.berkas}-${aktif}`}
                 className="block h-full rounded-full"
                 style={{
                   background: "rgba(255,255,255,0.92)",
                   width: i < aktif ? "100%" : i === aktif ? undefined : "0%",
                   animation:
-                    i === aktif && bergerak
-                      ? `latar-isi ${JEDA}ms linear forwards`
-                      : undefined,
-                  transform: i === aktif && !bergerak ? "none" : undefined,
+                    i === aktif && bergerak ? `latar-isi ${JEDA}ms linear forwards` : undefined,
                 }}
               />
             </span>

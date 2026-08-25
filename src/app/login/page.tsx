@@ -21,12 +21,14 @@ const GAMBAR_LATAR: GambarLatar[] = [
   {
     berkas: "/latar-login/01-dinding-bal.png",
     alt: "Petugas gudang memeriksa dinding bal botol PET bertumpuk",
-    posisi: "20% 50%",
+    posisi: "65% 50%",
+    zum: 1.75,
+    titikZum: "50% 26%",
   },
   {
     berkas: "/latar-login/02-cacahan.jpg",
     alt: "Cacahan plastik daur ulang di telapak tangan",
-    posisi: "50% 78%",
+    posisi: "50% 62%",
   },
   {
     berkas: "/latar-login/03-bongkar-karung.jpg",
@@ -36,12 +38,13 @@ const GAMBAR_LATAR: GambarLatar[] = [
   {
     berkas: "/latar-login/04-tumpukan-bal.jpg",
     alt: "Bal botol PET terpres bertumpuk di fasilitas daur ulang",
-    posisi: "60% 50%",
+    posisi: "80% 50%",
+    zum: 1.15,
   },
   {
     berkas: "/latar-login/05-angkut-bal.jpg",
     alt: "Dua pekerja memindahkan bal hasil press di dalam gudang",
-    posisi: "20% 50%",
+    posisi: "45% 50%",
   },
 ]
 
