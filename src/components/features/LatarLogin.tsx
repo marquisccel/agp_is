@@ -26,6 +26,15 @@ import Image from "next/image"
 export type GambarLatar = {
   berkas: string
   alt: string
+  /**
+   * Bagian gambar yang dipertahankan saat dipotong, ditulis seperti
+   * nilai object-position CSS. Panelnya nyaris persegi sedangkan
+   * fotonya tidak, jadi selalu ada bagian yang terbuang. Titik
+   * pentingnya berbeda tiap foto -- wajah orang biasanya di atas,
+   * tumpukan barang di tengah -- sehingga satu nilai untuk semua pasti
+   * memotong salah satunya. Kosongkan untuk memakai "50% 50%".
+   */
+  posisi?: string
 }
 
 /** Lama satu gambar bertahan sebelum berganti. */
@@ -120,6 +129,7 @@ export default function LatarLogin({ gambar }: { gambar: GambarLatar[] }) {
                    kecil lalu gambarnya dibesarkan paksa. */
                 sizes="(max-width: 1023px) 1px, calc(100vw - 540px)"
                 className="object-cover"
+                style={{ objectPosition: g.posisi ?? "50% 50%" }}
               />
             </div>
           </div>
