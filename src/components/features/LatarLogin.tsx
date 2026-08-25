@@ -6,26 +6,31 @@ import Image from "next/image"
 /**
  * Latar bergambar untuk panel kiri halaman masuk.
  *
- * Seluruh gambar berbaris dalam satu pita mendatar, dan yang digeser
- * adalah pitanya, bukan gambarnya satu per satu.
+ * Gambar berganti dengan bergeser ke kiri SAMBIL memudar, dan keduanya
+ * saling menimpa, bukan berbaris bersebelahan.
  *
- * Versi sebelumnya menggeser tiap gambar sendiri-sendiri: yang aktif ke
- * posisi nol, yang ditinggalkan ke minus seratus persen, sisanya
- * diparkir di kanan TANPA transisi. Cara itu menyimpan dua kelemahan.
- * Pertama, gambar yang masuk harus mengubah transform DAN menyalakan
- * transisinya dalam satu perubahan gaya yang sama, dan peramban tidak
- * dijamin menganimasikannya -- kalau gagal, gambarnya meloncat begitu
- * saja. Kedua, pengembalian gambar yang keluar ke posisi parkir
- * bergantung pada setTimeout yang berpacu dengan animasinya; kalau
- * meleset, ada kedipan.
+ * Versi sebelumnya memakai pita: seluruh gambar berjajar mendatar lalu
+ * pitanya digeser. Hitungannya tepat -- tiap slide persis selebar panel
+ * -- tapi hasilnya tetap salah untuk mata. Selama satu detik lebih, dua
+ * foto yang sama sekali berbeda berdampingan dengan garis pertemuan
+ * yang tajam di tengah panel, dan itu terbaca seperti halaman rusak,
+ * bukan seperti pergantian yang disengaja.
  *
- * Dengan satu pita, transisinya selalu menyala dan tidak ada satu pun
- * elemen yang perlu dikembalikan diam-diam. Untuk perputarannya, gambar
- * pertama DIULANG di ujung pita: setelah geser terakhir mendarat di
- * salinan itu, posisinya dipindah ke gambar pertama yang asli tanpa
- * transisi. Perpindahan itu tidak terlihat karena keduanya gambar yang
- * sama persis.
+ * Sekarang tiap gambar ditumpuk di tempat yang sama. Yang tampil berada
+ * di posisi nol dengan opasitas penuh; yang ditinggalkan bergeser
+ * sedikit ke kiri sambil menghilang; sisanya menunggu sedikit di kanan
+ * dalam keadaan tak terlihat. Pergeserannya tetap terasa, tapi tidak
+ * pernah ada dua foto utuh yang terlihat sekaligus.
+ *
+ * Susunan ini juga menyingkirkan kelemahan versi paling awal. Di sana
+ * gambar yang masuk harus mengubah transform DAN menyalakan transisinya
+ * dalam satu perubahan gaya yang sama, yang tidak dijamin dianimasikan
+ * peramban. Di sini transisi SELALU menyala untuk semua lapis, jadi
+ * tidak ada yang perlu dinyalakan mendadak. Gambar yang sudah lewat
+ * memang bergerak balik dari kiri ke kanan untuk menunggu giliran
+ * berikutnya, tetapi itu terjadi saat opasitasnya sudah nol.
  */
+
 
 export type GambarLatar = {
   berkas: string
@@ -62,7 +67,10 @@ export type GambarLatar = {
 const JEDA = 6500
 
 /** Lama animasi geser. */
-const GESER = 1150
+const GESER = 1050
+
+/** Sejauh apa gambar bergeser, dalam persen lebar panel. */
+const DORONG = 14
 
 export default function LatarLogin({ gambar }: { gambar: GambarLatar[] }) {
   // Dibaca lewat useSyncExternalStore, bukan disimpan ke state dari
@@ -80,102 +88,94 @@ export default function LatarLogin({ gambar }: { gambar: GambarLatar[] }) {
 
   const bergerak = gambar.length > 1 && !kurangiGerak
 
-  // Salinan gambar pertama di ujung pita, khusus untuk perputarannya.
-  const pita = bergerak ? [...gambar, gambar[0]] : gambar
-  const langkah = 100 / pita.length
-
-  const [indeks, setIndeks] = useState(0)
-  const [mulus, setMulus] = useState(true)
-  const frameCadangan = useRef<number | null>(null)
+  const [aktif, setAktif] = useState(0)
+  const [keluar, setKeluar] = useState<number | null>(null)
+  const sebelumnya = useRef(0)
 
   useEffect(() => {
     if (!bergerak) return
-    const jam = setInterval(() => setIndeks((i) => i + 1), JEDA)
+    const jam = setInterval(() => setAktif((i) => (i + 1) % gambar.length), JEDA)
     return () => clearInterval(jam)
-  }, [bergerak])
+  }, [bergerak, gambar.length])
 
-  // Setelah mendarat di salinan, posisinya dikembalikan ke gambar
-  // pertama yang asli tanpa transisi, lalu transisinya dinyalakan lagi.
+  // Catat gambar mana yang baru ditinggalkan, supaya ia yang bergeser
+  // ke kiri. Kalau penghapusannya nanti meleset pun tidak apa-apa:
+  // lapis itu sudah tak terlihat, jadi tidak ada yang berkedip.
   useEffect(() => {
-    if (mulus) return
-    // Dua frame: satu supaya peramban sempat menggambar keadaan tanpa
-    // transisi, satu lagi baru menyalakannya kembali. Kalau hanya satu,
-    // keduanya bisa tergabung dalam satu perhitungan gaya dan pitanya
-    // terlihat meluncur balik melintasi seluruh gambar.
-    const f1 = requestAnimationFrame(() => {
-      frameCadangan.current = requestAnimationFrame(() => setMulus(true))
-    })
-    return () => {
-      cancelAnimationFrame(f1)
-      if (frameCadangan.current !== null) cancelAnimationFrame(frameCadangan.current)
-    }
-  }, [mulus])
+    if (sebelumnya.current === aktif) return
+    setKeluar(sebelumnya.current)
+    sebelumnya.current = aktif
+    const jam = setTimeout(() => setKeluar(null), GESER)
+    return () => clearTimeout(jam)
+  }, [aktif])
 
-  const selesaiGeser = () => {
-    if (indeks >= pita.length - 1) {
-      setMulus(false)
-      setIndeks(0)
-    }
+  const posisi = (i: number) => {
+    if (i === aktif) return "translate3d(0,0,0)"
+    if (i === keluar) return `translate3d(-${DORONG}%,0,0)`
+    return `translate3d(${DORONG}%,0,0)`
   }
-
-  const aktif = indeks % gambar.length
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div
-        className="flex h-full"
-        style={{
-          width: `${pita.length * 100}%`,
-          transform: `translate3d(-${langkah * indeks}%, 0, 0)`,
-          transition:
-            mulus && bergerak ? `transform ${GESER}ms cubic-bezier(0.65, 0, 0.35, 1)` : "none",
-          willChange: "transform",
-        }}
-        onTransitionEnd={selesaiGeser}
-      >
-        {pita.map((g, i) => (
-          <div key={`${g.berkas}-${i}`} className="relative h-full" style={{ width: `${langkah}%` }}>
-            {/* Perbesaran dasar dipisahkan dari zum lambat di dalamnya,
-                karena satu properti transform tidak bisa memuat dua
-                gerakan dengan tempo berbeda. */}
+      {gambar.map((g, i) => (
+        <div
+          key={g.berkas}
+          className="absolute inset-0"
+          style={{
+            transform: posisi(i),
+            opacity: i === aktif ? 1 : 0,
+            // Transisinya selalu menyala untuk SEMUA lapis, bukan cuma
+            // yang sedang bergerak. Itu yang membuat lapis yang masuk
+            // tidak perlu menyalakan transisinya mendadak.
+            transition: bergerak
+              ? `transform ${GESER}ms cubic-bezier(0.33, 0, 0.2, 1), opacity ${GESER}ms cubic-bezier(0.4, 0, 0.3, 1)`
+              : "none",
+            willChange: "transform, opacity",
+          }}
+        >
+          {/* Perbesaran dasar dipisahkan dari zum lambat di dalamnya,
+              karena satu properti transform tidak bisa memuat dua
+              gerakan dengan tempo berbeda. */}
+          <div
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              transform: `scale(${g.zum ?? 1})`,
+              transformOrigin: g.titikZum ?? "center",
+            }}
+          >
             <div
-              className="absolute inset-0 overflow-hidden"
+              className="absolute inset-0"
               style={{
-                transform: `scale(${g.zum ?? 1})`,
-                transformOrigin: g.titikZum ?? "center",
+                // Zumnya tetap berjalan pada lapis yang sedang keluar.
+                // Kalau dimatikan begitu gilirannya lewat, skalanya
+                // meloncat balik ke satu justru saat lapis itu masih
+                // terlihat memudar.
+                animation:
+                  (i === aktif || i === keluar) && bergerak
+                    ? `latar-zum ${JEDA + GESER}ms linear forwards`
+                    : "none",
               }}
             >
-              <div
-                className="absolute inset-0"
-                style={{
-                  animation:
-                    i === indeks && bergerak
-                      ? `latar-zum ${JEDA + GESER}ms linear forwards`
-                      : "none",
-                }}
-              >
-                <Image
-                  src={g.berkas}
-                  alt={g.alt}
-                  fill
-                  priority={i === 0}
-                  quality={90}
-                  /* Panelnya seluruh lebar layar dikurangi kolom form
-                     selebar 540px, dan di bawah lg panelnya
-                     disembunyikan. Ditulis apa adanya begini supaya
-                     peramban memilih berkas seukuran yang benar-benar
-                     dipakai; nilai perkiraan seperti 60vw membuatnya
-                     memilih yang terlalu kecil lalu gambarnya dibesarkan
-                     paksa. */
-                  sizes="(max-width: 1023px) 1px, calc(100vw - 540px)"
-                  className="object-cover"
-                  style={{ objectPosition: g.posisi ?? "50% 50%" }}
-                />
-              </div>
+              <Image
+                src={g.berkas}
+                alt={g.alt}
+                fill
+                priority={i === 0}
+                quality={90}
+                /* Panelnya seluruh lebar layar dikurangi kolom form
+                   selebar 540px, dan di bawah lg panelnya disembunyikan.
+                   Ditulis apa adanya begini supaya peramban memilih
+                   berkas seukuran yang benar-benar dipakai; nilai
+                   perkiraan seperti 60vw membuatnya memilih yang terlalu
+                   kecil lalu gambarnya dibesarkan paksa. */
+                sizes="(max-width: 1023px) 1px, calc(100vw - 540px)"
+                className="object-cover"
+                style={{ objectPosition: g.posisi ?? "50% 50%" }}
+              />
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
       {/*
         Dua lapis penggelap, bukan satu. Lapis rata menurunkan seluruh

@@ -21,14 +21,14 @@ const GAMBAR_LATAR: GambarLatar[] = [
   {
     berkas: "/latar-login/01-dinding-bal.png",
     alt: "Petugas gudang memeriksa dinding bal botol PET bertumpuk",
-    posisi: "65% 50%",
+    posisi: "88% 50%",
     zum: 1.75,
     titikZum: "50% 26%",
   },
   {
     berkas: "/latar-login/02-cacahan.jpg",
     alt: "Cacahan plastik daur ulang di telapak tangan",
-    posisi: "50% 62%",
+    posisi: "50% 46%",
   },
   {
     berkas: "/latar-login/03-bongkar-karung.jpg",
