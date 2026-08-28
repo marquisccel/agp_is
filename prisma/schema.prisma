@@ -13,6 +13,11 @@ model User {
   email       String       @unique
   password    String
   role        String       // 'MANAGER', 'ADMIN', 'STAFF'
+  // Akun yang sudah punya jejak transaksi atau audit TIDAK boleh dihapus,
+  // karena menghapusnya memutus rekaman siapa yang menyetujui apa. Untuk
+  // orang yang sudah tidak bekerja di sana, pemakaiannya dihentikan lewat
+  // penanda ini: login ditolak, tapi seluruh riwayatnya tetap utuh.
+  aktif       Boolean      @default(true)
   warehouseId String?
   warehouse   Warehouse?   @relation(fields: [warehouseId], references: [id])
   createdAt   DateTime     @default(now())

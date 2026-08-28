@@ -6,6 +6,7 @@ import type { ReactNode } from "react"
 import Link from "next/link"
 import { Database, Search, UserPlus } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
@@ -181,6 +182,7 @@ interface UserData {
   nama: string
   email: string
   role: string
+  aktif: boolean
   warehouseId: string | null
   warehouse: { id: string; nama: string } | null
 }
@@ -219,6 +221,154 @@ function fmtKg(n: number) {
 function fmtDate(d: string | null) {
   if (!d) return "-"
   return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" })
+}
+
+/**
+ * Daftar pengguna, dengan dua aksi yang sengaja dibedakan.
+ *
+ * Sebelumnya tabel ini hanya bisa dibaca: Manager bisa mendaftarkan akun
+ * baru tapi tidak bisa mencabut satu pun. Akun yang salah ketik emailnya,
+ * akun contoh bawaan, dan akun orang yang sudah berhenti bekerja semuanya
+ * menumpuk permanen -- dan yang terakhir itu berarti mantan pegawai masih
+ * bisa masuk.
+ *
+ * Nonaktifkan ditampilkan sebagai aksi utama, hapus sebagai aksi kecil di
+ * sampingnya. Itu bukan kebetulan: untuk hampir semua akun sungguhan,
+ * nonaktifkan adalah jawaban yang benar. Server juga menolak menghapus akun
+ * yang sudah punya jejak, jadi urutan ini cuma menyelaraskan tampilan
+ * dengan aturan yang sudah ditegakkan di belakang.
+ */
+function TabelPengguna({ users }: { users: UserData[] }) {
+  const router = useRouter()
+  const { confirm, dialog } = useConfirm()
+  const { toast, host: toastHost } = useToast()
+  const [sedangProses, setSedangProses] = useState<string | null>(null)
+
+  const ubahStatus = async (user: UserData) => {
+    const menonaktifkan = user.aktif
+    if (menonaktifkan) {
+      const ok = await confirm({
+        title: `Nonaktifkan akun ${user.nama}?`,
+        description:
+          "Akun ini tidak bisa masuk lagi, tapi seluruh riwayat transaksi dan " +
+          "jejak auditnya tetap tersimpan. Bisa diaktifkan kembali kapan saja.",
+        tone: "danger",
+        confirmLabel: "Ya, nonaktifkan",
+      })
+      if (!ok) return
+    }
+
+    setSedangProses(user.id)
+    try {
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aktif: !user.aktif }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal mengubah status akun")
+      toast(data.message)
+      router.refresh()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : String(err), "error")
+    } finally {
+      setSedangProses(null)
+    }
+  }
+
+  const hapus = async (user: UserData) => {
+    const ok = await confirm({
+      title: `Hapus akun ${user.nama} secara permanen?`,
+      description:
+        "Hanya bisa untuk akun yang belum pernah dipakai sama sekali. Kalau akun " +
+        "ini sudah punya transaksi atau jejak audit, penghapusan akan ditolak dan " +
+        "kamu diminta menonaktifkannya saja.",
+      tone: "danger",
+      confirmLabel: "Ya, hapus",
+    })
+    if (!ok) return
+
+    setSedangProses(user.id)
+    try {
+      const res = await fetch(`/api/users/${user.id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal menghapus akun")
+      toast(data.message)
+      router.refresh()
+    } catch (err) {
+      toast(err instanceof Error ? err.message : String(err), "error")
+    } finally {
+      setSedangProses(null)
+    }
+  }
+
+  return (
+    <>
+      {dialog}
+      {toastHost}
+      <div className="section overflow-hidden">
+        <table className="tabel-lembut text-sm">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Gudang</th>
+              <th className="text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length === 0 ? (
+              <tr><td colSpan={5} className="py-10 text-center" style={{ color: "var(--muted-faint)" }}>Tidak ada pengguna yang cocok.</td></tr>
+            ) : users.map((user) => {
+              const sibuk = sedangProses === user.id
+              return (
+                <tr key={user.id} style={user.aktif ? undefined : { opacity: 0.55 }}>
+                  <td className="font-bold" style={{ color: "var(--foreground)" }}>
+                    {user.nama}
+                    {/* Penanda hanya muncul saat ada yang perlu dilihat.
+                        Akun aktif tidak diberi pil "Aktif" -- itu keadaan
+                        normal, dan memberinya label justru membuat yang
+                        nonaktif jadi sulit ditemukan di antara semuanya. */}
+                    {!user.aktif && (
+                      <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider" style={{ background: "var(--bg-tint)", color: "var(--warning)" }}>
+                        Nonaktif
+                      </span>
+                    )}
+                  </td>
+                  <td className="font-mono text-xs" style={{ color: "var(--muted)" }}>{user.email}</td>
+                  <td><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
+                  <td style={{ color: "var(--muted)" }}>{user.warehouse?.nama || "-"}</td>
+                  <td>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => ubahStatus(user)}
+                        disabled={sibuk}
+                        className="premium-button btn-netral px-3 py-1.5 text-xs disabled:opacity-50"
+                      >
+                        {user.aktif ? "Nonaktifkan" : "Aktifkan"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => hapus(user)}
+                        disabled={sibuk}
+                        className="rounded-lg px-2 py-1.5 text-xs font-bold transition-opacity hover:opacity-70 disabled:opacity-40"
+                        style={{ color: "var(--danger)" }}
+                        aria-label={`Hapus akun ${user.nama}`}
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
 }
 
 export default function MasterDataClient({
@@ -545,36 +695,14 @@ export default function MasterDataClient({
               className="w-full sm:w-48"
               options={[
                 { value: "all", label: "Semua Role" },
+                { value: "MANAGER", label: "Manager" },
                 { value: "ADMIN", label: "Admin" },
                 { value: "STAFF", label: "Staff" },
               ]}
             />
           </FilterBar>
 
-          <div className="section overflow-hidden">
-            <table className="tabel-lembut text-sm">
-              <thead>
-                <tr>
-                  <th>Nama</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Gudang</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.length === 0 ? (
-                  <tr><td colSpan={4} className="py-10 text-center" style={{ color: "var(--muted-faint)" }}>Tidak ada pengguna yang cocok.</td></tr>
-                ) : filteredUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td className="font-bold" style={{ color: "var(--foreground)" }}>{user.nama}</td>
-                    <td className="font-mono text-xs" style={{ color: "var(--muted)" }}>{user.email}</td>
-                    <td><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
-                    <td style={{ color: "var(--muted)" }}>{user.warehouse?.nama || "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <TabelPengguna users={filteredUsers} />
         </div>
       )}
 

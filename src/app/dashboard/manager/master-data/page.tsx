@@ -81,17 +81,24 @@ export default async function MasterDataPage() {
     },
   })
 
+  // Akun MANAGER ikut ditampilkan. Sebelumnya hanya STAFF dan ADMIN, dan
+  // akibatnya akun Manager bawaan yang tidak terpakai tidak terlihat sama
+  // sekali -- tidak bisa dinonaktifkan maupun dihapus, karena tidak pernah
+  // muncul di daftar. Perlindungan agar Manager tidak mengunci dirinya
+  // sendiri ada di sisi server, bukan dengan menyembunyikannya di sini.
   const users = await prisma.user.findMany({
-    where: { role: { in: ["STAFF", "ADMIN"] } },
     select: {
       id: true,
       nama: true,
       email: true,
       role: true,
+      aktif: true,
       warehouseId: true,
       warehouse: { select: { id: true, nama: true } },
     },
-    orderBy: [{ role: "asc" }, { nama: "asc" }],
+    // Nonaktif ditaruh di bawah supaya daftar teratas selalu orang yang
+    // benar-benar masih bekerja.
+    orderBy: [{ aktif: "desc" }, { role: "asc" }, { nama: "asc" }],
   })
 
   const skuPrices = await prisma.skuPriceStandard.findMany({

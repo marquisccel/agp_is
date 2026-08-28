@@ -31,6 +31,20 @@ export const authOptions: NextAuthOptions = {
           recordFailedAttempt(credentials.email)
           return null
         }
+        // Akun yang sudah dinonaktifkan Manager tidak boleh masuk lagi,
+        // walau passwordnya masih benar. Diperiksa SESUDAH password supaya
+        // halaman masuk tidak bisa dipakai menebak email mana yang terdaftar
+        // -- pesan yang berbeda sebelum password diverifikasi akan
+        // membocorkan itu ke siapa pun yang mencoba.
+        // Sengaja `=== false`, bukan `!user.aktif`. Kalau kolom `aktif`
+        // belum ada -- migrasi belum jalan, atau Prisma Client masih versi
+        // lama -- nilainya undefined, dan `!undefined` akan menolak SEMUA
+        // orang sekaligus. Menutup akses satu perusahaan gara-gara urutan
+        // deploy jauh lebih buruk daripada satu akun nonaktif yang masih
+        // sempat masuk sampai migrasinya menyusul.
+        if (user.aktif === false) {
+          throw new Error("Akun ini sudah dinonaktifkan. Hubungi Manager.")
+        }
         clearAttempts(credentials.email)
         return { id: user.id, name: user.nama, email: user.email, role: user.role, warehouseId: user.warehouseId }
       }
