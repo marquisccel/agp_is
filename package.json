@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "audit:data": "node scripts/audit-data.mjs",
     "buat:favicon": "node scripts/buat-favicon.mjs",
-    "periksa:latar": "node scripts/periksa-latar.mjs"
+    "periksa:latar": "node scripts/periksa-latar.mjs",
+    "siapkan:produksi": "node scripts/siapkan-produksi.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1115.0",

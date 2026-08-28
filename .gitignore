@@ -37,6 +37,7 @@ yarn-error.log*
 # env files (keep the example committed)
 .env*
 !.env.example
+!.env.production.example
 
 # local databases and generated runtime assets
 *.db
