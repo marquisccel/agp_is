@@ -908,10 +908,20 @@ export default async function ManagerDashboard({
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-400">Belum ada aktivitas.</div>
           ) : (
             <div className="overflow-hidden rounded-lg border border-slate-200">
-              <div className="hidden grid-cols-[220px_minmax(0,1fr)_180px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-bold uppercase text-slate-500 sm:grid">
+              {/* Empat kolom, dua di antaranya dulu tanpa judul. Kolom
+                  "Detail" menampung dua hal sekaligus -- kalimat kejadian
+                  DAN nama datanya di baris kedua yang lebih kecil --
+                  sehingga terlihat menumpuk, sementara dua kolom di
+                  kanannya justru terbaca kosong karena judulnya tidak ada.
+
+                  Nama data kini berdiri sebagai kolomnya sendiri, memakai
+                  istilah yang sama dengan halaman Audit Trail, dan kolom
+                  waktu akhirnya diberi judul. */}
+              <div className="hidden grid-cols-[210px_minmax(0,1fr)_150px_170px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-bold uppercase text-slate-500 sm:grid">
                 <span>Aktivitas</span>
                 <span>Detail</span>
-                <span />
+                <span>Data</span>
+                <span>Waktu</span>
               </div>
               <ul className="max-h-[320px] divide-y divide-[var(--border)] overflow-auto bg-white">
               {recentLogs.map(log => {
@@ -919,20 +929,23 @@ export default async function ManagerDashboard({
                 const scope = formatActivityScope(log.table_name)
 
                 return (
-                <li key={log.id} className="grid gap-3 px-4 py-4 transition-colors hover:bg-slate-50/70 sm:grid-cols-[220px_minmax(0,1fr)_180px] sm:items-center">
+                <li key={log.id} className="grid gap-3 px-4 py-4 transition-colors hover:bg-slate-50/70 sm:grid-cols-[210px_minmax(0,1fr)_150px_170px] sm:items-center">
                   <div className="min-w-0">
                     <span className={`inline-flex w-fit items-center rounded-md border px-2.5 py-1 text-[11px] font-bold ${activity.tone}`}>
                       {activity.label}
                     </span>
+                    {/* Di layar sempit keempat kolomnya menumpuk jadi satu
+                        lajur, jadi nama data ikut di sini supaya tidak
+                        berdiri sendiri jauh dari kalimatnya. */}
                     <p className="mt-2 text-xs font-semibold text-slate-400 sm:hidden">{scope}</p>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm leading-6 text-slate-700">
-                      <span className="font-bold text-slate-950">{log.user.nama}</span> {activity.description}.
-                    </p>
-                    <p className="mt-1 hidden text-xs font-semibold text-slate-400 sm:block">{scope}</p>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-400 sm:text-right">{new Date(log.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })}</span>
+                  <p className="min-w-0 text-sm leading-6 text-slate-700">
+                    <span className="font-bold text-slate-950">{log.user.nama}</span> {activity.description}.
+                  </p>
+                  <span className="hidden text-xs font-semibold text-slate-500 sm:block">{scope}</span>
+                  <span className="text-xs font-semibold text-slate-400 sm:text-right">
+                    {new Date(log.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })}
+                  </span>
                 </li>
                 )
               })}

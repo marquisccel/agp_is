@@ -64,18 +64,17 @@ export default async function StaffSuppliersPage({
         eyebrow="Direktori lapak"
         title="Data Lapak"
         description="Daftar lapak gudang Anda. Gunakan edit untuk memperbarui kontak, rekening, target, dan jadwal ambilan."
-        actions={(
-          <Link
-            href="/dashboard/staff/suppliers/new"
-            className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
-          >
-            Tambah Lapak
-          </Link>
-        )}
       />
 
-      {allSuppliers.length > 0 && (
-        <div className="section section-body flex flex-wrap items-center gap-3">
+      {/* Kartu ini dulu hanya muncul kalau sudah ada lapak, dan "Tambah
+          Lapak" berdiri di kepala halaman. Setelah tombolnya pindah ke
+          sini, syarat itu harus dilepas -- kalau tidak, gudang yang belum
+          punya satu pun lapak justru kehilangan satu-satunya jalan untuk
+          menambahkannya. Yang disembunyikan saat kosong cukup deret
+          filternya, karena menyaring nol data memang tidak ada gunanya. */}
+      <div className="section section-body flex flex-wrap items-center gap-3">
+        {allSuppliers.length > 0 && (
+          <>
           {/* Dua deret pil berwarna-warni -- hitam, hijau, merah, biru,
               abu -- diganti satu bentuk kontrol. Yang lebih penting:
               labelnya dulu berbunyi "Hijau" dan "Merah", yaitu NAMA WARNA,
@@ -84,41 +83,51 @@ export default async function StaffSuppliersPage({
               cuma pembantu memindai. */}
           <div className="segmented">
             <Link href={href("all", selectedLocation)} className={selectedStatus === "all" ? "active" : ""}>
-              Semua {allSuppliers.length}
+              Semua ({allSuppliers.length})
             </Link>
             <Link
               href={href("GREEN", selectedLocation)}
               className={selectedStatus === "GREEN" ? "active" : ""}
               style={selectedStatus === "GREEN" ? { color: "var(--success)" } : undefined}
             >
-              Aktif {greenCount}
+              Aktif ({greenCount})
             </Link>
             <Link
               href={href("RED", selectedLocation)}
               className={selectedStatus === "RED" ? "active" : ""}
               style={selectedStatus === "RED" ? { color: "var(--danger)" } : undefined}
             >
-              Belum aktif {redCount}
+              Belum aktif ({redCount})
             </Link>
           </div>
 
           <div className="segmented">
             <Link href={href(selectedStatus, "all")} className={selectedLocation === "all" ? "active" : ""}>
-              Semua lokasi {allSuppliers.length}
+              Semua lokasi ({allSuppliers.length})
             </Link>
             <Link href={href(selectedStatus, "ready")} className={selectedLocation === "ready" ? "active" : ""}>
-              Koordinat lengkap {mapReadyCount}
+              Koordinat lengkap ({mapReadyCount})
             </Link>
             <Link
               href={href(selectedStatus, "missing")}
               className={selectedLocation === "missing" ? "active" : ""}
               style={selectedLocation === "missing" ? { color: "var(--warning)" } : undefined}
             >
-              Belum ada koordinat {mapMissingCount}
+              Belum ada koordinat ({mapMissingCount})
             </Link>
           </div>
-        </div>
-      )}
+          </>
+        )}
+
+        {/* ml-auto mendorong tombol ke ujung kanan kartu, dan tetap di
+            ujung kanan walau deret filternya sedang disembunyikan. */}
+        <Link
+          href="/dashboard/staff/suppliers/new"
+          className="btn-primer premium-button ml-auto rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
+        >
+          Tambah Lapak
+        </Link>
+      </div>
 
       {filteredSuppliers.length === 0 ? (
         <div

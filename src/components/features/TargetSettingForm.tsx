@@ -242,32 +242,40 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
             bulan ini.
           </>
         )}
-        actions={(
-          <>
-            <ElegantSelect
-              value={selectedBulan}
-              options={monthOptions}
-              onChange={setSelectedBulan}
-              ariaLabel="Pilih bulan target"
-              className="w-full sm:w-40"
-              menuClassName="w-44"
-            />
-            <ElegantSelect
-              value={selectedTahun}
-              options={yearOptions}
-              onChange={setSelectedTahun}
-              ariaLabel="Pilih tahun target"
-              className="w-full sm:w-28"
-            />
-            <Link
-              href="/dashboard/manager"
-              className="premium-button btn-netral flex items-center whitespace-nowrap px-4 py-2.5 text-sm font-semibold"
-            >
-              Kembali ke Dashboard
-            </Link>
-          </>
-        )}
       />
+
+      {/* Kendalinya berdiri di kartunya sendiri, bukan menempel di kepala
+          halaman. Di dalam kepala, dua dropdown dan satu tombol kembali
+          berjejer di sebelah judul besar membuat keduanya berebut perhatian
+          -- yang satu identitas halaman, yang lain alat kerja, dan tidak
+          ada yang menang.
+
+          Kartunya sengaja tipis dan tanpa judul: isinya sudah menerangkan
+          diri sendiri, dan menamainya cuma mengulang kata "periode" yang
+          sudah terbaca dari nama bulannya. */}
+      <div className="section section-body flex flex-wrap items-center justify-end gap-2">
+        <ElegantSelect
+          value={selectedBulan}
+          options={monthOptions}
+          onChange={setSelectedBulan}
+          ariaLabel="Pilih bulan target"
+          className="w-full sm:w-40"
+          menuClassName="w-44"
+        />
+        <ElegantSelect
+          value={selectedTahun}
+          options={yearOptions}
+          onChange={setSelectedTahun}
+          ariaLabel="Pilih tahun target"
+          className="w-full sm:w-28"
+        />
+        <Link
+          href="/dashboard/manager"
+          className="premium-button btn-netral flex items-center whitespace-nowrap px-4 py-2.5 text-sm font-semibold"
+        >
+          Kembali ke Dashboard
+        </Link>
+      </div>
 
       {loading ? (
         <div className="section section-body flex items-center justify-center gap-2 text-sm font-bold soft-enter" style={{ color: "var(--muted)" }}>
