@@ -649,7 +649,6 @@ export default async function ManagerDashboard({
   // ──────────────────────────────────────────
   return (
     <div className="space-y-6">
-      <PendingTerminAlerts initialAlerts={pendingTermins} />
 
       {/*
         Hari libur: panel target harian di bawah ini memang tidak
@@ -788,6 +787,12 @@ export default async function ManagerDashboard({
           </div>
         </div>
       </section>
+
+      {/* Peringatan termin diletakkan SESUDAH kepala halaman, bukan
+          sebelumnya. Di atas judul, ia muncul sebelum pembacanya tahu
+          sedang membuka halaman apa, dan menggeser sapaan beserta pemilih
+          periode ke bawah lipatan layar. */}
+      <PendingTerminAlerts initialAlerts={pendingTermins} />
 
       <div className="stat-strip">
         <div className="stat-tile">
