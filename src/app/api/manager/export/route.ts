@@ -33,6 +33,29 @@ function parseExportYear(value: string | null, fallback: number) {
   return year
 }
 
+/**
+ * Alamat dasar situs untuk tautan bukti transfer di dalam CSV.
+ *
+ * Sebelumnya skemanya ditulis mati sebagai "http://". Di laptop itu benar,
+ * tapi di hosting mana pun situsnya berjalan di HTTPS, sehingga setiap
+ * tautan bukti transfer di export Manager mengarah ke http:// -- tautan
+ * yang gagal atau dialihkan, di kolom yang justru dipakai saat audit.
+ *
+ * NEXTAUTH_URL dipakai lebih dulu karena itu memang alamat publik yang
+ * sudah wajib benar supaya login berfungsi. Header host dipakai sebagai
+ * cadangan, dengan skema dibaca dari x-forwarded-proto yang dipasang
+ * proksi Vercel maupun Nginx.
+ */
+function asalSitus(req: Request): string {
+  const dariEnv = process.env.NEXTAUTH_URL?.trim().replace(/\/+$/, "")
+  if (dariEnv) return dariEnv
+
+  const host = req.headers.get("host") || "localhost:3000"
+  const skema = req.headers.get("x-forwarded-proto")
+    || (host.startsWith("localhost") ? "http" : "https")
+  return `${skema}://${host}`
+}
+
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -195,7 +218,7 @@ export async function GET(req: Request) {
         p.nominal_belum_lunas || 0,
         p.staff?.nama || "-",
         p.admin?.nama || "-",
-        p.bukti_transfer ? (p.bukti_transfer.startsWith("data:") ? p.bukti_transfer : `http://${req.headers.get("host") || "localhost:3000"}${p.bukti_transfer}`) : "-",
+        p.bukti_transfer ? (p.bukti_transfer.startsWith("data:") ? p.bukti_transfer : `${asalSitus(req)}${p.bukti_transfer}`) : "-",
         p.tanggal_transfer || "-"
       ].map(escape).join(";") + "\r\n"
     }
