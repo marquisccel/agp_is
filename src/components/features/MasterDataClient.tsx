@@ -349,7 +349,7 @@ function DonatKomposisi({
           />
           <BarisKomposisi
             warna="var(--muted)"
-            ikon={<MapPin className="h-[15px] w-[15px] shrink-0" style={{ color: "var(--muted)" }} strokeWidth={2.25} />}
+            ikon={<MapPin className="h-[18px] w-[18px] shrink-0" style={{ color: "var(--muted)" }} strokeWidth={2.25} />}
             label="Koordinat lapak"
             nilai={berkoordinat}
             satuan="lapak"
@@ -377,15 +377,15 @@ function DonatKomposisi({
 function IkonLapak({ warna, keadaan }: { warna: string; keadaan: "aktif" | "belum" }) {
   return (
     <span className="relative inline-flex shrink-0" aria-hidden="true">
-      <Store className="h-[15px] w-[15px]" style={{ color: warna }} strokeWidth={2.25} />
+      <Store className="h-[18px] w-[18px]" style={{ color: warna }} strokeWidth={2.25} />
       <span
-        className="absolute -bottom-[3px] -right-[4px] grid h-[11px] w-[11px] place-items-center rounded-full"
+        className="absolute -bottom-[3px] -right-[5px] grid h-[13px] w-[13px] place-items-center rounded-full"
         style={{ background: warna, boxShadow: "0 0 0 1.5px var(--surface)" }}
       >
         {keadaan === "aktif" ? (
-          <Check className="h-[7px] w-[7px] text-white" strokeWidth={5} />
+          <Check className="h-[9px] w-[9px] text-white" strokeWidth={4.5} />
         ) : (
-          <X className="h-[7px] w-[7px] text-white" strokeWidth={5} />
+          <X className="h-[9px] w-[9px] text-white" strokeWidth={4.5} />
         )}
       </span>
     </span>
@@ -425,12 +425,12 @@ function BarisKomposisi({
    *  di antara dua benda yang bersusun justru salah arah. */
   bergaris?: boolean
 }) {
-  /* Ikonnya lebar 15px dan jaraknya ke label 8px. Angka dan keterangan di
+  /* Ikonnya lebar 18px dan jaraknya ke label 8px. Angka dan keterangan di
      bawahnya digeser sejauh itu supaya ketiganya mulai di garis tegak yang
      sama, sejajar huruf pertama labelnya. Tanpa geseran ini angkanya mulai
      di bawah ikon, menjorok ke kiri sendirian, dan tepi kiri baris jadi
      bergerigi. */
-  const geser = 23
+  const geser = 26
 
   return (
     <div
@@ -440,20 +440,20 @@ function BarisKomposisi({
       <div className="flex items-center gap-2">
         {ikon}
         <span
-          className="whitespace-nowrap text-[10.5px] font-bold uppercase leading-none tracking-[0.1em]"
+          className="whitespace-nowrap text-[11.5px] font-bold uppercase leading-none tracking-[0.09em]"
           style={{ color: warna }}
         >
           {label}
         </span>
       </div>
       <p
-        className="mt-2 whitespace-nowrap text-xl font-black leading-none tracking-[-0.02em]"
+        className="mt-2.5 whitespace-nowrap text-2xl font-black leading-none tracking-[-0.02em]"
         style={{ paddingLeft: geser }}
       >
         <span className="tabular-nums" style={{ color: warna }}>{nilai}</span>
         <span style={{ color: "var(--foreground)" }}> {satuan}</span>
       </p>
-      <p className="mt-1.5 text-[11px] leading-none" style={{ color: "var(--muted-faint)", paddingLeft: geser }}>{sub}</p>
+      <p className="mt-2 text-[12px] leading-none" style={{ color: "var(--muted-faint)", paddingLeft: geser }}>{sub}</p>
     </div>
   )
 }
