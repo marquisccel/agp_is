@@ -18,7 +18,7 @@ sering terlewat.
 | Akun Vercel | Baca peringatan lisensi di bawah |
 | PostgreSQL terkelola | Supabase atau Neon |
 | Object Storage | Supabase Storage atau Cloudflare R2 |
-| `NEXTAUTH_SECRET` | Hasil `openssl rand -base64 32` |
+| `NEXTAUTH_SECRET` | Hasil perintah pembuat kunci acak, lihat bagian 4 |
 
 Kalau memakai Supabase, basis data dan penyimpanan berkas didapat dari satu
 pendaftaran yang sama. Itu jalur paling ringkas dan yang diasumsikan panduan
@@ -149,6 +149,17 @@ lingkungan **Production**:
 | `DIRECT_URL` | Versi porta 5432, dipakai migrasi dan dibaca saat build |
 | `NEXTAUTH_URL` | URL produksi, dengan https, tanpa garis miring di akhir |
 | `NEXTAUTH_SECRET` | Buat baru, jangan salin dari laptop |
+
+Untuk `NEXTAUTH_SECRET`, jalankan ini di terminalmu sendiri lalu salin
+hasilnya langsung ke dasbor Vercel:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Nilai yang bisa dibaca manusia tidak memenuhi syarat. Siapa pun yang bisa
+menebaknya bisa memalsukan sesi MANAGER tanpa tahu satu pun password, dan
+pemalsuan itu tidak meninggalkan jejak login gagal.
 | `S3_ENDPOINT` | |
 | `S3_BUCKET` | |
 | `S3_ACCESS_KEY_ID` | |
