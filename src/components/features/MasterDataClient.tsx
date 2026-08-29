@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { Database, Search, UserPlus } from "lucide-react"
+import { Database, Search, Trash2, UserPlus } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
@@ -314,7 +314,7 @@ function TabelPengguna({ users }: { users: UserData[] }) {
               <th>Email</th>
               <th>Role</th>
               <th>Gudang</th>
-              <th className="text-right">Aksi</th>
+              <th className="kolom-aksi">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -339,7 +339,7 @@ function TabelPengguna({ users }: { users: UserData[] }) {
                   <td className="font-mono text-xs" style={{ color: "var(--muted)" }}>{user.email}</td>
                   <td><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
                   <td style={{ color: "var(--muted)" }}>{user.warehouse?.nama || "-"}</td>
-                  <td>
+                  <td className="kolom-aksi">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         type="button"
@@ -349,15 +349,24 @@ function TabelPengguna({ users }: { users: UserData[] }) {
                       >
                         {user.aktif ? "Nonaktifkan" : "Aktifkan"}
                       </button>
+                      {/* Ikon saja, tanpa tulisan. Menghapus akun jauh lebih
+                          jarang dan jauh lebih berat akibatnya daripada
+                          menonaktifkan, jadi ia tidak boleh tampil sama
+                          menonjol. Judulnya tetap ada lewat title dan
+                          aria-label supaya maksudnya tidak hilang bagi yang
+                          memakai pembaca layar. */}
                       <button
                         type="button"
                         onClick={() => hapus(user)}
                         disabled={sibuk}
-                        className="rounded-lg px-2 py-1.5 text-xs font-bold transition-opacity hover:opacity-70 disabled:opacity-40"
+                        className="grid h-8 w-8 place-items-center rounded-lg transition-colors disabled:opacity-40"
                         style={{ color: "var(--danger)" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-tint)" }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent" }}
+                        title={`Hapus akun ${user.nama}`}
                         aria-label={`Hapus akun ${user.nama}`}
                       >
-                        Hapus
+                        <Trash2 size={15} strokeWidth={2.2} aria-hidden="true" />
                       </button>
                     </div>
                   </td>

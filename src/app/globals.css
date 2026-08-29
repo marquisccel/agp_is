@@ -1362,6 +1362,24 @@ a:focus-visible {
 
 .tabel-lembut tbody tr:last-child td { border-bottom: none; }
 
+/* Kolom aksi: menempel ke ujung kanan baris dan selebar isinya saja.
+
+   Dua hal yang tidak bisa diselesaikan dari sisi markup:
+
+   1. `.tabel-lembut thead th` mengunci text-align: left dengan kekhususan
+      0-1-2, sedangkan utilitas .text-right cuma 0-1-0. Menambahkan
+      text-right di <th> tidak berpengaruh sama sekali, dan judul kolomnya
+      tertinggal di kiri sementara tombolnya sudah rata kanan.
+   2. Tabel memakai layout otomatis, jadi sisa lebar dibagi rata dan kolom
+      aksi jadi jauh lebih lebar daripada isinya. width: 1% memaksa kolom
+      menyusut sampai sepas isinya; nowrap menahan tombol tetap sebaris. */
+.tabel-lembut thead th.kolom-aksi,
+.tabel-lembut tbody td.kolom-aksi {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+}
+
 .tabel-lembut tbody tr {
   transition: background-color 160ms var(--ease-system);
 }
