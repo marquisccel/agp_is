@@ -61,3 +61,6 @@ next-env.d.ts
 
 # Konfigurasi lokal perkakas, bukan bagian proyek
 .claude/
+
+.vercel
+.env*

@@ -169,6 +169,38 @@ pemalsuan itu tidak meninggalkan jejak login gagal.
 
 Keterangan lengkap tiap nilai ada di `.env.production.example`.
 
+### JANGAN tandai `NEXTAUTH_URL` sebagai Sensitive
+
+Vercel menawarkan penandaan **Sensitive** pada variabel. Variabel bertanda itu
+hanya tersedia **saat aplikasi berjalan, tidak saat build** -- memang dirancang
+begitu supaya rahasia tidak bocor ke log build.
+
+`NEXTAUTH_URL` dibutuhkan saat build. Root layout memuat SessionProvider, dan
+NextAuth menyusun URL dasarnya di lingkup modul, sehingga ikut dijalankan saat
+memprerender halaman apa pun.
+
+Kalau ditandai Sensitive, build gagal dengan pesan yang sama sekali tidak
+menyebut penyebabnya:
+
+```
+Error occurred prerendering page "/_not-found"
+TypeError: Invalid URL ... input: ''
+```
+
+Halaman yang disebut justru halaman 404 yang tidak berhubungan dengan
+autentikasi.
+
+Lagi pula `NEXTAUTH_URL` memang bukan rahasia: isinya alamat publik situs itu
+sendiri, yang terbaca semua pengunjung.
+
+Delapan variabel lainnya boleh tetap Sensitive. Sudah diuji: dengan semuanya
+kosong saat build dan hanya `NEXTAUTH_URL` yang terbaca, build lolos penuh.
+Kedelapan nilai itu memang baru dibutuhkan saat aplikasi melayani permintaan,
+dan di sana variabel Sensitive tersedia normal.
+
+Penandaan Sensitive tidak bisa dilepas setelah dibuat. Kalau terlanjur,
+hapus variabelnya lalu buat ulang tanpa penandaan itu.
+
 Soal `NEXTAUTH_URL`: pada deploy pertama URL produksinya belum diketahui.
 Isi dulu perkiraannya, deploy, lalu perbaiki dengan URL sebenarnya dan deploy
 ulang. Selama nilainya belum benar, login akan berhasil tapi pengalihan
