@@ -107,6 +107,47 @@ Pengaturan, hapus ketiga nilai di atas dari `.env`.
 
 ---
 
+## 1b. Bersihkan galat log dari Data API yang dimatikan
+
+Setelah Data API dimatikan, log Postgres di Supabase akan dipenuhi baris ini,
+sekitar dua kali per menit, terus-menerus:
+
+```
+3F000  schema "pg_pgrst_no_exposed_schemas" does not exist
+```
+
+Ini BUKAN masalah aplikasi. Supabase tidak benar-benar mematikan PostgREST
+saat Data API dinonaktifkan; mereka hanya mengarahkannya ke nama skema
+penanda yang memang tidak ada, dan PostgREST mengeluh tiap kali mencoba
+memuatnya.
+
+Tidak merusak apa pun, tapi membuat panel Postgres tampak merah penuh
+sehingga masalah yang sungguhan jadi sulit terlihat.
+
+Jalankan sekali di SQL Editor Supabase:
+
+```sql
+create schema pgrst_no_exposed_schemas;
+alter role authenticator set pgrst.db_schemas = 'pgrst_no_exposed_schemas';
+notify pgrst;
+```
+
+PostgREST lalu memuat skema yang benar-benar ada tapi kosong, jadi tidak ada
+lagi yang dikeluhkan. Tabel di `public` tetap TIDAK diekspos.
+
+Perhatikan namanya tanpa awalan `pg_`. Postgres menolak membuat skema
+berawalan itu karena dicadangkan untuk skema sistem, jadi menyalin nama yang
+muncul di pesan galatnya tidak akan berhasil.
+
+Kalau suatu saat Data API ingin dihidupkan lagi:
+
+```sql
+alter role authenticator reset pgrst.db_schemas;
+notify pgrst;
+```
+
+---
+
 ## 2. Siapkan Object Storage
 
 Buat bucket baru, dan pastikan **privat**. Catat endpoint, nama bucket,
