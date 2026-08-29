@@ -124,7 +124,7 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
           </table>
         )}
       </div>
-      <TautanRincian href="/dashboard/manager/suppliers" className="border-t px-5 py-4">
+      <TautanRincian href="/dashboard/manager/suppliers">
         Lihat semua lapak
       </TautanRincian>
     </div>

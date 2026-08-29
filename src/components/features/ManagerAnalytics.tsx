@@ -372,6 +372,22 @@ export default function ManagerAnalytics({
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {/* Pintu ke Setting Target ditaruh di sini, bukan di sidebar.
+                Kartu ini yang memberi tahu "kurang 36 ton lagi", dan
+                tindakan berikutnya memang meninjau targetnya -- pintunya
+                paling berguna tepat di tempat kebutuhannya muncul.
+
+                Diberi nada utama, dan diletakkan sebelum pemilih gudang.
+                Sebagai tombol netral di sebelah kanan dropdown ia terbaca
+                seperti pelengkap filter, padahal ia satu-satunya tindakan
+                di kartu ini; dropdown-nya hanya mengubah apa yang dilihat. */}
+            <Link
+              href="/dashboard/manager/targets"
+              className="premium-button btn-primer flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-bold"
+            >
+              <Target className="h-3.5 w-3.5" />
+              Setting Target
+            </Link>
             <ElegantSelect
               value={selectedWarehouseId}
               options={warehouseOptions}
@@ -380,17 +396,6 @@ export default function ManagerAnalytics({
               className="w-full sm:w-64"
               menuClassName="sm:w-72"
             />
-            {/* Pintu ke Setting Target ditaruh di sini, bukan di sidebar.
-                Kartu ini yang memberi tahu "kurang 36 ton lagi", dan
-                tindakan berikutnya memang meninjau targetnya -- pintunya
-                paling berguna tepat di tempat kebutuhannya muncul. */}
-            <Link
-              href="/dashboard/manager/targets"
-              className="premium-button btn-netral flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-bold"
-            >
-              <Target className="h-3.5 w-3.5" />
-              Atur Target
-            </Link>
           </div>
         </div>
         <div className="p-5">

@@ -13,7 +13,11 @@ export default function PageHeader({
 }) {
   return (
     <section className="page-hero p-5 md:p-6">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      {/* items-start, bukan items-center. Dengan center, tombol di kanan
+          berhenti di tengah blok tiga baris di kiri -- tidak sejajar dengan
+          apa pun, dan terbaca seperti melayang. Dengan start keduanya
+          berbagi satu tepi atas, dan itulah garis yang dilihat mata. */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div className="min-w-0">
           {eyebrow && (
             <p className="mb-2 text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--brand-strong)" }}>

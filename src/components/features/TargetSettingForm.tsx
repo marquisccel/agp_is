@@ -235,9 +235,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
         title="Setting Target Gudang"
         description={(
           <>
-            Target pembelian bahan baku{" "}
-            <span className="font-semibold" style={{ color: "var(--brand-strong)" }}>PET Final</span>{" "}
-            per gudang. Isi target bulanan dalam ton; mingguan dan harian terisi sendiri dari{" "}
+            Isi target bulanan tiap gudang dalam ton. Mingguan dan harian terisi sendiri dari{" "}
             <span className="font-semibold text-slate-700" title="Senin sampai Sabtu, dikurangi hari libur nasional">
               {workingDaysThisMonth} hari kerja efektif
             </span>{" "}
