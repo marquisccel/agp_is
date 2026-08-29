@@ -3,12 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
-import Link from "next/link"
-import { Database, Search, Trash2, UserPlus } from "lucide-react"
+import { Search, Trash2, UserPlus } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
-import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 import { namaGudang } from "@/lib/namaGudang"
 
 interface Warehouse { id: string; nama: string; lokasi: string }
@@ -187,9 +185,6 @@ interface SupplierStat {
   totalNilai: number
   totalKg: number
   lastPurchase: string | null
-  grade: "A" | "B" | "C" | "-"
-  gradeLabel: string
-  gradeNada: string
 }
 interface UserData {
   id: string
@@ -199,12 +194,6 @@ interface UserData {
   aktif: boolean
   warehouseId: string | null
   warehouse: { id: string; nama: string } | null
-}
-interface SkuPrice {
-  id: string
-  sku_name: string
-  max_price_per_kg: number
-  warehouse: { id: string; nama: string }
 }
 interface GlobalStats {
   totalPurchases: number
@@ -218,8 +207,7 @@ interface GlobalStats {
   totalMapReadySuppliers: number
 }
 
-type Tab = "overview" | "lapak" | "pengguna" | "harga-sku"
-type SupplierStatusFilter = "all" | "GREEN" | "RED"
+type Tab = "overview" | "pengguna"
 
 function fmtRp(n: number) {
   if (n >= 1_000_000_000) return `Rp ${(n / 1_000_000_000).toFixed(1)}M`
@@ -230,11 +218,6 @@ function fmtRp(n: number) {
 function fmtKg(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(2)} ton`
   return `${n.toFixed(1)} KG`
-}
-
-function fmtDate(d: string | null) {
-  if (!d) return "-"
-  return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" })
 }
 
 /**
@@ -398,37 +381,29 @@ export default function MasterDataClient({
   warehouses,
   suppliers,
   users,
-  skuPrices,
   globalStats,
 }: {
   warehouses: Warehouse[]
   suppliers: SupplierStat[]
   users: UserData[]
-  skuPrices: SkuPrice[]
   globalStats: GlobalStats
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview")
-  const [searchLapak, setSearchLapak] = useState("")
-  const [filterWarehouse, setFilterWarehouse] = useState("all")
-  const [filterSupplierStatus, setFilterSupplierStatus] = useState<SupplierStatusFilter>("all")
   const [searchUser, setSearchUser] = useState("")
   const [filterRole, setFilterRole] = useState("all")
-  const [filterSkuWarehouse, setFilterSkuWarehouse] = useState("all")
 
+  /* Tab Lapak dan Harga SKU dibuang. Keduanya cuma cermin: daftar lapak
+     sudah ada di menu Data Lapak dengan grade, filter, import koordinat,
+     dan penghapusan, sedangkan harga SKU di sini hanya bisa dilihat
+     padahal halaman Harga Standar SKU sudah bisa mengubahnya.
+
+     Halaman itu dulu terkubur di balik satu tombol di Analytics, dan
+     itulah sebab tab yang cuma bisa dilihat ini pernah dibuat. Sekarang
+     halamannya ada di sidebar, jadi tirunya tidak dibutuhkan lagi. */
   const tabs: { id: Tab; label: string }[] = [
     { id: "overview", label: "Ringkasan" },
-    { id: "lapak", label: "Lapak" },
     { id: "pengguna", label: "Pengguna" },
-    { id: "harga-sku", label: "Harga SKU" },
   ]
-
-  const filteredSuppliers = suppliers.filter((supplier) => {
-    const matchSearch = supplier.nama.toLowerCase().includes(searchLapak.toLowerCase()) ||
-      (supplier.kontak_wa || "").includes(searchLapak)
-    const matchWarehouse = filterWarehouse === "all" || supplier.warehouseId === filterWarehouse
-    const matchStatus = filterSupplierStatus === "all" || supplier.transactionStatus === filterSupplierStatus
-    return matchSearch && matchWarehouse && matchStatus
-  }).sort((a, b) => b.totalKg - a.totalKg)
 
   const filteredUsers = users.filter((user) => {
     const matchSearch = user.nama.toLowerCase().includes(searchUser.toLowerCase()) ||
@@ -436,10 +411,6 @@ export default function MasterDataClient({
     const matchRole = filterRole === "all" || user.role === filterRole
     return matchSearch && matchRole
   })
-
-  const filteredSkuPrices = skuPrices.filter((sku) =>
-    filterSkuWarehouse === "all" || sku.warehouse.id === filterSkuWarehouse
-  )
 
   return (
     <div className="space-y-6">
@@ -632,113 +603,6 @@ export default function MasterDataClient({
         </div>
       )}
 
-      {activeTab === "lapak" && (
-        <div className="space-y-4">
-          <FilterBar>
-            <SearchBox value={searchLapak} onChange={setSearchLapak} placeholder="Cari nama lapak atau no. WA..." />
-            <ElegantSelect
-              value={filterWarehouse}
-              onChange={setFilterWarehouse}
-              ariaLabel="Filter gudang lapak"
-              className="w-full sm:w-56"
-              menuClassName="w-56"
-              options={[
-                { value: "all", label: "Semua Gudang" },
-                ...warehouses.map((warehouse) => ({ value: warehouse.id, label: namaGudang(warehouse.nama) })),
-              ]}
-            />
-            <ElegantSelect
-              value={filterSupplierStatus}
-              onChange={(value) => setFilterSupplierStatus(value as SupplierStatusFilter)}
-              ariaLabel="Filter status supplier"
-              className="w-full sm:w-56"
-              options={[
-                { value: "all", label: "Semua Status" },
-                { value: "GREEN", label: "Hijau - aktif" },
-                { value: "RED", label: "Merah - belum aktif" },
-              ]}
-            />
-          </FilterBar>
-
-          <p className="px-1 text-xs text-slate-500">
-            Menampilkan <strong>{filteredSuppliers.length}</strong> dari {suppliers.length} lapak, diurutkan dari tonase terbesar.
-          </p>
-
-          {/* Satu kartu per baris, sama seperti menu Data Lapak. Dua kolom
-              memaksa nama lapak terpotong dan membuat empat angka di
-              dalamnya berdesakan, padahal isinya sama persis dengan yang
-              di Data Lapak. Dua halaman yang menampilkan hal yang sama
-              sebaiknya tidak berbeda bentuk. */}
-          <div className="grid grid-cols-1 gap-4">
-            {filteredSuppliers.length === 0 ? (
-              <EmptyState text="Tidak ada lapak yang cocok." />
-            ) : filteredSuppliers.map((supplier) => (
-              <div key={supplier.id} className="section section-body">
-                <div className="flex items-start justify-between gap-4">
-                  {/* Badge "Hijau"/"Merah" dulu cuma menyebut warnanya, jadi
-                      pembacanya harus sudah tahu artinya. Sekarang warnanya
-                      dibawa titik kecil di samping nama, dan artinya ditulis
-                      sebagai teks abu di baris keterangan -- warna untuk
-                      memindai, kata untuk memastikan. */}
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-2 w-2 shrink-0 rounded-full"
-                        style={{ background: supplier.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
-                        aria-hidden="true"
-                      />
-                      <p className="truncate text-base font-black text-slate-950">{supplier.nama}</p>
-                    </div>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
-                      <span>{supplier.warehouse ? namaGudang(supplier.warehouse.nama) : "-"}</span>
-                      <span aria-hidden="true">&middot;</span>
-                      <span>{supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
-                      <span aria-hidden="true">&middot;</span>
-                      {/* Koordinat yang belum diisi tetap diberi nada amber:
-                          itu data yang masih harus dilengkapi, bukan sekadar
-                          keterangan. Tapi cukup lewat warna teks, tanpa pil
-                          yang menarik perhatian lebih dari nama lapaknya. */}
-                      <span style={hasResolvedSupplierCoordinates(supplier) ? undefined : { color: "var(--warning)", fontWeight: 600 }}>
-                        {hasResolvedSupplierCoordinates(supplier) ? "Koordinat lengkap" : "Belum ada koordinat"}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Dulu "#1", "#2" -- nomor urut yang cuma menyatakan posisi
-                      di daftar yang sedang disaring, jadi ikut berubah tiap
-                      kali filternya diubah dan tidak mengatakan apa pun
-                      tentang lapaknya. Grade menyatakan sesuatu yang melekat
-                      pada lapak itu sendiri, dan sama dengan yang tampil di
-                      menu Data Lapak. */}
-                  <span
-                    className="shrink-0 rounded-full px-3 py-1 text-xs font-black"
-                    style={{ background: "var(--bg-tint)", color: supplier.gradeNada }}
-                    title={supplier.grade === "-"
-                      ? "Belum ada transaksi, jadi belum bisa dinilai"
-                      : `Grade ${supplier.grade}, ${supplier.gradeLabel}`}
-                  >
-                    {supplier.grade === "-" ? "Belum dinilai" : `Grade ${supplier.grade}`}
-                  </span>
-                </div>
-                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <MiniStat label="Transaksi" value={supplier.totalTransaksi.toString()} />
-                  <MiniStat label="Selesai" value={supplier.totalSelesai.toString()} />
-                  <MiniStat label="Tonase" value={fmtKg(supplier.totalKg)} />
-                  <MiniStat label="Nilai" value={fmtRp(supplier.totalNilai)} />
-                </div>
-                <div className="mt-4 flex flex-wrap justify-between gap-2 border-t pt-4 text-xs" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
-                  <span>{supplier.kontak_wa ? `WA ${supplier.kontak_wa}` : "Kontak belum tersedia"}</span>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span>Terakhir: {fmtDate(supplier.lastPurchase)}</span>
-                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="font-bold transition-colors hover:opacity-80" style={{ color: "var(--brand-strong)" }}>
-                      Detail lapak
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {activeTab === "pengguna" && (
         <div className="space-y-4">
@@ -764,54 +628,6 @@ export default function MasterDataClient({
         </div>
       )}
 
-      {activeTab === "harga-sku" && (
-        <div className="space-y-4">
-          <FilterBar>
-            <ElegantSelect
-              value={filterSkuWarehouse}
-              onChange={setFilterSkuWarehouse}
-              ariaLabel="Filter gudang SKU"
-              className="w-full sm:w-56"
-              menuClassName="w-56"
-              options={[
-                { value: "all", label: "Semua Gudang" },
-                ...warehouses.map((warehouse) => ({ value: warehouse.id, label: namaGudang(warehouse.nama) })),
-              ]}
-            />
-          </FilterBar>
-
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            {warehouses.filter((warehouse) => filterSkuWarehouse === "all" || warehouse.id === filterSkuWarehouse).map((warehouse) => {
-              const wSkus = filteredSkuPrices.filter((sku) => sku.warehouse.id === warehouse.id)
-              if (wSkus.length === 0) return null
-              return (
-                <section key={warehouse.id} className="section">
-                  <div className="section-shell-head">
-                    <div>
-                      <span className="section-eyebrow">Standar harga</span>
-                      <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{namaGudang(warehouse.nama)}</h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Database className="h-4 w-4" style={{ color: "var(--brand-strong)" }} />
-                      <span className="text-xs font-bold" style={{ color: "var(--muted)" }}>{wSkus.length} SKU</span>
-                    </div>
-                  </div>
-                  <table className="tabel-lembut text-sm">
-                    <tbody>
-                      {wSkus.map((sku) => (
-                        <tr key={sku.id}>
-                          <td className="font-bold" style={{ color: "var(--foreground)" }}>{sku.sku_name}</td>
-                          <td className="text-right font-mono font-black" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>Rp {sku.max_price_per_kg.toLocaleString("id-ID")}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </section>
-              )
-            })}
-          </div>
-        </div>
-      )}
       </div>
     </div>
   )
@@ -832,15 +648,6 @@ function KomposisiItem({ warna, nilai, label, sub }: { warna: string; nilai: num
   )
 }
 
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[var(--radius-md)] border p-3 text-center" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-      <div className="text-sm font-black text-slate-950">{value}</div>
-      <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">{label}</div>
-    </div>
-  )
-}
 
 function FilterBar({ children }: { children: ReactNode }) {
   return (
@@ -867,10 +674,3 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
   )
 }
 
-function EmptyState({ text }: { text: string }) {
-  return (
-    <div className="col-span-full rounded-[var(--radius-lg)] border border-dashed p-12 text-center text-sm font-semibold" style={{ borderColor: "var(--border)", background: "var(--surface-sunken)", color: "var(--muted-faint)" }}>
-      {text}
-    </div>
-  )
-}

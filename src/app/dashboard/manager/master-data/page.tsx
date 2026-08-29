@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma"
 import MasterDataClient from "@/components/features/MasterDataClient"
 import PageHeader from "@/components/ui/PageHeader"
 import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
-import { hitungGradeLapak } from "@/lib/gradeLapak"
 
 export default async function MasterDataPage() {
   const session = await getServerSession(authOptions)
@@ -14,11 +13,6 @@ export default async function MasterDataPage() {
   }
 
   const warehouses = await prisma.warehouse.findMany({ orderBy: { nama: "asc" } })
-
-  const skuPrices = await prisma.skuPriceStandard.findMany({
-    include: { warehouse: { select: { id: true, nama: true } } },
-    orderBy: [{ warehouse: { nama: "asc" } }, { sku_name: "asc" }],
-  })
 
 
   const suppliers = await prisma.supplier.findMany({
@@ -32,13 +26,7 @@ export default async function MasterDataPage() {
           total_nilai_setelah_retur: true,
           total_nilai_sebelum_retur: true,
           createdAt: true,
-          // Empat berikutnya khusus untuk perhitungan grade. Berat timbangan
-          // dipakai mengukur susut, harga dan nama SKU dipakai membandingkan
-          // dengan standar harga gudangnya.
-          warehouseId: true,
-          berat_timbangan_lapak: true,
-          berat_timbangan_gudang: true,
-          items: { select: { berat_final_item: true, harga_per_kg: true, subtotal: true, sku_name: true } },
+          items: { select: { berat_final_item: true } },
         },
       },
     },
@@ -62,17 +50,9 @@ export default async function MasterDataPage() {
     const lastPurchase =
       supplier.purchases.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]?.createdAt ?? null
 
-    // Grade dihitung di server, bukan di komponen: datanya sudah ada di
-    // sini, dan mengirim seluruh rincian pembelian ke peramban hanya untuk
-    // menghitung satu huruf itu pemborosan yang tidak perlu.
-    const performa = hitungGradeLapak(supplier.purchases, supplier.target_bulanan_kg, skuPrices)
-
     return {
       id: supplier.id,
       nama: supplier.nama,
-      grade: performa.grade,
-      gradeLabel: performa.label,
-      gradeNada: performa.nada,
       kontak_wa: supplier.kontak_wa,
       link: supplier.link,
       latitude: supplier.latitude,
@@ -127,13 +107,12 @@ export default async function MasterDataPage() {
       <PageHeader
         eyebrow="Tata kelola data"
         title="Master Data"
-        description="Kelola gudang, lapak, pengguna operasional, dan standar harga SKU dalam satu pusat data yang konsisten."
+        description="Ringkasan performa seluruh gudang dan pengelolaan akun operasional."
       />
       <MasterDataClient
         warehouses={warehouses}
         suppliers={suppliersWithStats}
         users={users}
-        skuPrices={skuPrices}
         globalStats={{
           totalPurchases,
           totalCompleted,

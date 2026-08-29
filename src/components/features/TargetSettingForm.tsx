@@ -168,10 +168,8 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
             <div>
               <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-950">Periode Target Gudang</h3>
               <p className="mt-1 text-sm leading-6 text-slate-500">
-                {workingDaysThisMonth} hari kerja efektif untuk periode ini, dihitung Senin sampai Sabtu
-                dikurangi hari libur nasional. Cukup isi <span className="font-semibold text-slate-700">target
-                bulanan</span> tiap gudang dalam ton; mingguan dan harian terisi sendiri dari jumlah hari
-                kerja itu, dan tetap bisa kamu ubah kalau perlu disesuaikan.
+                Isi target bulanan dalam ton. Mingguan dan harian terisi sendiri dari{" "}
+                {workingDaysThisMonth} hari kerja bulan ini.
               </p>
             </div>
           </div>
@@ -223,7 +221,15 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                   <div>
                     <h3 className="font-black text-slate-950">{labelGudang}</h3>
                   </div>
-                  <div className="rounded-full border px-3 py-1 text-xs font-black" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
+                  {/* Asal angkanya dititipkan ke title, bukan ditulis di layar.
+                      Itu keterangan yang dicari sekali seumur hidup, lalu tidak
+                      pernah dibaca lagi -- tidak sepadan dengan satu kalimat
+                      penuh yang harus dilewati tiap kali membuka halaman ini. */}
+                  <div
+                    className="rounded-full border px-3 py-1 text-xs font-black"
+                    style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
+                    title="Senin sampai Sabtu, dikurangi hari libur nasional"
+                  >
                     {workingDaysThisMonth} hari kerja
                   </div>
                 </div>

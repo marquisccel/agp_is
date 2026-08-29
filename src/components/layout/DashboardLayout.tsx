@@ -16,6 +16,7 @@ import {
   Package,
   PenLine,
   ScrollText,
+  Tags,
   ShieldCheck,
   Scale,
   Settings,
@@ -176,6 +177,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       { name: "Approval DP", href: "/dashboard/manager/approval-dp", icon: CreditCard },
       { name: "Master Data", href: "/dashboard/manager/master-data", icon: Database },
       { name: "Setting Target", href: "/dashboard/manager/targets", icon: Target },
+      // Halaman ini sebelumnya hanya bisa dicapai lewat satu tombol di
+      // Analytics. Karena tersembunyi, Master Data sempat memuat tiruannya
+      // yang cuma bisa dilihat -- dua layar untuk satu data, dan yang lebih
+      // mudah ditemukan justru yang tidak bisa mengubah apa pun. Ditaruh
+      // bersebelahan dengan Setting Target karena keduanya sama-sama
+      // menetapkan angka acuan, bukan mencatat kejadian.
+      { name: "Harga Standar SKU", href: "/dashboard/manager/sku-prices", icon: Tags },
       { name: "Data Lapak", href: "/dashboard/manager/suppliers", icon: Store },
       { name: "Daftar Transaksi", href: "/dashboard/manager/history", icon: History },
       // Kalau lapak menagih pelunasan langsung ke Manager, sebelumnya uangnya
