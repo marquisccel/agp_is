@@ -282,7 +282,20 @@ function DonatKomposisi({
 
   return (
     <div className="section-body">
-      <div className="flex flex-col items-center gap-7 sm:flex-row sm:gap-9">
+      {/* Tiga hal dalam satu baris, dan lebarnya sengaja TIDAK dibagi rata.
+
+          Sebelumnya keterangan mengisi seluruh sisa kartu, sehingga angka
+          9 dan 2 terdampar sendirian di tepi kanan, berjarak setengah layar
+          dari label yang menerangkannya, dan garis koordinat melar
+          sepanjang kartu padahal cuma menyatakan satu perbandingan.
+
+          Sekarang cincin dan keterangannya berdiri sebagai satu kelompok
+          rapat di kiri -- angkanya menempel pada labelnya, bukan menjauh --
+          dan kelengkapan koordinat jadi kelompok kedua di kanan, dipisah
+          satu garis. Sisa ruang jatuh di antara kedua kelompok, tempat yang
+          memang seharusnya kosong. */}
+      <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+        <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
         <div className="relative shrink-0">
           <svg width="152" height="152" viewBox="0 0 152 152" role="img" aria-label={`${aktif} dari ${total} lapak sudah aktif`}>
             {/* Diputar supaya potongan pertama mulai dari atas, bukan dari
@@ -317,35 +330,48 @@ function DonatKomposisi({
           </div>
         </div>
 
-        <div className="w-full min-w-0">
-          <BarisKomposisi warna="var(--success)" label="Aktif" nilai={aktif} sisi={persen(aktif, total)} sub="sudah bertransaksi" />
-          <BarisKomposisi
-            warna="var(--danger)"
-            label="Belum aktif"
-            nilai={belumAktif}
-            sisi={persen(belumAktif, total)}
-            sub={belumAktif > 0 ? "perlu aktivasi" : "semua sudah aktif"}
-            bergaris
-          />
-
-          {/* Dipisahkan garis dan diberi bentuk yang berbeda dari dua baris
-              di atasnya, karena memang bukan bagian dari pembagian yang
-              sama. Garisnya menyatakan cakupan: berapa bagian dari seluruh
-              lapak yang koordinatnya sudah terisi. */}
-          <div className="mt-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="field-label" style={{ marginBottom: 0 }}>Berkoordinat</span>
-              <span className="font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted)" }}>
-                {berkoordinat} dari {total} &middot; {persen(berkoordinat, total)}
-              </span>
-            </div>
-            <div className="mt-2 h-[5px] w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
-              <div className="h-full rounded-full" style={{ width: `${pKoordinat}%`, background: "var(--brand)" }} />
-            </div>
-            <p className="mt-1.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>
-              {berkoordinat < total ? `${total - berkoordinat} lapak belum bisa ditampilkan di peta` : "Semua lapak siap dipetakan"}
-            </p>
+          <div className="space-y-4">
+            <BarisKomposisi warna="var(--success)" label="Aktif" nilai={aktif} sisi={persen(aktif, total)} sub="sudah bertransaksi" />
+            <BarisKomposisi
+              warna="var(--danger)"
+              label="Belum aktif"
+              nilai={belumAktif}
+              sisi={persen(belumAktif, total)}
+              sub={belumAktif > 0 ? "perlu aktivasi" : "semua sudah aktif"}
+            />
           </div>
+        </div>
+
+        {/* Kelompok kedua, dipisah satu garis dan diberi bentuk yang
+            berbeda dari dua baris di sebelahnya -- karena memang bukan
+            bagian dari pembagian yang sama. Yang dinyatakannya cakupan:
+            berapa bagian dari seluruh lapak yang koordinatnya sudah terisi.
+
+            Lebarnya dibatasi. Garis sepanjang kartu membuat perbandingan
+            36% terbaca sebagai jarak yang jauh, padahal yang ingin
+            ditunjukkan justru betapa sedikitnya. */}
+        <div
+          className="w-full border-t pt-6 lg:w-auto lg:min-w-[248px] lg:max-w-[280px] lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <span className="field-label" style={{ marginBottom: 0 }}>Kelengkapan koordinat</span>
+          <div className="mt-1.5 flex items-baseline gap-2">
+            <span className="text-2xl font-black leading-none tabular-nums" style={{ color: "var(--foreground)" }}>
+              {berkoordinat}
+            </span>
+            <span className="text-sm font-bold" style={{ color: "var(--muted-faint)" }}>
+              dari {total} lapak
+            </span>
+            <span className="ml-auto font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted-faint)" }}>
+              {persen(berkoordinat, total)}
+            </span>
+          </div>
+          <div className="mt-3 h-[5px] w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+            <div className="h-full rounded-full" style={{ width: `${pKoordinat}%`, background: "var(--brand)" }} />
+          </div>
+          <p className="mt-2 text-[11px]" style={{ color: "var(--muted-faint)" }}>
+            {berkoordinat < total ? `${total - berkoordinat} lapak belum bisa ditampilkan di peta` : "Semua lapak siap dipetakan"}
+          </p>
         </div>
       </div>
     </div>
@@ -355,9 +381,14 @@ function DonatKomposisi({
 /**
  * Satu baris keterangan di samping cincin.
  *
- * Angkanya berdiri paling besar, persentasenya menempel di sebelahnya
- * dengan ukuran lebih kecil -- keduanya menerangkan hal yang sama, jadi
- * kalau sama besar mata harus memilih mana yang dibaca lebih dulu.
+ * Angkanya berdiri DULUAN, di kolom selebar tetap, lalu labelnya. Susunan
+ * sebaliknya -- label di kiri, angka didorong ke kanan -- membuat jarak
+ * antara keduanya berubah-ubah mengikuti lebar kartu, dan pada layar lebar
+ * angkanya terdampar begitu jauh dari labelnya sampai mata harus melompat
+ * untuk menghubungkan keduanya.
+ *
+ * Kolom angka yang lebarnya tetap juga membuat 9 dan 2 rata di digit yang
+ * sama, sehingga tingginya bisa dibandingkan sekilas.
  */
 function BarisKomposisi({
   warna,
@@ -365,29 +396,29 @@ function BarisKomposisi({
   nilai,
   sisi,
   sub,
-  bergaris = false,
 }: {
   warna: string
   label: string
   nilai: number
   sisi: string
   sub: string
-  /** Garis pemisah di atas; tidak dipasang pada baris pertama. */
-  bergaris?: boolean
 }) {
   return (
-    <div className={bergaris ? "mt-3 border-t pt-3" : ""} style={bergaris ? { borderColor: "var(--border)" } : undefined}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: warna }} aria-hidden="true" />
-          <span className="truncate text-sm font-bold" style={{ color: "var(--foreground)" }}>{label}</span>
+    <div className="flex items-start gap-3">
+      <span
+        className="w-8 shrink-0 text-right text-2xl font-black leading-none tabular-nums"
+        style={{ color: warna }}
+      >
+        {nilai}
+      </span>
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: warna }} aria-hidden="true" />
+          <span className="truncate text-sm font-bold leading-none" style={{ color: "var(--foreground)" }}>{label}</span>
+          <span className="font-mono text-[11px] font-bold leading-none tabular-nums" style={{ color: "var(--muted-faint)" }}>{sisi}</span>
         </div>
-        <div className="flex shrink-0 items-baseline gap-2">
-          <span className="text-2xl font-black leading-none tabular-nums" style={{ color: warna }}>{nilai}</span>
-          <span className="w-9 text-right font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted-faint)" }}>{sisi}</span>
-        </div>
+        <p className="mt-1.5 text-[11px] leading-none" style={{ color: "var(--muted-faint)" }}>{sub}</p>
       </div>
-      <p className="ml-4 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
     </div>
   )
 }

@@ -139,69 +139,67 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
             <p className="text-xs mt-1">Data saldo akan terisi setelah manager menyetujui pengajuan DP lapak.</p>
           </div>
         ) : (
-          <div className="daftar-lapak">
-            {filtered.map((row, idx) => (
-              /* Sorotan hover dulu memakai hover:bg-slate-50 pada baris yang
-                 padding kirinya nol, jadi bidang abunya berhenti sebelum
-                 tepi kartu -- terlihat seperti separuh baris saja yang
-                 tersorot. Latar abu itu juga menindih warna kotak "sisa DP
-                 aktif" di dalamnya. Sorotannya kini memakai warna sistem
-                 dan menutupi seluruh lebar barisnya. */
-              <div
-                key={row.supplierId}
-                className="baris-lapak flex flex-col justify-between gap-4 px-[22px] py-4 lg:flex-row lg:items-center"
-              >
-                {/* Supplier Info */}
-                <div className="flex items-start gap-3 lg:w-1/4 min-w-0">
-                  {/* Nomor urut cukup angka, tanpa kotak. Kotak abu di
-                      sebelah nama membuat urutannya terbaca sepenting
-                      nama lapaknya sendiri. */}
-                  <span className="nomor-lapak">{idx + 1}</span>
-                  <div className="min-w-0">
-                    <div className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2 flex-wrap">
-                      {row.namaLapak}
-                      <span className="rounded-[8px] border px-2 py-0.5 text-[10px] font-bold" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
-                        {row.transaksiDp}x DP disetujui
-                      </span>
-                    </div>
-                    <span className="mt-1 block text-xs text-slate-400">
-                      Gudang: <span className="font-bold text-slate-600">{namaGudang(row.warehouseName)}</span>
-                    </span>
-                  </div>
-                </div>
+          /* Bentuknya disamakan dengan daftar di Analisis Susut: satu baris
+             tabel per lapak, bukan kartu bertumpuk.
 
-                {/* Timbangan / DP values */}
-                <div className="blok-angka grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div className="kotak-angka">
-                    <span className="kotak-label">DP Disetujui</span>
-                    <span className="kotak-nilai font-mono">{fmtRp(row.totalDp)}</span>
-                  </div>
+             Isinya memang jenis yang sama -- beberapa angka sejenis untuk
+             sederet lapak, yang dibaca dengan cara membandingkan lapak satu
+             sama lain. Dalam bentuk kartu, tiap angka duduk di kotaknya
+             sendiri dan tidak sebaris dengan angka lapak lain, jadi
+             membandingkan "siapa yang paling banyak menggantung" menuntut
+             membaca kotak per kotak. Berbaris menurun, jawabannya terlihat
+             tanpa dibaca satu-satu.
 
-                  <div className="kotak-angka">
-                    <span className="kotak-label">Terpakai</span>
-                    <span className="kotak-nilai font-mono">{fmtRp(row.totalUsed)}</span>
-                  </div>
-
-                  {/* Kuning hanya kalau memang ada yang menggantung; nol
-                      berarti tidak ada yang perlu ditagih balik. */}
-                  <div className={`kotak-angka${row.sisaDp > 0 ? " tone-warning" : ""}`}>
-                    <span className="kotak-label">Masih Menggantung</span>
-                    <span className="kotak-nilai font-mono">{fmtRp(row.sisaDp)}</span>
-                  </div>
-                </div>
-
-                {/* View Detail Link to Supplier page */}
-                <div className="flex items-center justify-end lg:w-40 shrink-0">
-                  <a
-                    href={`/dashboard/manager/suppliers/${row.supplierId}`}
-                    className="btn-netral premium-button flex w-full items-center justify-center gap-1 px-4 py-2.5 text-xs sm:w-auto"
-                  >
-                    Detail Lapak
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            ))}
+             Dua layar yang menampilkan hal sejenis juga sebaiknya
+             berbentuk sama, supaya tidak perlu dipelajari dua kali. */
+          <div className="overflow-x-auto">
+            <table className="tabel-lembut w-full table-fixed text-sm">
+              <thead>
+                <tr>
+                  <th className="kolom-tengah w-12">No</th>
+                  <th className="kolom-kiri w-[30%]">Lapak</th>
+                  <th className="kolom-kanan w-[16%]">DP Disetujui</th>
+                  <th className="kolom-kanan w-[16%]">Terpakai</th>
+                  <th className="kolom-tengah w-[19%]">Masih Menggantung</th>
+                  <th className="kolom-tengah w-36">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((row, idx) => (
+                  <tr key={row.supplierId}>
+                    <td className="kolom-tengah font-mono text-xs" style={{ color: "var(--muted-faint)" }}>{idx + 1}</td>
+                    <td className="kolom-kiri">
+                      <div className="truncate font-bold" style={{ color: "var(--foreground)" }} title={row.namaLapak}>{row.namaLapak}</div>
+                      <div className="mt-0.5 truncate text-[11px]" style={{ color: "var(--muted-faint)" }}>
+                        {namaGudang(row.warehouseName)} &middot; {row.transaksiDp}x DP disetujui
+                      </div>
+                    </td>
+                    <td className="kolom-kanan whitespace-nowrap font-mono tabular-nums" style={{ color: "var(--muted)" }}>{fmtRp(row.totalDp)}</td>
+                    <td className="kolom-kanan whitespace-nowrap font-mono tabular-nums" style={{ color: "var(--muted)" }}>{fmtRp(row.totalUsed)}</td>
+                    {/* Kuning hanya kalau memang ada yang menggantung. Nol
+                        berarti seluruh DP sudah jadi barang, jadi tidak ada
+                        yang perlu ditagih balik -- dan menuliskannya sebagai
+                        "Rp 0" berwarna membuat baris yang justru paling
+                        beres terbaca seperti perlu diperiksa. */}
+                    <td
+                      className="kolom-tengah whitespace-nowrap font-mono font-bold tabular-nums"
+                      style={{ color: row.sisaDp > 0 ? "var(--warning)" : "var(--muted-faint)" }}
+                    >
+                      {row.sisaDp > 0 ? fmtRp(row.sisaDp) : "Sudah habis terpakai"}
+                    </td>
+                    <td className="kolom-tengah">
+                      <a
+                        href={`/dashboard/manager/suppliers/${row.supplierId}`}
+                        className="btn-netral premium-button inline-flex items-center gap-1 whitespace-nowrap px-3 py-1.5 text-xs"
+                      >
+                        Detail Lapak
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

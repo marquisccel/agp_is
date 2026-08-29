@@ -1486,91 +1486,11 @@ a:focus-visible {
   border-color: var(--danger-soft);
 }
 
-/* Baris lapak pada rekap. Sorotannya memakai warna sistem dan menutupi
-   seluruh lebar baris; versi sebelumnya memakai abu Tailwind pada baris
-   tanpa padding kiri, sehingga bidangnya berhenti sebelum tepi kartu dan
-   menindih warna kotak di dalamnya. */
-.baris-lapak { transition: background-color 160ms var(--ease-system); }
-.baris-lapak:hover { background: var(--bg-tint); }
-
-/* Garis pemisahnya setipis garis baris tabel, bukan setegas garis tepi
-   kartu. Dengan ketebalan penuh, pemisah antar lapak terbaca sama kuat
-   dengan isinya sendiri -- padahal tugasnya cuma memisahkan. Baris
-   terakhir tidak bergaris: tepi kartunya sudah menutup. */
-.daftar-lapak > .baris-lapak + .baris-lapak {
-  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-}
-
-/* Kotak angka di dalam baris. Satu bentuk untuk semua rekap per lapak;
-   nada warnanya hanya menyala kalau angkanya memang ada. */
-.kotak-angka {
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  background: var(--surface-sunken);
-}
-
-.kotak-angka .kotak-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.kotak-angka .kotak-nilai {
-  display: block;
-  margin-top: 4px;
-  font-size: 15.5px;
-  font-weight: 800;
-  color: var(--foreground);
-}
-
-/* Garis pemisah tegak di dalam baris lapak: satu setelah nomor urut, satu
-   sebelum blok angka. Tanpa keduanya, nomor, nama lapak, dan deret
-   angkanya terbaca sebagai satu kalimat panjang; dengan garis, mata tahu
-   di mana tiap bagian berhenti. Hanya pada layar lebar -- saat baris
-   menumpuk ke bawah, garis tegak justru salah arah. */
-@media (min-width: 1024px) {
-  .baris-lapak > .blok-angka {
-    border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-    padding-left: 20px;
-  }
-
-  .baris-lapak .nomor-lapak {
-    border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-    padding-right: 14px;
-    margin-right: 2px;
-  }
-}
-
-/* Nomor urutnya sewarna nama lapaknya: abu terlalu pudar untuk angka yang
-   dipakai menyebut baris ("lapak nomor tiga"), sementara kotak abu di
-   sekelilingnya justru membuatnya terbaca sepenting namanya. */
-.baris-lapak .nomor-lapak {
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  min-width: 26px;
-  justify-content: flex-end;
-  font-size: 13.5px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--foreground);
-}
-
-.kotak-angka.tone-warning { background: var(--warning-soft); }
-.kotak-angka.tone-warning .kotak-label,
-.kotak-angka.tone-warning .kotak-nilai { color: var(--warning); }
-
-.kotak-angka.tone-success { background: var(--success-soft); }
-.kotak-angka.tone-success .kotak-label,
-.kotak-angka.tone-success .kotak-nilai { color: var(--success); }
-
-.kotak-angka.tone-danger { background: var(--danger-soft); }
-.kotak-angka.tone-danger .kotak-label,
-.kotak-angka.tone-danger .kotak-nilai { color: var(--danger); }
+/* Bentuk baris-lapak/kotak-angka untuk rekap per lapak dibuang di
+   sini: Rekap DP adalah pemakai terakhirnya, dan sekarang layar itu
+   memakai tabel yang sama dengan Analisis Susut. Menyimpan bentuk kedua
+   yang tidak dipakai siapa pun cuma menyisakan pilihan yang harus
+   ditimbang lagi lain kali. */
 
 /* Batang penanda gambar latar di halaman masuk, terisi seiring waktu
    tunggu sebelum gambarnya berganti. */
