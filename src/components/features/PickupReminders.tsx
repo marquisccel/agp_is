@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 
 interface Supplier {
   id: string
@@ -11,22 +11,29 @@ interface Supplier {
 }
 
 export default function PickupReminders({ suppliers }: { suppliers: Supplier[] }) {
-  const [reminders, setReminders] = useState<Supplier[]>([])
   const [dismissed, setDismissed] = useState<string[]>([])
 
-  useEffect(() => {
+  /*
+   * Daftarnya DITURUNKAN dari prop, bukan disalin ke state lewat effect.
+   *
+   * Bentuk lamanya menyimpan hasil saringan di state lalu mengisinya dari
+   * useEffect. Artinya render pertama selalu menampilkan daftar kosong,
+   * baru render kedua menampilkan isinya -- kartu pengingat berkedip
+   * muncul sesaat setelah halaman tampil. Nilai yang bisa dihitung dari
+   * prop tidak perlu jadi state; ia cuma menambah satu salinan yang bisa
+   * ketinggalan zaman.
+   */
+  const reminders = useMemo(() => {
     const indonesianDays = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
     const todayIndex = new Date().getDay()
     const tomorrowIndex = (todayIndex + 1) % 7
-    const tomorrowName = indonesianDays[tomorrowIndex]
+    const tomorrowName = indonesianDays[tomorrowIndex].toLowerCase()
 
-    const tomorrowPickups = suppliers.filter(s => {
+    return suppliers.filter(s => {
       if (!s.hari_ambilan) return false
       const days = s.hari_ambilan.split(",").map(d => d.trim().toLowerCase())
-      return days.includes(tomorrowName.toLowerCase())
+      return days.includes(tomorrowName)
     })
-
-    setReminders(tomorrowPickups)
   }, [suppliers])
 
   const formatWaLink = (phone: string, name: string) => {

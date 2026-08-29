@@ -19,6 +19,33 @@ type Row = {
 }
 
 /**
+ * Bentuk kueri yang benar-benar dipakai kode yang diuji.
+ *
+ * Sengaja bukan tipe Prisma yang asli: tiruan ini hanya perlu memahami
+ * sebagian kecil dari bahasa kuerinya, dan menirukan seluruh tipe Prisma
+ * justru membuat tiruannya lebih rumit daripada yang diuji. Yang penting,
+ * kalau kode yang diuji mulai memakai bentuk kueri di luar daftar ini,
+ * pemeriksaan tipe akan langsung menolaknya -- yang tidak akan terjadi
+ * kalau parameternya dibiarkan `any`.
+ */
+type KueriCari = {
+  where: {
+    supplierId?: string
+    status_approval?: string
+    sisa_dp?: { gt?: number }
+    dp_used_amount?: { gt?: number }
+  }
+  orderBy?: Record<string, "asc" | "desc">[]
+}
+
+type NilaiUbah = number | string | null | { increment: number } | { decrement: number }
+
+type KueriUbah = {
+  where: { id: string }
+  data: Record<string, NilaiUbah>
+}
+
+/**
  * Transaction client tiruan dengan tabel DownPayment di memori.
  * Cukup untuk menguji logika alokasi tanpa perlu basis data nyata.
  */
@@ -36,7 +63,7 @@ function fakeTx(rows: Partial<Row>[]) {
 
   const client = {
     downPayment: {
-      async findMany({ where, orderBy }: any) {
+      async findMany({ where, orderBy }: KueriCari) {
         let out = db.filter((r) => {
           if (where.supplierId && r.supplierId !== where.supplierId) return false
           if (where.status_approval && r.status_approval !== where.status_approval) return false
@@ -51,13 +78,14 @@ function fakeTx(rows: Partial<Row>[]) {
         }
         return out
       },
-      async update({ where, data }: any) {
+      async update({ where, data }: KueriUbah) {
         const row = db.find((r) => r.id === where.id)
         if (!row) throw new Error(`record not found: ${where.id}`)
-        for (const [k, v] of Object.entries<any>(data)) {
-          if (v && typeof v === "object" && "increment" in v) (row as any)[k] += v.increment
-          else if (v && typeof v === "object" && "decrement" in v) (row as any)[k] -= v.decrement
-          else (row as any)[k] = v
+        for (const [k, v] of Object.entries(data)) {
+          const kolom = k as keyof Row
+          if (typeof v === "object" && v !== null && "increment" in v) (row[kolom] as number) += v.increment
+          else if (typeof v === "object" && v !== null && "decrement" in v) (row[kolom] as number) -= v.decrement
+          else row[kolom] = v as never
         }
         return row
       },

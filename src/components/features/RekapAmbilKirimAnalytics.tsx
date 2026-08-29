@@ -156,7 +156,6 @@ export default function RekapAmbilKirimAnalytics({
   // Basis persentase = hanya transaksi yang modenya tercatat.
   const tercatatVolume = total.ambilVolume + total.kirimVolume
   const ambilPct = tercatatVolume > 0 ? (total.ambilVolume / tercatatVolume) * 100 : 0
-  const kirimPct = tercatatVolume > 0 ? (total.kirimVolume / tercatatVolume) * 100 : 0
   const adaTercatat = tercatatVolume > 0
 
   return (

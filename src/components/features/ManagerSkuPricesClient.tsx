@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { pesanError } from "@/lib/pesanError"
 
 interface WarehouseData {
   id: string
@@ -64,8 +65,8 @@ export default function ManagerSkuPricesClient({ warehouses, allSkus }: { wareho
 
       setSuccess(`Berhasil menyimpan pengaturan harga untuk gudang terpilih.`)
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(pesanError(err))
     } finally {
       setSaving(false)
       setTimeout(() => setSuccess(""), 3000)

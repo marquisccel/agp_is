@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 
 // ─────────────────────────────────────────────────────
 // Helper: format angka Indonesia (5000 → 5.000)
@@ -139,12 +139,20 @@ export default function ManagerCalendar({ calendarData, selectedBulan, selectedT
   const [selectedDay, setSelectedDay] = useState<DayActivity | null>(null)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
 
-  useEffect(() => {
+  /*
+   * Bulan yang ditampilkan mengikuti penyaring di atas halaman. Diselaraskan
+   * saat render, bukan lewat useEffect: dengan effect, kalender sempat
+   * tergambar sekali pada bulan lama sebelum melompat ke bulan yang baru
+   * dipilih, dan lompatan itu terlihat sebagai kedipan.
+   */
+  const [penyaringTerakhir, setPenyaringTerakhir] = useState({ bulan: selectedBulan, tahun: selectedTahun })
+  if (penyaringTerakhir.bulan !== selectedBulan || penyaringTerakhir.tahun !== selectedTahun) {
+    setPenyaringTerakhir({ bulan: selectedBulan, tahun: selectedTahun })
     if (selectedTahun !== undefined) setViewYear(selectedTahun)
     if (selectedBulan !== undefined) setViewMonth(selectedBulan - 1)
     setSelectedDay(null)
     setHoveredKey(null)
-  }, [selectedBulan, selectedTahun])
+  }
 
   const dataMap = useMemo(() => {
     const m: Record<string, DayActivity> = {}

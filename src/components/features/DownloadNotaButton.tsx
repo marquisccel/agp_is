@@ -2,15 +2,11 @@
 
 import { PDFDownloadLink } from "@react-pdf/renderer"
 import NotaPDF from "./NotaPDF"
-import { useState, useEffect } from "react"
 import type { PurchaseDTO } from "@/types/purchase"
+import { useSudahDiKlien } from "@/lib/useSudahDiKlien"
 
 export default function DownloadNotaButton({ purchase, qrCodeUrl }: { purchase: PurchaseDTO, qrCodeUrl: string }) {
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
+  const isClient = useSudahDiKlien()
 
   if (!isClient) return <button className="px-4 py-2 bg-slate-200 rounded animate-pulse">Loading PDF...</button>
 

@@ -21,6 +21,7 @@ import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import { hasResolvedSupplierCoordinates, isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 import { namaGudang } from "@/lib/namaGudang"
 import { hitungGradeLapak } from "@/lib/gradeLapak"
+import { pesanError } from "@/lib/pesanError"
 
 interface SkuPriceStandard {
   id: string
@@ -166,8 +167,8 @@ export default function ManagerSuppliersClient({
       setSuppliers((current) => current.filter((s) => s.id !== id))
       toast("Data lapak berhasil dihapus.")
       router.refresh()
-    } catch (err: any) {
-      toast(err.message, "error")
+    } catch (err) {
+      toast(pesanError(err), "error")
     } finally {
       setDeletingId(null)
     }
@@ -256,8 +257,8 @@ export default function ManagerSuppliersClient({
       )
 
       handleCloseLocationEditor()
-    } catch (error: any) {
-      setLocationError(error.message || "Gagal menyimpan lokasi supplier")
+    } catch (error) {
+      setLocationError(pesanError(error, "Gagal menyimpan lokasi supplier"))
       setSavingLocation(false)
     }
   }
@@ -303,8 +304,8 @@ export default function ManagerSuppliersClient({
         throw new Error(data.error || "Gagal memproses import koordinat.")
       }
       setImportResults(data.results)
-    } catch (error: any) {
-      setImportError(error.message || "Gagal memproses import koordinat.")
+    } catch (error) {
+      setImportError(pesanError(error, "Gagal memproses import koordinat."))
     } finally {
       setImporting(false)
     }

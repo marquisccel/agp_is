@@ -1,11 +1,12 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState } from "react"
 import { PDFDownloadLink } from "@react-pdf/renderer"
 import NotaPDF from "./NotaPDF"
 import type { PurchaseDTO } from "@/types/purchase"
 import { useToast } from "@/components/ui/Toast"
 import { skemaPembayaran, statusPembayaran } from "@/lib/paymentStatus"
+import { useSudahDiKlien } from "@/lib/useSudahDiKlien"
 
 // ── Format helpers ──
 function fmtRp(n: number) {
@@ -238,12 +239,10 @@ export default function NotaViewerClient({
   qrCodeUrl: string
 }) {
   const notaRef = useRef<HTMLDivElement>(null)
-  const [isClient, setIsClient] = useState(false)
+  const isClient = useSudahDiKlien()
   const [jpgLoading, setJpgLoading] = useState(false)
   const [jpgUrl, setJpgUrl] = useState<string | null>(null)
   const { toast, host: toastHost } = useToast()
-
-  useEffect(() => { setIsClient(true) }, [])
 
   // ── Capture JPG using html2canvas ──
   const captureJpg = async (): Promise<string | null> => {

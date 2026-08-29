@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Purchase, PurchaseItem, SkuPriceStandard, Warehouse } from "@prisma/client"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
+import { pesanError } from "@/lib/pesanError"
 
 type PurchaseForApproval = Purchase & {
   items: PurchaseItem[]
@@ -43,8 +44,8 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
 
       router.push("/dashboard/manager/approval-harga")
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(pesanError(err))
       setLoading(false)
     }
   }

@@ -10,6 +10,7 @@ import { fmtDigitInput, fmtRp, fmtSkalaRupiah } from "@/lib/format"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 import NumberInput from "@/components/ui/NumberInput"
 import StandarHargaSku, { type StandarHarga } from "@/components/features/StandarHargaSku"
+import { pesanError } from "@/lib/pesanError"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
@@ -218,8 +219,8 @@ export default function PurchaseForm({
       setBeratPotonganKarung(0)
       setHargaPotonganKarung(0)
       setDpDigunakan("")
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(pesanError(err))
     } finally {
       setLoading(false)
     }

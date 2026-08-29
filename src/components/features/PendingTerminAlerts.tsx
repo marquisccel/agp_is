@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Check, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
+import { pesanError } from "@/lib/pesanError";
 
 interface PendingTermin {
   id: string;
@@ -70,8 +71,8 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
           const d = await res.json();
           toast(d.error || "Gagal menyelesaikan pelunasan", "error");
         }
-      } catch (e: any) {
-        toast(e.message || "Terjadi kesalahan koneksi", "error");
+      } catch (e) {
+        toast(pesanError(e, "Terjadi kesalahan koneksi"), "error");
       } finally {
         setLoadingId(null);
       }

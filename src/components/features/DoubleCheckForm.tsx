@@ -8,6 +8,7 @@ import PotonganFields, { type BarisPotongan } from "@/components/features/Potong
 import NumberInput from "@/components/ui/NumberInput"
 import { fmtRp } from "@/lib/format"
 import StandarHargaSku, { standarHargaSku, type StandarHarga } from "@/components/features/StandarHargaSku"
+import { pesanError } from "@/lib/pesanError"
 
 type PurchaseForDoubleCheck = Purchase & {
   items: PurchaseItem[]
@@ -173,8 +174,8 @@ export default function DoubleCheckForm({
 
       router.push(successRedirect)
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(pesanError(err))
       setLoading(false)
     }
   }

@@ -451,7 +451,11 @@ function BarisKomposisi({
         style={{ paddingLeft: geser }}
       >
         <span className="tabular-nums" style={{ color: warna }}>{nilai}</span>
-        <span style={{ color: "var(--foreground)" }}> {satuan}</span>
+        {/* Satuannya lebih kecil daripada angkanya. Sama besar, kata
+            "lapak" menuntut perhatian yang sama dengan angkanya --
+            padahal ia sama di ketiga kolom dan tidak membawa kabar apa
+            pun; yang berbeda cuma angkanya. */}
+        <span className="ml-1 text-[15px] font-bold" style={{ color: "var(--foreground)" }}>{satuan}</span>
       </p>
       <p className="mt-2 text-[12px] leading-none" style={{ color: "var(--muted-faint)", paddingLeft: geser }}>{sub}</p>
     </div>

@@ -9,6 +9,7 @@ import ElegantSelect from "@/components/ui/ElegantSelect"
 import PageHeader from "@/components/ui/PageHeader"
 import { getWorkingDaysInMonth } from "@/lib/workingDays"
 import { namaGudang } from "@/lib/namaGudang"
+import { pesanError } from "@/lib/pesanError"
 
 interface TargetValues {
   pet_bulanan: string
@@ -217,8 +218,8 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
       // nilainya dipegang state komponen, bukan langsung dari prop.
       await muatTarget(false)
       router.refresh()
-    } catch (error: any) {
-      setErrorMap((prev) => ({ ...prev, [warehouseId]: error.message || "Gagal menyimpan. Coba lagi." }))
+    } catch (error) {
+      setErrorMap((prev) => ({ ...prev, [warehouseId]: pesanError(error, "Gagal menyimpan. Coba lagi.") }))
     } finally {
       setSaving(null)
     }

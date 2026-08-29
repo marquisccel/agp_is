@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { fmtRp } from "@/lib/format"
+import { pesanError } from "@/lib/pesanError"
 
 interface DPSummaryItem {
   supplierId: string
@@ -26,8 +27,8 @@ export default function RemainingKasbonList() {
         const json = await res.json()
         // Filter only those with outstanding remaining kasbon
         setData(json.filter((item: DPSummaryItem) => item.remaining > 0))
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(pesanError(err))
       } finally {
         setLoading(false)
       }

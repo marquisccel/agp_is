@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { denganPemisahRibuan, isianAwal, ketik, ketikRibuan, sinkronDariLuar } from "@/lib/numericField"
 
 /**
@@ -43,9 +43,18 @@ export default function NumberInput({ value, onValueChange, pemisahRibuan = fals
   // Nilai berubah dari luar (form direset, data dimuat ulang) -> teks
   // ikut ditimpa. Kalau nilainya sama dengan yang sedang diketik, teks
   // dibiarkan supaya "0." tidak terhapus di tengah ketikan.
-  useEffect(() => {
+  //
+  // Dikerjakan saat render, bukan di dalam useEffect. Lewat effect,
+  // React sempat menggambar sekali dengan teks lama sebelum menimpanya,
+  // jadi angka lama berkelip di kolom isian setiap kali form direset.
+  // Menyesuaikan state saat render adalah bentuk yang memang disediakan
+  // React untuk keadaan seperti ini: rendernya diulang sebelum apa pun
+  // sampai ke layar.
+  const [nilaiLuarTerakhir, setNilaiLuarTerakhir] = useState(value)
+  if (value !== nilaiLuarTerakhir) {
+    setNilaiLuarTerakhir(value)
     setKeadaan((sekarang) => sinkronDariLuar(sekarang, value))
-  }, [value])
+  }
 
   return (
     <input

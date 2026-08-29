@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { Lock, Save, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
 import PageHeader from "@/components/ui/PageHeader"
+import { pesanError } from "@/lib/pesanError"
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession()
@@ -24,13 +25,23 @@ export default function SettingsPage() {
   const [pwStatus, setPwStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [pwError, setPwError] = useState("")
 
-  // Load from session
-  useEffect(() => {
-    if (session?.user) {
-      setNama(session.user.name || "")
-      setEmail(session.user.email || "")
-    }
-  }, [session])
+  /*
+   * Isian diisi dari sesi, dan hanya saat sesi yang termuat berganti --
+   * bukan setiap kali objek session dibuat ulang oleh NextAuth.
+   *
+   * Bentuk lamanya memakai useEffect dengan [session] sebagai pemicu.
+   * Objek itu bisa berubah identitasnya tanpa isinya berubah, dan setiap
+   * kali itu terjadi isian yang sedang diketik pengguna tertimpa kembali
+   * ke nilai lama. Sekarang penandanya email pada sesi: ia hanya berubah
+   * kalau yang login memang berganti atau profilnya berhasil disimpan.
+   */
+  const emailSesi = session?.user?.email ?? null
+  const [sesiTermuat, setSesiTermuat] = useState<string | null>(null)
+  if (session?.user && emailSesi !== sesiTermuat) {
+    setSesiTermuat(emailSesi)
+    setNama(session.user.name || "")
+    setEmail(session.user.email || "")
+  }
 
   const handleProfileSave = async () => {
     if (!nama.trim() || !email.trim()) {
@@ -51,8 +62,8 @@ export default function SettingsPage() {
       await updateSession({ name: nama, email })
       setProfileStatus("success")
       setTimeout(() => setProfileStatus("idle"), 2500)
-    } catch (err: any) {
-      setProfileError(err.message)
+    } catch (err) {
+      setProfileError(pesanError(err))
       setProfileStatus("error")
     }
   }
@@ -88,8 +99,8 @@ export default function SettingsPage() {
       setConfirmPassword("")
       setPwStatus("success")
       setTimeout(() => setPwStatus("idle"), 2500)
-    } catch (err: any) {
-      setPwError(err.message)
+    } catch (err) {
+      setPwError(pesanError(err))
       setPwStatus("error")
     }
   }

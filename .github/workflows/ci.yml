@@ -10,6 +10,17 @@ on:
 
 env:
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/agp_is?schema=public"
+  # Prisma menuntut DIRECT_URL ada karena schema.prisma menyebutnya lewat
+  # `directUrl`, dan tuntutan itu berlaku saat MEMBACA schema -- bukan cuma
+  # saat menyambung. Tanpa baris ini, `prisma migrate deploy` di CI gagal
+  # dengan P1012 sebelum menyentuh basis data sama sekali.
+  #
+  # Isinya sengaja sama persis dengan DATABASE_URL. Pemisahan keduanya cuma
+  # dibutuhkan di Supabase, tempat sambungan yang dikumpulkan (port 6543)
+  # tidak bisa menjalankan migrasi sehingga migrasi perlu jalur langsung.
+  # Postgres milik CI dijalankan sendiri tanpa pengumpul sambungan, jadi
+  # satu alamat melayani keduanya.
+  DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/agp_is?schema=public"
   NEXTAUTH_URL: "http://localhost:3000"
   NEXTAUTH_SECRET: "ci-only-secret-not-for-production"
 
