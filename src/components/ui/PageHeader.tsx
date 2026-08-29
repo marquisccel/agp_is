@@ -13,11 +13,12 @@ export default function PageHeader({
 }) {
   return (
     <section className="page-hero p-5 md:p-6">
-      {/* items-start, bukan items-center. Dengan center, tombol di kanan
-          berhenti di tengah blok tiga baris di kiri -- tidak sejajar dengan
-          apa pun, dan terbaca seperti melayang. Dengan start keduanya
-          berbagi satu tepi atas, dan itulah garis yang dilihat mata. */}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+      {/* items-center. Sempat dicoba items-start supaya kedua kolom berbagi
+          tepi atas, tapi hasilnya tombol sejajar dengan eyebrow -- baris
+          terkecil di blok kiri -- sehingga terbaca menggantung jauh di atas
+          judulnya. Di tengah, tombol berada setinggi judul, dan itu yang
+          dicari mata. */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="min-w-0">
           {eyebrow && (
             <p className="mb-2 text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--brand-strong)" }}>

@@ -51,8 +51,12 @@ function SidebarContent({
 }) {
   return (
     <>
-      <div className="px-4 py-5 border-b border-slate-200/70">
-        <div className="flex items-center gap-3">
+      {/* h-20, tinggi yang sama persis dengan topbar di sebelah kanannya.
+          Sebelumnya tingginya dihitung dari padding dan berakhir di 78px
+          sementara topbar dipatok 80px, sehingga kedua garis bawahnya
+          meleset dua pixel dan sudut kiri atas terbaca miring. */}
+      <div className="flex h-20 items-center border-b border-slate-200/70 px-4">
+        <div className="flex min-w-0 items-center gap-3">
           <AgpMark size={40} className="flex-shrink-0" />
           <div className="min-w-0">
             <h1 className="text-sm font-black text-slate-950 leading-tight truncate">AGP IS</h1>

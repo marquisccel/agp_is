@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Check, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
-import NumberInput from "@/components/ui/NumberInput";
 
 interface PendingTermin {
   id: string;
@@ -43,24 +42,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
   // tombolnya membuka pemilih berkas dulu, bukan langsung mengirim.
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  /*
-   * Nominal yang sedang diketik per nota. Kosong berarti "bayar semuanya",
-   * yaitu perilaku lama.
-   */
-  const [nominalBayar, setNominalBayar] = useState<Record<string, number>>({});
 
-  /*
-   * Baris mana yang kolom cicilannya sedang dibuka.
-   *
-   * Kolomnya disembunyikan secara bawaan karena melunasi sekaligus adalah
-   * kejadian yang biasa, sedangkan mencicil jarang. Ditampilkan terus,
-   * kotak itu justru membuat angka yang sama muncul dua kali dan membuat
-   * tiap baris jadi tinggi.
-   *
-   * Tetap ADA, bukan dibuang: komponen ini satu-satunya tempat di seluruh
-   * sistem yang bisa mencatat pembayaran sebagian.
-   */
-  const [cicilTerbuka, setCicilTerbuka] = useState<Record<string, boolean>>({});
 
   const handleSettle = (id: string, file: File) => {
     setLoadingId(id);
@@ -68,8 +50,9 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
       try {
         const body = new FormData();
         body.append("nota", file);
-        const nominal = nominalBayar[id];
-        if (nominal && nominal > 0) body.append("nominal", String(nominal));
+        // Nominal sengaja tidak dikirim: kartu ini selalu melunasi sisa
+        // penuh. API-nya tetap menerima pembayaran sebagian, tapi tidak ada
+        // lagi tampilan yang memanggilnya.
         const res = await fetch(`/api/purchases/${id}/settle`, { method: "POST", body });
         if (res.ok) {
           const hasil = await res.json();
@@ -80,7 +63,6 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
             setAlerts((current) =>
               current.map((a) => (a.id === id ? { ...a, nominal_belum_lunas: hasil.sisa } : a)),
             );
-            setNominalBayar((current) => ({ ...current, [id]: 0 }));
             toast(`Pembayaran dicatat. Sisa ${formatRp(hasil.sisa)}.`);
           }
           router.refresh();
@@ -136,8 +118,6 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
       <div className="space-y-2.5">
         {alerts.map((alert) => {
           const tanggal = new Date(alert.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
-          const terbuka = cicilTerbuka[alert.id] === true;
-          const diketik = nominalBayar[alert.id] ?? alert.nominal_belum_lunas;
 
           return (
             <div
@@ -171,58 +151,21 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                 />
 
                 {/* Angka kurangnya berdiri sebagai teks, bukan di dalam
-                    kotak isian. Kotak membuatnya terbaca seperti sesuatu
-                    yang harus diisi lebih dulu, padahal yang biasa terjadi
-                    adalah melunasi seluruhnya dengan sekali klik.
+                    kotak isian, dan rata tengah supaya label serta angkanya
+                    bertumpuk di satu sumbu. Ini satu-satunya angka di baris
+                    ini, jadi ia yang boleh paling menonjol.
 
-                    Kata "Kurang" dipakai supaya sama dengan halaman
-                    Transfer Pembayaran; label sebelumnya, "Dibayar
-                    sekarang", ambigu antara jumlah yang sudah dibayar dan
-                    yang harus dibayar. */}
-                <div className="text-right">
-                  <span className="block text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: "var(--muted-faint)" }}>
+                    Kata "Kurang" dipakai supaya sama dengan halaman Transfer
+                    Pembayaran; label sebelumnya, "Dibayar sekarang", ambigu
+                    antara jumlah yang sudah dibayar dan yang harus dibayar. */}
+                <div className="min-w-[150px] text-center">
+                  <span className="block text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--muted-faint)" }}>
                     Kurang
                   </span>
-                  <span className="block font-mono text-sm font-black tabular-nums" style={{ color: "var(--warning)" }}>
+                  <span className="mt-0.5 block font-mono text-base font-black tabular-nums" style={{ color: "var(--warning)" }}>
                     {formatRp(alert.nominal_belum_lunas)}
                   </span>
-                  {!terbuka && (
-                    <button
-                      type="button"
-                      onClick={() => setCicilTerbuka((c) => ({ ...c, [alert.id]: true }))}
-                      className="mt-0.5 text-[10px] font-bold underline-offset-2 hover:underline"
-                      style={{ color: "var(--muted)" }}
-                    >
-                      Bayar sebagian
-                    </button>
-                  )}
                 </div>
-
-                {terbuka && (
-                  <div className="w-36">
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: "var(--muted-faint)" }}>
-                      Yang ditransfer
-                    </label>
-                    <NumberInput
-                      aria-label={`Nominal yang ditransfer ke ${alert.supplier.nama}`}
-                      pemisahRibuan
-                      className="field-input text-right font-mono text-xs"
-                      value={diketik}
-                      onValueChange={(n) => setNominalBayar((current) => ({ ...current, [alert.id]: n }))}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCicilTerbuka((c) => ({ ...c, [alert.id]: false }));
-                        setNominalBayar((c) => { const salin = { ...c }; delete salin[alert.id]; return salin });
-                      }}
-                      className="mt-1 block w-full text-right text-[10px] font-bold underline-offset-2 hover:underline"
-                      style={{ color: "var(--muted)" }}
-                    >
-                      Batal, lunasi semua
-                    </button>
-                  </div>
-                )}
 
                 <Link
                   href={`/nota/${alert.id}`}
@@ -235,7 +178,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                 <button
                   onClick={() => fileInputs.current[alert.id]?.click()}
                   disabled={isPending}
-                  className="btn-primer premium-button flex h-[42px] cursor-pointer items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-4 text-xs font-bold disabled:opacity-50"
+                  className="btn-netral premium-button flex h-[42px] cursor-pointer items-center justify-center gap-1.5 px-4 text-xs font-bold disabled:opacity-50"
                 >
                   {loadingId === alert.id ? (
                     <>
@@ -245,7 +188,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                   ) : (
                     <>
                       <Check className="h-4 w-4" />
-                      {terbuka ? "Catat Sebagian" : "Catat Pelunasan"}
+                      Catat Pelunasan
                     </>
                   )}
                 </button>

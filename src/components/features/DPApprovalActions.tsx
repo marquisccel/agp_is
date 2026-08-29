@@ -98,16 +98,18 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
    * utama, sisanya netral, dan yang merusak baru memerah saat disentuh.
    */
   return (
-    <div className="flex justify-end gap-2">
+    <div className="flex items-center justify-end gap-2">
       {dialog}
       {toastHost}
-      <button
-        onClick={() => handleAction("approve")}
-        disabled={loading}
-        className="btn-primer premium-button rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-bold disabled:opacity-50"
-      >
-        Setujui
-      </button>
+
+      {/* Ubah Nominal berdiri paling kiri dan tetap bertulisan, karena ia
+          membuka formulir dan bukan keputusan akhir. Setujui serta Tolak
+          jadi ikon: keduanya keputusan yang tidak bisa dibatalkan, dan
+          tombol berjejer bertuliskan kata membuat mata harus membaca ulang
+          tiap baris untuk menemukan mana yang mana.
+
+          Maksudnya tidak hilang: keduanya membawa title dan aria-label,
+          jadi tetap terbaca pembaca layar dan muncul saat disentuh kursor. */}
       <button
         onClick={() => setShowEdit(true)}
         disabled={loading}
@@ -115,6 +117,17 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
       >
         Ubah Nominal
       </button>
+
+      <button
+        onClick={() => handleAction("approve")}
+        disabled={loading}
+        title="Setujui pengajuan kasbon ini"
+        aria-label="Setujui pengajuan kasbon ini"
+        className="btn-primer premium-button grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] disabled:opacity-50"
+      >
+        <Check className="h-4 w-4" aria-hidden="true" />
+      </button>
+
       <button
         onClick={async () => {
           const ok = await confirm({
@@ -126,9 +139,11 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
           if (ok) handleAction("reject")
         }}
         disabled={loading}
-        className="btn-netral tone-danger premium-button px-3 py-1.5 text-xs disabled:opacity-50"
+        title="Tolak pengajuan kasbon ini"
+        aria-label="Tolak pengajuan kasbon ini"
+        className="btn-netral tone-danger premium-button grid h-8 w-8 place-items-center disabled:opacity-50"
       >
-        Tolak
+        <X className="h-4 w-4" aria-hidden="true" />
       </button>
     </div>
   )

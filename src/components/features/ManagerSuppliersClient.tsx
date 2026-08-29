@@ -405,17 +405,9 @@ export default function ManagerSuppliersClient({
               Filter performa berdasarkan gudang, periode, grade, dan kata kunci tanpa kehilangan konteks operasional.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500">Tonase periode ini</p>
-              <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums text-slate-900">{fmtKg(totalWeightFiltered)}</p>
-            </div>
-            <button
-              onClick={handleOpenImportModal}
-              className="premium-button btn-netral px-4 py-2 text-xs"
-            >
-              Import Koordinat
-            </button>
+          <div className="text-right">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500">Tonase periode ini</p>
+            <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums text-slate-900">{fmtKg(totalWeightFiltered)}</p>
           </div>
         </div>
 
@@ -457,7 +449,12 @@ export default function ManagerSuppliersClient({
               menyebut keadaannya "Aktif"/"Belum aktif". Satu layar, dua
               nama untuk hal yang sama. Warnanya tetap dipakai sebagai
               penanda, tapi kata yang membawa artinya. */}
-          <div className="segmented mt-4 inline-flex">
+          {/* Tombol Import Koordinat turun ke baris ini, sebaris dengan
+              deret penyaring status. Di kepala kartu ia berdiri sendirian di
+              pojok kanan atas, jauh dari apa pun yang berhubungan dengannya,
+              sementara ruang di kanan deret penyaring ini melompong. */}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="segmented inline-flex">
             <button
               onClick={() => setSelectedStatusFilter("all")}
               className={selectedStatusFilter === "all" ? "active" : ""}
@@ -478,6 +475,14 @@ export default function ManagerSuppliersClient({
             >
               Belum aktif ({redSupplierCount})
             </button>
+          </div>
+
+          <button
+            onClick={handleOpenImportModal}
+            className="premium-button btn-netral px-4 py-2 text-xs"
+          >
+            Import Koordinat
+          </button>
           </div>
         </div>
       </section>

@@ -63,14 +63,16 @@ export default async function DPApprovalManager() {
               <tr>
                 <th>Tanggal Pengajuan</th>
                 <th>Lapak</th>
+                <th>Alasan Pengajuan</th>
                 <th className="!text-right">Nominal Diajukan</th>
+                <th>Status</th>
                 <th className="!text-right">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {dps.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
+                  <td colSpan={6} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
                     Tidak ada pengajuan kasbon yang menunggu persetujuan.
                   </td>
                 </tr>
@@ -80,20 +82,29 @@ export default async function DPApprovalManager() {
                     <td className="whitespace-nowrap font-medium" style={{ color: "var(--foreground)" }}>
                       {new Date(dp.tanggal_permintaan).toLocaleDateString('id-ID', { dateStyle: "medium", timeZone: 'Asia/Jakarta' })}
                     </td>
-                    <td>
-                      <div className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</div>
-                      {/* Keterangannya dulu dibungkus kotak bertepi dan
-                          berlatar putih, sehingga tampak seperti kolom isian
-                          yang bisa diketik -- padahal cuma catatan pengaju.
-                          Sekarang sekadar teks abu. */}
-                      {dp.keterangan && (
-                        <div className="mt-1 max-w-xs text-xs italic" style={{ color: "var(--muted)" }}>
-                          &ldquo;{dp.keterangan}&rdquo;
-                        </div>
-                      )}
+                    <td className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
+                    {/* Alasan pengajuan berdiri sebagai kolomnya sendiri.
+                        Sebelumnya ia menumpuk di bawah nama lapak, sehingga
+                        satu sel memuat dua hal berbeda dan kolom di
+                        kanannya jadi tampak kosong. */}
+                    <td className="max-w-xs">
+                      {dp.keterangan
+                        ? <span className="text-xs italic" style={{ color: "var(--muted)" }}>&ldquo;{dp.keterangan}&rdquo;</span>
+                        : <span className="text-xs" style={{ color: "var(--muted-faint)" }}>Tidak diisi</span>}
                     </td>
                     <td className="whitespace-nowrap text-right font-mono text-base font-black" style={{ color: "var(--foreground)" }}>
                       Rp {dp.nominal_diajukan.toLocaleString('id-ID')}
+                    </td>
+                    {/* Kolom status. Seluruh baris di tabel ini memang
+                        menunggu keputusan, tapi tanpa kolomnya pembaca harus
+                        menyimpulkan itu dari judul kartu di atas. */}
+                    <td>
+                      <span
+                        className="whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold"
+                        style={{ background: "color-mix(in srgb, var(--warning) 14%, transparent)", color: "var(--warning)" }}
+                      >
+                        Menunggu persetujuan
+                      </span>
                     </td>
                     <td>
                       <DPApprovalActions dp={dp} />
