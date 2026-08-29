@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
-import { Search, Trash2, UserPlus } from "lucide-react"
+import { Check, MapPin, Search, Store, Trash2, UserPlus, X } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
@@ -215,12 +215,6 @@ function fmtRp(n: number) {
   return n.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })
 }
 
-/** "82%" dari sebagian dan keseluruhannya; "0%" kalau pembaginya nol. */
-function persen(bagian: number, total: number) {
-  if (!total) return "0%"
-  return `${Math.round((bagian / total) * 100)}%`
-}
-
 function fmtKg(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(2)} ton`
   return `${n.toFixed(1)} KG`
@@ -330,13 +324,21 @@ function DonatKomposisi({
           </div>
         </div>
 
-          <div className="space-y-4">
-            <BarisKomposisi warna="var(--success)" label="Aktif" nilai={aktif} sisi={persen(aktif, total)} sub="sudah bertransaksi" />
+          <div className="space-y-5">
+            <BarisKomposisi
+              warna="var(--success)"
+              ikon={<IkonLapak warna="var(--success)" keadaan="aktif" />}
+              label="Lapak aktif"
+              nilai={aktif}
+              satuan="lapak"
+              sub="sudah melakukan transaksi"
+            />
             <BarisKomposisi
               warna="var(--danger)"
+              ikon={<IkonLapak warna="var(--danger)" keadaan="belum" />}
               label="Belum aktif"
               nilai={belumAktif}
-              sisi={persen(belumAktif, total)}
+              satuan="lapak"
               sub={belumAktif > 0 ? "perlu aktivasi" : "semua sudah aktif"}
             />
           </div>
@@ -351,27 +353,46 @@ function DonatKomposisi({
             36% terbaca sebagai jarak yang jauh, padahal yang ingin
             ditunjukkan justru betapa sedikitnya. */}
         <div
-          className="w-full border-t pt-6 lg:w-auto lg:min-w-[248px] lg:max-w-[280px] lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10"
+          className="flex w-full items-center gap-5 border-t pt-6 lg:w-auto lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10"
           style={{ borderColor: "var(--border)" }}
         >
-          <span className="field-label" style={{ marginBottom: 0 }}>Kelengkapan koordinat</span>
-          <div className="mt-1.5 flex items-baseline gap-2">
-            <span className="text-2xl font-black leading-none tabular-nums" style={{ color: "var(--foreground)" }}>
-              {berkoordinat}
-            </span>
-            <span className="text-sm font-bold" style={{ color: "var(--muted-faint)" }}>
-              dari {total} lapak
-            </span>
-            <span className="ml-auto font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted-faint)" }}>
-              {persen(berkoordinat, total)}
-            </span>
+          {/* Cincin kedua, jauh lebih kecil daripada cincin komposisi.
+              Ukurannya yang membedakan keduanya: yang besar membagi seluruh
+              lapak, yang kecil cuma menyatakan satu cakupan. Kalau sama
+              besar, keduanya terbaca sama pentingnya. */}
+          <div className="relative shrink-0">
+            <svg width="86" height="86" viewBox="0 0 86 86" role="img" aria-label={`${berkoordinat} dari ${total} lapak sudah berkoordinat`}>
+              <g transform="rotate(-90 43 43)">
+                <circle cx="43" cy="43" r="36" fill="none" stroke="var(--bg-tint)" strokeWidth="9" />
+                {pKoordinat > 0 && (
+                  <circle
+                    cx="43" cy="43" r="36" fill="none" pathLength={100}
+                    stroke="var(--brand)" strokeWidth="9" strokeLinecap="round"
+                    strokeDasharray={`${pKoordinat} ${100 - pKoordinat}`}
+                  />
+                )}
+              </g>
+            </svg>
+            <div className="pointer-events-none absolute inset-0 grid place-items-center">
+              <MapPin className="h-6 w-6" style={{ color: "var(--brand-strong)" }} strokeWidth={2.25} />
+            </div>
           </div>
-          <div className="mt-3 h-[5px] w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
-            <div className="h-full rounded-full" style={{ width: `${pKoordinat}%`, background: "var(--brand)" }} />
+
+          <div className="min-w-0">
+            <span
+              className="block text-[10.5px] font-bold uppercase leading-none tracking-[0.1em]"
+              style={{ color: "var(--brand-strong)" }}
+            >
+              Kelengkapan koordinat
+            </span>
+            <p className="mt-2 whitespace-nowrap text-2xl font-black leading-none tracking-[-0.02em]">
+              <span className="tabular-nums" style={{ color: "var(--brand-strong)" }}>{berkoordinat}</span>
+              <span style={{ color: "var(--foreground)" }}> dari {total} lapak</span>
+            </p>
+            <p className="mt-2 text-[11px] leading-none" style={{ color: "var(--muted-faint)" }}>
+              {berkoordinat < total ? `${total - berkoordinat} lapak belum bisa ditampilkan di peta` : "Semua lapak siap dipetakan"}
+            </p>
           </div>
-          <p className="mt-2 text-[11px]" style={{ color: "var(--muted-faint)" }}>
-            {berkoordinat < total ? `${total - berkoordinat} lapak belum bisa ditampilkan di peta` : "Semua lapak siap dipetakan"}
-          </p>
         </div>
       </div>
     </div>
@@ -379,46 +400,79 @@ function DonatKomposisi({
 }
 
 /**
+ * Ikon lapak dengan penanda keadaannya: centang untuk yang sudah aktif,
+ * silang untuk yang belum.
+ *
+ * Penandanya ditempelkan ke ikon lapaknya, bukan berdiri sebagai ikon
+ * kedua di sebelahnya. Dua ikon berjajar terbaca sebagai dua hal;
+ * satu ikon bertanda terbaca sebagai satu hal yang punya keadaan -- dan
+ * itu memang yang dimaksud.
+ *
+ * Lingkaran penandanya diberi tepi sewarna latar kartu supaya tetap
+ * terpisah dari garis ikon di bawahnya, bukan menyatu jadi gumpalan.
+ */
+function IkonLapak({ warna, keadaan }: { warna: string; keadaan: "aktif" | "belum" }) {
+  return (
+    <span className="relative inline-flex shrink-0" aria-hidden="true">
+      <Store className="h-[15px] w-[15px]" style={{ color: warna }} strokeWidth={2.25} />
+      <span
+        className="absolute -bottom-[3px] -right-[4px] grid h-[11px] w-[11px] place-items-center rounded-full"
+        style={{ background: warna, boxShadow: "0 0 0 1.5px var(--surface)" }}
+      >
+        {keadaan === "aktif" ? (
+          <Check className="h-[7px] w-[7px] text-white" strokeWidth={5} />
+        ) : (
+          <X className="h-[7px] w-[7px] text-white" strokeWidth={5} />
+        )}
+      </span>
+    </span>
+  )
+}
+
+/**
  * Satu baris keterangan di samping cincin.
  *
- * Angkanya berdiri DULUAN, di kolom selebar tetap, lalu labelnya. Susunan
- * sebaliknya -- label di kiri, angka didorong ke kanan -- membuat jarak
- * antara keduanya berubah-ubah mengikuti lebar kartu, dan pada layar lebar
- * angkanya terdampar begitu jauh dari labelnya sampai mata harus melompat
- * untuk menghubungkan keduanya.
+ * Susunannya tiga tingkat: keadaannya dulu (ikon dan label kecil berwarna),
+ * lalu angkanya besar, lalu keterangannya kecil. Angka dan satuannya
+ * sengaja beda warna -- angkanya membawa keadaan, satuannya cuma menyebut
+ * apa yang dihitung, jadi tidak perlu ikut menyala.
  *
- * Kolom angka yang lebarnya tetap juga membuat 9 dan 2 rata di digit yang
- * sama, sehingga tingginya bisa dibandingkan sekilas.
+ * Bentuk sebelumnya menaruh label di kiri dan mendorong angka ke kanan.
+ * Jarak antara keduanya jadi berubah-ubah mengikuti lebar kartu, dan pada
+ * layar lebar angkanya terdampar begitu jauh dari labelnya sampai mata
+ * harus melompat untuk menghubungkan keduanya.
  */
 function BarisKomposisi({
   warna,
+  ikon,
   label,
   nilai,
-  sisi,
+  satuan,
   sub,
 }: {
   warna: string
+  ikon: ReactNode
   label: string
   nilai: number
-  sisi: string
+  satuan: string
   sub: string
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <span
-        className="w-8 shrink-0 text-right text-2xl font-black leading-none tabular-nums"
-        style={{ color: warna }}
-      >
-        {nilai}
-      </span>
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: warna }} aria-hidden="true" />
-          <span className="truncate text-sm font-bold leading-none" style={{ color: "var(--foreground)" }}>{label}</span>
-          <span className="font-mono text-[11px] font-bold leading-none tabular-nums" style={{ color: "var(--muted-faint)" }}>{sisi}</span>
-        </div>
-        <p className="mt-1.5 text-[11px] leading-none" style={{ color: "var(--muted-faint)" }}>{sub}</p>
+    <div>
+      <div className="flex items-center gap-2">
+        {ikon}
+        <span
+          className="text-[10.5px] font-bold uppercase leading-none tracking-[0.1em]"
+          style={{ color: warna }}
+        >
+          {label}
+        </span>
       </div>
+      <p className="mt-2 whitespace-nowrap text-2xl font-black leading-none tracking-[-0.02em]">
+        <span className="tabular-nums" style={{ color: warna }}>{nilai}</span>
+        <span style={{ color: "var(--foreground)" }}> {satuan}</span>
+      </p>
+      <p className="mt-2 text-[11px] leading-none" style={{ color: "var(--muted-faint)" }}>{sub}</p>
     </div>
   )
 }
