@@ -566,7 +566,6 @@ export default function ManagerSuppliersClient({
           {filteredSuppliers.map((supplier) => {
             const perf = supplier.performance
             const labelGudang = namaGudang(supplier.warehouse?.nama)
-            const targetLabel = supplier.target_bulanan_kg > 0 ? `${Math.min(perf.targetPct, 999).toFixed(0)}% dari target ${fmtTon(supplier.target_bulanan_kg)}` : "Target belum diatur"
 
             return (
               <article key={supplier.id} className="section section-body">
@@ -626,7 +625,9 @@ export default function ManagerSuppliersClient({
                 >
                   <Signal
                     label="Kuantitas"
-                    value={targetLabel}
+                    value={supplier.target_bulanan_kg > 0 ? `${Math.min(perf.targetPct, 999).toFixed(0)}%` : "-"}
+                    sub={supplier.target_bulanan_kg > 0 ? `dari target ${fmtTon(supplier.target_bulanan_kg)}` : "Target belum diatur"}
+                    proporsi={supplier.target_bulanan_kg > 0 ? perf.targetPct / 100 : undefined}
                     tone={perf.totalTransactions === 0 ? "neutral" : perf.targetPct >= 100 ? "good" : perf.targetPct >= 50 ? "neutral" : "warn"}
                   />
                   {/* Lapak tanpa transaksi sebelumnya menampilkan Susut dan
@@ -642,12 +643,14 @@ export default function ManagerSuppliersClient({
                       cocok, jadi netral -- sama dengan Analisis Susut. */}
                   <Signal
                     label="Susut"
-                    value={perf.totalTransactions > 0 ? (perf.pctSusut === 0 ? "Tidak ada" : `${perf.pctSusut.toFixed(2)}%`) : "Belum ada data"}
+                    value={perf.totalTransactions === 0 ? "-" : perf.pctSusut === 0 ? "0%" : `${perf.pctSusut.toFixed(2)}%`}
+                    sub={perf.totalTransactions === 0 ? "Belum ada data" : perf.pctSusut === 0 ? "Timbangan cocok" : `${fmtKg(perf.totalSusut)} tidak sampai gudang`}
                     tone={perf.totalTransactions === 0 || perf.pctSusut === 0 ? "neutral" : perf.pctSusut <= 3 ? "warn" : "bad"}
                   />
                   <Signal
                     label="Harga"
-                    value={perf.totalTransactions === 0 ? "Belum ada data" : perf.warningCount > 0 ? `${perf.warningCount} transaksi di atas limit` : "Dalam limit"}
+                    value={perf.totalTransactions === 0 ? "-" : perf.warningCount > 0 ? String(perf.warningCount) : "Aman"}
+                    sub={perf.totalTransactions === 0 ? "Belum ada data" : perf.warningCount > 0 ? "transaksi di atas standar" : "Semua di bawah standar"}
                     tone={perf.totalTransactions === 0 ? "neutral" : perf.warningCount > 0 ? "bad" : "good"}
                   />
                 </div>
@@ -944,14 +947,32 @@ function MiniMetric({ label, value, warna }: { label: string; value: string; war
  * latarnya rata dan warna hanya dipakai pada angkanya, yaitu satu-satunya
  * bagian yang memang berubah menurut keadaan.
  */
+/**
+ * Satu sinyal kesehatan lapak.
+ *
+ * Sebelumnya label dan nilainya nyaris sama besar, sehingga ketiga sinyal
+ * ini terbaca seperti baris catatan kaki -- padahal justru di sinilah
+ * jawaban atas "lapak ini bermasalah atau tidak".
+ *
+ * Sekarang angkanya yang menonjol, keterangannya turun jadi baris kecil di
+ * bawahnya, dan yang punya perbandingan diberi garis proporsi setipis dua
+ * pixel. Garis itu bukan hiasan: ia satu-satunya cara membaca "53% dari
+ * target" tanpa mengubahnya jadi angka di kepala.
+ */
 function Signal({
   label,
   value,
+  sub,
   tone,
+  proporsi,
 }: {
   label: string
   value: string
+  /** Keterangan kecil di bawah angka; boleh dikosongkan. */
+  sub?: string
   tone: "good" | "neutral" | "warn" | "bad"
+  /** 0..1. Kalau diisi, digambar sebagai garis proporsi di bawahnya. */
+  proporsi?: number
 }) {
   const warna = {
     good: "var(--success)",
@@ -961,9 +982,17 @@ function Signal({
   }[tone]
 
   return (
-    <div className="px-4 py-3" style={{ background: "var(--surface)" }}>
+    <div className="px-4 py-3.5" style={{ background: "var(--surface)" }}>
       <span className="field-label">{label}</span>
-      <p className="text-sm font-bold" style={{ color: warna }}>{value}</p>
+      <p className="mt-0.5 text-lg font-black leading-tight tabular-nums" style={{ color: warna }}>{value}</p>
+      {sub && (
+        <p className="mt-0.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
+      )}
+      {proporsi !== undefined && (
+        <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+          <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(proporsi, 0), 1) * 100}%`, background: warna }} />
+        </div>
+      )}
     </div>
   )
 }

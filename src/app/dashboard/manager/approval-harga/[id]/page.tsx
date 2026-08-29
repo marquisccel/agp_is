@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import ApprovalHargaForm from "@/components/features/ApprovalHargaForm"
 import PageHeader from "@/components/ui/PageHeader"
+import Link from "next/link"
 
 export default async function ApprovalHargaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -39,6 +40,15 @@ export default async function ApprovalHargaDetailPage({ params }: { params: Prom
             <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>
           </>
         }
+        actions={(
+          /* Halaman ini satu-satunya di alur Manager yang tidak punya jalan
+             kembali. Setelah menyetujui atau menolak, memang ada pengalihan
+             otomatis -- tapi kalau membukanya lalu memutuskan menunda,
+             satu-satunya jalan keluar adalah tombol Back peramban. */
+          <Link href="/dashboard/manager/approval-harga" className="btn-netral premium-button px-4 py-2.5 text-sm">
+            Kembali ke Approval Harga
+          </Link>
+        )}
       />
 
       <div className="section section-body">

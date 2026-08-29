@@ -366,6 +366,11 @@ a:focus-visible {
   box-shadow: var(--shadow-card);
 }
 
+/* Varian tiga kolom. Dipakai saat angkanya memang cuma tiga; dengan
+   grid empat kolom bawaan, kolom keempat kosong dan ketiga angkanya
+   terdorong ke kiri. */
+.stat-strip.strip-3 { grid-template-columns: repeat(3, 1fr); }
+
 .stat-tile {
   background: var(--surface);
   padding: 18px 20px;
@@ -1396,20 +1401,30 @@ a:focus-visible {
   color: var(--muted);
 }
 
-/* Tabel yang seluruh kolomnya rata tengah.
+/* Perataan per kolom.
 
-   Dipakai pada tabel yang isinya pendek dan seragam -- tanggal, nama, satu
-   nominal, satu pil status -- di mana campuran rata kiri dan rata kanan
-   justru membuat tiap kolom terbaca seperti berdiri sendiri-sendiri.
+   Ditulis sebagai kelas di CSS, bukan utilitas Tailwind per sel, karena
+   aturan .tabel-lembut thead th mengunci text-align: left dengan kekhususan
+   0-1-2: utilitas seperti .text-center (0-1-0) diam-diam tidak berlaku pada
+   judul kolomnya.
 
-   Ditulis sebagai kelas di CSS, bukan utilitas per sel, karena aturan
-   .tabel-lembut thead th mengunci text-align: left dengan kekhususan 0-1-2:
-   utilitas seperti .text-center (0-1-0) diam-diam tidak berlaku pada judul
-   kolomnya. */
-.tabel-lembut.tabel-tengah thead th,
-.tabel-lembut.tabel-tengah tbody td {
-  text-align: center;
-}
+   Aturan pemakaiannya:
+     kolom-kiri    identitas yang dibaca menurun -- tanggal, nama, lokasi.
+                   Tepi kiri yang lurus membuat mata bisa menyusurinya.
+     kolom-tengah  isi pendek dan seragam -- pil status, deret tombol.
+     kolom-kanan   angka. Digit satuan berbaris lurus sehingga besar
+                   kecilnya terbaca dari panjangnya, tanpa dibaca.
+
+   Sempat dicoba merata-tengahkan SELURUH kolom. Hasilnya nama lapak
+   melayang di tengah selnya dan tidak ada lagi tepi yang bisa disusuri. */
+.tabel-lembut thead th.kolom-kiri,
+.tabel-lembut tbody td.kolom-kiri { text-align: left; }
+
+.tabel-lembut thead th.kolom-tengah,
+.tabel-lembut tbody td.kolom-tengah { text-align: center; }
+
+.tabel-lembut thead th.kolom-kanan,
+.tabel-lembut tbody td.kolom-kanan { text-align: right; }
 
 .tabel-lembut thead th.kolom-aksi,
 .tabel-lembut tbody td.kolom-aksi {

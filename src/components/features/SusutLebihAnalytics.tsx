@@ -225,68 +225,73 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
             <p className="mt-1 text-xs">Data muncul setelah transaksi melewati proses verifikasi gudang.</p>
           </div>
         ) : (
-          <div className="daftar-lapak">
-            {sorted.map((row, idx) => {
-              return (
-                <div
-                  key={row.supplierId}
-                  className="baris-lapak flex flex-col justify-between gap-4 px-[22px] py-4 lg:flex-row lg:items-center"
-                >
-                  {/* Info Lapak */}
-                  <div className="flex min-w-0 items-start gap-3 lg:w-1/4">
-                    <span className="nomor-lapak">{idx + 1}</span>
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-900 sm:text-base">
-                        {row.namaLapak}
-                        <span className="rounded-[8px] border px-2 py-0.5 text-[10px] font-bold" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
-                          {row.transaksi}x Transaksi
-                        </span>
-                      </div>
-                      <span className="mt-1 block text-xs text-slate-400">
-                        Gudang: <span className="font-bold text-slate-600">{namaGudang(row.warehouseName)}</span>
-                      </span>
-                    </div>
-                  </div>
+          <div className="overflow-x-auto">
+            {/* Tabel, bukan deretan kartu berisi kotak angka.
+                Sebelumnya tiap baris memuat EMPAT kotak: Timbang Lapak,
+                Timbang Gudang, Susut, dan Lebih. Sembilan lapak berarti 36
+                kotak di satu layar, dan kotak "Lebih" hampir selalu berbunyi
+                "Tidak ada" -- seperempat lebar tiap baris dipakai untuk
+                mengatakan tidak ada apa-apa.
 
-                  {/* Rincian Timbangan */}
-                  <div className="blok-angka grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="kotak-angka">
-                      <span className="kotak-label">Timbang Lapak</span>
-                      <span className="kotak-nilai font-mono">{fmtKg(row.totalLapak)}</span>
-                    </div>
+                Susut dan Lebih kini satu kolom "Selisih". Keduanya memang
+                tidak mungkin muncul bersamaan pada lapak yang sama: berat di
+                gudang tidak bisa sekaligus lebih ringan dan lebih berat
+                daripada di lapak. Tandanya yang membedakan, minus untuk
+                susut dan plus untuk lebih.
 
-                    <div className="kotak-angka">
-                      <span className="kotak-label">Timbang Gudang</span>
-                      <span className="kotak-nilai font-mono">{fmtKg(row.totalGudang)}</span>
-                    </div>
-
-                    <div className={`kotak-angka${row.totalSusut > 0 ? " tone-danger" : ""}`}>
-                      <span className="kotak-label">Susut</span>
-                      <span className="kotak-nilai font-mono">
-                        {row.totalSusut > 0 ? `${fmtKg(row.totalSusut)} (${fmtPct(row.pctSusut)})` : "Tidak ada"}
-                      </span>
-                    </div>
-
-                    <div className={`kotak-angka${row.totalLebih > 0 ? " tone-success" : ""}`}>
-                      <span className="kotak-label">Lebih</span>
-                      <span className="kotak-nilai font-mono">
-                        {row.totalLebih > 0 ? `${fmtKg(row.totalLebih)} (${fmtPct(row.pctLebih)})` : "Tidak ada"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Aksi */}
-                  <div className="flex shrink-0 items-center justify-end lg:w-40">
-                    <button
-                      onClick={() => setSelectedLapak(row)}
-                      className="btn-netral premium-button flex w-full items-center justify-center gap-1.5 px-4 py-2.5 text-xs sm:w-auto"
-                    >
-                      Cek Detail
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
+                Dalam bentuk tabel, angka sejenis berbaris menurun sehingga
+                lapak mana yang paling banyak menyusut terbaca dari
+                panjangnya kolom, tanpa perlu membandingkan kotak per kotak. */}
+            <table className="tabel-lembut w-full text-sm">
+              <thead>
+                <tr>
+                  <th className="kolom-tengah w-12">#</th>
+                  <th className="kolom-kiri">Lapak</th>
+                  <th className="kolom-kanan">Timbang Lapak</th>
+                  <th className="kolom-kanan">Timbang Gudang</th>
+                  <th className="kolom-kanan">Selisih</th>
+                  <th className="kolom-tengah w-32">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((row, idx) => {
+                  const adaSusut = row.totalSusut > 0
+                  const adaLebih = row.totalLebih > 0
+                  return (
+                    <tr key={row.supplierId}>
+                      <td className="kolom-tengah font-mono text-xs" style={{ color: "var(--muted-faint)" }}>{idx + 1}</td>
+                      <td className="kolom-kiri">
+                        <div className="font-bold" style={{ color: "var(--foreground)" }}>{row.namaLapak}</div>
+                        <div className="mt-0.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>
+                          {namaGudang(row.warehouseName)} · {row.transaksi} transaksi
+                        </div>
+                      </td>
+                      <td className="kolom-kanan whitespace-nowrap font-mono tabular-nums" style={{ color: "var(--muted)" }}>{fmtKg(row.totalLapak)}</td>
+                      <td className="kolom-kanan whitespace-nowrap font-mono tabular-nums" style={{ color: "var(--muted)" }}>{fmtKg(row.totalGudang)}</td>
+                      {/* Nadanya mengikuti keadaan: memerah hanya kalau ada
+                          yang menyusut, menghijau kalau justru berlebih, dan
+                          abu kalau timbangannya cocok. */}
+                      <td className="kolom-kanan whitespace-nowrap font-mono font-bold tabular-nums"
+                          style={{ color: adaSusut ? "var(--danger)" : adaLebih ? "var(--success)" : "var(--muted-faint)" }}>
+                        {adaSusut
+                          ? `-${fmtKg(row.totalSusut)} (${fmtPct(row.pctSusut)})`
+                          : adaLebih
+                            ? `+${fmtKg(row.totalLebih)} (${fmtPct(row.pctLebih)})`
+                            : "Timbangan cocok"}
+                      </td>
+                      <td className="kolom-tengah">
+                        <button
+                          onClick={() => setSelectedLapak(row)}
+                          className="btn-netral premium-button whitespace-nowrap px-3 py-1.5 text-xs"
+                        >
+                          Cek Detail
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

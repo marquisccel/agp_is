@@ -55,15 +55,15 @@ export default async function DPApprovalManager() {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="tabel-lembut tabel-tengah text-sm text-slate-600">
+          <table className="tabel-lembut text-sm text-slate-600">
             <thead>
               <tr>
-                <th>Tanggal Pengajuan</th>
-                <th>Lapak</th>
-                <th>Alasan Pengajuan</th>
-                <th>Nominal Diajukan</th>
-                <th>Status</th>
-                <th>Aksi</th>
+                <th className="kolom-kiri">Tanggal Pengajuan</th>
+                <th className="kolom-kiri">Lapak</th>
+                <th className="kolom-kiri">Alasan Pengajuan</th>
+                <th className="kolom-kanan">Nominal Diajukan</th>
+                <th className="kolom-tengah">Status</th>
+                <th className="kolom-tengah">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -76,26 +76,26 @@ export default async function DPApprovalManager() {
               ) : (
                 dps.map((dp) => (
                   <tr key={dp.id}>
-                    <td className="whitespace-nowrap font-medium" style={{ color: "var(--foreground)" }}>
+                    <td className="kolom-kiri whitespace-nowrap font-medium" style={{ color: "var(--foreground)" }}>
                       {new Date(dp.tanggal_permintaan).toLocaleDateString('id-ID', { dateStyle: "medium", timeZone: 'Asia/Jakarta' })}
                     </td>
-                    <td className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
+                    <td className="kolom-kiri font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
                     {/* Alasan pengajuan berdiri sebagai kolomnya sendiri.
                         Sebelumnya ia menumpuk di bawah nama lapak, sehingga
                         satu sel memuat dua hal berbeda dan kolom di
                         kanannya jadi tampak kosong. */}
-                    <td className="max-w-xs">
+                    <td className="kolom-kiri max-w-xs">
                       {dp.keterangan
                         ? <span className="text-xs italic" style={{ color: "var(--muted)" }}>&ldquo;{dp.keterangan}&rdquo;</span>
                         : <span className="text-xs" style={{ color: "var(--muted-faint)" }}>Tidak diisi</span>}
                     </td>
-                    <td className="whitespace-nowrap font-mono text-base font-black" style={{ color: "var(--foreground)" }}>
+                    <td className="kolom-kanan whitespace-nowrap font-mono text-base font-black" style={{ color: "var(--foreground)" }}>
                       Rp {dp.nominal_diajukan.toLocaleString('id-ID')}
                     </td>
                     {/* Kolom status. Seluruh baris di tabel ini memang
                         menunggu keputusan, tapi tanpa kolomnya pembaca harus
                         menyimpulkan itu dari judul kartu di atas. */}
-                    <td>
+                    <td className="kolom-tengah">
                       <span
                         className="whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold"
                         style={{ background: "color-mix(in srgb, var(--warning) 14%, transparent)", color: "var(--warning)" }}
@@ -103,7 +103,7 @@ export default async function DPApprovalManager() {
                         Menunggu persetujuan
                       </span>
                     </td>
-                    <td>
+                    <td className="kolom-tengah">
                       <DPApprovalActions dp={dp} />
                     </td>
                   </tr>
@@ -125,15 +125,15 @@ export default async function DPApprovalManager() {
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="tabel-lembut tabel-tengah text-sm text-slate-600">
+          <table className="tabel-lembut text-sm text-slate-600">
             <thead>
               <tr>
-                <th>Tanggal Keputusan</th>
-                <th>Lapak</th>
-                <th>Gudang</th>
-                <th>Nominal Disetujui</th>
-                <th>Status</th>
-                <th>Diputuskan Oleh</th>
+                <th className="kolom-kiri">Tanggal Keputusan</th>
+                <th className="kolom-kiri">Lapak</th>
+                <th className="kolom-kiri">Gudang</th>
+                <th className="kolom-kanan">Nominal Disetujui</th>
+                <th className="kolom-tengah">Status</th>
+                <th className="kolom-kiri">Diputuskan Oleh</th>
               </tr>
             </thead>
             <tbody>
@@ -148,22 +148,22 @@ export default async function DPApprovalManager() {
                   const status = getDpStatus(dp.status_approval)
                   return (
                     <tr key={dp.id}>
-                      <td className="whitespace-nowrap">
+                      <td className="kolom-kiri whitespace-nowrap">
                         {dp.tanggal_approval
                           ? new Date(dp.tanggal_approval).toLocaleDateString('id-ID', { dateStyle: "medium", timeZone: 'Asia/Jakarta' })
                           : '-'}
                       </td>
-                      <td className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
-                      <td>{dp.supplier.warehouse?.nama ?? '-'}</td>
-                      <td className="whitespace-nowrap font-mono font-bold" style={{ color: "var(--foreground)" }}>
+                      <td className="kolom-kiri font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
+                      <td className="kolom-kiri">{dp.supplier.warehouse?.nama ?? '-'}</td>
+                      <td className="kolom-kanan whitespace-nowrap font-mono font-bold" style={{ color: "var(--foreground)" }}>
                         {dp.status_approval === "approved"
                           ? `Rp ${(dp.nominal_disetujui ?? dp.nominal_diajukan).toLocaleString('id-ID')}`
                           : '-'}
                       </td>
-                      <td>
+                      <td className="kolom-tengah">
                         <StatusPill label={status.label} tone={status.tone} />
                       </td>
-                      <td>
+                      <td className="kolom-kiri">
                         {dp.approvedBy ? (
                           <div>
                             <div className="font-bold" style={{ color: "var(--foreground)" }}>{dp.approvedBy.nama}</div>

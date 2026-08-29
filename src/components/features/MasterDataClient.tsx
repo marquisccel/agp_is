@@ -215,6 +215,12 @@ function fmtRp(n: number) {
   return n.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })
 }
 
+/** "82%" dari sebagian dan keseluruhannya; "0%" kalau pembaginya nol. */
+function persen(bagian: number, total: number) {
+  if (!total) return "0%"
+  return `${Math.round((bagian / total) * 100)}%`
+}
+
 function fmtKg(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(2)} ton`
   return `${n.toFixed(1)} KG`
@@ -490,18 +496,44 @@ export default function MasterDataClient({
                 </span>
               </div>
             </div>
-            <div className="section-body">
-              <div className="flex h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
-                <div style={{ width: `${globalStats.totalSuppliers ? (globalStats.totalGreenSuppliers / globalStats.totalSuppliers) * 100 : 0}%`, background: "var(--success)" }} />
-                <div style={{ width: `${globalStats.totalSuppliers ? (globalStats.totalRedSuppliers / globalStats.totalSuppliers) * 100 : 0}%`, background: "var(--danger)" }} />
+            {/* Dulu sebuah bar bertumpuk hijau-merah, dengan tiga angka di
+                bawahnya. Yang membuatnya janggal: bar itu cuma memuat Aktif
+                dan Belum aktif, sementara "Berkoordinat" berdiri sejajar di
+                sebelahnya seolah bagian dari pembagian yang sama -- padahal
+                ia ukuran yang berbeda, dan lapak bisa aktif sekaligus belum
+                berkoordinat.
+
+                Diganti pita statistik, pola yang sudah dipakai di seluruh
+                aplikasi untuk sekumpulan angka sejenis. Tiap angka membawa
+                pembaginya sendiri, jadi proporsinya tetap terbaca tanpa
+                perlu digambar. */}
+            <div className="stat-strip strip-3">
+              <div className="stat-tile">
+                <span className="stat-label">Aktif</span>
+                <div className="stat-value-row">
+                  <span className="stat-value" style={{ color: "var(--success)" }}>{globalStats.totalGreenSuppliers}</span>
+                </div>
+                <span className="stat-delta flat">
+                  {persen(globalStats.totalGreenSuppliers, globalStats.totalSuppliers)} sudah bertransaksi
+                </span>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-4">
-                {/* Dua label terakhir yang masih menyebut nama warna, bukan
-                    artinya. Baris lapak di tab sebelah sudah memakai
-                    "Aktif"/"Belum aktif" untuk keadaan yang sama. */}
-                <KomposisiItem warna="var(--success)" nilai={globalStats.totalGreenSuppliers} label="Aktif" sub="Sudah transaksi valid" />
-                <KomposisiItem warna="var(--danger)" nilai={globalStats.totalRedSuppliers} label="Belum aktif" sub="Perlu aktivasi" />
-                <KomposisiItem warna="var(--muted-faint)" nilai={globalStats.totalMapReadySuppliers} label="Berkoordinat" sub="Lokasi siap dipetakan" />
+              <div className={`stat-tile${globalStats.totalRedSuppliers > 0 ? " tone-warning" : ""}`}>
+                <span className="stat-label">Belum aktif</span>
+                <div className="stat-value-row">
+                  <span className="stat-value">{globalStats.totalRedSuppliers}</span>
+                </div>
+                <span className="stat-delta flat">
+                  {globalStats.totalRedSuppliers > 0 ? "Perlu aktivasi" : "Semua sudah aktif"}
+                </span>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-label">Berkoordinat</span>
+                <div className="stat-value-row">
+                  <span className="stat-value">{globalStats.totalMapReadySuppliers}</span>
+                </div>
+                <span className="stat-delta flat">
+                  {persen(globalStats.totalMapReadySuppliers, globalStats.totalSuppliers)} siap dipetakan
+                </span>
               </div>
             </div>
           </section>
@@ -590,21 +622,6 @@ export default function MasterDataClient({
       )}
 
       </div>
-    </div>
-  )
-}
-
-function KomposisiItem({ warna, nilai, label, sub }: { warna: string; nilai: number; label: string; sub: string }) {
-  return (
-    <div>
-      <div className="flex items-center gap-2">
-        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: warna }} />
-        <span className="text-lg font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
-          {nilai.toLocaleString("id-ID")}
-        </span>
-        <span className="text-xs font-bold" style={{ color: "var(--muted)" }}>{label}</span>
-      </div>
-      <p className="mt-1 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
     </div>
   )
 }

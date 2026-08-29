@@ -67,7 +67,13 @@ export default async function ApprovalHargaList() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Link href={`/dashboard/manager/approval-harga/${draft.id}`}>
-                        <button className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold">
+                        {/* Netral, bukan nada utama. Seluruh baris di tabel
+                            ini punya tombol yang sama, jadi tidak ada satu
+                            pun yang lebih penting dari yang lain -- deretan
+                            tombol hijau cuma membuat mata tidak punya tempat
+                            beristirahat. Keputusannya sendiri diambil di
+                            halaman berikutnya, bukan di sini. */}
+                        <button className="btn-netral premium-button px-4 py-2 text-xs font-bold">
                           Review Transaksi
                         </button>
                       </Link>

@@ -48,13 +48,19 @@ export default function SkuPriceChart({
 
   return (
     <div>
-      <table className="w-full text-left text-xs">
+      {/* table-fixed dengan lebar kolom yang ditetapkan.
+
+          Sebelumnya kolom SKU melebar mengambil seluruh sisa ruang, sehingga
+          ketiga kolom angkanya terdorong menumpuk di tepi kanan sementara
+          Volume tertinggal sendirian di tengah. Yang terbaca bukan tabel,
+          melainkan satu nama di kiri jauh dan segerombol angka di kanan. */}
+      <table className="w-full table-fixed text-left text-xs">
         <thead>
           <tr className="border-b" style={{ borderColor: "var(--border)" }}>
-            <th className="pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">SKU</th>
-            <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Volume</th>
-            <th className="pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Harga rata-rata</th>
-            <th className="w-24 pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">vs rata-rata</th>
+            <th className="w-[34%] pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">SKU</th>
+            <th className="w-[22%] pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Volume</th>
+            <th className="w-[26%] pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">Harga rata-rata</th>
+            <th className="w-[18%] pb-2 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">vs rata-rata</th>
           </tr>
         </thead>
         <tbody>
