@@ -1396,6 +1396,21 @@ a:focus-visible {
   color: var(--muted);
 }
 
+/* Tabel yang seluruh kolomnya rata tengah.
+
+   Dipakai pada tabel yang isinya pendek dan seragam -- tanggal, nama, satu
+   nominal, satu pil status -- di mana campuran rata kiri dan rata kanan
+   justru membuat tiap kolom terbaca seperti berdiri sendiri-sendiri.
+
+   Ditulis sebagai kelas di CSS, bukan utilitas per sel, karena aturan
+   .tabel-lembut thead th mengunci text-align: left dengan kekhususan 0-1-2:
+   utilitas seperti .text-center (0-1-0) diam-diam tidak berlaku pada judul
+   kolomnya. */
+.tabel-lembut.tabel-tengah thead th,
+.tabel-lembut.tabel-tengah tbody td {
+  text-align: center;
+}
+
 .tabel-lembut thead th.kolom-aksi,
 .tabel-lembut tbody td.kolom-aksi {
   /* Judul dan tombolnya sama-sama di tengah kolom. Kolom ini berisi

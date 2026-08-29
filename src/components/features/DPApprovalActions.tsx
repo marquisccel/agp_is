@@ -53,7 +53,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
 
   if (showEdit) {
     return (
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-center gap-2">
         {dialog}
         {toastHost}
         {/* Kolomnya dulu berdiri tanpa keterangan apa pun: sebuah kotak
@@ -115,7 +115,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
         disabled={loading}
         className="btn-netral premium-button whitespace-nowrap px-3 py-1.5 text-xs disabled:opacity-50"
       >
-        Ubah Nominal
+        Edit Nominal
       </button>
 
       <button

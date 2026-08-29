@@ -53,20 +53,17 @@ export default async function DPApprovalManager() {
             <span className="section-eyebrow">Menunggu keputusan</span>
             <h2 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Antrean Pengajuan</h2>
           </div>
-          <span className="text-sm font-semibold" style={{ color: dps.length > 0 ? "var(--warning)" : "var(--muted-faint)" }}>
-            {dps.length > 0 ? `${dps.length} menunggu Anda` : "Tidak ada antrean"}
-          </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="tabel-lembut text-left text-sm text-slate-600">
+          <table className="tabel-lembut tabel-tengah text-sm text-slate-600">
             <thead>
               <tr>
                 <th>Tanggal Pengajuan</th>
                 <th>Lapak</th>
                 <th>Alasan Pengajuan</th>
-                <th className="!text-right">Nominal Diajukan</th>
+                <th>Nominal Diajukan</th>
                 <th>Status</th>
-                <th className="!text-right">Aksi</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -92,7 +89,7 @@ export default async function DPApprovalManager() {
                         ? <span className="text-xs italic" style={{ color: "var(--muted)" }}>&ldquo;{dp.keterangan}&rdquo;</span>
                         : <span className="text-xs" style={{ color: "var(--muted-faint)" }}>Tidak diisi</span>}
                     </td>
-                    <td className="whitespace-nowrap text-right font-mono text-base font-black" style={{ color: "var(--foreground)" }}>
+                    <td className="whitespace-nowrap font-mono text-base font-black" style={{ color: "var(--foreground)" }}>
                       Rp {dp.nominal_diajukan.toLocaleString('id-ID')}
                     </td>
                     {/* Kolom status. Seluruh baris di tabel ini memang
@@ -128,13 +125,13 @@ export default async function DPApprovalManager() {
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="tabel-lembut text-left text-sm text-slate-600">
+          <table className="tabel-lembut tabel-tengah text-sm text-slate-600">
             <thead>
               <tr>
                 <th>Tanggal Keputusan</th>
                 <th>Lapak</th>
                 <th>Gudang</th>
-                <th className="!text-right">Nominal Disetujui</th>
+                <th>Nominal Disetujui</th>
                 <th>Status</th>
                 <th>Diputuskan Oleh</th>
               </tr>
@@ -158,7 +155,7 @@ export default async function DPApprovalManager() {
                       </td>
                       <td className="font-bold" style={{ color: "var(--foreground)" }}>{dp.supplier.nama}</td>
                       <td>{dp.supplier.warehouse?.nama ?? '-'}</td>
-                      <td className="whitespace-nowrap text-right font-mono font-bold" style={{ color: "var(--foreground)" }}>
+                      <td className="whitespace-nowrap font-mono font-bold" style={{ color: "var(--foreground)" }}>
                         {dp.status_approval === "approved"
                           ? `Rp ${(dp.nominal_disetujui ?? dp.nominal_diajukan).toLocaleString('id-ID')}`
                           : '-'}
