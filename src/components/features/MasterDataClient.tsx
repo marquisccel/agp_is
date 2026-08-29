@@ -267,7 +267,6 @@ function DonatKomposisi({
   const bagian = (n: number) => (total > 0 ? (n / total) * 100 : 0)
   const pAktif = bagian(aktif)
   const pBelum = bagian(belumAktif)
-  const pKoordinat = bagian(berkoordinat)
 
   // Sela kecil antar potongan supaya batasnya terbaca tanpa garis pemisah.
   // Hanya dipasang kalau keduanya memang ada isinya; kalau salah satu nol,
@@ -276,17 +275,17 @@ function DonatKomposisi({
 
   return (
     <div className="section-body">
-      {/* Dua kelompok yang berjajar RAPAT, bukan didorong ke dua ujung
-          kartu.
+      {/* Satu cincin, lalu tiga keterangan berjajar yang dipisah garis
+          tegak. Ketiganya berbentuk sama: ikon dan label kecil berwarna,
+          angka, lalu keterangan.
 
-          Sebelumnya keduanya dipisahkan justify-between, jadi kelengkapan
-          koordinat terlempar ke pojok kanan dan menyisakan lubang selebar
-          sepertiga kartu di tengah. Lubang itu tidak menerangkan apa pun;
-          ia cuma jarak yang tersisa. Sekarang kelompok kedua menempel
-          setelah yang pertama, dipisah satu garis tegak, dan sisa ruang
-          jatuh di kanan -- tempat yang memang tidak perlu diisi. */}
-      <div className="flex flex-col gap-8 xl:flex-row xl:items-center xl:gap-10">
-        <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-7">
+          Cincin keduanya dibuang. Dua cincin di satu kartu membuat
+          keduanya saling berebut jadi benda pertama yang dilihat, dan yang
+          kedua tidak menambah apa pun yang belum dikatakan angkanya --
+          "4 dari 11" sudah menyebut perbandingannya, sementara cincin
+          menuntut satu benda lagi untuk ditafsirkan. Cincin dipakai sekali
+          saja, untuk pembagian yang memang utuh. */}
+      <div className="flex flex-col items-center gap-7 lg:flex-row lg:items-center lg:gap-9">
         <div className="relative shrink-0">
           <svg width="152" height="152" viewBox="0 0 152 152" role="img" aria-label={`${aktif} dari ${total} lapak sudah aktif`}>
             {/* Diputar supaya potongan pertama mulai dari atas, bukan dari
@@ -321,77 +320,42 @@ function DonatKomposisi({
           </div>
         </div>
 
-          <div className="space-y-4">
-            <BarisKomposisi
-              warna="var(--success)"
-              ikon={<IkonLapak warna="var(--success)" keadaan="aktif" />}
-              label="Lapak aktif"
-              nilai={aktif}
-              satuan="lapak"
-              sub="sudah melakukan transaksi"
-            />
-            <BarisKomposisi
-              warna="var(--danger)"
-              ikon={<IkonLapak warna="var(--danger)" keadaan="belum" />}
-              label="Belum aktif"
-              nilai={belumAktif}
-              satuan="lapak"
-              sub={belumAktif > 0 ? "perlu aktivasi" : "semua sudah aktif"}
-            />
-          </div>
-        </div>
+        {/* Ketiganya selebar sama rata dan dipisah garis tegak setipis satu
+            pixel. Lebar yang sama itu yang membuat ketiganya terbaca
+            sebagai satu deret, bukan tiga hal yang kebetulan bersebelahan.
 
-        {/* Kelompok kedua: cakupan koordinat, dipisah satu garis tegak.
-            Ia memang bukan bagian dari pembagian di sebelahnya -- satu
-            lapak bisa aktif sekaligus belum berkoordinat -- jadi cincinnya
-            berdiri sendiri, bukan jadi potongan ketiga di cincin pertama. */}
-        <div
-          className="flex w-full items-center gap-6 border-t pt-7 xl:w-auto xl:border-t-0 xl:border-l xl:pt-0 xl:pl-10"
-          style={{ borderColor: "var(--border)" }}
-        >
-          {/* Bentuknya persis sama dengan cincin komposisi: ukuran, tebal,
-              dan ujung potongan yang rata. Dua cincin dengan tebal berbeda
-              di satu kartu terbaca sebagai dua jenis bacaan yang berbeda,
-              padahal keduanya menyatakan hal yang sejenis -- sekian bagian
-              dari sebelas lapak. Yang ada di tengahnya yang membedakan:
-              angka untuk yang membagi, penanda peta untuk yang menghitung
-              kesiapan dipetakan. */}
-          <div className="relative shrink-0">
-            <svg width="152" height="152" viewBox="0 0 152 152" role="img" aria-label={`${berkoordinat} dari ${total} lapak sudah berkoordinat`}>
-              <g transform="rotate(-90 76 76)">
-                <circle cx="76" cy="76" r="62" fill="none" stroke="var(--bg-tint)" strokeWidth="16" />
-                {pKoordinat > 0 && (
-                  <circle
-                    cx="76" cy="76" r="62" fill="none" pathLength={100}
-                    stroke="var(--brand)" strokeWidth="16" strokeLinecap="butt"
-                    strokeDasharray={`${pKoordinat} ${100 - pKoordinat}`}
-                  />
-                )}
-              </g>
-            </svg>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <MapPin className="h-7 w-7" style={{ color: "var(--brand-strong)" }} strokeWidth={2.25} />
-              <span className="mt-1 text-[10.5px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--muted-faint)" }}>
-                Peta
-              </span>
-            </div>
-          </div>
-
-          <div className="min-w-0">
-            <span
-              className="block text-[10.5px] font-bold uppercase leading-none tracking-[0.1em]"
-              style={{ color: "var(--brand-strong)" }}
-            >
-              Kelengkapan koordinat
-            </span>
-            <p className="mt-2 whitespace-nowrap text-xl font-black leading-none tracking-[-0.02em]">
-              <span className="tabular-nums" style={{ color: "var(--brand-strong)" }}>{berkoordinat}</span>
-              <span style={{ color: "var(--foreground)" }}> dari {total} lapak</span>
-            </p>
-            <p className="mt-2 text-[11px] leading-none" style={{ color: "var(--muted-faint)" }}>
-              {berkoordinat < total ? `${total - berkoordinat} lapak belum bisa ditampilkan di peta` : "Semua lapak siap dipetakan"}
-            </p>
-          </div>
+            Koordinat ikut berbentuk sama walaupun bukan bagian dari
+            pembagian yang sama -- satu lapak bisa aktif sekaligus belum
+            berkoordinat. Yang menandai bedanya warnanya: dua yang pertama
+            membawa nada keadaan, koordinat abu karena ia bukan penilaian
+            baik atau buruk, cuma kelengkapan data. */}
+        <div className="grid w-full flex-1 grid-cols-1 gap-5 sm:grid-cols-3 sm:gap-0">
+          <BarisKomposisi
+            warna="var(--success)"
+            ikon={<IkonLapak warna="var(--success)" keadaan="aktif" />}
+            label="Lapak aktif"
+            nilai={aktif}
+            satuan="lapak"
+            sub="sudah melakukan transaksi"
+          />
+          <BarisKomposisi
+            warna="var(--danger)"
+            ikon={<IkonLapak warna="var(--danger)" keadaan="belum" />}
+            label="Belum aktif"
+            nilai={belumAktif}
+            satuan="lapak"
+            sub={belumAktif > 0 ? "perlu aktivasi" : "semua sudah aktif"}
+            bergaris
+          />
+          <BarisKomposisi
+            warna="var(--muted)"
+            ikon={<MapPin className="h-[15px] w-[15px] shrink-0" style={{ color: "var(--muted)" }} strokeWidth={2.25} />}
+            label="Koordinat lapak"
+            nilai={berkoordinat}
+            satuan="lapak"
+            sub={berkoordinat < total ? `${total - berkoordinat} lapak belum ada di peta` : "semua siap dipetakan"}
+            bergaris
+          />
         </div>
       </div>
     </div>
@@ -448,6 +412,7 @@ function BarisKomposisi({
   nilai,
   satuan,
   sub,
+  bergaris = false,
 }: {
   warna: string
   ikon: ReactNode
@@ -455,6 +420,10 @@ function BarisKomposisi({
   nilai: number
   satuan: string
   sub: string
+  /** Garis pemisah di kiri; tidak dipasang pada kolom pertama. Saat
+   *  ketiganya menumpuk ke bawah, garisnya pindah ke atas -- garis tegak
+   *  di antara dua benda yang bersusun justru salah arah. */
+  bergaris?: boolean
 }) {
   /* Ikonnya lebar 15px dan jaraknya ke label 8px. Angka dan keterangan di
      bawahnya digeser sejauh itu supaya ketiganya mulai di garis tegak yang
@@ -464,7 +433,10 @@ function BarisKomposisi({
   const geser = 23
 
   return (
-    <div>
+    <div
+      className={`sm:pr-6${bergaris ? " border-t pt-5 sm:border-t-0 sm:border-l sm:pl-6 sm:pt-0" : ""}`}
+      style={bergaris ? { borderColor: "var(--border)" } : undefined}
+    >
       <div className="flex items-center gap-2">
         {ikon}
         <span
