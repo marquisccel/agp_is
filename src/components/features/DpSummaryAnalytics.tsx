@@ -111,7 +111,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       </div>
 
       {summaryOnly && (
-        <TautanRincian href="/dashboard/manager/dp">Lihat rincian per lapak</TautanRincian>
+        <TautanRincian href="/dashboard/manager/dp" garisAtas={false}>Lihat rincian per lapak</TautanRincian>
       )}
 
       </div>

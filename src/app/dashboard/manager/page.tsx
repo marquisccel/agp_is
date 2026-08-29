@@ -904,52 +904,56 @@ export default async function ManagerDashboard({
           </div>
         </div>
         <div className="p-5">
+          {/* Tabel sungguhan, bukan grid tiruan. Dengan grid, lebar kolom
+              di kepala dan di tiap baris ditulis dua kali dan harus dijaga
+              tetap sama -- kolom Waktu sempat meleset dari isinya persis
+              karena itu. Tabel menyelaraskannya sendiri.
+
+              Tingginya dikunci lima baris. Sebelumnya max-height-nya
+              angka bebas, sehingga baris keenam terpotong separuh di tepi
+              bawah dan terbaca seperti daftar yang rusak, bukan seperti
+              daftar yang bisa digulir. Satu baris dipaksa satu garis lewat
+              truncate, jadi tingginya tetap 55px, dan wadahnya dikunci
+                315px = kepala 40px + 5 x 55px. */}
           {recentLogs.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-400">Belum ada aktivitas.</div>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-slate-200">
-              {/* Empat kolom, dua di antaranya dulu tanpa judul. Kolom
-                  "Detail" menampung dua hal sekaligus -- kalimat kejadian
-                  DAN nama datanya di baris kedua yang lebih kecil --
-                  sehingga terlihat menumpuk, sementara dua kolom di
-                  kanannya justru terbaca kosong karena judulnya tidak ada.
-
-                  Nama data kini berdiri sebagai kolomnya sendiri, memakai
-                  istilah yang sama dengan halaman Audit Trail, dan kolom
-                  waktu akhirnya diberi judul. */}
-              <div className="hidden grid-cols-[210px_minmax(0,1fr)_150px_170px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-bold uppercase text-slate-500 sm:grid">
-                <span>Aktivitas</span>
-                <span>Detail</span>
-                <span>Data</span>
-                <span>Waktu</span>
+            <div className="overflow-hidden rounded-lg border" style={{ borderColor: "var(--border)" }}>
+              <div className="max-h-[315px] overflow-y-auto">
+                <table className="tabel-lembut w-full text-left text-sm">
+                  <thead className="sticky top-0 z-10">
+                    <tr>
+                      <th className="w-[190px]">Aktivitas</th>
+                      <th className="w-[130px]">Pelaku</th>
+                      <th>Detail</th>
+                      <th className="w-[150px]">Data</th>
+                      <th className="w-[160px]">Waktu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentLogs.map(log => {
+                      const activity = getAuditAction(log.action)
+                      const scope = formatActivityScope(log.table_name)
+                      const rincian = activity.description.charAt(0).toUpperCase() + activity.description.slice(1)
+                      return (
+                        <tr key={log.id} className="h-[55px]">
+                          <td>
+                            <span className={`inline-flex w-fit items-center whitespace-nowrap rounded-md border px-2.5 py-1 text-[11px] font-bold ${activity.tone}`}>
+                              {activity.label}
+                            </span>
+                          </td>
+                          <td className="whitespace-nowrap font-bold" style={{ color: "var(--foreground)" }}>{log.user.nama}</td>
+                          <td className="max-w-0 truncate" style={{ color: "var(--muted)" }} title={rincian}>{rincian}</td>
+                          <td className="whitespace-nowrap" style={{ color: "var(--muted)" }}>{scope}</td>
+                          <td className="whitespace-nowrap text-xs" style={{ color: "var(--muted-faint)" }}>
+                            {new Date(log.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
-              <ul className="max-h-[320px] divide-y divide-[var(--border)] overflow-auto bg-white">
-              {recentLogs.map(log => {
-                const activity = getAuditAction(log.action)
-                const scope = formatActivityScope(log.table_name)
-
-                return (
-                <li key={log.id} className="grid gap-3 px-4 py-4 transition-colors hover:bg-slate-50/70 sm:grid-cols-[210px_minmax(0,1fr)_150px_170px] sm:items-center">
-                  <div className="min-w-0">
-                    <span className={`inline-flex w-fit items-center rounded-md border px-2.5 py-1 text-[11px] font-bold ${activity.tone}`}>
-                      {activity.label}
-                    </span>
-                    {/* Di layar sempit keempat kolomnya menumpuk jadi satu
-                        lajur, jadi nama data ikut di sini supaya tidak
-                        berdiri sendiri jauh dari kalimatnya. */}
-                    <p className="mt-2 text-xs font-semibold text-slate-400 sm:hidden">{scope}</p>
-                  </div>
-                  <p className="min-w-0 text-sm leading-6 text-slate-700">
-                    <span className="font-bold text-slate-950">{log.user.nama}</span> {activity.description}.
-                  </p>
-                  <span className="hidden text-xs font-semibold text-slate-500 sm:block">{scope}</span>
-                  <span className="text-xs font-semibold text-slate-400 sm:text-right">
-                    {new Date(log.createdAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" })}
-                  </span>
-                </li>
-                )
-              })}
-              </ul>
             </div>
           )}
         </div>

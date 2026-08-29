@@ -143,6 +143,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
     label: new Date(2000, i, 1).toLocaleDateString("id-ID", { month: "long" }),
   }))
   const namaBulan = monthOptions.find((m) => m.value === selectedBulan)?.label ?? ""
+  const belumDitetapkan = warehouses.filter((w) => !jejak[w.id]).length
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const year = new Date().getFullYear() - 2 + i
     return { value: year, label: String(year) }
@@ -253,7 +254,22 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
           Kartunya sengaja tipis dan tanpa judul: isinya sudah menerangkan
           diri sendiri, dan menamainya cuma mengulang kata "periode" yang
           sudah terbaca dari nama bulannya. */}
-      <div className="section section-body flex flex-wrap items-center justify-end gap-2">
+      <div className="section section-body flex flex-wrap items-center justify-between gap-3">
+        {/* Sisi kiri kartu ini sempat dibiarkan kosong dengan kendali
+            terdorong ke kanan, dan hasilnya kartu selebar layar yang
+            separuhnya melompong. Yang mengisinya sekarang bukan tulisan
+            pengganjal, tapi jawaban atas pertanyaan yang justru dibawa
+            pengguna ke halaman ini: dari tiga gudang, berapa yang targetnya
+            belum ditetapkan untuk periode terpilih.
+
+            Nadanya mengikuti keadaan, sama seperti baris di tiap kartu
+            gudang: masih ada yang kosong berarti pekerjaan belum selesai. */}
+        <p className="text-sm font-semibold" style={{ color: belumDitetapkan > 0 ? "var(--warning)" : "var(--success)" }}>
+          {belumDitetapkan === 0
+            ? `Semua gudang sudah ditetapkan untuk ${namaBulan} ${selectedTahun}`
+            : `${belumDitetapkan} dari ${warehouses.length} gudang belum ditetapkan`}
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
         <ElegantSelect
           value={selectedBulan}
           options={monthOptions}
@@ -275,6 +291,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
         >
           Kembali ke Dashboard
         </Link>
+        </div>
       </div>
 
       {loading ? (

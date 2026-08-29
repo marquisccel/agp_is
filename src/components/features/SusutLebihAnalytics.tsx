@@ -169,7 +169,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
       </div>
 
       {summaryOnly && (
-        <TautanRincian href="/dashboard/manager/susut">Lihat rincian per lapak</TautanRincian>
+        <TautanRincian href="/dashboard/manager/susut" garisAtas={false}>Lihat rincian per lapak</TautanRincian>
       )}
 
       </div>

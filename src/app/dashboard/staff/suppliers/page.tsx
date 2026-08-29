@@ -72,7 +72,18 @@ export default async function StaffSuppliersPage({
           punya satu pun lapak justru kehilangan satu-satunya jalan untuk
           menambahkannya. Yang disembunyikan saat kosong cukup deret
           filternya, karena menyaring nol data memang tidak ada gunanya. */}
-      <div className="section section-body flex flex-wrap items-center gap-3">
+      {/* items-start, dan jarak dirapatkan jadi 8px. Dengan 12px totalnya
+          855px sementara ruang dalam kartu 852px -- meleset tiga pixel, dan
+          deret filternya membungkus jadi dua baris hanya karena itu. Kalau
+          nanti tetap membungkus di layar yang lebih sempit, tombolnya rata
+          atas dengan baris filter pertama, bukan mengambang di tengah. */}
+      <div className="section section-body flex items-start justify-between gap-2">
+        {/* Deret filter dibungkus wadah sendiri yang boleh membungkus ke
+            baris berikutnya, sementara tombolnya shrink-0 di luar wadah itu.
+            Sebelumnya semuanya satu deret flex-wrap: begitu kedua deret
+            filter memenuhi lebar kartu, tombolnya ikut terdorong turun dan
+            berdiri sendirian di baris kedua. */}
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
         {allSuppliers.length > 0 && (
           <>
           {/* Dua deret pil berwarna-warni -- hitam, hijau, merah, biru,
@@ -118,12 +129,11 @@ export default async function StaffSuppliersPage({
           </div>
           </>
         )}
+        </div>
 
-        {/* ml-auto mendorong tombol ke ujung kanan kartu, dan tetap di
-            ujung kanan walau deret filternya sedang disembunyikan. */}
         <Link
           href="/dashboard/staff/suppliers/new"
-          className="btn-primer premium-button ml-auto rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
+          className="btn-primer premium-button shrink-0 rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
         >
           Tambah Lapak
         </Link>
