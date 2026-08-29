@@ -63,6 +63,17 @@ export function buatSecurityHeaders(produksi: boolean): HeaderKeamanan[] {
         "base-uri 'self'",
         "form-action 'self'",
         "frame-ancestors 'none'",
+        // Peta lokasi lapak disematkan sebagai iframe ke maps.google.com.
+        // Tanpa frame-src, direktif itu jatuh ke default-src 'self' dan
+        // SELURUH iframe luar diblokir -- peta tampil sebagai kotak abu
+        // bertuliskan "This content is blocked".
+        //
+        // Tidak pernah ketahuan sampai lama karena data contoh yang dipakai
+        // sebelumnya tidak punya koordinat sama sekali, jadi iframe-nya
+        // memang tidak pernah dirender.
+        //
+        // Hanya host peta yang diizinkan, bukan iframe dari mana saja.
+        "frame-src https://maps.google.com https://www.google.com",
       ].join("; "),
     },
   ]

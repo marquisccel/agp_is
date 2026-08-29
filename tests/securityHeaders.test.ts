@@ -43,9 +43,9 @@ for (const produksi of [false, true]) {
 test("CSP memisahkan direktif dengan '; ', bukan yang lain", () => {
   const csp = buatSecurityHeaders(true).find((h) => h.key === "Content-Security-Policy")
   assert.ok(csp, "header CSP tidak ada")
-  // Sepuluh direktif berarti sembilan pemisah. Kalau pemisahnya tertukar,
+  // Sebelas direktif berarti sepuluh pemisah. Kalau pemisahnya tertukar,
   // jumlah ini langsung meleset.
-  assert.equal(csp.value.split("; ").length, 10)
+  assert.equal(csp.value.split("; ").length, 11)
   assert.ok(csp.value.startsWith("default-src 'self'"))
 })
 
@@ -55,7 +55,7 @@ test("direktif yang menutup kelas serangan tertentu tidak boleh hilang", () => {
   const csp = header.value
   // Masing-masing pernah jadi alasan CSP ini dipasang; kalau ada yang
   // terhapus saat menyunting, tes ini yang memberi tahu.
-  for (const arahan of ["frame-ancestors 'none'", "object-src 'none'", "form-action 'self'", "base-uri 'self'"]) {
+  for (const arahan of ["frame-ancestors 'none'", "object-src 'none'", "form-action 'self'", "base-uri 'self'", "frame-src https://maps.google.com"]) {
     assert.ok(csp.includes(arahan), `direktif hilang: ${arahan}`)
   }
 })
