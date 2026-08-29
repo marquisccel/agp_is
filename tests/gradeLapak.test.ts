@@ -107,3 +107,49 @@ test("berat null diperlakukan sebagai nol, bukan NaN", () => {
   assert.equal(h.totalBeratGudang, 0)
   assert.equal(Number.isNaN(h.opi), false)
 })
+
+test("nota yang belum ditimbang di gudang tidak dihitung sebagai susut", () => {
+  // Nota yang masih menunggu verifikasi Admin belum punya timbangan gudang.
+  // Sebelum diperbaiki, nilai null diperlakukan sebagai 0 sehingga SELURUH
+  // berat lapaknya terbaca hilang -- satu nota yang sedang mengantre cukup
+  // untuk menjatuhkan grade lapaknya ke C, padahal belum ada yang salah.
+  const bersih: PembelianUntukGrade = {
+    warehouseId: GUDANG,
+    berat_timbangan_lapak: 5000,
+    berat_timbangan_gudang: 5000,
+    items: [{ berat_final_item: 5000, harga_per_kg: 10000, subtotal: 50_000_000, sku_name: "Bening" }],
+  }
+  const belumDitimbang: PembelianUntukGrade = {
+    warehouseId: GUDANG,
+    berat_timbangan_lapak: 4000,
+    berat_timbangan_gudang: null,
+    items: [],
+  }
+
+  const sendirian = hitungGradeLapak([bersih], 5000, standar)
+  const dengannya = hitungGradeLapak([bersih, belumDitimbang], 5000, standar)
+
+  assert.equal(sendirian.totalSusut, 0)
+  assert.equal(dengannya.totalSusut, 0, "nota belum ditimbang ikut terhitung susut")
+  assert.equal(dengannya.persenSusut, 0)
+  assert.equal(dengannya.grade, sendirian.grade, "grade turun hanya karena ada nota yang mengantre")
+})
+
+test("susut dihitung dari nota yang sudah ditimbang saja", () => {
+  const ditimbang: PembelianUntukGrade = {
+    warehouseId: GUDANG,
+    berat_timbangan_lapak: 1000,
+    berat_timbangan_gudang: 900,
+    items: [{ berat_final_item: 900, harga_per_kg: 10000, subtotal: 9_000_000, sku_name: "Bening" }],
+  }
+  const antre: PembelianUntukGrade = {
+    warehouseId: GUDANG,
+    berat_timbangan_lapak: 9000,
+    berat_timbangan_gudang: null,
+    items: [],
+  }
+  const h = hitungGradeLapak([ditimbang, antre], 1000, standar)
+  // 100 kg dari 1000 kg yang benar-benar ditimbang, bukan dari 10.000 kg.
+  assert.equal(h.totalSusut, 100)
+  assert.equal(h.persenSusut, 10)
+})

@@ -94,10 +94,22 @@ export function hitungGradeLapak(
   let totalSusut = 0
   let totalBeratLapak = 0
   for (const p of pembelian) {
+    // Nota yang belum diverifikasi Admin belum punya timbangan gudang, dan
+    // nota itu HARUS dilewati, bukan dianggap nol.
+    //
+    // Sebelumnya `berat_timbangan_gudang || 0` membuat nota semacam itu
+    // terbaca sebagai susut 100 persen: seluruh berat lapaknya dihitung
+    // hilang. Satu nota yang sedang menunggu verifikasi cukup untuk
+    // menjatuhkan grade lapaknya ke C, padahal belum ada yang salah --
+    // barangnya bahkan belum ditimbang di gudang.
+    //
+    // Ketahuan saat menyusun data demo: beberapa lapak tampil dengan susut
+    // 26 persen, angka yang mustahil di gudang sungguhan.
+    if (p.berat_timbangan_gudang === null || p.berat_timbangan_gudang === undefined) continue
     const lapak = p.berat_timbangan_lapak || 0
-    const gudang = p.berat_timbangan_gudang || 0
+    const gudang = p.berat_timbangan_gudang
     totalBeratLapak += lapak
-    if (gudang - lapak < 0) totalSusut += Math.abs(gudang - lapak)
+    if (gudang < lapak) totalSusut += lapak - gudang
   }
   const persenSusut = totalBeratLapak > 0 ? (totalSusut / totalBeratLapak) * 100 : 0
   const skorKualitas = totalBeratLapak > 0 ? Math.max(0, 100 - persenSusut * 25) : 100
