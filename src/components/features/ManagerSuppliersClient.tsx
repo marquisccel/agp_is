@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/Toast"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import { hasResolvedSupplierCoordinates, isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 import { namaGudang } from "@/lib/namaGudang"
+import { hitungGradeLapak } from "@/lib/gradeLapak"
 
 interface SkuPriceStandard {
   id: string
@@ -309,6 +310,15 @@ export default function ManagerSuppliersClient({
     }
   }
 
+  /*
+   * Rumus gradenya sekarang ada di src/lib/gradeLapak.ts. Sebelumnya
+   * ditulis di sini, dan salinan keduanya di Detail Lapak sudah terlanjur
+   * memakai bobot yang berbeda -- satu lapak yang sama bisa tampil B di
+   * halaman ini dan A di halaman detailnya.
+   *
+   * Yang tetap di sini cuma penyaringan gudang dan periode, karena itu
+   * memang milik halaman ini: pilihan bulan dan gudang di atas layar.
+   */
   const getSupplierPerformance = (supplier: Supplier) => {
     const filteredPurchases = supplier.purchases.filter((purchase) => {
       const matchWarehouse = selectedWarehouseId === "all" || purchase.warehouseId === selectedWarehouseId
@@ -321,86 +331,20 @@ export default function ManagerSuppliersClient({
       return matchWarehouse && matchDate
     })
 
-    const totalTransactions = filteredPurchases.length
-    const totalGudangWeight = filteredPurchases.reduce((sum, purchase) => sum + (purchase.berat_timbangan_gudang || 0), 0)
-
-    let qtyScore = 0
-    let targetPct = 0
-    if (supplier.target_bulanan_kg > 0) {
-      targetPct = (totalGudangWeight / supplier.target_bulanan_kg) * 100
-      qtyScore = Math.min(targetPct, 100)
-    } else if (totalGudangWeight >= 5000) qtyScore = 100
-    else if (totalGudangWeight >= 2000) qtyScore = 80
-    else if (totalGudangWeight >= 500) qtyScore = 60
-    else if (totalGudangWeight > 0) qtyScore = 40
-
-    let totalSusut = 0
-    let totalLapakWeight = 0
-    filteredPurchases.forEach((purchase) => {
-      const lapak = purchase.berat_timbangan_lapak || 0
-      const gudang = purchase.berat_timbangan_gudang || 0
-      totalLapakWeight += lapak
-      if (gudang - lapak < 0) totalSusut += Math.abs(gudang - lapak)
-    })
-    const pctSusut = totalLapakWeight > 0 ? (totalSusut / totalLapakWeight) * 100 : 0
-    const qualityScore = totalLapakWeight > 0 ? Math.max(0, 100 - pctSusut * 25) : 100
-
-    let totalSubtotal = 0
-    let totalItemWeight = 0
-    let warningCount = 0
-
-    filteredPurchases.forEach((purchase) => {
-      purchase.items.forEach((item) => {
-        const itemWeight = item.berat_final_item || 0
-        totalSubtotal += item.subtotal || itemWeight * item.harga_per_kg || 0
-        totalItemWeight += itemWeight
-
-        const std = skuPrices.find((price) => price.sku_name === item.sku_name && price.warehouseId === purchase.warehouseId)
-        if (std && item.harga_per_kg > std.max_price_per_kg) warningCount++
-      })
-    })
-
-    const avgPrice = totalItemWeight > 0 ? totalSubtotal / totalItemWeight : 0
-    const priceScore = totalTransactions > 0 ? Math.max(50, 100 - warningCount * 20) : 100
-
-    let opi = 0
-    let grade = "-"
-    let gradeLabel = "Belum ada data"
-    // Nada huruf, bukan rantai kelas pil: grade kini ditulis sebagai teks
-    // di baris keterangan. Biru untuk "Stabil" juga dibuang -- warna itu
-    // tidak menandakan apa pun di sistem ini, dan netral lebih jujur untuk
-    // keadaan yang memang tidak menuntut tindakan.
-    let gradeTone = "var(--muted)"
-
-    if (totalTransactions > 0) {
-      opi = qtyScore * 0.4 + qualityScore * 0.4 + priceScore * 0.2
-      if (opi >= 85) {
-        grade = "A"
-        gradeLabel = "Bagus"
-        gradeTone = "var(--success)"
-      } else if (opi >= 60) {
-        grade = "B"
-        gradeLabel = "Stabil"
-        gradeTone = "var(--muted)"
-      } else {
-        grade = "C"
-        gradeLabel = "Evaluasi"
-        gradeTone = "var(--danger)"
-      }
-    }
+    const hasil = hitungGradeLapak(filteredPurchases, supplier.target_bulanan_kg, skuPrices)
 
     return {
-      totalTransactions,
-      totalGudangWeight,
-      targetPct,
-      totalSusut,
-      pctSusut,
-      avgPrice,
-      warningCount,
-      opi,
-      grade,
-      gradeLabel,
-      gradeTone,
+      totalTransactions: hasil.totalTransaksi,
+      totalGudangWeight: hasil.totalBeratGudang,
+      targetPct: hasil.persenTarget,
+      totalSusut: hasil.totalSusut,
+      pctSusut: hasil.persenSusut,
+      avgPrice: hasil.hargaRataRata,
+      warningCount: hasil.jumlahPeringatanHarga,
+      opi: hasil.opi,
+      grade: hasil.grade,
+      gradeLabel: hasil.label,
+      gradeTone: hasil.nada,
     }
   }
 
@@ -496,7 +440,7 @@ export default function ManagerSuppliersClient({
                   {card.label}
                 </span>
                 <div className="stat-value-row">
-                  <span className="stat-value font-mono" style={active ? { color: "var(--brand-strong)" } : undefined}>
+                  <span className="stat-value" style={active ? { color: "var(--brand-strong)" } : undefined}>
                     {card.value}
                   </span>
                 </div>
