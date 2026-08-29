@@ -335,16 +335,18 @@ function DonatKomposisi({
             ikon={<IkonLapak warna="var(--success)" keadaan="aktif" />}
             label="Lapak aktif"
             nilai={aktif}
-            satuan="lapak"
+            satuan="Lapak"
             sub="sudah melakukan transaksi"
+            geser={31}
           />
           <BarisKomposisi
             warna="var(--danger)"
             ikon={<IkonLapak warna="var(--danger)" keadaan="belum" />}
             label="Belum aktif"
             nilai={belumAktif}
-            satuan="lapak"
+            satuan="Lapak"
             sub={belumAktif > 0 ? "perlu aktivasi" : "semua sudah aktif"}
+            geser={31}
             bergaris
           />
           <BarisKomposisi
@@ -352,8 +354,9 @@ function DonatKomposisi({
             ikon={<MapPin className="h-[18px] w-[18px] shrink-0" style={{ color: "var(--muted)" }} strokeWidth={2.25} />}
             label="Koordinat lapak"
             nilai={berkoordinat}
-            satuan="lapak"
+            satuan="Lapak"
             sub={berkoordinat < total ? `${total - berkoordinat} lapak belum ada di peta` : "semua siap dipetakan"}
+            geser={26}
             bergaris
           />
         </div>
@@ -376,7 +379,14 @@ function DonatKomposisi({
  */
 function IkonLapak({ warna, keadaan }: { warna: string; keadaan: "aktif" | "belum" }) {
   return (
-    <span className="relative inline-flex shrink-0" aria-hidden="true">
+    /* Lingkaran penandanya menjorok 5px ke kanan melewati kotak ikonnya,
+       jadi kotak itu ditambah margin sebesar tonjolan tersebut. Tanpa itu,
+       jarak yang diatur flex terhitung dari tepi ikon lapak -- bukan dari
+       tepi centangnya -- sehingga centang nyaris menempel ke labelnya
+       sementara kolom Koordinat, yang ikonnya tidak menonjol, tampak jauh
+       lebih lapang. Dengan margin ini ketiganya berjarak sama diukur dari
+       ujung yang benar-benar terlihat. */
+    <span className="relative inline-flex shrink-0" style={{ marginRight: 5 }} aria-hidden="true">
       <Store className="h-[18px] w-[18px]" style={{ color: warna }} strokeWidth={2.25} />
       <span
         className="absolute -bottom-[3px] -right-[5px] grid h-[13px] w-[13px] place-items-center rounded-full"
@@ -412,6 +422,7 @@ function BarisKomposisi({
   nilai,
   satuan,
   sub,
+  geser,
   bergaris = false,
 }: {
   warna: string
@@ -420,18 +431,21 @@ function BarisKomposisi({
   nilai: number
   satuan: string
   sub: string
+  /**
+   * Jarak dari tepi kiri kolom sampai huruf pertama label, dalam pixel.
+   * Angka dan keterangan di bawahnya digeser sejauh ini supaya ketiganya
+   * mulai di garis tegak yang sama. Tanpa geseran, angkanya mulai di bawah
+   * ikon, menjorok ke kiri sendirian, dan tepi kiri kolom jadi bergerigi.
+   *
+   * Nilainya berbeda antar kolom karena lebar ikonnya berbeda, jadi ia
+   * diserahkan ke pemanggil, bukan ditebak di sini.
+   */
+  geser: number
   /** Garis pemisah di kiri; tidak dipasang pada kolom pertama. Saat
    *  ketiganya menumpuk ke bawah, garisnya pindah ke atas -- garis tegak
    *  di antara dua benda yang bersusun justru salah arah. */
   bergaris?: boolean
 }) {
-  /* Ikonnya lebar 18px dan jaraknya ke label 8px. Angka dan keterangan di
-     bawahnya digeser sejauh itu supaya ketiganya mulai di garis tegak yang
-     sama, sejajar huruf pertama labelnya. Tanpa geseran ini angkanya mulai
-     di bawah ikon, menjorok ke kiri sendirian, dan tepi kiri baris jadi
-     bergerigi. */
-  const geser = 26
-
   return (
     <div
       className={`sm:pr-6${bergaris ? " border-t pt-5 sm:border-t-0 sm:border-l sm:pl-6 sm:pt-0" : ""}`}
@@ -451,11 +465,10 @@ function BarisKomposisi({
         style={{ paddingLeft: geser }}
       >
         <span className="tabular-nums" style={{ color: warna }}>{nilai}</span>
-        {/* Satuannya lebih kecil daripada angkanya. Sama besar, kata
-            "lapak" menuntut perhatian yang sama dengan angkanya --
-            padahal ia sama di ketiga kolom dan tidak membawa kabar apa
-            pun; yang berbeda cuma angkanya. */}
-        <span className="ml-1 text-[15px] font-bold" style={{ color: "var(--foreground)" }}>{satuan}</span>
+        {/* Jaraknya dipasang lewat margin, bukan spasi di dalam teks:
+            lebar spasi ikut mengecil pada huruf tebal, dan angka berwarna
+            yang menempel pada katanya jadi terbaca sebagai satu kata. */}
+        <span className="ml-1.5" style={{ color: "var(--foreground)" }}>{satuan}</span>
       </p>
       <p className="mt-2 text-[12px] leading-none" style={{ color: "var(--muted-faint)", paddingLeft: geser }}>{sub}</p>
     </div>
