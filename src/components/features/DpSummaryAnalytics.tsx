@@ -85,7 +85,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         <div className="stat-tile">
           <span className="stat-label">DP Disetujui</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(totalApproved)}</span>
+            <span className="stat-value">{fmtRp(totalApproved)}</span>
           </div>
           <span className="stat-delta flat">Total yang pernah dicairkan</span>
         </div>
@@ -93,7 +93,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         <div className="stat-tile">
           <span className="stat-label">Sudah Terpakai</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(totalUsed)}</span>
+            <span className="stat-value">{fmtRp(totalUsed)}</span>
           </div>
           <span className="stat-delta flat">Sudah dipotongkan di nota</span>
         </div>
@@ -101,7 +101,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         <div className={`stat-tile${totalRemaining > 0 ? " tone-warning" : ""}`}>
           <span className="stat-label">Masih Menggantung</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(totalRemaining)}</span>
+            <span className="stat-value">{fmtRp(totalRemaining)}</span>
           </div>
           <span className="stat-delta flat">
             {totalRemaining > 0 ? "Sudah keluar, belum jadi barang" : "Tidak ada yang menggantung"}

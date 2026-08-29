@@ -792,7 +792,7 @@ export default async function ManagerDashboard({
         <div className="stat-tile">
           <span className="stat-label">Total Tonase Bulan Ini</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{totalTonase.toFixed(2)}</span>
+            <span className="stat-value">{totalTonase.toFixed(2)}</span>
             <span className="stat-unit">Ton</span>
             {tonaseDeltaPct !== null && (
               <span className={`trend ${tonaseDeltaPct >= 0 ? "up" : "down"}`}>
@@ -808,7 +808,7 @@ export default async function ManagerDashboard({
         <div className="stat-tile">
           <span className="stat-label">Approval Harga</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{waitingApprovalHarga}</span>
+            <span className="stat-value">{waitingApprovalHarga}</span>
             <span className="stat-unit">item</span>
           </div>
           {waitingApprovalHarga > 0 ? (
@@ -824,7 +824,7 @@ export default async function ManagerDashboard({
         <div className="stat-tile">
           <span className="stat-label">Approval DP</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{waitingApprovalDP}</span>
+            <span className="stat-value">{waitingApprovalDP}</span>
             <span className="stat-unit">item</span>
           </div>
           {waitingApprovalDP > 0 ? (
@@ -840,7 +840,7 @@ export default async function ManagerDashboard({
         <div className="stat-tile">
           <span className="stat-label">Pengeluaran Bulan Ini</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(globalExpenses.bulanan)}</span>
+            <span className="stat-value">{fmtRp(globalExpenses.bulanan)}</span>
             {expenseDeltaPct !== null && (
               /* Pengeluaran naik itu kabar buruk, jadi panah naik sengaja
                  diberi warna danger -- kebalikan dari metrik tonase. */

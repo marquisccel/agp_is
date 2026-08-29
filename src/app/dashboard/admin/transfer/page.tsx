@@ -97,7 +97,7 @@ export default async function AdminTransferPage() {
           <div key={card.label} className={`stat-tile ${card.tone}`}>
             <span className="stat-label">{card.label}</span>
             <div className="stat-value-row">
-              <span className="stat-value font-mono">{card.value}</span>
+              <span className="stat-value">{card.value}</span>
               <span className="stat-unit">{card.satuan}</span>
             </div>
             <span className="stat-delta flat">{card.sub} &middot; {card.description}</span>

@@ -411,6 +411,12 @@ a:focus-visible {
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--foreground);
+  /* Dulu ditempel per pemakaian sebagai kelas font-mono, dan 8 dari 26
+     pemakaian kelewat -- Master Data dan Laporan jadi satu-satunya
+     halaman yang angkanya berbeda bentuk dari halaman lain. Ditetapkan
+     di sini supaya tidak bisa lupa lagi. */
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-tile .stat-unit {
@@ -1373,9 +1379,32 @@ a:focus-visible {
    2. Tabel memakai layout otomatis, jadi sisa lebar dibagi rata dan kolom
       aksi jadi jauh lebih lebar daripada isinya. width: 1% memaksa kolom
       menyusut sampai sepas isinya; nowrap menahan tombol tetap sebaris. */
+/* Sel angka di dalam tabel: sejajar per digit dan sebentuk dengan angka
+   di kartu statistik, supaya kolom yang dibandingkan bisa dibaca menurun
+   tanpa digitnya bergeser-geser. */
+.tabel-lembut thead th.angka-tabel,
+.tabel-lembut tbody td.angka-tabel {
+  /* Rata kanan ikut ditetapkan di sini, bukan lewat utilitas .text-right:
+     aturan .tabel-lembut thead th mengunci text-align: left dengan
+     kekhususan 0-1-2, jadi .text-right (0-1-0) diam-diam tidak berlaku
+     pada judul kolom dan angkanya jadi tidak sejajar dengan judulnya. */
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tabel-lembut tbody td.angka-tabel {
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
 .tabel-lembut thead th.kolom-aksi,
 .tabel-lembut tbody td.kolom-aksi {
-  text-align: right;
+  /* Rata kiri, sama seperti seluruh kolom lain. Percobaan rata kanan
+     membuat kolom ini satu-satunya yang berbeda arah, dan mata langsung
+     tersandung di situ saat memindai barisnya.
+
+     width: 1% memaksa kolom menyusut sepas isinya; tanpa itu tabel
+     membagi sisa lebar rata dan judul "Aksi" terlempar jauh dari
+     tombolnya. nowrap menahan tombol tetap sebaris. */
   width: 1%;
   white-space: nowrap;
 }

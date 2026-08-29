@@ -133,21 +133,21 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         <div className="stat-tile">
           <span className="stat-label">Ditimbang di Lapak</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalLapak)}</span>
+            <span className="stat-value">{fmtKg(filteredSummary.totalLapak)}</span>
           </div>
           <span className="stat-delta flat">Menurut timbangan lapak</span>
         </div>
         <div className="stat-tile">
           <span className="stat-label">Ditimbang di Gudang</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalGudang)}</span>
+            <span className="stat-value">{fmtKg(filteredSummary.totalGudang)}</span>
           </div>
           <span className="stat-delta flat">Menurut timbangan gudang</span>
         </div>
         <div className={`stat-tile${filteredSummary.totalSusut > 0 ? " tone-danger" : ""}`}>
           <span className="stat-label">Susut</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalSusut)}</span>
+            <span className="stat-value">{fmtKg(filteredSummary.totalSusut)}</span>
           </div>
           <span className="stat-delta flat">
             {filteredSummary.totalSusut > 0 ? `${fmtPct(filteredSusutPct)} dari timbangan lapak` : "Tidak ada yang menyusut"}
@@ -160,7 +160,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         <div className={`stat-tile${filteredSummary.totalLebih > 0 ? " tone-success" : ""}`}>
           <span className="stat-label">Lebih</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtKg(filteredSummary.totalLebih)}</span>
+            <span className="stat-value">{fmtKg(filteredSummary.totalLebih)}</span>
           </div>
           <span className="stat-delta flat">
             {filteredSummary.totalLebih > 0 ? `${fmtPct(filteredLebihPct)} dari timbangan lapak` : "Tidak ada kelebihan"}

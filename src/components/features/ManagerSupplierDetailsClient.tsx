@@ -478,7 +478,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         <div className="stat-tile">
           <span className="stat-label">Total Volume</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtKg(totalVolumeKg)}</span>
+            <span className="stat-value">{fmtKg(totalVolumeKg)}</span>
           </div>
           <span className="stat-delta flat">{fmtTon(totalVolumeKg)}</span>
         </div>
@@ -486,7 +486,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         <div className="stat-tile">
           <span className="stat-label">Total Transaksi</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{totalTransactions}</span>
+            <span className="stat-value">{totalTransactions}</span>
             <span className="stat-unit">kali</span>
           </div>
           <span className="stat-delta flat">Sejak lapak terdaftar</span>
@@ -495,7 +495,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         <div className="stat-tile">
           <span className="stat-label">Nilai Pembelian</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(totalValue)}</span>
+            <span className="stat-value">{fmtRp(totalValue)}</span>
           </div>
           <span className="stat-delta flat">Sudah dibayar ke lapak</span>
         </div>
@@ -506,7 +506,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
         <div className={`stat-tile${remainingDp > 0 ? " tone-warning" : ""}`}>
           <span className="stat-label">Sisa Saldo Kasbon</span>
           <div className="stat-value-row">
-            <span className="stat-value font-mono">{fmtRp(remainingDp)}</span>
+            <span className="stat-value">{fmtRp(remainingDp)}</span>
           </div>
           <span className="stat-delta flat">
             {remainingDp > 0 ? "Belum dipakai di nota mana pun" : "Tidak ada saldo menggantung"}

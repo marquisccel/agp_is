@@ -9,6 +9,7 @@ import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import { hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
+import { namaGudang } from "@/lib/namaGudang"
 
 interface Warehouse { id: string; nama: string; lokasi: string }
 
@@ -83,12 +84,7 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
   return (
     <form onSubmit={simpan} className="section section-body space-y-4">
       {toastHost}
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-bold text-slate-900">Daftarkan Akun Baru</h3>
-        <button type="button" onClick={() => { reset(); setTerbuka(false) }} className="text-xs font-semibold text-slate-500">
-          Batal
-        </button>
-      </div>
+      <h3 className="text-sm font-bold text-slate-900">Daftarkan Akun Baru</h3>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="space-y-1.5">
@@ -148,13 +144,28 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
         )}
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="premium-button btn-primer rounded-xl px-6 py-2.5 text-sm font-bold disabled:opacity-70"
-      >
-        {loading ? "Menyimpan..." : "Buat Akun"}
-      </button>
+      {/* Batal berdampingan dengan Buat Akun. Sebelumnya ia menyendiri di
+          pojok kanan atas, sejajar judul dan jauh dari tombol simpan --
+          dari sana tidak jelas apa yang dibatalkan: formulirnya, satu
+          isian, atau seluruh halaman. Dua tombol yang mengakhiri formulir
+          yang sama seharusnya berdiri berdampingan. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={loading}
+          className="premium-button btn-primer rounded-xl px-6 py-2.5 text-sm font-bold disabled:opacity-70"
+        >
+          {loading ? "Menyimpan..." : "Buat Akun"}
+        </button>
+        <button
+          type="button"
+          onClick={() => { reset(); setTerbuka(false) }}
+          disabled={loading}
+          className="premium-button btn-netral rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-50"
+        >
+          Batal
+        </button>
+      </div>
     </form>
   )
 }
@@ -176,6 +187,9 @@ interface SupplierStat {
   totalNilai: number
   totalKg: number
   lastPurchase: string | null
+  grade: "A" | "B" | "C" | "-"
+  gradeLabel: string
+  gradeNada: string
 }
 interface UserData {
   id: string
@@ -340,7 +354,7 @@ function TabelPengguna({ users }: { users: UserData[] }) {
                   <td><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
                   <td style={{ color: "var(--muted)" }}>{user.warehouse?.nama || "-"}</td>
                   <td className="kolom-aksi">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => ubahStatus(user)}
@@ -522,11 +536,18 @@ export default function MasterDataClient({
           </section>
 
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
-            {/* Keduanya memakai .rank-list -- pola daftar peringkat yang
-                sudah ada di sistem desain tapi belum pernah dipakai.
-                Gudang kini diurutkan menurun, jadi yang terbesar langsung
-                di atas; sebelumnya urutannya mengikuti urutan data dan
-                bar terbesarnya berwarna hitam pekat. */}
+            {/* Dua kartu ini dulu sama-sama daftar peringkat berbar. Bar
+                yang sama dipakai dua kali berdampingan membuat keduanya
+                terbaca seperti satu grafik yang terpotong, dan tidak ada
+                yang membedakan mana yang perlu dibaca lebih dulu.
+
+                Sekarang masing-masing memakai bentuk yang sesuai isinya.
+                Performa Gudang membandingkan beberapa besaran berbeda
+                (jumlah lapak, transaksi, tonase, nilai) untuk tiga gudang
+                saja -- yang dicari pembacanya angka, bukan proporsi, jadi
+                tabel lebih jujur. Lapak Teratas membandingkan satu besaran
+                yang sama antar lima lapak, dan di situlah bar benar-benar
+                berguna: proporsinya terbaca tanpa perlu membagi angka. */}
             <section className="section">
               <div className="section-shell-head">
                 <div>
@@ -534,8 +555,17 @@ export default function MasterDataClient({
                   <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Performa Gudang</h3>
                 </div>
               </div>
-              <div className="section-body">
-                <div className="rank-list">
+              <table className="tabel-lembut text-sm">
+                <thead>
+                  <tr>
+                    <th>Gudang</th>
+                    <th className="angka-tabel">Lapak</th>
+                    <th className="angka-tabel">Transaksi</th>
+                    <th className="angka-tabel">Tonase</th>
+                    <th className="angka-tabel">Nilai</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {warehouses
                     .map((warehouse) => {
                       const wSuppliers = suppliers.filter((supplier) => supplier.warehouseId === warehouse.id)
@@ -548,27 +578,17 @@ export default function MasterDataClient({
                       }
                     })
                     .sort((a, b) => b.kg - a.kg)
-                    .map((baris, idx, semua) => {
-                      const maxKg = Math.max(semua[0]?.kg ?? 0, 1)
-                      return (
-                        <div key={baris.warehouse.id} className={`rank-row${idx === 0 && baris.kg > 0 ? " rank-first" : ""}`}>
-                          <span className="rank-num">{idx + 1}</span>
-                          <div className="min-w-0">
-                            <div className="rank-name truncate">{baris.warehouse.nama}</div>
-                            <div className="rank-sub">{baris.jumlahLapak} lapak, {baris.trx} transaksi selesai</div>
-                          </div>
-                          <div className="rank-bar-track">
-                            <div className="rank-bar-fill" style={{ width: `${Math.min((baris.kg / maxKg) * 100, 100)}%` }} />
-                          </div>
-                          <div className="rank-value">
-                            {fmtKg(baris.kg)}
-                            <div className="rank-sub">{fmtRp(baris.nilai)}</div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                </div>
-              </div>
+                    .map((baris) => (
+                      <tr key={baris.warehouse.id}>
+                        <td className="font-bold" style={{ color: "var(--foreground)" }}>{namaGudang(baris.warehouse.nama)}</td>
+                        <td className="angka-tabel">{baris.jumlahLapak}</td>
+                        <td className="angka-tabel">{baris.trx}</td>
+                        <td className="angka-tabel" style={{ color: "var(--foreground)", fontWeight: 700 }}>{fmtKg(baris.kg)}</td>
+                        <td className="angka-tabel">{fmtRp(baris.nilai)}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </section>
 
             <section className="section">
@@ -581,17 +601,27 @@ export default function MasterDataClient({
               <div className="section-body">
                 <div className="rank-list">
                   {[...suppliers].sort((a, b) => b.totalKg - a.totalKg).slice(0, 5).map((supplier, idx, semua) => {
-                    const maxKg = Math.max(semua[0]?.totalKg ?? 0, 1)
+                    const maxKg = semua[0]?.totalKg ?? 0
+                    // Saat belum ada tonase sama sekali, bar-nya tidak
+                    // digambar. Lima batang kosong berjejer terbaca seperti
+                    // grafik yang gagal dimuat, padahal keadaannya sekadar
+                    // belum ada transaksi.
+                    const adaData = maxKg > 0
                     return (
                       <div key={supplier.id} className={`rank-row${idx === 0 && supplier.totalKg > 0 ? " rank-first" : ""}`}>
                         <span className="rank-num">{idx + 1}</span>
                         <div className="min-w-0">
                           <div className="rank-name truncate">{supplier.nama}</div>
+                          <div className="rank-sub">{supplier.warehouse ? namaGudang(supplier.warehouse.nama) : "Tanpa gudang"}</div>
                         </div>
-                        <div className="rank-bar-track">
-                          <div className="rank-bar-fill" style={{ width: `${Math.min((supplier.totalKg / maxKg) * 100, 100)}%` }} />
-                        </div>
-                        <div className="rank-value">{fmtKg(supplier.totalKg)}</div>
+                        {adaData ? (
+                          <div className="rank-bar-track">
+                            <div className="rank-bar-fill" style={{ width: `${Math.min((supplier.totalKg / maxKg) * 100, 100)}%` }} />
+                          </div>
+                        ) : (
+                          <div />
+                        )}
+                        <div className="rank-value">{adaData ? fmtKg(supplier.totalKg) : "Belum ada"}</div>
                       </div>
                     )
                   })}
@@ -614,7 +644,7 @@ export default function MasterDataClient({
               menuClassName="w-56"
               options={[
                 { value: "all", label: "Semua Gudang" },
-                ...warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.nama })),
+                ...warehouses.map((warehouse) => ({ value: warehouse.id, label: namaGudang(warehouse.nama) })),
               ]}
             />
             <ElegantSelect
@@ -634,10 +664,15 @@ export default function MasterDataClient({
             Menampilkan <strong>{filteredSuppliers.length}</strong> dari {suppliers.length} lapak, diurutkan dari tonase terbesar.
           </p>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Satu kartu per baris, sama seperti menu Data Lapak. Dua kolom
+              memaksa nama lapak terpotong dan membuat empat angka di
+              dalamnya berdesakan, padahal isinya sama persis dengan yang
+              di Data Lapak. Dua halaman yang menampilkan hal yang sama
+              sebaiknya tidak berbeda bentuk. */}
+          <div className="grid grid-cols-1 gap-4">
             {filteredSuppliers.length === 0 ? (
               <EmptyState text="Tidak ada lapak yang cocok." />
-            ) : filteredSuppliers.map((supplier, idx) => (
+            ) : filteredSuppliers.map((supplier) => (
               <div key={supplier.id} className="section section-body">
                 <div className="flex items-start justify-between gap-4">
                   {/* Badge "Hijau"/"Merah" dulu cuma menyebut warnanya, jadi
@@ -655,7 +690,7 @@ export default function MasterDataClient({
                       <p className="truncate text-base font-black text-slate-950">{supplier.nama}</p>
                     </div>
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
-                      <span>{supplier.warehouse?.nama || "-"}</span>
+                      <span>{supplier.warehouse ? namaGudang(supplier.warehouse.nama) : "-"}</span>
                       <span aria-hidden="true">&middot;</span>
                       <span>{supplier.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
                       <span aria-hidden="true">&middot;</span>
@@ -668,7 +703,21 @@ export default function MasterDataClient({
                       </span>
                     </div>
                   </div>
-                  <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>#{idx + 1}</span>
+                  {/* Dulu "#1", "#2" -- nomor urut yang cuma menyatakan posisi
+                      di daftar yang sedang disaring, jadi ikut berubah tiap
+                      kali filternya diubah dan tidak mengatakan apa pun
+                      tentang lapaknya. Grade menyatakan sesuatu yang melekat
+                      pada lapak itu sendiri, dan sama dengan yang tampil di
+                      menu Data Lapak. */}
+                  <span
+                    className="shrink-0 rounded-full px-3 py-1 text-xs font-black"
+                    style={{ background: "var(--bg-tint)", color: supplier.gradeNada }}
+                    title={supplier.grade === "-"
+                      ? "Belum ada transaksi, jadi belum bisa dinilai"
+                      : `Grade ${supplier.grade}, ${supplier.gradeLabel}`}
+                  >
+                    {supplier.grade === "-" ? "Belum dinilai" : `Grade ${supplier.grade}`}
+                  </span>
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <MiniStat label="Transaksi" value={supplier.totalTransaksi.toString()} />
@@ -726,7 +775,7 @@ export default function MasterDataClient({
               menuClassName="w-56"
               options={[
                 { value: "all", label: "Semua Gudang" },
-                ...warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.nama })),
+                ...warehouses.map((warehouse) => ({ value: warehouse.id, label: namaGudang(warehouse.nama) })),
               ]}
             />
           </FilterBar>
@@ -740,7 +789,7 @@ export default function MasterDataClient({
                   <div className="section-shell-head">
                     <div>
                       <span className="section-eyebrow">Standar harga</span>
-                      <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{warehouse.nama}</h3>
+                      <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{namaGudang(warehouse.nama)}</h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <Database className="h-4 w-4" style={{ color: "var(--brand-strong)" }} />
