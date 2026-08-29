@@ -1398,13 +1398,15 @@ a:focus-visible {
 
 .tabel-lembut thead th.kolom-aksi,
 .tabel-lembut tbody td.kolom-aksi {
-  /* Rata kiri, sama seperti seluruh kolom lain. Percobaan rata kanan
-     membuat kolom ini satu-satunya yang berbeda arah, dan mata langsung
-     tersandung di situ saat memindai barisnya.
+  /* Judul dan tombolnya sama-sama di tengah kolom. Kolom ini berisi
+     kendali, bukan data yang dibaca menurun seperti kolom lain, jadi
+     tidak ada tepi kiri yang perlu disejajarkan -- yang penting judul
+     dan tombolnya bertumpuk rapi di sumbu yang sama.
 
      width: 1% memaksa kolom menyusut sepas isinya; tanpa itu tabel
-     membagi sisa lebar rata dan judul "Aksi" terlempar jauh dari
-     tombolnya. nowrap menahan tombol tetap sebaris. */
+     membagi sisa lebar rata dan judulnya terlempar jauh dari tombol.
+     nowrap menahan tombol tetap sebaris. */
+  text-align: center;
   width: 1%;
   white-space: nowrap;
 }

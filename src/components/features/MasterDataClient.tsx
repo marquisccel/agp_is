@@ -354,7 +354,7 @@ function TabelPengguna({ users }: { users: UserData[] }) {
                   <td><span className="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>{user.role}</span></td>
                   <td style={{ color: "var(--muted)" }}>{user.warehouse?.nama || "-"}</td>
                   <td className="kolom-aksi">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2">
                       <button
                         type="button"
                         onClick={() => ubahStatus(user)}

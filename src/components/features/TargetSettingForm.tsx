@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, CalendarDays, CheckCircle2, Loader2, Recycle, Save } from "lucide-react"
+import { AlertTriangle, CalendarDays, CheckCircle2, Loader2, Save } from "lucide-react"
 import type { Warehouse, WarehouseTarget } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { getWorkingDaysInMonth } from "@/lib/workingDays"
@@ -168,7 +168,10 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
             <div>
               <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-950">Periode Target Gudang</h3>
               <p className="mt-1 text-sm leading-6 text-slate-500">
-                {workingDaysThisMonth} hari kerja efektif untuk periode ini. Target mingguan dan harian dihitung otomatis dari target bulanan.
+                {workingDaysThisMonth} hari kerja efektif untuk periode ini, dihitung Senin sampai Sabtu
+                dikurangi hari libur nasional. Cukup isi <span className="font-semibold text-slate-700">target
+                bulanan</span> tiap gudang dalam ton; mingguan dan harian terisi sendiri dari jumlah hari
+                kerja itu, dan tetap bisa kamu ubah kalau perlu disesuaikan.
               </p>
             </div>
           </div>
@@ -219,7 +222,6 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                       berhuruf justru menambah beban baca. */}
                   <div>
                     <h3 className="font-black text-slate-950">{labelGudang}</h3>
-                    <p className="mt-1 text-xs text-slate-500">Target pembelian bahan baku PET Final</p>
                   </div>
                   <div className="rounded-full border px-3 py-1 text-xs font-black" style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}>
                     {workingDaysThisMonth} hari kerja
@@ -228,15 +230,22 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
 
                 <div className="p-5">
                   <div className="rounded-[var(--radius-md)] border p-4" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-                    <div className="mb-4 flex items-center gap-2.5">
-                      <div className="grid h-9 w-9 place-items-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-                        <Recycle className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-black text-slate-950">PET Final</div>
-                        <div className="text-xs text-slate-500">Masukkan target bulanan, sistem menghitung baseline mingguan dan harian.</div>
-                      </div>
-                    </div>
+                    {/* Dulu di sini ada lambang daur ulang dengan tulisan
+                        "PET Final" di sebelahnya. Kata itu sudah muncul di
+                        judul halaman dan di subjudul kartu ini, sementara
+                        di dalam kartu hanya ada satu kelompok target --
+                        jadi menamainya lagi tidak membedakan apa pun dari
+                        apa. Kalimat di bawahnya pun mengulang keterangan
+                        yang sudah ada di kotak Periode, dan menyebutnya
+                        "baseline", istilah yang tidak dipakai siapa pun di
+                        gudang.
+
+                        Keterangan yang benar-benar dibutuhkan -- cukup isi
+                        satu kolom, dua sisanya terisi sendiri, dan boleh
+                        ditimpa -- dipindah ke kotak Periode di atas. Di
+                        sana ia muncul sekali; di sini ia akan terulang
+                        sekali untuk tiap gudang, padahal isinya sama
+                        persis. */}
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       <TargetInput
