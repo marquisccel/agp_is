@@ -288,7 +288,7 @@ function DonatKomposisi({
           dan kelengkapan koordinat jadi kelompok kedua di kanan, dipisah
           satu garis. Sisa ruang jatuh di antara kedua kelompok, tempat yang
           memang seharusnya kosong. */}
-      <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+      <div className="flex flex-col gap-7 xl:flex-row xl:items-center xl:justify-between xl:gap-10">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
         <div className="relative shrink-0">
           <svg width="152" height="152" viewBox="0 0 152 152" role="img" aria-label={`${aktif} dari ${total} lapak sudah aktif`}>
@@ -353,7 +353,7 @@ function DonatKomposisi({
             36% terbaca sebagai jarak yang jauh, padahal yang ingin
             ditunjukkan justru betapa sedikitnya. */}
         <div
-          className="flex w-full items-center gap-5 border-t pt-6 lg:w-auto lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10"
+          className="flex w-full items-center gap-5 border-t pt-6 xl:w-auto xl:border-t-0 xl:border-l xl:pt-0 xl:pl-10"
           style={{ borderColor: "var(--border)" }}
         >
           {/* Cincin kedua, jauh lebih kecil daripada cincin komposisi.
@@ -462,7 +462,7 @@ function BarisKomposisi({
       <div className="flex items-center gap-2">
         {ikon}
         <span
-          className="text-[10.5px] font-bold uppercase leading-none tracking-[0.1em]"
+          className="whitespace-nowrap text-[10.5px] font-bold uppercase leading-none tracking-[0.1em]"
           style={{ color: warna }}
         >
           {label}
