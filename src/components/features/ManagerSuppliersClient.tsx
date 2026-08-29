@@ -647,10 +647,22 @@ export default function ManagerSuppliersClient({
                     sub={perf.totalTransactions === 0 ? "Belum ada data" : perf.pctSusut === 0 ? "Timbangan cocok" : `${fmtKg(perf.totalSusut)} tidak sampai gudang`}
                     tone={perf.totalTransactions === 0 || perf.pctSusut === 0 ? "neutral" : perf.pctSusut <= 3 ? "warn" : "bad"}
                   />
+                  {/* Nilainya berupa KATA, bukan angka telanjang.
+                      Sebelumnya kolom berjudul "Harga" menampilkan angka 1
+                      berukuran besar, dan sekilas terbaca "harganya cuma 1"
+                      -- padahal maksudnya satu transaksi melebihi standar.
+                      Angkanya turun ke baris keterangan, tempat ia punya
+                      satuan yang menjelaskannya. */}
                   <Signal
                     label="Harga"
-                    value={perf.totalTransactions === 0 ? "-" : perf.warningCount > 0 ? String(perf.warningCount) : "Aman"}
-                    sub={perf.totalTransactions === 0 ? "Belum ada data" : perf.warningCount > 0 ? "transaksi di atas standar" : "Semua di bawah standar"}
+                    value={perf.totalTransactions === 0 ? "-" : perf.warningCount > 0 ? "Di atas standar" : "Aman"}
+                    sub={
+                      perf.totalTransactions === 0
+                        ? "Belum ada data"
+                        : perf.warningCount > 0
+                          ? `${perf.warningCount} transaksi melebihi batas`
+                          : "Semua di bawah standar"
+                    }
                     tone={perf.totalTransactions === 0 ? "neutral" : perf.warningCount > 0 ? "bad" : "good"}
                   />
                 </div>
@@ -984,7 +996,15 @@ function Signal({
   return (
     <div className="px-4 py-3.5" style={{ background: "var(--surface)" }}>
       <span className="field-label">{label}</span>
-      <p className="mt-0.5 text-lg font-black leading-tight tabular-nums" style={{ color: warna }}>{value}</p>
+      {/* Ukurannya menyesuaikan panjang isinya: angka pendek boleh besar,
+          kalimat pendek seperti "Di atas standar" akan terpotong kalau
+          dipaksa sebesar itu. */}
+      <p
+        className={`mt-0.5 font-black leading-tight tabular-nums ${value.length > 6 ? "text-sm" : "text-lg"}`}
+        style={{ color: warna }}
+      >
+        {value}
+      </p>
       {sub && (
         <p className="mt-0.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
       )}

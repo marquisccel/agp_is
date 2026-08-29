@@ -245,11 +245,11 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
             <table className="tabel-lembut w-full text-sm">
               <thead>
                 <tr>
-                  <th className="kolom-tengah w-12">#</th>
+                  <th className="kolom-tengah w-14">No</th>
                   <th className="kolom-kiri">Lapak</th>
                   <th className="kolom-kanan">Timbang Lapak</th>
                   <th className="kolom-kanan">Timbang Gudang</th>
-                  <th className="kolom-kanan">Selisih</th>
+                  <th className="kolom-tengah">Selisih</th>
                   <th className="kolom-tengah w-32">Aksi</th>
                 </tr>
               </thead>
@@ -271,7 +271,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                       {/* Nadanya mengikuti keadaan: memerah hanya kalau ada
                           yang menyusut, menghijau kalau justru berlebih, dan
                           abu kalau timbangannya cocok. */}
-                      <td className="kolom-kanan whitespace-nowrap font-mono font-bold tabular-nums"
+                      <td className="kolom-tengah whitespace-nowrap font-mono font-bold tabular-nums"
                           style={{ color: adaSusut ? "var(--danger)" : adaLebih ? "var(--success)" : "var(--muted-faint)" }}>
                         {adaSusut
                           ? `-${fmtKg(row.totalSusut)} (${fmtPct(row.pctSusut)})`

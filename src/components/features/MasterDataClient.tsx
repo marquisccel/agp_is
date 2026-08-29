@@ -241,6 +241,47 @@ function fmtKg(n: number) {
  * yang sudah punya jejak, jadi urutan ini cuma menyelaraskan tampilan
  * dengan aturan yang sudah ditegakkan di belakang.
  */
+/**
+ * Satu kolom di kartu Komposisi.
+ *
+ * Angkanya berdiri paling besar, persentasenya menempel di sebelahnya
+ * dengan ukuran lebih kecil -- keduanya menerangkan hal yang sama, jadi
+ * kalau sama besar mata harus memilih mana yang dibaca lebih dulu.
+ */
+function KomposisiKolom({
+  warna,
+  label,
+  nilai,
+  sisi,
+  sub,
+  bergaris = false,
+}: {
+  warna: string
+  label: string
+  nilai: number
+  sisi: string
+  sub: string
+  /** Garis pemisah di kiri; tidak dipasang pada kolom pertama. */
+  bergaris?: boolean
+}) {
+  return (
+    <div
+      className={`px-5 py-1 sm:px-6${bergaris ? " sm:border-l" : ""}`}
+      style={bergaris ? { borderColor: "var(--border)" } : undefined}
+    >
+      <div className="flex items-center gap-2">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: warna }} aria-hidden="true" />
+        <span className="field-label" style={{ marginBottom: 0 }}>{label}</span>
+      </div>
+      <div className="mt-1.5 flex items-baseline gap-2">
+        <span className="text-2xl font-black leading-none tabular-nums" style={{ color: warna }}>{nilai}</span>
+        <span className="font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted-faint)" }}>{sisi}</span>
+      </div>
+      <p className="mt-1 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
+    </div>
+  )
+}
+
 function TabelPengguna({ users }: { users: UserData[] }) {
   const router = useRouter()
   const { confirm, dialog } = useConfirm()
@@ -496,44 +537,45 @@ export default function MasterDataClient({
                 </span>
               </div>
             </div>
-            {/* Dulu sebuah bar bertumpuk hijau-merah, dengan tiga angka di
-                bawahnya. Yang membuatnya janggal: bar itu cuma memuat Aktif
-                dan Belum aktif, sementara "Berkoordinat" berdiri sejajar di
-                sebelahnya seolah bagian dari pembagian yang sama -- padahal
-                ia ukuran yang berbeda, dan lapak bisa aktif sekaligus belum
-                berkoordinat.
+            {/* Tiga kolom datar, dipisah garis tipis, tanpa kotak sendiri.
 
-                Diganti pita statistik, pola yang sudah dipakai di seluruh
-                aplikasi untuk sekumpulan angka sejenis. Tiap angka membawa
-                pembaginya sendiri, jadi proporsinya tetap terbaca tanpa
-                perlu digambar. */}
-            <div className="stat-strip strip-3">
-              <div className="stat-tile">
-                <span className="stat-label">Aktif</span>
-                <div className="stat-value-row">
-                  <span className="stat-value" style={{ color: "var(--success)" }}>{globalStats.totalGreenSuppliers}</span>
-                </div>
-                <span className="stat-delta flat">
-                  {persen(globalStats.totalGreenSuppliers, globalStats.totalSuppliers)} sudah bertransaksi
-                </span>
-              </div>
-              <div className={`stat-tile${globalStats.totalRedSuppliers > 0 ? " tone-warning" : ""}`}>
-                <span className="stat-label">Belum aktif</span>
-                <div className="stat-value-row">
-                  <span className="stat-value">{globalStats.totalRedSuppliers}</span>
-                </div>
-                <span className="stat-delta flat">
-                  {globalStats.totalRedSuppliers > 0 ? "Perlu aktivasi" : "Semua sudah aktif"}
-                </span>
-              </div>
-              <div className="stat-tile">
-                <span className="stat-label">Berkoordinat</span>
-                <div className="stat-value-row">
-                  <span className="stat-value">{globalStats.totalMapReadySuppliers}</span>
-                </div>
-                <span className="stat-delta flat">
-                  {persen(globalStats.totalMapReadySuppliers, globalStats.totalSuppliers)} siap dipetakan
-                </span>
+                Dua bentuk sebelumnya sama-sama meleset. Bar bertumpuk
+                hijau-merah keliru karena "Berkoordinat" bukan bagian dari
+                pembagian yang sama -- satu lapak bisa aktif SEKALIGUS belum
+                berkoordinat. Penggantinya, pita statistik, keliru karena
+                bentuknya persis sama dengan pita empat angka tepat di
+                atasnya: dua pita bertepi menempel bertumpuk, dan yang
+                terbaca justru satu blok yang saling tindih.
+
+                Bentuk ini sengaja TIDAK memakai kotak bertepi. Ia bagian
+                dalam dari satu kartu, bukan pita yang berdiri sendiri, jadi
+                garis pemisah setipis satu pixel sudah cukup memisahkan
+                ketiganya tanpa menambah tepi baru di layar. */}
+            <div className="section-body">
+              <div className="grid grid-cols-1 sm:grid-cols-3">
+                <KomposisiKolom
+                  warna="var(--success)"
+                  label="Aktif"
+                  nilai={globalStats.totalGreenSuppliers}
+                  sisi={persen(globalStats.totalGreenSuppliers, globalStats.totalSuppliers)}
+                  sub="sudah bertransaksi"
+                />
+                <KomposisiKolom
+                  warna="var(--danger)"
+                  label="Belum aktif"
+                  nilai={globalStats.totalRedSuppliers}
+                  sisi={persen(globalStats.totalRedSuppliers, globalStats.totalSuppliers)}
+                  sub={globalStats.totalRedSuppliers > 0 ? "perlu aktivasi" : "semua sudah aktif"}
+                  bergaris
+                />
+                <KomposisiKolom
+                  warna="var(--muted-faint)"
+                  label="Berkoordinat"
+                  nilai={globalStats.totalMapReadySuppliers}
+                  sisi={persen(globalStats.totalMapReadySuppliers, globalStats.totalSuppliers)}
+                  sub="siap dipetakan"
+                  bergaris
+                />
               </div>
             </div>
           </section>
