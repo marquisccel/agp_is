@@ -15,7 +15,8 @@
     "audit:data": "node scripts/audit-data.mjs",
     "buat:favicon": "node scripts/buat-favicon.mjs",
     "periksa:latar": "node scripts/periksa-latar.mjs",
-    "siapkan:produksi": "node scripts/siapkan-produksi.mjs"
+    "siapkan:produksi": "node scripts/siapkan-produksi.mjs",
+    "periksa:storage": "tsx scripts/periksa-storage.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1115.0",
