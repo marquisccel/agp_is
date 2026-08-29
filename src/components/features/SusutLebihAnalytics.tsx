@@ -242,14 +242,25 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                 Dalam bentuk tabel, angka sejenis berbaris menurun sehingga
                 lapak mana yang paling banyak menyusut terbaca dari
                 panjangnya kolom, tanpa perlu membandingkan kotak per kotak. */}
-            <table className="tabel-lembut w-full text-sm">
+            {/* Lebarnya ditetapkan, bukan dibiarkan mengikuti isi.
+
+                Dengan lebar otomatis, seluruh sisa ruang tabel jatuh ke
+                kolom teks terpanjang -- yaitu Lapak. Akibatnya nama lapak
+                menempel di kiri sementara keempat kolom angka terdorong
+                menumpuk di tepi kanan, dengan lompatan kosong selebar
+                hampir sepertiga layar di antaranya.
+
+                Persentase membuat pembagiannya tetap sama di lebar layar
+                mana pun, dan mata tidak perlu melompat untuk menghubungkan
+                nama lapak dengan angkanya. */}
+            <table className="tabel-lembut w-full table-fixed text-sm">
               <thead>
                 <tr>
-                  <th className="kolom-tengah w-14">No</th>
-                  <th className="kolom-kiri">Lapak</th>
-                  <th className="kolom-kanan">Timbang Lapak</th>
-                  <th className="kolom-kanan">Timbang Gudang</th>
-                  <th className="kolom-tengah">Selisih</th>
+                  <th className="kolom-tengah w-12">No</th>
+                  <th className="kolom-kiri w-[30%]">Lapak</th>
+                  <th className="kolom-kanan w-[16%]">Timbang Lapak</th>
+                  <th className="kolom-kanan w-[16%]">Timbang Gudang</th>
+                  <th className="kolom-tengah w-[19%]">Selisih</th>
                   <th className="kolom-tengah w-32">Aksi</th>
                 </tr>
               </thead>
@@ -261,8 +272,12 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                     <tr key={row.supplierId}>
                       <td className="kolom-tengah font-mono text-xs" style={{ color: "var(--muted-faint)" }}>{idx + 1}</td>
                       <td className="kolom-kiri">
-                        <div className="font-bold" style={{ color: "var(--foreground)" }}>{row.namaLapak}</div>
-                        <div className="mt-0.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>
+                        {/* Dipotong dengan elipsis, bukan dibiarkan patah ke
+                            baris berikutnya: lebar kolomnya sudah tetap, dan
+                            nama yang melipat membuat tinggi barisnya tidak
+                            seragam. Nama utuhnya tetap terbaca lewat title. */}
+                        <div className="truncate font-bold" style={{ color: "var(--foreground)" }} title={row.namaLapak}>{row.namaLapak}</div>
+                        <div className="mt-0.5 truncate text-[11px]" style={{ color: "var(--muted-faint)" }}>
                           {namaGudang(row.warehouseName)} · {row.transaksi} transaksi
                         </div>
                       </td>

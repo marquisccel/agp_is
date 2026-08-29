@@ -242,13 +242,124 @@ function fmtKg(n: number) {
  * dengan aturan yang sudah ditegakkan di belakang.
  */
 /**
- * Satu kolom di kartu Komposisi.
+ * Cincin komposisi lapak: aktif dibanding belum aktif.
+ *
+ * Hanya DUA hal yang digambar di cincin ini, dan itu disengaja. Aktif dan
+ * belum aktif adalah pembagian yang utuh: setiap lapak masuk tepat satu di
+ * antaranya, dan jumlahnya persis sama dengan total. Cincin cuma jujur
+ * kalau potongannya begitu.
+ *
+ * "Berkoordinat" TIDAK ikut jadi potongan, walaupun sebelumnya ditampilkan
+ * berdampingan seolah setara. Satu lapak bisa aktif sekaligus belum
+ * berkoordinat, jadi kalau ketiganya dijadikan potongan, jumlah ketiganya
+ * melebihi total dan setiap persentasenya salah. Ia keadaan yang berbeda
+ * jenis -- seberapa banyak yang datanya sudah lengkap -- jadi digambar
+ * terpisah sebagai garis cakupan di bawah cincin.
+ *
+ * Cincin memakai pathLength=100 supaya panjang potongannya bisa ditulis
+ * langsung dalam persen, tanpa menghitung keliling lingkaran sendiri.
+ */
+function DonatKomposisi({
+  aktif,
+  belumAktif,
+  berkoordinat,
+  total,
+}: {
+  aktif: number
+  belumAktif: number
+  berkoordinat: number
+  total: number
+}) {
+  const bagian = (n: number) => (total > 0 ? (n / total) * 100 : 0)
+  const pAktif = bagian(aktif)
+  const pBelum = bagian(belumAktif)
+  const pKoordinat = bagian(berkoordinat)
+
+  // Sela kecil antar potongan supaya batasnya terbaca tanpa garis pemisah.
+  // Hanya dipasang kalau keduanya memang ada isinya; kalau salah satu nol,
+  // sela justru menyisakan celah pada cincin yang seharusnya utuh.
+  const sela = pAktif > 0 && pBelum > 0 ? 1 : 0
+
+  return (
+    <div className="section-body">
+      <div className="flex flex-col items-center gap-7 sm:flex-row sm:gap-9">
+        <div className="relative shrink-0">
+          <svg width="152" height="152" viewBox="0 0 152 152" role="img" aria-label={`${aktif} dari ${total} lapak sudah aktif`}>
+            {/* Diputar supaya potongan pertama mulai dari atas, bukan dari
+                kanan. Membaca lingkaran dari jam 12 searah jarum jam itu
+                kebiasaan yang tidak perlu dipelajari lagi. */}
+            <g transform="rotate(-90 76 76)">
+              <circle cx="76" cy="76" r="62" fill="none" stroke="var(--bg-tint)" strokeWidth="16" />
+              {pAktif > 0 && (
+                <circle
+                  cx="76" cy="76" r="62" fill="none" pathLength={100}
+                  stroke="var(--success)" strokeWidth="16" strokeLinecap="butt"
+                  strokeDasharray={`${Math.max(pAktif - sela, 0)} ${100 - Math.max(pAktif - sela, 0)}`}
+                />
+              )}
+              {pBelum > 0 && (
+                <circle
+                  cx="76" cy="76" r="62" fill="none" pathLength={100}
+                  stroke="var(--danger)" strokeWidth="16" strokeLinecap="butt"
+                  strokeDasharray={`${Math.max(pBelum - sela, 0)} ${100 - Math.max(pBelum - sela, 0)}`}
+                  strokeDashoffset={-pAktif}
+                />
+              )}
+            </g>
+          </svg>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-3xl font-black leading-none tabular-nums" style={{ color: "var(--foreground)" }}>
+              {total.toLocaleString("id-ID")}
+            </span>
+            <span className="mt-1 text-[10.5px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--muted-faint)" }}>
+              Lapak
+            </span>
+          </div>
+        </div>
+
+        <div className="w-full min-w-0">
+          <BarisKomposisi warna="var(--success)" label="Aktif" nilai={aktif} sisi={persen(aktif, total)} sub="sudah bertransaksi" />
+          <BarisKomposisi
+            warna="var(--danger)"
+            label="Belum aktif"
+            nilai={belumAktif}
+            sisi={persen(belumAktif, total)}
+            sub={belumAktif > 0 ? "perlu aktivasi" : "semua sudah aktif"}
+            bergaris
+          />
+
+          {/* Dipisahkan garis dan diberi bentuk yang berbeda dari dua baris
+              di atasnya, karena memang bukan bagian dari pembagian yang
+              sama. Garisnya menyatakan cakupan: berapa bagian dari seluruh
+              lapak yang koordinatnya sudah terisi. */}
+          <div className="mt-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="field-label" style={{ marginBottom: 0 }}>Berkoordinat</span>
+              <span className="font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted)" }}>
+                {berkoordinat} dari {total} &middot; {persen(berkoordinat, total)}
+              </span>
+            </div>
+            <div className="mt-2 h-[5px] w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+              <div className="h-full rounded-full" style={{ width: `${pKoordinat}%`, background: "var(--brand)" }} />
+            </div>
+            <p className="mt-1.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>
+              {berkoordinat < total ? `${total - berkoordinat} lapak belum bisa ditampilkan di peta` : "Semua lapak siap dipetakan"}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Satu baris keterangan di samping cincin.
  *
  * Angkanya berdiri paling besar, persentasenya menempel di sebelahnya
  * dengan ukuran lebih kecil -- keduanya menerangkan hal yang sama, jadi
  * kalau sama besar mata harus memilih mana yang dibaca lebih dulu.
  */
-function KomposisiKolom({
+function BarisKomposisi({
   warna,
   label,
   nilai,
@@ -261,23 +372,22 @@ function KomposisiKolom({
   nilai: number
   sisi: string
   sub: string
-  /** Garis pemisah di kiri; tidak dipasang pada kolom pertama. */
+  /** Garis pemisah di atas; tidak dipasang pada baris pertama. */
   bergaris?: boolean
 }) {
   return (
-    <div
-      className={`px-5 py-1 sm:px-6${bergaris ? " sm:border-l" : ""}`}
-      style={bergaris ? { borderColor: "var(--border)" } : undefined}
-    >
-      <div className="flex items-center gap-2">
-        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: warna }} aria-hidden="true" />
-        <span className="field-label" style={{ marginBottom: 0 }}>{label}</span>
+    <div className={bergaris ? "mt-3 border-t pt-3" : ""} style={bergaris ? { borderColor: "var(--border)" } : undefined}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: warna }} aria-hidden="true" />
+          <span className="truncate text-sm font-bold" style={{ color: "var(--foreground)" }}>{label}</span>
+        </div>
+        <div className="flex shrink-0 items-baseline gap-2">
+          <span className="text-2xl font-black leading-none tabular-nums" style={{ color: warna }}>{nilai}</span>
+          <span className="w-9 text-right font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted-faint)" }}>{sisi}</span>
+        </div>
       </div>
-      <div className="mt-1.5 flex items-baseline gap-2">
-        <span className="text-2xl font-black leading-none tabular-nums" style={{ color: warna }}>{nilai}</span>
-        <span className="font-mono text-xs font-bold tabular-nums" style={{ color: "var(--muted-faint)" }}>{sisi}</span>
-      </div>
-      <p className="mt-1 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
+      <p className="ml-4 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
     </div>
   )
 }
@@ -537,47 +647,25 @@ export default function MasterDataClient({
                 </span>
               </div>
             </div>
-            {/* Tiga kolom datar, dipisah garis tipis, tanpa kotak sendiri.
+            {/* Bentuk ketiga, dan dua sebelumnya sama-sama meleset.
 
-                Dua bentuk sebelumnya sama-sama meleset. Bar bertumpuk
-                hijau-merah keliru karena "Berkoordinat" bukan bagian dari
-                pembagian yang sama -- satu lapak bisa aktif SEKALIGUS belum
-                berkoordinat. Penggantinya, pita statistik, keliru karena
-                bentuknya persis sama dengan pita empat angka tepat di
-                atasnya: dua pita bertepi menempel bertumpuk, dan yang
-                terbaca justru satu blok yang saling tindih.
+                Bar bertumpuk hijau-merah keliru karena "Berkoordinat" ikut
+                dijadikan potongan, padahal satu lapak bisa aktif SEKALIGUS
+                belum berkoordinat. Penggantinya, tiga kolom datar, keliru
+                dengan cara lain: bentuknya menyerupai pita empat angka
+                tepat di atasnya, sehingga keduanya terbaca sebagai satu
+                blok yang saling tindih.
 
-                Bentuk ini sengaja TIDAK memakai kotak bertepi. Ia bagian
-                dalam dari satu kartu, bukan pita yang berdiri sendiri, jadi
-                garis pemisah setipis satu pixel sudah cukup memisahkan
-                ketiganya tanpa menambah tepi baru di layar. */}
-            <div className="section-body">
-              <div className="grid grid-cols-1 sm:grid-cols-3">
-                <KomposisiKolom
-                  warna="var(--success)"
-                  label="Aktif"
-                  nilai={globalStats.totalGreenSuppliers}
-                  sisi={persen(globalStats.totalGreenSuppliers, globalStats.totalSuppliers)}
-                  sub="sudah bertransaksi"
-                />
-                <KomposisiKolom
-                  warna="var(--danger)"
-                  label="Belum aktif"
-                  nilai={globalStats.totalRedSuppliers}
-                  sisi={persen(globalStats.totalRedSuppliers, globalStats.totalSuppliers)}
-                  sub={globalStats.totalRedSuppliers > 0 ? "perlu aktivasi" : "semua sudah aktif"}
-                  bergaris
-                />
-                <KomposisiKolom
-                  warna="var(--muted-faint)"
-                  label="Berkoordinat"
-                  nilai={globalStats.totalMapReadySuppliers}
-                  sisi={persen(globalStats.totalMapReadySuppliers, globalStats.totalSuppliers)}
-                  sub="siap dipetakan"
-                  bergaris
-                />
-              </div>
-            </div>
+                Cincin ini memisahkan keduanya sekaligus. Ia jelas berbeda
+                dari pita angka di atasnya sehingga tidak lagi bertumpuk,
+                dan potongannya cuma diisi dua keadaan yang jumlahnya benar
+                sama dengan total. */}
+            <DonatKomposisi
+              aktif={globalStats.totalGreenSuppliers}
+              belumAktif={globalStats.totalRedSuppliers}
+              berkoordinat={globalStats.totalMapReadySuppliers}
+              total={globalStats.totalSuppliers}
+            />
           </section>
 
           <div>

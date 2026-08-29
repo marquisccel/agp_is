@@ -996,11 +996,18 @@ function Signal({
   return (
     <div className="px-4 py-3.5" style={{ background: "var(--surface)" }}>
       <span className="field-label">{label}</span>
-      {/* Ukurannya menyesuaikan panjang isinya: angka pendek boleh besar,
-          kalimat pendek seperti "Di atas standar" akan terpotong kalau
-          dipaksa sebesar itu. */}
+      {/* Ukurannya TETAP, tidak lagi menyesuaikan panjang isinya.
+          Sebelumnya panjang teks yang menentukan ukuran, sehingga "Aman"
+          tampil lebih besar daripada "Di atas standar" -- dan yang lebih
+          besar terbaca lebih penting. Persis terbalik dari maksudnya:
+          lapak yang bermasalah justru tampak lebih kecil daripada yang
+          aman.
+
+          Ketiga sinyal ini dibaca dengan membandingkan kartu satu sama
+          lain dari atas ke bawah, jadi ukurannya harus sama supaya yang
+          membedakan cuma warna dan isinya. */}
       <p
-        className={`mt-0.5 font-black leading-tight tabular-nums ${value.length > 6 ? "text-sm" : "text-lg"}`}
+        className="mt-0.5 text-base font-black leading-tight tabular-nums"
         style={{ color: warna }}
       >
         {value}
