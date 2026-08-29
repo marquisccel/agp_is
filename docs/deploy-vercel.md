@@ -42,26 +42,36 @@ menghilangkan risiko ini dan masih jauh lebih murah daripada VPS setahun.
 
 ## 1. Siapkan basis data
 
-Buat proyek baru di Supabase, lalu dari halaman koneksi catat **dua**
-connection string:
+Buat proyek baru di Supabase. Saat membuat proyek, **matikan "Enable Data
+API"**: aplikasi ini bicara langsung ke Postgres lewat Prisma dan tidak
+memakai REST API Supabase sama sekali. Kalau dibiarkan menyala bersama
+"Automatically expose new tables", tiap tabel yang dibuat Prisma mendapat
+endpoint REST publik yang tidak pernah dibutuhkan.
 
-| Yang mana | Porta | Dipakai untuk |
+Untuk connection string-nya, klik tombol **Connect** di bar atas dasbor,
+buka tab **ORM**, pilih **Prisma**. Supabase memberikan dua baris siap
+pakai:
+
+| Variabel | Porta | Dipakai untuk |
 |---|---|---|
-| Pooled (transaction) | 6543 | Diisi ke Vercel |
-| Langsung (direct) | 5432 | Hanya untuk migrasi dari laptop |
+| `DATABASE_URL` | 6543 | aplikasi yang sedang berjalan |
+| `DIRECT_URL` | 5432 | perintah migrasi Prisma |
 
-Keduanya berbeda dan tidak bisa saling menggantikan. Penjelasan lengkapnya
-ada di `.env.production.example` bagian 1.
+Ganti `[YOUR-PASSWORD]` di keduanya dengan password basis data yang kamu
+simpan saat membuat proyek. Keduanya berbeda dan tidak bisa saling
+menggantikan; penjelasannya ada di `.env.production.example` bagian 1.
 
 ### Jalankan migrasi dari laptop
 
-Migrasi tidak bisa lewat pooler, jadi langkah ini memakai connection string
-**langsung**. Ubah `DATABASE_URL` di `.env` laptopmu sementara, jalankan
-migrasi, lalu kembalikan ke nilai semula.
+Salin kedua baris itu ke `.env` di laptopmu, lalu:
 
 ```bash
 npx prisma migrate deploy
 ```
+
+`prisma/schema.prisma` sudah menyebut `directUrl`, jadi Prisma memakai
+`DIRECT_URL` untuk migrasi dan `DATABASE_URL` untuk sisanya secara
+otomatis. Tidak perlu menukar-nukar nilainya seperti dulu.
 
 ### Isi data awal
 
@@ -130,12 +140,13 @@ pindah ke VPS.
 
 ## 4. Isi variabel lingkungan
 
-Di **Settings**, **Environment Variables**, isi delapan nilai berikut untuk
+Di **Settings**, **Environment Variables**, isi sembilan nilai berikut untuk
 lingkungan **Production**:
 
 | Nama | Catatan |
 |---|---|
 | `DATABASE_URL` | Versi pooled, porta 6543 |
+| `DIRECT_URL` | Versi porta 5432, dipakai migrasi dan dibaca saat build |
 | `NEXTAUTH_URL` | URL produksi, dengan https, tanpa garis miring di akhir |
 | `NEXTAUTH_SECRET` | Buat baru, jangan salin dari laptop |
 | `S3_ENDPOINT` | |
