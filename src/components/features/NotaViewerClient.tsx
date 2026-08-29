@@ -199,7 +199,11 @@ function NotaCard({ purchase, notaRef }: { purchase: PurchaseDTO; notaRef: React
         {/* Pelunasan info */}
         {purchase.status_pelunasan === "BELUM_LUNAS" && (
           <div style={{ marginTop: 10, padding: "8px 12px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 10 }}>
-            <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: 2 }}>Dibayar Bertahap</div>
+            {/* Kotak ini merinci termin yang skemanya sudah disebut satu
+                baris di atas. Judulnya dulu "Dibayar Bertahap" -- kata
+                ketiga untuk hal yang sama, setelah "termin" dan "bertahap",
+                pada selembar nota yang dibaca orang lapak. */}
+            <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: 2 }}>Rincian termin</div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
               <span style={{ color: "#64748b" }}>Sudah dibayar ({purchase.persentase_pembayaran || 80}%):</span>
               <span style={{ fontWeight: 700, color: "#0f172a" }}>{fmtRp(purchase.nominal_pembayaran_awal || 0)}</span>

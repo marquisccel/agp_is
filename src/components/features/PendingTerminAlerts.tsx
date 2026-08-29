@@ -49,6 +49,19 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
    */
   const [nominalBayar, setNominalBayar] = useState<Record<string, number>>({});
 
+  /*
+   * Baris mana yang kolom cicilannya sedang dibuka.
+   *
+   * Kolomnya disembunyikan secara bawaan karena melunasi sekaligus adalah
+   * kejadian yang biasa, sedangkan mencicil jarang. Ditampilkan terus,
+   * kotak itu justru membuat angka yang sama muncul dua kali dan membuat
+   * tiap baris jadi tinggi.
+   *
+   * Tetap ADA, bukan dibuang: komponen ini satu-satunya tempat di seluruh
+   * sistem yang bisa mencatat pembayaran sebagian.
+   */
+  const [cicilTerbuka, setCicilTerbuka] = useState<Record<string, boolean>>({});
+
   const handleSettle = (id: string, file: File) => {
     setLoadingId(id);
     startTransition(async () => {
@@ -123,11 +136,8 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
       <div className="space-y-2.5">
         {alerts.map((alert) => {
           const tanggal = new Date(alert.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
+          const terbuka = cicilTerbuka[alert.id] === true;
           const diketik = nominalBayar[alert.id] ?? alert.nominal_belum_lunas;
-          // Sisa hanya ditampilkan kalau nominal yang diketik BERBEDA dari
-          // sisanya. Selama keduanya sama, mengulangnya cuma menampilkan
-          // angka yang sama dua kali bersebelahan.
-          const dicicil = diketik !== alert.nominal_belum_lunas;
 
           return (
             <div
@@ -147,7 +157,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                 </p>
               </div>
 
-              <div className="flex shrink-0 flex-wrap items-end justify-end gap-2.5">
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
                 <input
                   ref={(el) => { fileInputs.current[alert.id] = el }}
                   type="file"
@@ -160,27 +170,59 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                   }}
                 />
 
-                {/* Kolom nominal diberi judul. Tanpa judul ia terbaca
-                    seperti angka yang sekadar dipajang, padahal isinya bisa
-                    diubah untuk mencicil. Terisi penuh sejak awal supaya
-                    melunasi sekaligus tetap sekali klik. */}
-                <div className="w-40">
-                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: "var(--muted-faint)" }}>
-                    Dibayar sekarang
-                  </label>
-                  <NumberInput
-                    aria-label={`Nominal pembayaran untuk ${alert.supplier.nama}`}
-                    pemisahRibuan
-                    className="field-input text-right font-mono text-xs"
-                    value={diketik}
-                    onValueChange={(n) => setNominalBayar((current) => ({ ...current, [alert.id]: n }))}
-                  />
-                  {dicicil && (
-                    <p className="mt-1 text-right text-[10px]" style={{ color: "var(--warning)" }}>
-                      sisa {formatRp(alert.nominal_belum_lunas)}
-                    </p>
+                {/* Angka kurangnya berdiri sebagai teks, bukan di dalam
+                    kotak isian. Kotak membuatnya terbaca seperti sesuatu
+                    yang harus diisi lebih dulu, padahal yang biasa terjadi
+                    adalah melunasi seluruhnya dengan sekali klik.
+
+                    Kata "Kurang" dipakai supaya sama dengan halaman
+                    Transfer Pembayaran; label sebelumnya, "Dibayar
+                    sekarang", ambigu antara jumlah yang sudah dibayar dan
+                    yang harus dibayar. */}
+                <div className="text-right">
+                  <span className="block text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: "var(--muted-faint)" }}>
+                    Kurang
+                  </span>
+                  <span className="block font-mono text-sm font-black tabular-nums" style={{ color: "var(--warning)" }}>
+                    {formatRp(alert.nominal_belum_lunas)}
+                  </span>
+                  {!terbuka && (
+                    <button
+                      type="button"
+                      onClick={() => setCicilTerbuka((c) => ({ ...c, [alert.id]: true }))}
+                      className="mt-0.5 text-[10px] font-bold underline-offset-2 hover:underline"
+                      style={{ color: "var(--muted)" }}
+                    >
+                      Bayar sebagian
+                    </button>
                   )}
                 </div>
+
+                {terbuka && (
+                  <div className="w-36">
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: "var(--muted-faint)" }}>
+                      Yang ditransfer
+                    </label>
+                    <NumberInput
+                      aria-label={`Nominal yang ditransfer ke ${alert.supplier.nama}`}
+                      pemisahRibuan
+                      className="field-input text-right font-mono text-xs"
+                      value={diketik}
+                      onValueChange={(n) => setNominalBayar((current) => ({ ...current, [alert.id]: n }))}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCicilTerbuka((c) => ({ ...c, [alert.id]: false }));
+                        setNominalBayar((c) => { const salin = { ...c }; delete salin[alert.id]; return salin });
+                      }}
+                      className="mt-1 block w-full text-right text-[10px] font-bold underline-offset-2 hover:underline"
+                      style={{ color: "var(--muted)" }}
+                    >
+                      Batal, lunasi semua
+                    </button>
+                  </div>
+                )}
 
                 <Link
                   href={`/nota/${alert.id}`}
@@ -203,7 +245,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                   ) : (
                     <>
                       <Check className="h-4 w-4" />
-                      Catat Pembayaran
+                      {terbuka ? "Catat Sebagian" : "Catat Pelunasan"}
                     </>
                   )}
                 </button>
