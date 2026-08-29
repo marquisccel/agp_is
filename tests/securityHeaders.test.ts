@@ -50,7 +50,9 @@ test("CSP memisahkan direktif dengan '; ', bukan yang lain", () => {
 })
 
 test("direktif yang menutup kelas serangan tertentu tidak boleh hilang", () => {
-  const csp = buatSecurityHeaders(true).find((h) => h.key === "Content-Security-Policy").value
+  const header = buatSecurityHeaders(true).find((h) => h.key === "Content-Security-Policy")
+  assert.ok(header, "header CSP tidak ada")
+  const csp = header.value
   // Masing-masing pernah jadi alasan CSP ini dipasang; kalau ada yang
   // terhapus saat menyunting, tes ini yang memberi tahu.
   for (const arahan of ["frame-ancestors 'none'", "object-src 'none'", "form-action 'self'", "base-uri 'self'"]) {
