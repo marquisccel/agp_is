@@ -20,7 +20,6 @@ import {
   Scale,
   Settings,
   Store,
-  Target,
   WalletCards,
   type LucideIcon,
 } from "lucide-react"
@@ -175,7 +174,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       { name: "Approval Harga", href: "/dashboard/manager/approval-harga", icon: PenLine },
       { name: "Approval DP", href: "/dashboard/manager/approval-dp", icon: CreditCard },
       { name: "Master Data", href: "/dashboard/manager/master-data", icon: Database },
-      { name: "Setting Target", href: "/dashboard/manager/targets", icon: Target },
       { name: "Data Lapak", href: "/dashboard/manager/suppliers", icon: Store },
       { name: "Daftar Transaksi", href: "/dashboard/manager/history", icon: History },
       // Kalau lapak menagih pelunasan langsung ke Manager, sebelumnya uangnya

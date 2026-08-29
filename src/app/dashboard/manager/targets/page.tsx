@@ -2,9 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import TargetSettingForm from "@/components/features/TargetSettingForm"
-import Link from "next/link"
 import { redirect } from "next/navigation"
-import PageHeader from "@/components/ui/PageHeader"
 
 export default async function ManagerTargetPage() {
   const session = await getServerSession(authOptions)
@@ -19,24 +17,11 @@ export default async function ManagerTargetPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <PageHeader
-        eyebrow="Rencana kinerja"
-        title="Setting Target Gudang"
-        description={(
-          <>
-            Tetapkan target pembelian bahan baku <span className="font-semibold" style={{ color: "var(--brand-strong)" }}>PET Final</span> per gudang.
-          </>
-        )}
-        actions={(
-          <Link
-            href="/dashboard/manager"
-            className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
-          >
-            Kembali ke Dashboard
-          </Link>
-        )}
-      />
-
+      {/* PageHeader dirakit di dalam TargetSettingForm, bukan di sini.
+          Pemilih bulan dan tahun perlu berdiri di kepala halaman bersama
+          tombol kembali, sementara nilainya dipegang state komponen itu --
+          kalau kepalanya tetap di sini, dibutuhkan kartu tersendiri hanya
+          untuk menampung dua dropdown. Kartu itulah yang dibuang. */}
       <TargetSettingForm warehouses={warehouses} existingTargets={existingTargets} />
     </div>
   )

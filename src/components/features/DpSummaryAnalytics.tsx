@@ -5,6 +5,7 @@ import { fmtRp } from "@/lib/format"
 import { ChevronRight } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { namaGudang } from "@/lib/namaGudang"
+import TautanRincian from "@/components/ui/TautanRincian"
 
 interface DpSupplierRow {
   supplierId: string
@@ -110,15 +111,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       </div>
 
       {summaryOnly && (
-        <div className="px-[22px] py-4">
-          <a
-            href="/dashboard/manager/dp"
-            className="inline-flex min-h-[38px] items-center text-[11.5px] font-bold"
-            style={{ color: "var(--brand-strong)" }}
-          >
-            Lihat rincian per lapak →
-          </a>
-        </div>
+        <TautanRincian href="/dashboard/manager/dp">Lihat rincian per lapak</TautanRincian>
       )}
 
       </div>

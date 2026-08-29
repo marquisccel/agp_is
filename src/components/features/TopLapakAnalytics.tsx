@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { fmtKg, fmtRpPerKg, fmtAngka } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import TautanRincian from "@/components/ui/TautanRincian"
 
 interface TopSupplier {
   supplierId: string
@@ -123,6 +124,9 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
           </table>
         )}
       </div>
+      <TautanRincian href="/dashboard/manager/suppliers" className="border-t px-5 py-4">
+        Lihat semua lapak
+      </TautanRincian>
     </div>
   )
 }

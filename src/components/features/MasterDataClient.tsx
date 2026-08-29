@@ -506,19 +506,18 @@ export default function MasterDataClient({
             </div>
           </section>
 
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
-            {/* Dua kartu ini dulu sama-sama daftar peringkat berbar. Bar
-                yang sama dipakai dua kali berdampingan membuat keduanya
-                terbaca seperti satu grafik yang terpotong, dan tidak ada
-                yang membedakan mana yang perlu dibaca lebih dulu.
+          <div>
+            {/* Di sebelah tabel ini dulu ada kartu "Lapak Teratas" berisi 5
+                lapak. Dibuang karena kartu Top 10 Lapak di Analytics sudah
+                memuat 10 dan bisa dipilah menurut volume atau harga, dan
+                menu Data Lapak memuat semuanya lengkap dengan grade. Kartu
+                yang isinya bagian kecil dari layar lain cuma menambah
+                tempat untuk dicek tanpa menambah keterangan.
 
-                Sekarang masing-masing memakai bentuk yang sesuai isinya.
-                Performa Gudang membandingkan beberapa besaran berbeda
-                (jumlah lapak, transaksi, tonase, nilai) untuk tiga gudang
-                saja -- yang dicari pembacanya angka, bukan proporsi, jadi
-                tabel lebih jujur. Lapak Teratas membandingkan satu besaran
-                yang sama antar lima lapak, dan di situlah bar benar-benar
-                berguna: proporsinya terbaca tanpa perlu membagi angka. */}
+                Bentuk tabel dipertahankan: Performa Gudang membandingkan
+                beberapa besaran sekaligus (jumlah lapak, transaksi, tonase,
+                nilai) untuk tiga gudang saja, dan yang dicari pembacanya
+                angka, bukan proporsi. */}
             <section className="section">
               <div className="section-shell-head">
                 <div>
@@ -560,44 +559,6 @@ export default function MasterDataClient({
                     ))}
                 </tbody>
               </table>
-            </section>
-
-            <section className="section">
-              <div className="section-shell-head">
-                <div>
-                  <span className="section-eyebrow">Kontribusi</span>
-                  <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Lapak Teratas</h3>
-                </div>
-              </div>
-              <div className="section-body">
-                <div className="rank-list">
-                  {[...suppliers].sort((a, b) => b.totalKg - a.totalKg).slice(0, 5).map((supplier, idx, semua) => {
-                    const maxKg = semua[0]?.totalKg ?? 0
-                    // Saat belum ada tonase sama sekali, bar-nya tidak
-                    // digambar. Lima batang kosong berjejer terbaca seperti
-                    // grafik yang gagal dimuat, padahal keadaannya sekadar
-                    // belum ada transaksi.
-                    const adaData = maxKg > 0
-                    return (
-                      <div key={supplier.id} className={`rank-row${idx === 0 && supplier.totalKg > 0 ? " rank-first" : ""}`}>
-                        <span className="rank-num">{idx + 1}</span>
-                        <div className="min-w-0">
-                          <div className="rank-name truncate">{supplier.nama}</div>
-                          <div className="rank-sub">{supplier.warehouse ? namaGudang(supplier.warehouse.nama) : "Tanpa gudang"}</div>
-                        </div>
-                        {adaData ? (
-                          <div className="rank-bar-track">
-                            <div className="rank-bar-fill" style={{ width: `${Math.min((supplier.totalKg / maxKg) * 100, 100)}%` }} />
-                          </div>
-                        ) : (
-                          <div />
-                        )}
-                        <div className="rank-value">{adaData ? fmtKg(supplier.totalKg) : "Belum ada"}</div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
             </section>
           </div>
         </div>

@@ -16,6 +16,7 @@ import { isWorkingDay } from "@/lib/workingDays"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 import { fmtRp } from "@/lib/format"
 import { getAuditAction } from "@/lib/auditLabels"
+import TautanRincian from "@/components/ui/TautanRincian"
 
 const formatActivityScope = (tableName: string) => {
   const scopeMap: Record<string, string> = {
@@ -939,6 +940,9 @@ export default async function ManagerDashboard({
             </div>
           )}
         </div>
+        <TautanRincian href="/dashboard/manager/audit-trail" className="border-t px-5 pb-5">
+          Buka Audit Trail lengkap
+        </TautanRincian>
       </div>
     </div>
   )

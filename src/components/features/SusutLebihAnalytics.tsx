@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { createPortal } from "react-dom"
 import { fmtKg, fmtPct } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { namaGudang } from "@/lib/namaGudang"
+import TautanRincian from "@/components/ui/TautanRincian"
 
 export interface SkuSusutDetail {
   skuName: string
@@ -169,15 +169,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
       </div>
 
       {summaryOnly && (
-        <div className="px-[22px] py-4">
-          <Link
-            href="/dashboard/manager/susut"
-            className="inline-flex min-h-[38px] items-center text-[11.5px] font-bold"
-            style={{ color: "var(--brand-strong)" }}
-          >
-            Lihat rincian per lapak →
-          </Link>
-        </div>
+        <TautanRincian href="/dashboard/manager/susut">Lihat rincian per lapak</TautanRincian>
       )}
 
       </div>

@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, CalendarDays, CheckCircle2, Loader2, Save } from "lucide-react"
+import { AlertTriangle, CheckCircle2, Loader2, Save } from "lucide-react"
 import type { Warehouse, WarehouseTarget } from "@prisma/client"
+import Link from "next/link"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import PageHeader from "@/components/ui/PageHeader"
 import { getWorkingDaysInMonth } from "@/lib/workingDays"
 import { namaGudang } from "@/lib/namaGudang"
 
@@ -223,58 +225,51 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
 
   return (
     <div className="space-y-6">
-      <section className="section section-body">
-        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px]" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>
-              <CalendarDays className="h-4 w-4" />
-            </div>
-            <div>
-              {/* Judulnya dulu "PERIODE TARGET GUDANG" dalam huruf besar
-                  berjarak lebar -- setara judul bab untuk sebuah baris
-                  pengantar, dan kata "Gudang" cuma mengulang isi halaman.
-                  Sekarang memakai .section-eyebrow, pola label yang sama
-                  dengan panel lain di aplikasi. */}
-              <h3 className="section-eyebrow">Periode target</h3>
-              <p className="mt-1.5 text-sm leading-6 text-slate-500">
-                Isi target bulanan dalam ton. Mingguan dan harian terisi sendiri.
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <div className="grid gap-2 sm:grid-cols-[150px_112px]">
-              <ElegantSelect
-                value={selectedBulan}
-                options={monthOptions}
-                onChange={setSelectedBulan}
-                ariaLabel="Pilih bulan target"
-                className="w-full"
-                menuClassName="w-44"
-              />
-              <ElegantSelect
-                value={selectedTahun}
-                options={yearOptions}
-                onChange={setSelectedTahun}
-                ariaLabel="Pilih tahun target"
-                className="w-full"
-              />
-            </div>
-            {/* Jumlah hari kerja diletakkan tepat di bawah pemilih periode,
-                karena ia hasil dari pilihan itu dan berubah mengikutinya --
-                pembaca melihat sebab dan akibatnya bersebelahan. Sebelumnya
-                ia jadi lencana yang diulang di ketiga kartu di bawah,
-                padahal angkanya sama untuk semuanya. */}
-            <p
-              className="mt-2 text-right text-xs font-semibold"
-              style={{ color: "var(--muted)" }}
-              title="Senin sampai Sabtu, dikurangi hari libur nasional"
-            >
+      {/* Dulu ini kartu tersendiri berjudul "PERIODE TARGET": sebuah kotak
+          selebar layar yang isinya satu baris pengantar dan dua dropdown,
+          dengan jumlah hari kerja menggantung sendirian di pojok kanan
+          bawah. Kotaknya tidak membawa apa pun yang tidak muat di kepala
+          halaman, jadi dibuang seluruhnya dan isinya naik ke sini. */}
+      <PageHeader
+        eyebrow="Rencana kinerja"
+        title="Setting Target Gudang"
+        description={(
+          <>
+            Target pembelian bahan baku{" "}
+            <span className="font-semibold" style={{ color: "var(--brand-strong)" }}>PET Final</span>{" "}
+            per gudang. Isi target bulanan dalam ton; mingguan dan harian terisi sendiri dari{" "}
+            <span className="font-semibold text-slate-700" title="Senin sampai Sabtu, dikurangi hari libur nasional">
               {workingDaysThisMonth} hari kerja efektif
-            </p>
-          </div>
-        </div>
-      </section>
+            </span>{" "}
+            bulan ini.
+          </>
+        )}
+        actions={(
+          <>
+            <ElegantSelect
+              value={selectedBulan}
+              options={monthOptions}
+              onChange={setSelectedBulan}
+              ariaLabel="Pilih bulan target"
+              className="w-full sm:w-40"
+              menuClassName="w-44"
+            />
+            <ElegantSelect
+              value={selectedTahun}
+              options={yearOptions}
+              onChange={setSelectedTahun}
+              ariaLabel="Pilih tahun target"
+              className="w-full sm:w-28"
+            />
+            <Link
+              href="/dashboard/manager"
+              className="premium-button btn-netral flex items-center whitespace-nowrap px-4 py-2.5 text-sm font-semibold"
+            >
+              Kembali ke Dashboard
+            </Link>
+          </>
+        )}
+      />
 
       {loading ? (
         <div className="section section-body flex items-center justify-center gap-2 text-sm font-bold soft-enter" style={{ color: "var(--muted)" }}>

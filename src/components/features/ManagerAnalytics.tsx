@@ -3,6 +3,8 @@
 import { useState, type ReactNode } from "react"
 import type { Warehouse } from "@prisma/client"
 import { fmtKg, fmtAngka, fmtTon, fmtRpPerKg } from "@/lib/format"
+import Link from "next/link"
+import { Target } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import SkuPriceChart from "@/components/features/SkuPriceChart"
 import {
@@ -369,14 +371,27 @@ export default function ManagerAnalytics({
               Bandingkan realisasi tonase terhadap target operasional untuk periode aktif.
             </p>
           </div>
-          <ElegantSelect
-            value={selectedWarehouseId}
-            options={warehouseOptions}
-            onChange={setSelectedWarehouseId}
-            ariaLabel="Pilih collection center"
-            className="w-full sm:w-64"
-            menuClassName="sm:w-72"
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <ElegantSelect
+              value={selectedWarehouseId}
+              options={warehouseOptions}
+              onChange={setSelectedWarehouseId}
+              ariaLabel="Pilih collection center"
+              className="w-full sm:w-64"
+              menuClassName="sm:w-72"
+            />
+            {/* Pintu ke Setting Target ditaruh di sini, bukan di sidebar.
+                Kartu ini yang memberi tahu "kurang 36 ton lagi", dan
+                tindakan berikutnya memang meninjau targetnya -- pintunya
+                paling berguna tepat di tempat kebutuhannya muncul. */}
+            <Link
+              href="/dashboard/manager/targets"
+              className="premium-button btn-netral flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-bold"
+            >
+              <Target className="h-3.5 w-3.5" />
+              Atur Target
+            </Link>
+          </div>
         </div>
         <div className="p-5">
           <div className="target-grid">
