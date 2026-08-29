@@ -208,6 +208,35 @@ setelahnya gagal.
 
 ---
 
+## 4a. Region fungsi harus sedaerah dengan basis data
+
+Vercel menjalankan fungsi di Washington DC (`iad1`) secara bawaan, sedangkan
+basis datanya di Singapura. Setiap kueri lalu menyeberang Pasifik bolak-balik,
+sekitar 250 ms sekali jalan, dan halaman yang menjalankan puluhan kueri jadi
+belasan detik.
+
+Terukur sungguhan pada deploy pertama: dashboard Manager butuh 14 detik walau
+fungsinya sudah hangat, jadi itu bukan cold start.
+
+`vercel.json` di akar repositori sudah menetapkannya:
+
+```json
+{ "regions": ["sin1"] }
+```
+
+Paket Hobby boleh memilih satu region, dan tidak harus yang bawaan.
+
+Cara memastikannya benar setelah deploy, lihat header tanggapannya:
+
+```bash
+curl -s -D - -o /dev/null https://agp-is.vercel.app/login | grep -i x-vercel-id
+```
+
+Isinya `sin1::sin1::...` kalau sudah benar. Kalau masih `sin1::iad1::`, bagian
+kedua itu tempat fungsinya berjalan dan berarti setelannya belum berlaku.
+
+---
+
 ## 4b. Kalau ada yang 500 setelah deploy
 
 Log runtime tidak terlihat dari halaman Deployments. Ambil dari terminal:
