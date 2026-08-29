@@ -190,6 +190,14 @@ lingkungan **Production**:
 | `DIRECT_URL` | Versi porta 5432, dipakai migrasi dan dibaca saat build |
 | `NEXTAUTH_URL` | URL produksi, dengan https, tanpa garis miring di akhir |
 | `NEXTAUTH_SECRET` | Buat baru, jangan salin dari laptop |
+| `S3_ENDPOINT` | |
+| `S3_BUCKET` | |
+| `S3_ACCESS_KEY_ID` | |
+| `S3_SECRET_ACCESS_KEY` | |
+| `S3_REGION` | |
+| `ALERT_WEBHOOK_URL` | Opsional, sangat berguna selama uji coba |
+
+Keterangan lengkap tiap nilai ada di `.env.production.example`.
 
 Untuk `NEXTAUTH_SECRET`, jalankan ini di terminalmu sendiri lalu salin
 hasilnya langsung ke dasbor Vercel:
@@ -201,14 +209,6 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 Nilai yang bisa dibaca manusia tidak memenuhi syarat. Siapa pun yang bisa
 menebaknya bisa memalsukan sesi MANAGER tanpa tahu satu pun password, dan
 pemalsuan itu tidak meninggalkan jejak login gagal.
-| `S3_ENDPOINT` | |
-| `S3_BUCKET` | |
-| `S3_ACCESS_KEY_ID` | |
-| `S3_SECRET_ACCESS_KEY` | |
-| `S3_REGION` | |
-| `ALERT_WEBHOOK_URL` | Opsional, sangat berguna selama uji coba |
-
-Keterangan lengkap tiap nilai ada di `.env.production.example`.
 
 ### JANGAN tandai `NEXTAUTH_URL` sebagai Sensitive
 
