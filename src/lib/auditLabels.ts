@@ -183,6 +183,21 @@ export const AUDIT_ACTIONS: Record<string, AuditActionInfo> = {
     description: "mendaftarkan akun pengguna baru",
     tone: TONE.masuk,
   },
+  DEACTIVATE_USER: {
+    label: "Akun dinonaktifkan",
+    description: "mencabut akses sebuah akun tanpa menghapus riwayatnya",
+    tone: TONE.perhatian,
+  },
+  ACTIVATE_USER: {
+    label: "Akun diaktifkan kembali",
+    description: "mengembalikan akses sebuah akun yang sebelumnya dinonaktifkan",
+    tone: TONE.masuk,
+  },
+  DELETE_USER: {
+    label: "Akun dihapus",
+    description: "menghapus akun yang belum pernah dipakai bertransaksi",
+    tone: TONE.hapus,
+  },
   UPDATE_USER_SETTINGS: {
     label: "Pengaturan akun diubah",
     description: "memperbarui profil atau kata sandi akunnya sendiri",
@@ -214,4 +229,37 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = Object.fromEntries(
 
 export function formatAuditAction(action: string): string {
   return getAuditAction(action).label
+}
+
+
+/*
+ * Nama tabel basis data diterjemahkan ke istilah yang dipakai orang di
+ * gudang. Halaman Audit Trail sebelumnya menampilkan kolomnya apa adanya,
+ * sehingga Manager membaca "WarehouseTarget", "SkuPriceStandard", dan
+ * "DownPayment" -- nama yang hanya berarti bagi yang pernah membuka
+ * skemanya. Padahal Audit Trail justru halaman yang dibuka orang non-teknis
+ * saat sedang menelusuri selisih uang.
+ */
+export const AUDIT_ENTITIES: Record<string, string> = {
+  Purchase: "Transaksi pembelian",
+  DownPayment: "Kasbon",
+  Supplier: "Lapak",
+  User: "Akun pengguna",
+  WarehouseTarget: "Target gudang",
+  SkuPriceStandard: "Standar harga SKU",
+}
+
+export function formatAuditEntity(tableName: string): string {
+  return AUDIT_ENTITIES[tableName] ?? tableName
+}
+
+/** Peran ditulis seperti orang menyebutnya, bukan seperti disimpan di basis data. */
+const PERAN: Record<string, string> = {
+  MANAGER: "Manager",
+  ADMIN: "Admin",
+  STAFF: "Staff",
+}
+
+export function formatPeran(role: string): string {
+  return PERAN[role] ?? role
 }

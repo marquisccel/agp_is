@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import { Download, Filter, Search } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
-import { formatAuditAction } from "@/lib/auditLabels"
+import { formatAuditAction, formatAuditEntity, formatPeran } from "@/lib/auditLabels"
 
 interface AuditLogRow {
   id: string
@@ -52,7 +52,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
 
   const roleOptions = useMemo(() => {
     const roles = Array.from(new Set(logs.map((l) => l.user?.role).filter(Boolean))) as string[]
-    return [{ value: "all", label: "Semua Peran" }, ...roles.map((r) => ({ value: r, label: r }))]
+    return [{ value: "all", label: "Semua Peran" }, ...roles.map((r) => ({ value: r, label: formatPeran(r) }))]
   }, [logs])
 
   const actionOptions = useMemo(() => {
@@ -65,7 +65,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
 
   const tableOptions = useMemo(() => {
     const tables = Array.from(new Set(logs.map((l) => l.table_name)))
-    return [{ value: "all", label: "Semua Entitas" }, ...tables.map((t) => ({ value: t, label: t }))]
+    return [{ value: "all", label: "Semua Data" }, ...tables.map((t) => ({ value: t, label: formatAuditEntity(t) }))]
   }, [logs])
 
   const yearOptions = useMemo(() => {
@@ -81,7 +81,8 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
         !query ||
         log.record_id.toLowerCase().includes(query) ||
         (log.user?.nama || "").toLowerCase().includes(query) ||
-        formatAuditAction(log.action).toLowerCase().includes(query)
+        formatAuditAction(log.action).toLowerCase().includes(query) ||
+        formatAuditEntity(log.table_name).toLowerCase().includes(query)
       const matchesRole = selectedRole === "all" || log.user?.role === selectedRole
       const matchesAction = selectedAction === "all" || log.action === selectedAction
       const matchesTable = selectedTable === "all" || log.table_name === selectedTable
@@ -92,13 +93,13 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
   }, [logs, search, selectedRole, selectedAction, selectedTable, selectedMonth, selectedYear])
 
   const handleExportCsv = () => {
-    const header = ["Waktu", "Pengguna", "Peran", "Aksi", "Entitas", "Record ID"]
+    const header = ["Waktu", "Pengguna", "Peran", "Aktivitas", "Data", "Kode"]
     const rows = filteredLogs.map((log) => [
       formatDateTime(log.createdAt),
       log.user?.nama || "-",
-      log.user?.role || "-",
+      log.user?.role ? formatPeran(log.user.role) : "-",
       formatAuditAction(log.action),
-      log.table_name,
+      formatAuditEntity(log.table_name),
       log.record_id,
     ])
     const csv =
@@ -122,7 +123,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
               <Search className="field-icon-gambar absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--muted-faint)" }} />
               <input
                 type="text"
-                placeholder="Cari pengguna, record ID, aksi..."
+                placeholder="Cari nama, aktivitas, atau kode..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="field-input field-icon"
@@ -132,37 +133,42 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
             <ElegantSelect value={selectedAction} options={actionOptions} onChange={setSelectedAction} ariaLabel="Filter aksi" className="w-full" menuClassName="w-72" />
             <ElegantSelect value={selectedTable} options={tableOptions} onChange={setSelectedTable} ariaLabel="Filter entitas" className="w-full" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <ElegantSelect value={selectedMonth} options={MONTHS} onChange={setSelectedMonth} ariaLabel="Filter bulan" className="w-full sm:w-40" />
             <ElegantSelect value={selectedYear} options={yearOptions} onChange={setSelectedYear} ariaLabel="Filter tahun" className="w-full sm:w-32" />
+            {/* Ikon saja supaya muat sebaris dengan filternya. Sebelumnya
+                tombol ini turun ke baris sendiri di bawah, bersama hitungan
+                entri -- satu baris penuh untuk dua hal kecil, dan barisnya
+                selalu ada walau tidak ada yang bisa diexport. */}
+            <button
+              onClick={handleExportCsv}
+              disabled={filteredLogs.length === 0}
+              className="premium-button btn-netral grid h-[42px] w-[42px] shrink-0 place-items-center disabled:cursor-not-allowed disabled:opacity-50"
+              title="Unduh hasil filter sebagai CSV"
+              aria-label="Unduh hasil filter sebagai CSV"
+            >
+              <Download className="h-4 w-4" />
+            </button>
           </div>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <p className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--muted)" }}>
-            <Filter className="h-3.5 w-3.5" />
-            {filteredLogs.length} dari {logs.length} entri
-          </p>
-          <button
-            onClick={handleExportCsv}
-            disabled={filteredLogs.length === 0}
-            className="premium-button btn-netral flex items-center gap-2 px-4 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export CSV (hasil filter)
-          </button>
         </div>
       </section>
 
       <section className="section overflow-hidden">
+        {/* Hitungan entri diletakkan menempel pada tabelnya, karena yang
+            dihitung memang isi tabel itu, bukan filternya. */}
+        <div className="flex items-center gap-1.5 border-b px-5 py-3 text-xs font-semibold" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
+          <Filter className="h-3.5 w-3.5" />
+          Menampilkan {filteredLogs.length} dari {logs.length} aktivitas
+        </div>
         <div className="overflow-x-auto">
           <table className="tabel-lembut w-full text-left text-sm">
             <thead>
               <tr>
                 <th>Waktu</th>
                 <th>Pengguna</th>
-                <th>Aksi</th>
-                <th>Entitas</th>
-                <th>Record ID</th>
+                <th>Aktivitas</th>
+                <th>Data</th>
+                <th>Kode</th>
               </tr>
             </thead>
             <tbody>
@@ -179,12 +185,22 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
                     <td>
                       <div className="font-bold" style={{ color: "var(--foreground)" }}>{log.user?.nama || "Sistem"}</div>
                       {log.user?.role && (
-                        <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: "var(--muted-faint)" }}>{log.user.role}</span>
+                        <span className="text-[11px]" style={{ color: "var(--muted-faint)" }}>{formatPeran(log.user.role)}</span>
                       )}
                     </td>
                     <td className="font-semibold" style={{ color: "var(--foreground)" }}>{formatAuditAction(log.action)}</td>
-                    <td style={{ color: "var(--muted)" }}>{log.table_name}</td>
-                    <td className="whitespace-nowrap font-mono text-xs" style={{ color: "var(--muted-faint)" }}>{log.record_id.slice(0, 8)}</td>
+                    <td style={{ color: "var(--muted)" }}>{formatAuditEntity(log.table_name)}</td>
+                    {/* Kode dipertahankan supaya satu baris audit masih bisa
+                        dicocokkan dengan datanya saat menelusuri selisih,
+                        tapi dibuat paling redup di barisnya: ia dicari kalau
+                        memang sedang dibutuhkan, bukan dibaca sambil lalu. */}
+                    <td
+                      className="whitespace-nowrap font-mono text-xs"
+                      style={{ color: "var(--muted-faint)" }}
+                      title={log.record_id}
+                    >
+                      {log.record_id.slice(0, 8)}
+                    </td>
                   </tr>
                 ))
               )}

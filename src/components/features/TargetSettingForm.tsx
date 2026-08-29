@@ -230,30 +230,48 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
               <CalendarDays className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-950">Periode Target Gudang</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-500">
-                Isi target bulanan dalam ton. Mingguan dan harian terisi sendiri dari{" "}
-                {workingDaysThisMonth} hari kerja bulan ini.
+              {/* Judulnya dulu "PERIODE TARGET GUDANG" dalam huruf besar
+                  berjarak lebar -- setara judul bab untuk sebuah baris
+                  pengantar, dan kata "Gudang" cuma mengulang isi halaman.
+                  Sekarang memakai .section-eyebrow, pola label yang sama
+                  dengan panel lain di aplikasi. */}
+              <h3 className="section-eyebrow">Periode target</h3>
+              <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                Isi target bulanan dalam ton. Mingguan dan harian terisi sendiri.
               </p>
             </div>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-[150px_112px]">
-            <ElegantSelect
-              value={selectedBulan}
-              options={monthOptions}
-              onChange={setSelectedBulan}
-              ariaLabel="Pilih bulan target"
-              className="w-full"
-              menuClassName="w-44"
-            />
-            <ElegantSelect
-              value={selectedTahun}
-              options={yearOptions}
-              onChange={setSelectedTahun}
-              ariaLabel="Pilih tahun target"
-              className="w-full"
-            />
+          <div>
+            <div className="grid gap-2 sm:grid-cols-[150px_112px]">
+              <ElegantSelect
+                value={selectedBulan}
+                options={monthOptions}
+                onChange={setSelectedBulan}
+                ariaLabel="Pilih bulan target"
+                className="w-full"
+                menuClassName="w-44"
+              />
+              <ElegantSelect
+                value={selectedTahun}
+                options={yearOptions}
+                onChange={setSelectedTahun}
+                ariaLabel="Pilih tahun target"
+                className="w-full"
+              />
+            </div>
+            {/* Jumlah hari kerja diletakkan tepat di bawah pemilih periode,
+                karena ia hasil dari pilihan itu dan berubah mengikutinya --
+                pembaca melihat sebab dan akibatnya bersebelahan. Sebelumnya
+                ia jadi lencana yang diulang di ketiga kartu di bawah,
+                padahal angkanya sama untuk semuanya. */}
+            <p
+              className="mt-2 text-right text-xs font-semibold"
+              style={{ color: "var(--muted)" }}
+              title="Senin sampai Sabtu, dikurangi hari libur nasional"
+            >
+              {workingDaysThisMonth} hari kerja efektif
+            </p>
           </div>
         </div>
       </section>
@@ -297,17 +315,6 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                         Belum ditetapkan untuk {namaBulan} {selectedTahun}
                       </p>
                     )}
-                  </div>
-                  {/* Asal angkanya dititipkan ke title, bukan ditulis di layar.
-                      Itu keterangan yang dicari sekali seumur hidup, lalu tidak
-                      pernah dibaca lagi -- tidak sepadan dengan satu kalimat
-                      penuh yang harus dilewati tiap kali membuka halaman ini. */}
-                  <div
-                    className="rounded-full border px-3 py-1 text-xs font-black"
-                    style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
-                    title="Senin sampai Sabtu, dikurangi hari libur nasional"
-                  >
-                    {workingDaysThisMonth} hari kerja
                   </div>
                 </div>
 
