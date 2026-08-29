@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AlertTriangle, CalendarDays, CheckCircle2, Loader2, Save } from "lucide-react"
 import type { Warehouse, WarehouseTarget } from "@prisma/client"
@@ -14,9 +14,25 @@ interface TargetValues {
   pet_harian: string
 }
 
-type TargetApiRow = Pick<WarehouseTarget, "warehouseId" | "target_bulanan_pet_final" | "target_mingguan_pet_final" | "target_harian_pet_final">
+type TargetApiRow = Pick<WarehouseTarget, "warehouseId" | "target_bulanan_pet_final" | "target_mingguan_pet_final" | "target_harian_pet_final" | "updatedAt"> & {
+  updatedBy: { nama: string } | null
+}
 
-export default function TargetSettingForm({ warehouses, existingTargets }: { warehouses: Warehouse[]; existingTargets: WarehouseTarget[] }) {
+/** Riwayat penetapan target satu gudang, untuk baris di bawah namanya. */
+type JejakTarget = { diubahPada: string; oleh: string | null } | null
+
+function fmtTanggalSingkat(iso: string) {
+  return new Date(iso).toLocaleDateString("id-ID", {
+    day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta",
+  })
+}
+
+const jejakDari = (
+  target: { updatedAt: Date | string; updatedBy: { nama: string } | null } | undefined,
+): JejakTarget =>
+  target ? { diubahPada: new Date(target.updatedAt).toISOString(), oleh: target.updatedBy?.nama ?? null } : null
+
+export default function TargetSettingForm({ warehouses, existingTargets }: { warehouses: Warehouse[]; existingTargets: (WarehouseTarget & { updatedBy: { nama: string } | null })[] }) {
   const router = useRouter()
   const now = new Date()
   const [selectedBulan, setSelectedBulan] = useState<number>(now.getMonth() + 1)
@@ -25,6 +41,30 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
   const [loading, setLoading] = useState(false)
   const [savedMap, setSavedMap] = useState<Record<string, boolean>>({})
   const [errorMap, setErrorMap] = useState<Record<string, string>>({})
+
+  /*
+   * Baris di bawah nama gudang. Sebelumnya di sana ada "Target pembelian
+   * bahan baku PET Final", yang cuma mengulang judul halaman untuk ketiga
+   * kalinya. Dibuang, dan tempatnya jadi kosong.
+   *
+   * Yang mengisinya sekarang bukan kalimat hiasan, tapi satu-satunya hal
+   * yang berbeda antar ketiga kartu dan tidak terbaca dari kolom isian:
+   * gudang ini sudah pernah ditetapkan targetnya untuk periode terpilih
+   * atau belum, dan oleh siapa. Kolom kosong sendiri ambigu -- bisa berarti
+   * belum pernah diisi, bisa juga berarti sengaja disetel nol.
+   */
+  const [jejak, setJejak] = useState<Record<string, JejakTarget>>(
+    Object.fromEntries(
+      warehouses.map((warehouse) => [
+        warehouse.id,
+        jejakDari(
+          existingTargets.find(
+            (item) => item.warehouseId === warehouse.id && item.bulan === now.getMonth() + 1 && item.tahun === now.getFullYear()
+          )
+        ),
+      ])
+    )
+  )
 
   const [values, setValues] = useState<Record<string, TargetValues>>(
     Object.fromEntries(
@@ -44,9 +84,18 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
     )
   )
 
-  useEffect(() => {
-    async function fetchTargets() {
-      setLoading(true)
+  /*
+   * Dijadikan useCallback supaya bisa dipanggil dua kali: saat periodenya
+   * diganti, dan lagi sesudah menyimpan. Yang kedua itu perlu karena baris
+   * "terakhir diubah" harus ikut segar -- kalau tidak, Manager baru saja
+   * menyimpan tapi barisnya masih berbunyi "belum ditetapkan".
+   *
+   * `tampilkanMuat` dimatikan saat dipanggil sesudah menyimpan: kartunya
+   * sudah menampilkan keadaan tombol "Target tersimpan", dan menyalakan
+   * status memuat di atasnya membuat layar berkedip tanpa alasan.
+   */
+  const muatTarget = useCallback(async (tampilkanMuat = true) => {
+      if (tampilkanMuat) setLoading(true)
       try {
         const res = await fetch(`/api/targets?bulan=${selectedBulan}&tahun=${selectedTahun}`)
         if (res.ok) {
@@ -65,15 +114,25 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
             })
           )
           setValues(nextValues)
+          setJejak(
+            Object.fromEntries(
+              warehouses.map((warehouse) => [
+                warehouse.id,
+                jejakDari(data.find((item) => item.warehouseId === warehouse.id)),
+              ])
+            )
+          )
         }
       } catch (err) {
         console.error("Gagal mengambil data target:", err)
       } finally {
-        setLoading(false)
+        if (tampilkanMuat) setLoading(false)
       }
-    }
-    fetchTargets()
   }, [selectedBulan, selectedTahun, warehouses])
+
+  useEffect(() => {
+    muatTarget()
+  }, [muatTarget])
 
   const workingDaysThisMonth = getWorkingDaysInMonth(selectedTahun, selectedBulan)
   const effectiveWeeks = workingDaysThisMonth / 6
@@ -81,6 +140,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
     value: i + 1,
     label: new Date(2000, i, 1).toLocaleDateString("id-ID", { month: "long" }),
   }))
+  const namaBulan = monthOptions.find((m) => m.value === selectedBulan)?.label ?? ""
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const year = new Date().getFullYear() - 2 + i
     return { value: year, label: String(year) }
@@ -149,6 +209,10 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
 
       setSavedMap((prev) => ({ ...prev, [warehouseId]: true }))
       setTimeout(() => setSavedMap((prev) => ({ ...prev, [warehouseId]: false })), 2400)
+      // Tanpa ini barisnya masih berbunyi "belum ditetapkan" padahal baru
+      // saja disimpan; router.refresh() sendiri tidak menolong karena
+      // nilainya dipegang state komponen, bukan langsung dari prop.
+      await muatTarget(false)
       router.refresh()
     } catch (error: any) {
       setErrorMap((prev) => ({ ...prev, [warehouseId]: error.message || "Gagal menyimpan. Coba lagi." }))
@@ -220,6 +284,19 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
                       berhuruf justru menambah beban baca. */}
                   <div>
                     <h3 className="font-black text-slate-950">{labelGudang}</h3>
+                    {/* Nada mengikuti keadaan: yang belum ditetapkan diberi
+                        warna peringatan karena itu memang pekerjaan yang
+                        belum selesai, sedangkan yang sudah cukup abu-abu. */}
+                    {jejak[warehouse.id] ? (
+                      <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+                        Terakhir diubah {fmtTanggalSingkat(jejak[warehouse.id]!.diubahPada)}
+                        {jejak[warehouse.id]!.oleh ? ` oleh ${jejak[warehouse.id]!.oleh}` : ""}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs font-semibold" style={{ color: "var(--warning)" }}>
+                        Belum ditetapkan untuk {namaBulan} {selectedTahun}
+                      </p>
+                    )}
                   </div>
                   {/* Asal angkanya dititipkan ke title, bukan ditulis di layar.
                       Itu keterangan yang dicari sekali seumur hidup, lalu tidak

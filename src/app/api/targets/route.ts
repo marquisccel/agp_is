@@ -43,7 +43,11 @@ export async function GET(req: Request) {
 
     const targets = await prisma.warehouseTarget.findMany({
       where,
-      include: { warehouse: true }
+      // updatedBy ikut diambil supaya halaman Setting Target bisa menyebut
+      // siapa yang terakhir menetapkan target gudang itu. Tanpa nama, baris
+      // "terakhir diubah" hanya memberi tanggal, dan pertanyaan yang
+      // sebenarnya muncul di rapat adalah siapa yang menaikkannya.
+      include: { warehouse: true, updatedBy: { select: { nama: true } } }
     })
     return NextResponse.json(targets)
   } catch (error) {

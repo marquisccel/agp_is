@@ -13,7 +13,9 @@ export default async function ManagerTargetPage() {
   }
 
   const warehouses = await prisma.warehouse.findMany({ orderBy: { nama: "asc" } })
-  const existingTargets = await prisma.warehouseTarget.findMany()
+  const existingTargets = await prisma.warehouseTarget.findMany({
+    include: { updatedBy: { select: { nama: true } } },
+  })
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
