@@ -208,6 +208,45 @@ setelahnya gagal.
 
 ---
 
+## 4b. Kalau ada yang 500 setelah deploy
+
+Log runtime tidak terlihat dari halaman Deployments. Ambil dari terminal:
+
+```bash
+npx vercel logs https://agp-is.vercel.app
+```
+
+Perintah itu memuat jejak galat yang sebenarnya. Tanpanya yang terlihat cuma
+"A server error occurred" di peramban dan daftar permintaan berstatus 500,
+yang tidak menyebut sebab apa pun.
+
+### Nilai variabel Sensitive tidak bisa diperiksa
+
+Variabel bertanda Sensitive bersifat tulis-saja: tidak bisa dibaca lewat
+dasbor maupun `vercel env pull`. Jadi tidak ada cara memastikan isinya benar
+atau kosong.
+
+Kalau log menunjukkan sebuah variabel tidak sampai ke runtime, satu-satunya
+jalan adalah menimpanya:
+
+```bash
+npx vercel env add NAMA_VARIABEL production --sensitive --force
+```
+
+Perintah itu meminta nilainya lewat stdin, jadi nilainya tidak tertinggal di
+riwayat perintah.
+
+### Perubahan variabel tidak berlaku pada deployment yang sudah ada
+
+Variabel lingkungan diikat saat deploy. Setelah mengubahnya, wajib deploy
+ulang:
+
+```bash
+npx vercel redeploy https://agp-is.vercel.app
+```
+
+---
+
 ## 5. Deploy dan periksa
 
 Setelah deploy pertama selesai, kerjakan empat pemeriksaan ini berurutan.
