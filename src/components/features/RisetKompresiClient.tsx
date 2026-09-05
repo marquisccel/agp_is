@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Download, Play, Square } from "lucide-react"
+import { Download, FlaskConical, Play, Square } from "lucide-react"
 import {
   jalankanPerlakuan,
   siapkanWasm,
@@ -10,6 +10,7 @@ import {
   type Perlakuan,
 } from "@/lib/kompresiRiset"
 import { pesanError } from "@/lib/pesanError"
+import { buatZip, type BerkasZip } from "@/lib/zipSederhana"
 
 const PERLAKUAN: Perlakuan[] = ["tanpa", "canvas", "wasm"]
 
@@ -69,6 +70,10 @@ export default function RisetKompresiClient() {
   const [kondisi, setKondisi] = useState("normal")
   const [simpan, setSimpan] = useState(false)
   const [unduhHasil, setUnduhHasil] = useState(false)
+  const [petaTeks, setPetaTeks] = useState("")
+  const [sapuMin, setSapuMin] = useState(30)
+  const [sapuMaks, setSapuMaks] = useState(95)
+  const [sapuLangkah, setSapuLangkah] = useState(5)
 
   const [baris, setBaris] = useState<Baris[]>([])
   const [berjalan, setBerjalan] = useState(false)
@@ -78,8 +83,30 @@ export default function RisetKompresiClient() {
 
   const totalLangkah = berkas.length * PERLAKUAN.length * ulangan
 
-  const kualitasUntuk = (p: Perlakuan) =>
-    p === "canvas" ? kualitasCanvas : p === "wasm" ? kualitasWasm : 1
+  /**
+   * Kualitas per pendekatan, dan kalau ada, per berkas.
+   *
+   * Peta kualitas berasal dari kalibrasi SSIM. Nilainya berbeda antar
+   * berkas karena citra yang berbeda menuntut kualitas berbeda untuk
+   * mencapai SSIM yang sama, dan justru itu yang membuat SSIM benar-benar
+   * terkendali. Satu angka untuk semua berkas hanya menyamakan parameter,
+   * bukan menyamakan kualitasnya.
+   */
+  const bacaPeta = (): Record<string, Record<string, number>> => {
+    if (!petaTeks.trim()) return {}
+    try {
+      return JSON.parse(petaTeks)
+    } catch {
+      return {}
+    }
+  }
+
+  const kualitasUntuk = (p: Perlakuan, namaBerkas: string) => {
+    if (p === "tanpa") return 1
+    const dariPeta = bacaPeta()?.[p]?.[namaBerkas]
+    if (typeof dariPeta === "number" && dariPeta > 0) return dariPeta / 100
+    return p === "canvas" ? kualitasCanvas : kualitasWasm
+  }
 
   const jalankan = async () => {
     if (berkas.length === 0) {
@@ -104,7 +131,7 @@ export default function RisetKompresiClient() {
           for (const perlakuan of acak(PERLAKUAN)) {
             if (berhenti.current) throw new Error("Dihentikan pengguna")
 
-            const kualitas = kualitasUntuk(perlakuan)
+            const kualitas = kualitasUntuk(perlakuan, f.name)
             const kompresi = await jalankanPerlakuan(perlakuan, f, kualitas)
             const namaKirim = `${perlakuan}-q${Math.round(kualitas * 100)}-p${putaran}-${f.name}`
             const unggah = await unggahTerukur(kompresi.blob, namaKirim, simpan)
@@ -147,6 +174,72 @@ export default function RisetKompresiClient() {
           }
         }
       }
+    } catch (e) {
+      setGalat(pesanError(e))
+    } finally {
+      setBerjalan(false)
+    }
+  }
+
+  /**
+   * Kalibrasi: menyapu tingkat kualitas, lalu membungkus seluruh hasilnya
+   * beserta citra aslinya jadi satu berkas zip.
+   *
+   * Kompresinya harus dikerjakan DI SINI, bukan di skrip Python, karena
+   * yang dibandingkan penelitian adalah encoder bawaan peramban dan
+   * MozJPEG. Encoder JPEG milik pustaka Python berbeda dari keduanya, jadi
+   * kalibrasi di sana akan mengalibrasi encoder yang tidak pernah dipakai.
+   * Python hanya kebagian menghitung SSIM, dan untuk itu ia cukup menerima
+   * berkas hasilnya.
+   *
+   * Citra asli ikut dimasukkan ke zip supaya perhitungan SSIM membandingkan
+   * pasangan yang benar tanpa mengandalkan penamaan berkas di dua tempat
+   * berbeda.
+   */
+  const kalibrasi = async () => {
+    if (berkas.length === 0) {
+      setGalat("Pilih dulu berkas gambar yang akan dikalibrasi.")
+      return
+    }
+    if (sapuLangkah < 1 || sapuMin >= sapuMaks) {
+      setGalat("Rentang sapuan kualitas tidak masuk akal.")
+      return
+    }
+
+    setGalat("")
+    setBerjalan(true)
+    berhenti.current = false
+
+    const tingkat: number[] = []
+    for (let q = sapuMin; q <= sapuMaks; q += sapuLangkah) tingkat.push(q)
+
+    setKemajuan({ selesai: 0, total: berkas.length * tingkat.length * 2 })
+
+    try {
+      await siapkanWasm()
+      const isiZip: BerkasZip[] = berkas.map((f) => ({ nama: `asli/${f.name}`, blob: f }))
+
+      for (const f of berkas) {
+        for (const perlakuan of ["canvas", "wasm"] as Perlakuan[]) {
+          for (const q of tingkat) {
+            if (berhenti.current) throw new Error("Dihentikan pengguna")
+            const hasil = await jalankanPerlakuan(perlakuan, f, q / 100)
+            isiZip.push({
+              nama: `${perlakuan}/q${String(q).padStart(2, "0")}__${f.name.replace(/.[^.]+$/, "")}.jpg`,
+              blob: hasil.blob,
+            })
+            setKemajuan((k) => ({ ...k, selesai: k.selesai + 1 }))
+          }
+        }
+      }
+
+      const zip = await buatZip(isiZip)
+      const url = URL.createObjectURL(zip)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `kalibrasi-ssim-${new Date().toISOString().slice(0, 10)}.zip`
+      a.click()
+      URL.revokeObjectURL(url)
     } catch (e) {
       setGalat(pesanError(e))
     } finally {
@@ -286,6 +379,61 @@ export default function RisetKompresiClient() {
         </div>
 
         {galat && <div className="notice tone-warning text-sm font-semibold">{galat}</div>}
+      </section>
+
+      <section className="section section-body space-y-4">
+        <div>
+          <span className="section-eyebrow">Langkah pertama</span>
+          <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kalibrasi SSIM</h3>
+          <p className="mt-1 text-xs leading-5" style={{ color: "var(--muted)" }}>
+            Menyapu tingkat kualitas pada kedua pendekatan, lalu mengunduh seluruh hasilnya
+            beserta citra asli sebagai satu berkas zip. Ekstrak zip tersebut, jalankan
+            scripts/kalibrasi-ssim.py terhadap foldernya, lalu tempelkan peta kualitas yang
+            dihasilkannya ke kolom di bawah.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <label className="space-y-1.5">
+            <span className="field-label">Kualitas terendah</span>
+            <input type="number" min={1} max={99} value={sapuMin}
+              onChange={(e) => setSapuMin(Number(e.target.value))} className="field-input" />
+          </label>
+          <label className="space-y-1.5">
+            <span className="field-label">Kualitas tertinggi</span>
+            <input type="number" min={2} max={100} value={sapuMaks}
+              onChange={(e) => setSapuMaks(Number(e.target.value))} className="field-input" />
+          </label>
+          <label className="space-y-1.5">
+            <span className="field-label">Langkah</span>
+            <input type="number" min={1} max={20} value={sapuLangkah}
+              onChange={(e) => setSapuLangkah(Number(e.target.value))} className="field-input" />
+          </label>
+        </div>
+
+        <button
+          onClick={kalibrasi}
+          disabled={berjalan}
+          className="premium-button btn-netral flex items-center gap-2 px-4 py-2.5 text-sm disabled:opacity-50"
+        >
+          <FlaskConical className="h-4 w-4" />
+          Jalankan sapuan dan unduh zip
+        </button>
+
+        <label className="block space-y-1.5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+          <span className="field-label">Peta kualitas hasil kalibrasi (JSON)</span>
+          <textarea
+            value={petaTeks}
+            onChange={(e) => setPetaTeks(e.target.value)}
+            rows={5}
+            placeholder={'{"canvas":{"nota-01.jpg":78},"wasm":{"nota-01.jpg":64}}'}
+            className="field-input font-mono text-xs"
+          />
+          <span className="block text-[11px]" style={{ color: "var(--muted-faint)" }}>
+            Berkas yang namanya ada di peta ini memakai kualitas dari peta. Yang tidak ada
+            memakai angka pada kolom di atas.
+          </span>
+        </label>
       </section>
 
       {baris.length > 0 && (
