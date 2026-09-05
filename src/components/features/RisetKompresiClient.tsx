@@ -25,6 +25,7 @@ type Baris = {
   titik: string
   ulangan: number
   kondisi: string
+  perangkat: string
   ukuranHasil: number
   msDekode: number
   msEncode: number
@@ -37,7 +38,7 @@ type Baris = {
 
 const KOLOM: (keyof Baris)[] = [
   "waktu", "berkas", "ukuranAsli", "lebar", "tinggi", "perlakuan", "kualitas",
-  "titik", "ulangan", "kondisi", "ukuranHasil", "msDekode", "msEncode", "msKompresi",
+  "titik", "ulangan", "kondisi", "perangkat", "ukuranHasil", "msDekode", "msEncode", "msKompresi",
   "msUnggah", "msServer", "msTotal", "status",
 ]
 
@@ -70,6 +71,7 @@ export default function RisetKompresiClient() {
   const [ulangan, setUlangan] = useState(5)
   const [kondisi, setKondisi] = useState("normal")
   const [titik, setTitik] = useState("")
+  const [perangkat, setPerangkat] = useState("")
   const [simpan, setSimpan] = useState(false)
   const [unduhHasil, setUnduhHasil] = useState(false)
   const [petaTeks, setPetaTeks] = useState("")
@@ -162,6 +164,7 @@ export default function RisetKompresiClient() {
               titik,
               ulangan: putaran,
               kondisi,
+              perangkat,
               ukuranHasil: kompresi.blob.size,
               msDekode: Number(kompresi.msDekode.toFixed(2)),
               msEncode: Number(kompresi.msEncode.toFixed(2)),
@@ -259,7 +262,7 @@ export default function RisetKompresiClient() {
     const url = URL.createObjectURL(new Blob([isi], { type: "text/csv;charset=utf-8" }))
     const a = document.createElement("a")
     a.href = url
-    a.download = `pengukuran-kompresi-${kondisi}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`
+    a.download = `pengukuran-${perangkat || "perangkat"}-${kondisi}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -283,7 +286,7 @@ export default function RisetKompresiClient() {
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <label className="space-y-1.5">
             <span className="field-label">Kualitas Canvas</span>
             <input
@@ -328,6 +331,19 @@ export default function RisetKompresiClient() {
               value={kondisi}
               onChange={(e) => setKondisi(e.target.value)}
               placeholder="normal atau 3g"
+              className="field-input"
+            />
+          </label>
+          {/* Waktu kompresi bergantung pada CPU perangkat, jadi hasil dari
+              dua perangkat tidak boleh tercampur dalam satu kolom tanpa
+              penanda. */}
+          <label className="space-y-1.5">
+            <span className="field-label">Perangkat uji</span>
+            <input
+              type="text"
+              value={perangkat}
+              onChange={(e) => setPerangkat(e.target.value)}
+              placeholder="android atau iphone"
               className="field-input"
             />
           </label>
