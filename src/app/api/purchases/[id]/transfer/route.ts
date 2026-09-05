@@ -6,6 +6,7 @@ import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { fileUrl, putFile } from "@/lib/objectStorage"
 import { isOperationalRole } from "@/lib/roles"
+import { periksaUkuranUnggahan } from "@/lib/batasUnggah"
 
 const ALLOWED_PROOF_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -39,8 +40,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "Bukti transfer wajib diupload untuk transfer pertama." }, { status: 400 })
     }
 
-    if (file && file.size > 2 * 1024 * 1024) {
-      return NextResponse.json({ error: "Ukuran bukti transfer maksimal 2 MB." }, { status: 400 })
+    const galatUkuran = file ? periksaUkuranUnggahan(file.size, "bukti transfer") : null
+    if (galatUkuran) {
+      return NextResponse.json({ error: galatUkuran }, { status: 400 })
     }
 
     let buktiUrl = purchase.bukti_transfer
