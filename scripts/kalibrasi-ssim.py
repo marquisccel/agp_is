@@ -1,9 +1,40 @@
 # -*- coding: utf-8 -*-
 """
-Menghitung SSIM hasil sapuan kualitas, lalu menentukan kualitas yang
-dibutuhkan tiap pendekatan untuk mencapai ambang SSIM yang sama.
+Menghitung SSIM hasil sapuan kualitas, lalu menyetarakan kedua pendekatan
+sebelum ukuran dan waktunya dibandingkan.
 
-    python scripts/kalibrasi-ssim.py <folder-hasil-ekstrak-zip> [--target 0.95]
+    python scripts/kalibrasi-ssim.py <folder> --titik 30,50,70   (dianjurkan)
+    python scripts/kalibrasi-ssim.py <folder> --target 0.96      (lihat catatan)
+
+── Kenapa penyetaraannya per citra, bukan satu ambang untuk semua ───────
+
+Rancangan awal memakai satu ambang SSIM untuk seluruh citra. Uji coba atas
+empat foto nota dari kamera 12 megapiksel menunjukkan cara itu tidak dapat
+dipakai, dan sebabnya bukan soal teknis pemrograman.
+
+SSIM diukur terhadap citra asli BESERTA derau sensornya. Kompresi JPEG
+menghaluskan derau, dan penghalusan itu dihitung SSIM sebagai kehilangan
+struktur, padahal yang hilang bintik acak, bukan tulisan pada nota. Foto
+yang diambil pada cahaya kurang karena itu memperoleh SSIM jauh lebih
+rendah walaupun notanya sama terbacanya.
+
+Akibatnya satu angka ambang berarti hal yang berbeda-beda:
+
+    ambang 0,95 tercapai pada kualitas 10 untuk foto yang bersih, dan
+    citranya sudah belang warna di situ;
+    ambang yang sama menuntut kualitas 83 untuk foto yang berderau, dan
+    berkasnya nyaris tidak mengecil sama sekali.
+
+Karena itu penyetaraannya dilakukan per citra pada titik kerja tetap.
+Canvas dijalankan pada kualitas tertentu, SSIM yang dihasilkannya dibaca
+untuk citra itu, lalu dicari kualitas WebAssembly yang menghasilkan SSIM
+yang sama persis. Kesetaraan jadi lebih ketat karena berlaku per citra,
+dan tidak ada angka ambang yang perlu ditebak siapa pun.
+
+Mode --target dipertahankan untuk keadaan yang citranya seragam, tetapi
+untuk foto nota di lapangan sebaiknya tidak dipakai.
+
+── Susunan folder masukan ───────────────────────────────────────────────
 
 Folder masukan adalah hasil ekstrak zip dari halaman /dashboard/riset,
 dengan susunan:
@@ -113,13 +144,82 @@ def kualitas_untuk_target(titik: list[tuple[int, float]], target: float) -> int 
     return None
 
 
+def ssim_pada_kualitas(titik: list[tuple[int, float]], q: int) -> float | None:
+    """SSIM pada satu tingkat kualitas, ditaksir kalau tidak persis ada."""
+    urut = sorted(titik)
+    for qq, ss in urut:
+        if qq == q:
+            return ss
+    for (q0, s0), (q1, s1) in zip(urut, urut[1:]):
+        if q0 < q < q1:
+            return s0 + (q - q0) / (q1 - q0) * (s1 - s0)
+    return None
+
+
+def cocokkan_per_citra(arg, acuan, kurva) -> int:
+    """
+    Menyetarakan kedua pendekatan per citra pada titik kerja tertentu.
+
+    Canvas dijalankan pada kualitas tetap, SSIM yang dihasilkannya dibaca
+    untuk citra itu, lalu dicari kualitas WebAssembly yang menghasilkan SSIM
+    yang sama. Ambangnya dengan demikian tidak ditetapkan siapa pun,
+    melainkan diturunkan dari pendekatan pembandingnya sendiri.
+    """
+    titik_kerja = [int(x) for x in str(arg.titik).split(",") if x.strip()]
+
+    for tk in titik_kerja:
+        peta: dict[str, dict[str, int]] = {p: {} for p in PENDEKATAN}
+        gagal: list[str] = []
+
+        print(f"\n{'='*66}")
+        print(f"Titik kerja Canvas kualitas {tk}")
+        print(f"{'='*66}")
+        print(f"{'berkas':<22} {'SSIM Canvas':>12} {'q wasm':>8} {'SSIM wasm':>11}")
+        print("-" * 66)
+
+        for nama in sorted(acuan):
+            s_canvas = ssim_pada_kualitas(kurva["canvas"].get(nama, []), tk)
+            if s_canvas is None:
+                gagal.append(f"{nama}: kualitas {tk} di luar rentang sapuan Canvas")
+                continue
+
+            q_wasm = kualitas_untuk_target(kurva["wasm"].get(nama, []), s_canvas)
+            if q_wasm is None:
+                gagal.append(
+                    f"{nama}: WebAssembly tidak mencapai SSIM {s_canvas:.4f} "
+                    "pada rentang sapuan"
+                )
+                print(f"{nama:<22} {s_canvas:>12.4f} {'tidak':>8} {'-':>11}")
+                continue
+
+            s_wasm = ssim_pada_kualitas(kurva["wasm"][nama], q_wasm) or 0.0
+            peta["canvas"][f"{nama}.jpg"] = tk
+            peta["wasm"][f"{nama}.jpg"] = q_wasm
+            print(f"{nama:<22} {s_canvas:>12.4f} {q_wasm:>8} {s_wasm:>11.4f}")
+
+        keluar = arg.peta.with_name(f"{arg.peta.stem}-t{tk}{arg.peta.suffix}")
+        keluar.write_text(json.dumps(peta, indent=2), encoding="utf-8")
+        print(f"\nPeta ditulis ke {keluar}")
+
+        for g in gagal:
+            print(f"  perhatian: {g}", file=sys.stderr)
+
+    print("\nJalankan pengukuran sekali untuk tiap peta, dan tuliskan titik")
+    print("kerjanya pada kolom Titik kerja di halaman riset supaya terekam")
+    print("di CSV hasil pengukuran.")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("folder", type=Path, help="folder hasil ekstrak zip kalibrasi")
+    p.add_argument("--titik", type=str, default=None,
+                   help="titik kerja Canvas yang dicocokkan, misalnya 30,50,70. "
+                        "Ini cara yang dianjurkan")
     p.add_argument("--target", type=float, default=None,
-                   help="ambang SSIM; kalau tidak diisi, skrip hanya menampilkan kurvanya")
+                   help="ambang SSIM tunggal. Lihat catatan di kepala berkas sebelum memakainya")
     p.add_argument("--metrik", choices=["luma", "rgb"], default="luma",
-                   help="metrik yang dipakai mencocokkan ambang; keduanya tetap masuk CSV")
+                   help="metrik yang dipakai mencocokkan; keduanya tetap masuk CSV")
     p.add_argument("--csv", type=Path, default=Path("kalibrasi-ssim.csv"))
     p.add_argument("--peta", type=Path, default=Path("peta-kualitas.json"))
     arg = p.parse_args()
@@ -176,6 +276,10 @@ def main() -> int:
         for b, pdk, q, sl, sr, uk in sorted(baris):
             f.write(f"{b},{pdk},{q},{sl:.5f},{sr:.5f},{uk}\n")
     print(f"Kurva lengkap ditulis ke {arg.csv} ({len(baris)} baris).\n")
+
+    # ── Cara yang dianjurkan: pencocokan per citra ────────────────────
+    if arg.titik:
+        return cocokkan_per_citra(arg, acuan, kurva)
 
     # Tanpa target, skrip berhenti di sini. Ambangnya memang harus
     # ditentukan dengan melihat sampai tingkat mana angka pada nota masih

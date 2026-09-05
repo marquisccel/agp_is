@@ -22,6 +22,7 @@ type Baris = {
   tinggi: number
   perlakuan: Perlakuan
   kualitas: number
+  titik: string
   ulangan: number
   kondisi: string
   ukuranHasil: number
@@ -36,7 +37,7 @@ type Baris = {
 
 const KOLOM: (keyof Baris)[] = [
   "waktu", "berkas", "ukuranAsli", "lebar", "tinggi", "perlakuan", "kualitas",
-  "ulangan", "kondisi", "ukuranHasil", "msDekode", "msEncode", "msKompresi",
+  "titik", "ulangan", "kondisi", "ukuranHasil", "msDekode", "msEncode", "msKompresi",
   "msUnggah", "msServer", "msTotal", "status",
 ]
 
@@ -68,6 +69,7 @@ export default function RisetKompresiClient() {
   const [kualitasWasm, setKualitasWasm] = useState(0.8)
   const [ulangan, setUlangan] = useState(5)
   const [kondisi, setKondisi] = useState("normal")
+  const [titik, setTitik] = useState("")
   const [simpan, setSimpan] = useState(false)
   const [unduhHasil, setUnduhHasil] = useState(false)
   const [petaTeks, setPetaTeks] = useState("")
@@ -157,6 +159,7 @@ export default function RisetKompresiClient() {
               tinggi: kompresi.tinggi,
               perlakuan,
               kualitas: Math.round(kualitas * 100),
+              titik,
               ulangan: putaran,
               kondisi,
               ukuranHasil: kompresi.blob.size,
@@ -280,7 +283,7 @@ export default function RisetKompresiClient() {
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <label className="space-y-1.5">
             <span className="field-label">Kualitas Canvas</span>
             <input
@@ -309,6 +312,16 @@ export default function RisetKompresiClient() {
             />
           </label>
           <label className="space-y-1.5">
+            <span className="field-label">Titik kerja</span>
+            <input
+              type="text"
+              value={titik}
+              onChange={(e) => setTitik(e.target.value)}
+              placeholder="t50"
+              className="field-input"
+            />
+          </label>
+          <label className="space-y-1.5">
             <span className="field-label">Label kondisi jaringan</span>
             <input
               type="text"
@@ -325,11 +338,12 @@ export default function RisetKompresiClient() {
             dan memang tidak sama antara kedua pendekatan justru supaya
             SSIM keduanya setara. */}
         <div className="notice tone-info text-xs leading-5">
-          Isi kedua nilai kualitas dengan hasil kalibrasi SSIM, bukan dengan angka yang sama.
-          Kualitas 80 pada Canvas dan 80 pada MozJPEG menghasilkan SSIM yang berbeda, dan
-          membandingkannya pada angka kualitas yang sama membuat perbandingannya tidak setara.
-          Atur pembatasan jaringan lewat DevTools sebelum menekan Jalankan, lalu tuliskan
-          kondisinya pada label di atas.
+          Kedua nilai kualitas seharusnya berasal dari peta kalibrasi, bukan diisi dengan angka
+          yang sama. Kualitas 80 pada Canvas dan 80 pada MozJPEG menghasilkan SSIM yang berbeda,
+          dan membandingkan keduanya pada angka kualitas yang sama membuat perbandingannya tidak
+          setara. Kolom Titik kerja diisi penanda peta yang sedang dipakai, misalnya t50, supaya
+          tiap sesi pengukuran dapat dibedakan di CSV. Atur pembatasan jaringan lewat DevTools
+          sebelum menekan Jalankan, lalu tuliskan kondisinya pada label di atas.
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
