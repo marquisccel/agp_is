@@ -5,6 +5,8 @@ import Link from "next/link"
 import { Filter, Search, Tag, User } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import StatusPill from "@/components/ui/StatusPill"
+import KartuData from "@/components/ui/KartuData"
+import PenyaringLipat from "@/components/ui/PenyaringLipat"
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 
 interface PurchaseItem {
@@ -94,18 +96,21 @@ export default function AdminHistoryClient({
           ber-pl-8 yang mendorong kolomnya ke kanan -- sementara kolom cari
           di sebelahnya menaruh ikon di DALAM. Tiga kolom sebaris, dua cara
           berbeda. Sekarang ketiganya memakai .field-icon. */}
-      <div className="section section-body grid grid-cols-1 gap-3 md:grid-cols-3">
+      <PenyaringLipat
+        jumlahAktif={(selectedStatus !== "all" ? 1 : 0) + (selectedSupplier !== "all" ? 1 : 0)}
+        utama={
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari supplier, no. nota, staff..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            className="field-input field-icon"
-          />
-        </div>
-
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari supplier, no. nota, staff..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="field-input field-icon"
+            />
+          </div>
+        }
+      >
         <div className="relative">
           <Filter className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <ElegantSelect
@@ -129,9 +134,75 @@ export default function AdminHistoryClient({
             className="w-full"
           />
         </div>
+      </PenyaringLipat>
+
+      {/* Daftar Transaksi termasuk lima daftar utama yang mendapat kartu
+          tangan. Aksinya pindah ke kaki kartu supaya tidak berdesakan di
+          kolom paling kanan yang di ponsel jadi baris paling sempit. */}
+      <div className="daftar-kartu">
+        {filteredPurchases.length === 0 ? (
+          <p className="section section-body text-center text-sm text-slate-400">
+            Tidak ada transaksi yang cocok dengan kriteria filter.
+          </p>
+        ) : (
+          filteredPurchases.map((purchase) => {
+            const totalBerat = purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
+            const totalNilai = purchase.total_dibayar ?? purchase.total_nilai_setelah_retur ?? purchase.total_nilai_sebelum_retur ?? 0
+            const status = getPurchaseStatus(purchase.status_approval)
+
+            return (
+              <KartuData
+                key={purchase.id}
+                judul={purchase.supplier.nama}
+                subjudul={`${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`} · ${new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
+                status={<StatusPill label={status.label} tone={status.tone} />}
+                baris={[
+                  { label: "Staff", nilai: purchase.staff.nama },
+                  {
+                    label: "Barang",
+                    nilai: `${totalBerat.toFixed(1)} kg · ${purchase.items.length} jenis`,
+                  },
+                  {
+                    label: "Nilai dibayar",
+                    nilai: <span className="font-mono tabular-nums">{formatRp(totalNilai)}</span>,
+                  },
+                ]}
+                aksi={
+                  <>
+                    {purchase.status_approval === "menunggu_verifikasi" && (
+                      <Link
+                        href={`${basePath}/check/${purchase.id}`}
+                        className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                      >
+                        Cek
+                      </Link>
+                    )}
+                    {(purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer") && (
+                      <Link
+                        href={`/nota/${purchase.id}`}
+                        target="_blank"
+                        className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                      >
+                        Nota
+                      </Link>
+                    )}
+                    {purchase.status_approval !== "sudah_transfer" && (
+                      <Link
+                        href={`${basePath}/edit/${purchase.id}`}
+                        className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                      >
+                        Edit
+                      </Link>
+                    )}
+                  </>
+                }
+              />
+            )
+          })
+        )}
       </div>
 
-      <div className="section overflow-hidden">
+      <div className="section overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="tabel-lembut text-left text-sm text-slate-600">
             <thead>

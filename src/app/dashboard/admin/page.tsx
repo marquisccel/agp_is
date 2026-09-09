@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import PageHeader from "@/components/ui/PageHeader"
+import KartuData from "@/components/ui/KartuData"
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -66,7 +67,39 @@ export default async function AdminDashboard() {
         }
       />
 
-      <div className="section overflow-hidden">
+      {/* Antrean Double Check adalah layar kerja Admin, bukan tabel yang
+          sesekali dilihat: yang dicari cuma nama lapak dan tombol masuk.
+          Di ponsel karena itu dibuat kartu dengan tombol di kaki, dalam
+          jangkauan jempol. */}
+      <div className="daftar-kartu">
+        {drafts.length === 0 ? (
+          <p className="section section-body text-center text-sm" style={{ color: "var(--muted-faint)" }}>
+            Tidak ada transaksi yang menunggu double check.
+          </p>
+        ) : (
+          drafts.map((draft) => (
+            <KartuData
+              key={draft.id}
+              judul={draft.supplier.nama}
+              subjudul={`${new Date(draft.createdAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })} · oleh ${draft.staff.nama}`}
+              baris={draft.items.map((i) => ({
+                label: i.sku_name,
+                nilai: `${i.berat_final_item} kg`,
+              }))}
+              aksi={
+                <Link
+                  href={`/dashboard/admin/check/${draft.id}`}
+                  className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 text-sm font-bold"
+                >
+                  Lakukan Cek
+                </Link>
+              }
+            />
+          ))
+        )}
+      </div>
+
+      <div className="section overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="tabel-lembut text-left text-sm text-slate-600">
             <thead>

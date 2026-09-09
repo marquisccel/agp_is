@@ -7,6 +7,7 @@ import { CheckCircle2, Clock3, Eye, FileImage, Loader2, ReceiptText, RefreshCw, 
 import type { Purchase, PurchaseItem, Supplier } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
+import BottomSheet from "@/components/ui/BottomSheet"
 import { useToast } from "@/components/ui/Toast"
 import { skemaPembayaran, statusPembayaran } from "@/lib/paymentStatus"
 import { kewajibanKeLapak } from "@/lib/settlement"
@@ -113,27 +114,36 @@ export default function TransferList({
     <>
       {dialog}
       {toastHost}
-      {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-xl" onClick={() => setPreview(null)}>
-          <div
-            className="w-full max-w-2xl overflow-hidden rounded-[var(--radius-lg)] border shadow-[0_32px_90px_rgba(15,23,42,0.28)]"
-            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: "var(--border)" }}>
-              <div>
+      {/* Pratinjau bukti transfer memakai BottomSheet: di ponsel ia
+          meluncur dari bawah, di layar lebar tetap memusat seperti dialog
+          semula. Tombol tutupnya tidak dibuang -- panel ini juga bisa
+          ditutup dengan mengetuk latar atau menekan Escape, tapi keduanya
+          tidak terlihat, dan bukti transfer sering dibuka oleh orang yang
+          buru-buru. */}
+      <BottomSheet
+        terbuka={preview !== null}
+        onTutup={() => setPreview(null)}
+        labelAria="Pratinjau bukti transfer"
+      >
+        {preview && (
+          <div className="pb-1">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div className="min-w-0">
                 <span className="section-eyebrow">Bukti transfer</span>
-                <p className="mt-0.5 text-sm font-black text-slate-950">{preview.title}</p>
+                <p className="mt-0.5 truncate text-sm font-black text-slate-950">{preview.title}</p>
               </div>
               <button
                 onClick={() => setPreview(null)}
-                className="btn-netral premium-button grid h-9 w-9 place-items-center !rounded-full"
+                className="btn-netral premium-button grid h-11 w-11 shrink-0 place-items-center !rounded-full"
                 aria-label="Tutup preview bukti transfer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="relative h-[72vh] w-full p-3" style={{ background: "var(--surface-sunken)" }}>
+            <div
+              className="relative h-[58vh] w-full rounded-[var(--radius-md)] p-2 md:h-[72vh]"
+              style={{ background: "var(--surface-sunken)" }}
+            >
               <Image
                 src={preview.src}
                 alt="Bukti Transfer"
@@ -144,8 +154,8 @@ export default function TransferList({
               />
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </BottomSheet>
 
       <div className="space-y-4">
         {purchases.length > 0 && (
