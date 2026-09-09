@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type CSSProperties } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -272,9 +272,18 @@ export default function ManagerPurchaseDetailClient({
           </div>
           <DollarSign className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
         </div>
+        {/* Jumlah kolom dititipkan lewat custom property, bukan ditulis
+            langsung sebagai gridTemplateColumns. Gaya sebaris tidak bisa
+            dikalahkan media query, dan lima kolom di layar 375px menyisakan
+            45px per sel -- kata "BARANG" saja sudah tidak muat, apalagi
+            "Rp 26.122.200". Aturan .uang-grid di globals.css yang menurunkan
+            jumlahnya jadi dua di ponsel. */}
         <div
-          className="grid gap-px"
-          style={{ background: "var(--border)", gridTemplateColumns: `repeat(${remainingPayment > 0 ? 5 : 4}, minmax(0, 1fr))` }}
+          className="uang-grid grid gap-px"
+          style={{
+            background: "var(--border)",
+            "--uang-kolom": remainingPayment > 0 ? 5 : 4,
+          } as CSSProperties}
         >
           <UangTile label="Nilai barang" nilai={fmtRp(nilaiBarang)} />
           <UangTile label="Potongan" nilai={totalPotongan > 0 ? `- ${fmtRp(totalPotongan)}` : "Tidak ada"} warna={totalPotongan > 0 ? "var(--danger)" : undefined} />

@@ -73,7 +73,9 @@ function SidebarContent({
 
           return (
             <Link key={item.href} href={item.href} onClick={onNavigate}>
-              <span className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 text-sm font-medium ${
+              {/* min-h-11 hanya di layar sempit: 40px masih meleset untuk
+                  jempol pada daftar sebelas baris yang berdempetan. */}
+              <span className={`group flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 text-sm font-medium lg:min-h-0 ${
                 isActive
                   ? "font-semibold"
                   : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-900"
@@ -229,9 +231,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       <main className="flex-1 flex flex-col overflow-hidden min-w-0 print:block print:overflow-visible">
-        <header className="liquid-topbar relative h-20 border-b border-white/70 flex items-center px-4 sm:px-7 gap-3 flex-shrink-0 z-20 print:hidden">
+        {/* 80px kepala tetap di layar 812px berarti sepersepuluh layar habis
+            untuk satu judul, padahal jam dan tanggalnya memang disembunyikan
+            di ponsel. Di bawah sm dipendekkan jadi 60px. */}
+        <header className="liquid-topbar relative h-[60px] sm:h-20 border-b border-white/70 flex items-center px-4 sm:px-7 gap-3 flex-shrink-0 z-20 print:hidden">
           <button
-            className="lg:hidden p-2 rounded-2xl text-slate-600 hover:bg-white transition-colors flex-shrink-0 shadow-sm border border-slate-200"
+            className="lg:hidden grid h-11 w-11 place-items-center rounded-2xl text-slate-600 hover:bg-white transition-colors flex-shrink-0 shadow-sm border border-slate-200"
             onClick={() => setSidebarOpen(true)}
             aria-label="Buka menu"
           >

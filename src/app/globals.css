@@ -1183,6 +1183,14 @@ a:focus-visible {
 /* Varian besar -- dipakai untuk kolom utama seperti pemilihan lapak. */
 .field-input.field-lg { padding: 12px 14px; font-size: 14px; border-radius: var(--radius-md); }
 
+/* Deret hitungan pembayaran di halaman detail transaksi. Jumlah lajurnya
+   dikirim komponen lewat --uang-kolom, karena hanya komponen yang tahu ada
+   sisa termin atau tidak, sementara hanya CSS yang boleh menurunkannya di
+   layar sempit. */
+.uang-grid {
+  grid-template-columns: repeat(var(--uang-kolom, 4), minmax(0, 1fr));
+}
+
 .field-label {
   display: block;
   font-size: 11px;
@@ -1540,5 +1548,158 @@ a:focus-visible {
   .btn-primer,
   .btn-netral {
     min-height: 40px;
+  }
+
+  /*
+   * Padding kartu ditulis ulang di sini, bukan diserahkan ke kelas utilitas
+   * di tiap halaman. Nilai p-7 (28px) yang pas di layar lebar memakan 56 dari
+   * 375 piksel lebar layar ponsel -- seperenam layar habis jadi ruang kosong,
+   * dan isinya terdorong sampai terpotong. Aturan tak berlapis menang atas
+   * utilitas Tailwind yang berlapis, jadi satu tempat ini cukup untuk seluruh
+   * halaman.
+   */
+  .page-hero {
+    padding: 20px 18px;
+  }
+
+  .section-body {
+    padding: 14px 16px;
+  }
+
+  .section-body.rapat {
+    padding: 12px 14px;
+  }
+
+  .section-shell-head {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  /*
+   * Angka rupiah penuh ("Rp 897.682.798") butuh sekitar 143px pada 17px
+   * huruf monospace, sementara satu petak stat di layar 375px cuma menyisakan
+   * 143px setelah padding. Ukuran di bawah ini hasil dari hitungan itu, bukan
+   * selera: pada 26px seperti di layar lebar, angkanya terpotong separuh.
+   */
+  .stat-tile {
+    padding: 14px 16px;
+    gap: 4px;
+  }
+
+  .stat-tile .stat-label {
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    /* "MASIH MENGGANTUNG" tidak punya tempat untuk patah selain di tengah
+       kata pada petak selebar 117px. Dipatah lebih baik daripada dipotong. */
+    overflow-wrap: anywhere;
+  }
+
+  /* Diikatkan ke lebar layar, bukan dua nilai tetap di dua breakpoint.
+     Angka rupiah penuh butuh sekitar 0,6em per karakter; pada layar 320px
+     petaknya 117px, pada 430px 172px, dan satu ukuran tetap selalu salah di
+     salah satu ujungnya. */
+  .stat-tile .stat-value {
+    font-size: clamp(13px, 4.4vw, 18px);
+    letter-spacing: -0.03em;
+  }
+
+  .stat-tile .stat-unit {
+    font-size: 11px;
+  }
+
+  .stat-tile .stat-delta {
+    font-size: 10.5px;
+  }
+
+  /* Angka besar tidak perlu "mengembang" di layar sentuh: tidak ada
+     kursor yang melayang di atasnya, dan skalanya justru memotong angka. */
+  .stat-tile:hover .stat-value {
+    transform: none;
+  }
+
+  .metric-rail .rail-value {
+    font-size: 18px;
+  }
+
+  .rank-row {
+    padding: 10px 14px;
+  }
+
+  /*
+   * Jaring pengaman. Penyebab pergeseran mendatar sudah diperbaiki satu per
+   * satu di halamannya masing-masing, tapi satu elemen kelewat saja membuat
+   * SELURUH halaman bisa digeser ke samping di ponsel, dan pengguna membaca
+   * itu sebagai situs rusak. Dipasang di penggulir halaman, bukan di body,
+   * supaya posisi sticky di dalam kartu tidak ikut mati.
+   */
+  .liquid-shell main > .overflow-auto {
+    overflow-x: hidden;
+  }
+
+  /*
+   * Tabel adalah satu-satunya isi yang memang tidak bisa dipaksa muat di
+   * layar 375px: kolomnya punya lebar minimum masing-masing. Yang salah
+   * bukan tabelnya, melainkan wadahnya yang memotong tanpa memberi jalan
+   * menggeser, sehingga kolom terakhir hilang tanpa jejak. Aturan ini
+   * memberi jalan itu ke setiap wadah yang anak langsungnya tabel.
+   *
+   * Ditulis sebagai tiga selektor, bukan satu, semata-mata soal kekhususan:
+   * .section dan utilitas .overflow-hidden sudah menetapkan overflow lebih
+   * dulu, dan selektor yang lebih longgar akan kalah tanpa memberi tanda
+   * apa pun bahwa ia kalah.
+   *
+   * Membuat .section jadi wadah gulir tidak merusak .section-shell-head di
+   * dalamnya: .section sudah overflow: hidden sejak awal, dan itu pun sudah
+   * membentuk scrollport, jadi sticky di dalamnya memang tidak pernah
+   * menempel ke halaman.
+   */
+  .section:has(> table),
+  div.overflow-hidden:has(> table),
+  div:has(> table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Padding sel 20px kiri-kanan menghabiskan 40px per kolom. Pada tabel
+     lima kolom itu 200px dari 375px layar, dan tabel yang sebenarnya muat
+     jadi terpaksa digeser. */
+  .tabel-lembut thead th {
+    padding: 10px 14px;
+    font-size: 10px;
+  }
+
+  .tabel-lembut tbody td {
+    padding: 12px 14px;
+  }
+
+  /* Empat sampai lima lajur menyisakan 45px per sel di layar 375px. Dua
+     lajur memberi 150px, cukup untuk angka rupiah penuh. */
+  .uang-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .uang-grid > div {
+    padding: 12px 14px;
+  }
+}
+
+/* Layar paling sempit yang masih dipakai di lapangan (iPhone SE, 375px, dan
+   sebagian Android 360px). Dipisah dari blok di atas karena hanya di lebar
+   inilah angka rupiah penuh masih belum muat. */
+@media (max-width: 400px) {
+  .stat-tile {
+    padding: 12px 13px;
+  }
+
+  .page-hero {
+    padding: 18px 15px;
+  }
+
+  /* Label mikro huruf besar. Pada deret tiga lajur di halaman detail
+     transaksi, satu sel hanya selebar 61px sementara kata "TIMBANGAN" pada
+     11px menuntut 66px, sehingga labelnya keluar dari selnya. */
+  .field-label {
+    font-size: 9.5px;
+    letter-spacing: 0.03em;
   }
 }

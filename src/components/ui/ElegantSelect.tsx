@@ -82,7 +82,15 @@ export default function ElegantSelect<T extends string | number>({
   }, [open])
 
   return (
-    <div ref={rootRef} className={`relative ${className}`}>
+    // min-w-0 dipasang di akar, bukan di tiap pemakaian. Label terpilih
+    // dibungkus .truncate, dan white-space: nowrap di dalamnya membuat lebar
+    // min-content kolom ini sama dengan panjang teks penuhnya -- "Semua Bulan"
+    // saja sudah 149px. Sebagai anak flex atau grid, kolom yang tidak boleh
+    // menyusut di bawah min-content itu memaksa induknya melebar: dua pemilih
+    // berdampingan menuntut 358px di layar yang cuma 375px, dan barisnya
+    // menembus tepi kartu. min-w-0 mengizinkan penyusutan, dan .truncate yang
+    // menangani sisanya dengan elipsis.
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
       <button
         type="button"
         aria-label={ariaLabel}

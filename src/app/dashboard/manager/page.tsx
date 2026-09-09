@@ -742,14 +742,18 @@ export default async function ManagerDashboard({
         </div>
       )}
       {/* Page Header */}
-      <section className="page-hero border border-white/70 p-7 md:p-9">
+      <section className="page-hero border border-white/70 p-5 sm:p-7 md:p-9">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
           <div className="min-w-0">
             <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--brand-strong)" }}>
               Agrapana Greenworks Polymer Information System
             </p>
-            <h2 className="mt-3 max-w-4xl whitespace-nowrap text-3xl font-semibold leading-none tracking-[-0.04em] text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
+            {/* whitespace-nowrap sengaja hanya dipasang mulai sm. Nama panjang
+                pada layar 375px tidak muat dalam satu baris, dan karena induknya
+                tidak menggulir, sapaan itu terpotong di tengah nama penggunanya.
+                Di layar sempit sapaan boleh turun baris. */}
+            <h2 className="mt-3 max-w-4xl text-[1.7rem] font-semibold leading-tight tracking-[-0.04em] text-slate-950 sm:whitespace-nowrap sm:text-3xl sm:leading-none md:text-[2.65rem] xl:text-[3.05rem]">
               {getGreeting(now)}, <span className="font-black">{displayName}</span>.
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
@@ -757,8 +761,12 @@ export default async function ManagerDashboard({
             </p>
           </div>
           <div className="section section-body w-full xl:w-[540px]">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
+            {/* Ditumpuk di layar sempit. Sebaris dengan label, kedua pemilih
+                periode butuh 264px sementara yang tersisa cuma sekitar 300px
+                untuk label DAN pemilihnya, sehingga labelnya terpotong jadi
+                tiga baris dan pemilih tahunnya keluar layar. */}
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Periode Laporan</p>
                 <p className="mt-1 text-xs text-slate-400">Kontrol data dashboard</p>
               </div>

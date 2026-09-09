@@ -35,13 +35,16 @@ export default function MonthYearFilter({
   })
 
   return (
-    <div className="flex items-center gap-2">
+    // Lebar tetap w-36 + w-28 tidak muat di layar ponsel begitu ditaruh
+    // sebaris dengan label apa pun. Di bawah sm keduanya berbagi lebar yang
+    // tersedia; mulai sm kembali ke lebar tetap seperti semula.
+    <div className="flex w-full items-center gap-2 sm:w-auto">
       <ElegantSelect
         value={selectedBulan}
         options={monthOptions}
         onChange={bulan => handlePeriodChange(bulan, selectedTahun)}
         ariaLabel="Pilih bulan"
-        className="w-36"
+        className="flex-1 sm:w-36 sm:flex-none"
         menuClassName="w-44"
       />
 
@@ -50,7 +53,7 @@ export default function MonthYearFilter({
         options={yearOptions}
         onChange={tahun => handlePeriodChange(selectedBulan, tahun)}
         ariaLabel="Pilih tahun"
-        className="w-28"
+        className="flex-1 sm:w-28 sm:flex-none"
       />
     </div>
   )

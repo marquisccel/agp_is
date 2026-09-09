@@ -117,8 +117,12 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
   return (
     <div className="space-y-4">
       <section className="section section-body">
+        {/* min-w-0 pada kedua kolom. Anak grid punya min-width: auto, yang
+            memaksa lajurnya selebar isi terkecil anaknya: dua pemilih periode
+            berdampingan menuntut 358px sementara kartunya cuma 309px, jadi
+            barisnya menembus tepi kartu di layar ponsel. */}
         <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
               <Search className="field-icon-gambar absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--muted-faint)" }} />
               <input
@@ -133,7 +137,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
             <ElegantSelect value={selectedAction} options={actionOptions} onChange={setSelectedAction} ariaLabel="Filter aksi" className="w-full" menuClassName="w-72" />
             <ElegantSelect value={selectedTable} options={tableOptions} onChange={setSelectedTable} ariaLabel="Filter entitas" className="w-full" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <ElegantSelect value={selectedMonth} options={MONTHS} onChange={setSelectedMonth} ariaLabel="Filter bulan" className="w-full sm:w-40" />
             <ElegantSelect value={selectedYear} options={yearOptions} onChange={setSelectedYear} ariaLabel="Filter tahun" className="w-full sm:w-32" />
             {/* Ikon saja supaya muat sebaris dengan filternya. Sebelumnya

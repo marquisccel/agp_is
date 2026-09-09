@@ -474,7 +474,16 @@ export default function ManagerAnalytics({
                     tick={{ fill: "#94a3b8", fontSize: 11 }}
                     tickMargin={8}
                     padding={{ left: 18, right: 18 }}
-                    interval={chartMode === "harian" ? 2 : 0}
+                    /* interval={0} memaksa SETIAP label digambar. Di layar
+                       lebar 12 label bulanan masih muat, tapi di ponsel
+                       keduabelasnya ditumpuk di ruang 300px sampai sumbu
+                       X-nya jadi coretan hitam yang tidak terbaca.
+                       preserveStartEnd menyerahkan penjarangan ke recharts:
+                       label dibuang sampai jaraknya minimal minTickGap,
+                       dengan label pertama dan terakhir selalu dipertahankan
+                       supaya rentang periodenya tetap jelas. */
+                    interval="preserveStartEnd"
+                    minTickGap={chartMode === "harian" ? 24 : 16}
                   />
                   <YAxis
                     width={36}
@@ -568,7 +577,11 @@ export default function ManagerAnalytics({
                 <button
                   type="button"
                   onClick={() => setSkuExpanded(v => !v)}
-                  className="mt-4 text-[11.5px] font-bold"
+                  /* Tinggi teksnya sendiri cuma 17px. Di layar sentuh itu
+                     sasaran yang terlalu tipis untuk jempol, jadi tombolnya
+                     diberi tinggi minimum tanpa mengubah letak visual
+                     teksnya. */
+                  className="-mx-2 mt-2 inline-flex min-h-[40px] items-center px-2 text-[11.5px] font-bold"
                   style={{ color: "var(--brand-strong)" }}
                 >
                   {skuExpanded ? "Tampilkan lebih sedikit" : `Tampilkan ${skuTersembunyi} SKU lainnya`}
