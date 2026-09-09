@@ -177,7 +177,8 @@ test.describe.serial("Alur transaksi pembelian penuh (draft -> verifikasi -> tra
 
     // Bisa ada kartu transfer lain dari data lama di DB dev bersama, jadi
     // input file harus discope ke kartu (article) milik supplier uji ini.
-    const fileInput = page.locator("article", { hasText: supplierName }).locator('input[type="file"]')
+    const kartuTransfer = page.locator("article", { hasText: supplierName })
+    const fileInput = kartuTransfer.locator('input[type="file"]')
     await fileInput.setInputFiles({
       name: "bukti-e2e.png",
       mimeType: "image/png",
@@ -187,7 +188,20 @@ test.describe.serial("Alur transaksi pembelian penuh (draft -> verifikasi -> tra
       ),
     })
 
-    await expect(page.getByText("Sudah Transfer", { exact: true }).first()).toBeVisible({ timeout: 10000 })
+    // Diperiksa DI DALAM kartu milik supplier uji, bukan di seluruh halaman.
+    //
+    // "Sudah Transfer" juga dipakai sebagai label petak statistik di kepala
+    // halaman ini, dan petak itu ada entah unggahannya sudah mendarat atau
+    // belum. Asersi selebar halaman karena itu terpenuhi seketika oleh petak
+    // tersebut, bukan oleh status kartunya: langkah ini selesai sebelum
+    // unggahannya benar-benar tersimpan, dan pengujian Manager sesudahnya
+    // sesekali membaca status yang belum sempat berubah. Kegagalannya muncul
+    // acak, sekitar dua dari sepuluh kali jalan.
+    //
+    // Tanpa .first() dengan sengaja: kalau suatu saat ada lebih dari satu
+    // kartu yang cocok, mode ketat Playwright harus mengeluh, bukan
+    // diam-diam memilih yang pertama.
+    await expect(kartuTransfer.getByText("Sudah Transfer", { exact: true })).toBeVisible({ timeout: 10000 })
   })
 
   test("Manager melihat transaksi di riwayat dan berhasil export CSV", async ({ page }) => {
