@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useRef, useState } from "react"
-import { createPortal } from "react-dom"
+import BottomSheet from "@/components/ui/BottomSheet"
 
 type ConfirmOptions = {
   title: string
@@ -35,47 +35,52 @@ export function useConfirm() {
     resolverRef.current = null
   }
 
-  const dialog = options && typeof document !== "undefined" ? createPortal(
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
-      onClick={() => settle(false)}
+  /*
+   * Bentuknya BottomSheet, bukan kotak mengambang di tengah layar.
+   *
+   * Konfirmasi hampir selalu muncul sebagai akibat ketukan pada tombol di
+   * dalam daftar, yaitu di paruh bawah layar. Kotak di tengah memaksa jempol
+   * berpindah jauh ke atas hanya untuk menjawab "ya" atau "batal", padahal
+   * pertanyaannya muncul karena tangan sudah berada di bawah. BottomSheet
+   * memunculkan jawabannya di tempat jempol berada, dan di layar lebar
+   * komponen yang sama kembali memusat seperti dialog biasa.
+   *
+   * Tombolnya ditumpuk penuh selebar panel di ponsel: dua tombol kecil
+   * berdampingan di ujung kanan adalah kebiasaan desktop, dan pada layar
+   * sentuh keduanya jadi sasaran sempit yang berdempetan.
+   */
+  const dialog = (
+    <BottomSheet
+      terbuka={options !== null}
+      onTutup={() => settle(false)}
+      peran="alertdialog"
+      judul={options?.title}
+      deskripsi={options?.description}
     >
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-        className="w-full max-w-sm rounded-[18px] bg-white p-6 animate-in scale-in duration-200"
-        style={{ boxShadow: "var(--shadow-hover)" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 id="confirm-dialog-title" className="text-base font-bold text-slate-900">{options.title}</h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{options.description}</p>
-        <div className="mt-5 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => settle(false)}
-            className="rounded-[10px] border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
-          >
-            {options.cancelLabel || "Batal"}
-          </button>
-          <button
-            type="button"
-            autoFocus
-            onClick={() => settle(true)}
-            className={`rounded-[10px] px-4 py-2 text-sm font-bold text-white transition-colors ${
-              options.tone === "danger" ? "bg-red-600 hover:bg-red-700" : ""
-            }`}
-            style={options.tone === "danger" ? undefined : { background: "var(--brand)" }}
-            onMouseEnter={(e) => { if (options.tone !== "danger") e.currentTarget.style.background = "var(--brand-strong)" }}
-            onMouseLeave={(e) => { if (options.tone !== "danger") e.currentTarget.style.background = "var(--brand)" }}
-          >
-            {options.confirmLabel || "Ya, lanjutkan"}
-          </button>
-        </div>
+      <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end sm:gap-3">
+        <button
+          type="button"
+          onClick={() => settle(false)}
+          className="min-h-11 rounded-[10px] border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
+        >
+          {options?.cancelLabel || "Batal"}
+        </button>
+        <button
+          type="button"
+          autoFocus
+          onClick={() => settle(true)}
+          className={`min-h-11 rounded-[10px] px-4 py-2 text-sm font-bold text-white transition-colors ${
+            options?.tone === "danger" ? "bg-red-600 hover:bg-red-700" : ""
+          }`}
+          style={options?.tone === "danger" ? undefined : { background: "var(--brand)" }}
+          onMouseEnter={(e) => { if (options?.tone !== "danger") e.currentTarget.style.background = "var(--brand-strong)" }}
+          onMouseLeave={(e) => { if (options?.tone !== "danger") e.currentTarget.style.background = "var(--brand)" }}
+        >
+          {options?.confirmLabel || "Ya, lanjutkan"}
+        </button>
       </div>
-    </div>,
-    document.body
-  ) : null
+    </BottomSheet>
+  )
 
   return { confirm, dialog }
 }

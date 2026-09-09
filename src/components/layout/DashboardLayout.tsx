@@ -5,34 +5,12 @@ import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import {
-  BarChart3,
-  ClipboardList,
-  CreditCard,
-  Database,
-  History,
-  LogOut,
-  Menu,
-  Package,
-  PenLine,
-  ScrollText,
-  ShieldCheck,
-  Scale,
-  Settings,
-  Store,
-  WalletCards,
-  type LucideIcon,
-} from "lucide-react"
+import { LogOut } from "lucide-react"
 import { isOperationalRole } from "@/lib/roles"
 import AgpMark from "@/components/ui/AgpMark"
 import PelabelTabel from "@/components/layout/PelabelTabel"
-
-type NavItem = {
-  name: string
-  href: string
-  icon: LucideIcon
-  exact?: boolean
-}
+import BottomNav from "@/components/layout/BottomNav"
+import { butirAktif, menuUntuk, type ButirNav } from "@/lib/menuNavigasi"
 
 function getPanelLabel(role: string) {
   if (isOperationalRole(role)) return "OPERASIONAL GUDANG"
@@ -43,12 +21,10 @@ function SidebarContent({
   navItems,
   pathname,
   user,
-  onNavigate,
 }: {
-  navItems: NavItem[]
+  navItems: ButirNav[]
   pathname: string
   user: Session["user"]
-  onNavigate: () => void
 }) {
   return (
     <>
@@ -68,12 +44,12 @@ function SidebarContent({
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = item.exact
+          const isActive = item.tepat
             ? pathname === item.href
             : pathname === item.href || pathname.startsWith(`${item.href}/`)
 
           return (
-            <Link key={item.href} href={item.href} onClick={onNavigate}>
+            <Link key={item.href} href={item.href}>
               {/* min-h-11 hanya di layar sempit: 40px masih meleset untuk
                   jempol pada daftar sebelas baris yang berdempetan. */}
               <span className={`group flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 text-sm font-medium lg:min-h-0 ${
@@ -87,7 +63,7 @@ function SidebarContent({
                   className={`transition-colors ${isActive ? "" : "text-slate-400 group-hover:text-slate-700"}`}
                   style={isActive ? { color: "var(--brand)" } : undefined}
                 />
-                <span className="truncate">{item.name}</span>
+                <span className="truncate">{item.nama}</span>
               </span>
             </Link>
           )
@@ -110,11 +86,17 @@ function SidebarContent({
   )
 }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+  jumlahApproval,
+}: {
+  children: React.ReactNode
+  /** Antrean persetujuan Manager, dihitung di layout peladen. */
+  jumlahApproval?: number
+}) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -145,54 +127,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const role = session.user.role
 
-  const navItems: NavItem[] = [
-    ...(isOperationalRole(role) ? [
-      ...(role === "ADMIN" ? [
-        { name: "Double Check", href: "/dashboard/admin", icon: ShieldCheck, exact: true },
-      ] : [
-        // Admin tidak melakukan pembelian; tugasnya memverifikasi nota
-        // yang dibuat Staff.
-        { name: "Input Pembelian", href: "/dashboard/staff", icon: Package, exact: true },
-      ]),
-      { name: "Data Lapak", href: "/dashboard/staff/suppliers", icon: Store },
-      // Kasbon tidak lagi lewat Admin: pengajuannya dari Staff dan
-      // persetujuannya langsung di Manager.
-      ...(role === "ADMIN" ? [] : [
-        { name: "Pengajuan Kasbon", href: "/dashboard/staff/dp", icon: WalletCards },
-      ]),
-      // Admin dan Staff melihat daftar yang berbeda. Sebelumnya keduanya
-      // diarahkan ke /dashboard/staff/history -- halaman tanpa pencarian
-      // maupun penyaring, berjudul "Daftar Transaksi Saya" padahal untuk
-      // Admin isinya seluruh nota gudang. Daftar Admin yang lengkap
-      // (/dashboard/admin/history) ada, tapi tidak pernah tercantum di
-      // menu: satu-satunya jalan ke sana adalah tombol Kembali di form
-      // edit.
-      {
-        name: "Daftar Transaksi",
-        href: role === "ADMIN" ? "/dashboard/admin/history" : "/dashboard/staff/history",
-        icon: ClipboardList,
-      },
-      { name: "Transfer Pembayaran", href: "/dashboard/admin/transfer", icon: CreditCard },
-    ] : []),
-    ...(role === "MANAGER" ? [
-      { name: "Analytics", href: "/dashboard/manager", icon: BarChart3, exact: true },
-      { name: "Analisis Susut", href: "/dashboard/manager/susut", icon: Scale },
-      { name: "Rekap DP", href: "/dashboard/manager/dp", icon: WalletCards },
-      { name: "Approval Harga", href: "/dashboard/manager/approval-harga", icon: PenLine },
-      { name: "Approval DP", href: "/dashboard/manager/approval-dp", icon: CreditCard },
-      { name: "Master Data", href: "/dashboard/manager/master-data", icon: Database },
-      { name: "Data Lapak", href: "/dashboard/manager/suppliers", icon: Store },
-      { name: "Daftar Transaksi", href: "/dashboard/manager/history", icon: History },
-      // Kalau lapak menagih pelunasan langsung ke Manager, sebelumnya uangnya
-      // harus dititipkan dulu ke Admin supaya pembayarannya tercatat. API-nya
-      // sudah menerima Manager sejak lama; yang tidak ada cuma layarnya.
-      { name: "Transfer Pembayaran", href: "/dashboard/manager/transfer", icon: CreditCard },
-      { name: "Audit Trail", href: "/dashboard/manager/audit-trail", icon: ScrollText },
-    ] : []),
-    { name: "Pengaturan", href: "/dashboard/settings", icon: Settings },
-  ]
+  const navItems = menuUntuk(role)
 
-  const currentPageName = navItems.find(i => i.href === pathname)?.name ||
+  const currentPageName =
+    butirAktif(navItems, pathname)?.nama ||
     (pathname.includes("/dashboard/manager/") ? "Detail" : "Dashboard")
 
   return (
@@ -200,52 +138,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Menyalin judul kolom ke tiap sel supaya tabel bisa tampil sebagai
           kartu di ponsel. Tidak menggambar apa pun. */}
       <PelabelTabel />
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm print:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
 
+      {/* Sidebar tinggal satu, khusus layar lebar. Kembarannya yang berupa
+          laci geser dari kiri sudah tidak ada: di ponsel navigasinya pindah
+          ke bilah bawah, dan menu sisanya dibuka lewat tab "Lainnya". */}
       <aside className="liquid-sidebar hidden lg:flex w-72 text-slate-950 border-r border-white/70 flex-col flex-shrink-0 z-40 print:hidden">
-        <SidebarContent
-          navItems={navItems}
-          pathname={pathname}
-          user={session.user}
-          onNavigate={() => {
-            setSidebarOpen(false)
-          }}
-        />
-      </aside>
-
-      <aside className={`
-        liquid-sidebar fixed top-0 left-0 h-full w-72 max-w-[85vw] text-slate-950 shadow-2xl
-        flex flex-col z-40 lg:hidden print:hidden
-        transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      `}>
-        <SidebarContent
-          navItems={navItems}
-          pathname={pathname}
-          user={session.user}
-          onNavigate={() => {
-            setSidebarOpen(false)
-          }}
-        />
+        <SidebarContent navItems={navItems} pathname={pathname} user={session.user} />
       </aside>
 
       <main className="flex-1 flex flex-col overflow-hidden min-w-0 print:block print:overflow-visible">
         {/* 80px kepala tetap di layar 812px berarti sepersepuluh layar habis
             untuk satu judul, padahal jam dan tanggalnya memang disembunyikan
             di ponsel. Di bawah sm dipendekkan jadi 60px. */}
+        {/* Tombol hamburger hilang dari sini. Judul halaman kini berdiri
+            sendiri di kiri seperti kepala layar aplikasi ponsel, karena
+            navigasinya sudah ada di tepi bawah dalam jangkauan jempol. */}
         <header className="liquid-topbar relative h-[60px] sm:h-20 border-b border-white/70 flex items-center px-4 sm:px-7 gap-3 flex-shrink-0 z-20 print:hidden">
-          <button
-            className="lg:hidden grid h-11 w-11 place-items-center rounded-2xl text-slate-600 hover:bg-white transition-colors flex-shrink-0 shadow-sm border border-slate-200"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Buka menu"
-          >
-            <Menu size={20} />
-          </button>
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <AgpMark size={28} className="flex-shrink-0" />
+          </div>
 
           <div className="flex-1 min-w-0">
             <div className="min-w-0">
@@ -275,6 +186,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </main>
+
+      <BottomNav user={session.user} jumlahApproval={jumlahApproval} />
     </div>
   )
 }

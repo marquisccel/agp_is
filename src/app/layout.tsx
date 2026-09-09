@@ -25,13 +25,16 @@ export const metadata: Metadata = {
  * hijau pucat, sehingga ada dua garis putih menjepit layar dan aplikasinya
  * terbaca seperti halaman web di dalam peramban, bukan aplikasi.
  *
- * viewport-fit sengaja dibiarkan bawaan (auto), bukan cover. Dengan cover,
- * seluruh isi harus menghitung sendiri env(safe-area-inset-*) supaya tidak
- * tertutup poni dan garis home, dan itu perkara terpisah dari perbaikan tata
- * letak ini.
+ * viewportFit "cover" membuat halaman mengisi sampai ke balik poni dan garis
+ * home. Itu syarat supaya bilah navigasi bawah menempel benar-benar di tepi
+ * layar seperti aplikasi, bukan mengambang di atas pita putih bawaan
+ * peramban. Konsekuensinya env(safe-area-inset-*) wajib diperhitungkan;
+ * nilainya sudah dijadikan token --aman-* di globals.css dan dipakai oleh
+ * bilah bawah, bilah aksi, kepala halaman, serta bottom sheet.
  */
 export const viewport: Viewport = {
   themeColor: "#F5F7F4",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
