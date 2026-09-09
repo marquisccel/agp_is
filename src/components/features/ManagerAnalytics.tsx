@@ -359,6 +359,21 @@ export default function ManagerAnalytics({
     })),
   ]
 
+  // Mode harian membawa 30 titik data. Dipaksa muat di lebar 390px, jaraknya
+  // tinggal 11px per titik: garisnya jadi gerigi rapat dan sumbu X hanya
+  // sanggup memberi label di dua tiga tempat. Grafiknya karena itu diberi
+  // lebar minimum sebanding jumlah titiknya, lalu wadahnya (.grafik-geser)
+  // menggesernya mendatar.
+  //
+  // Angkanya diserahkan ke prop minWidth milik ResponsiveContainer, bukan ke
+  // CSS: recharts menulis min-width: 0px sebagai gaya SEBARIS pada wadahnya
+  // sendiri, dan gaya sebaris mengalahkan aturan stylesheet mana pun tanpa
+  // !important.
+  //
+  // Di layar lebar nilai ini tidak berpengaruh: wadahnya sudah lebih lebar
+  // dari 780px, jadi lebar minimumnya tidak pernah tercapai.
+  const lebarMinGrafik = chartConfig.data.length > 14 ? chartConfig.data.length * 26 : undefined
+
   return (
     <div className="space-y-5">
       {/* Performance Cockpit */}
@@ -458,8 +473,8 @@ export default function ManagerAnalytics({
               </div>
             </div>
           ) : (
-            <div className="relative h-64 w-full sm:h-80">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="grafik-geser relative h-64 w-full sm:h-80">
+              <ResponsiveContainer width="100%" height="100%" minWidth={lebarMinGrafik}>
                 <ComposedChart data={chartConfig.data} margin={{ top: 6, right: 36, left: 8, bottom: 10 }}>
                   <defs>
                     <linearGradient id={chartConfig.gradientId} x1="0" y1="0" x2="0" y2="1">

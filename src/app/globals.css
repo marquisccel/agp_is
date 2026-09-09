@@ -1684,6 +1684,51 @@ a:focus-visible {
     -webkit-overflow-scrolling: touch;
   }
 
+  /*
+   * Grafik dengan titik data padat digeser mendatar, bukan dipadatkan.
+   */
+  .grafik-geser {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .grafik-geser::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Lebar minimumnya dipasang komponen lewat prop minWidth milik
+     ResponsiveContainer, bukan dari sini: recharts menulis min-width: 0px
+     sebagai gaya sebaris pada wadahnya, dan itu mengalahkan aturan
+     stylesheet. Yang jadi tugas CSS hanya menyediakan jalan gesernya. */
+
+  /*
+   * Deret statistik: dua lajur sampai empat petak, geser mendatar di atas itu.
+   *
+   * Sampai empat petak, dua lajur adalah bentuk terbaik -- keempat angkanya
+   * terlihat sekaligus tanpa perlu gerakan apa pun. Lebih dari empat, grid dua
+   * lajur tumbuh jadi tiga baris atau lebih dan mendorong isi halaman jauh ke
+   * bawah; di situ barulah geser mendatar menguntungkan, dengan tiap petak
+   * selebar 62% layar supaya jelas masih ada lanjutannya di sebelah kanan.
+   */
+  .stat-strip:has(> :nth-child(5)) {
+    grid-auto-flow: column;
+    grid-auto-columns: 62%;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .stat-strip:has(> :nth-child(5))::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stat-strip:has(> :nth-child(5)) > .stat-tile {
+    scroll-snap-align: start;
+  }
+
   /* Berlaku selama tabelnya masih berupa tabel, yaitu sebelum PelabelTabel
      menandainya. Padding sel 20px kiri-kanan menghabiskan 40px per kolom;
      pada tabel lima kolom itu 200px dari 375px layar. */
@@ -2279,6 +2324,17 @@ a:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Sebagian kaki kartu diisi komponen yang membawa barisan tombolnya sendiri,
+   misalnya aksi setujui/tolak kasbon. Anak langsungnya kalau begitu adalah
+   pembungkus, bukan tombolnya, sehingga ukuran sasaran sentuh harus ditulis
+   sampai ke tombolnya. Setujui dan tolak berupa ikon 32px; itu di bawah
+   ambang yang bisa ditekan tanpa meleset, dan keduanya keputusan yang tidak
+   bisa dibatalkan. */
+.kartu-kaki :is(button, a, input) {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Kartu tabel dibatasi "screen": hasil cetak nota dan laporan harus tetap

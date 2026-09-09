@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Download, Filter, Search } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import PenyaringLipat from "@/components/ui/PenyaringLipat"
 import { formatAuditAction, formatAuditEntity, formatPeran } from "@/lib/auditLabels"
 
 interface AuditLogRow {
@@ -117,6 +118,22 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
   return (
     <div className="space-y-4">
       <section className="section section-body">
+        {/* Enam kendali penyaring; di ponsel keenamnya bertumpuk jadi enam
+            baris penuh dan memakan sekitar sepertiga layar sebelum satu pun
+            baris log terlihat, padahal sebagian besar kunjungan tidak
+            menyaring apa pun. Di ponsel semuanya dilipat ke balik satu tombol
+            berhitungan; di layar lebar susunannya persis seperti semula. */}
+        <PenyaringLipat
+          kelasDesktop=""
+          jumlahAktif={
+            (selectedRole !== "all" ? 1 : 0) +
+            (selectedAction !== "all" ? 1 : 0) +
+            (selectedTable !== "all" ? 1 : 0) +
+            (selectedMonth !== "all" ? 1 : 0) +
+            (selectedYear !== "all" ? 1 : 0) +
+            (search.trim() ? 1 : 0)
+          }
+        >
         {/* min-w-0 pada kedua kolom. Anak grid punya min-width: auto, yang
             memaksa lajurnya selebar isi terkecil anaknya: dua pemilih periode
             berdampingan menuntut 358px sementara kartunya cuma 309px, jadi
@@ -155,6 +172,7 @@ export default function AuditTrailClient({ logs }: { logs: AuditLogRow[] }) {
             </button>
           </div>
         </div>
+        </PenyaringLipat>
       </section>
 
       <section className="section overflow-hidden">

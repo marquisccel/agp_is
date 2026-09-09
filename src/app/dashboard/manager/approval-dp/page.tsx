@@ -5,6 +5,7 @@ import Link from "next/link"
 import DPApprovalActions from "@/components/features/DPApprovalActions"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
+import KartuData from "@/components/ui/KartuData"
 import StatusPill from "@/components/ui/StatusPill"
 import { getDpStatus } from "@/lib/purchaseStatusLabels"
 
@@ -54,7 +55,59 @@ export default async function DPApprovalManager() {
             <h2 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Antrean Pengajuan</h2>
           </div>
         </div>
-        <div className="overflow-x-auto">
+        {/* Umpan kartu: Approve dan Reject langsung ada di kaki tiap kartu,
+            tidak perlu membuka halaman lain. Di tabel, kedua tombol itu
+            terjepit di kolom paling kanan yang justru paling sempit di
+            ponsel. */}
+        <div className="daftar-kartu px-3 pb-3">
+          {dps.length === 0 ? (
+            <p className="py-8 text-center text-sm" style={{ color: "var(--muted-faint)" }}>
+              Tidak ada pengajuan kasbon yang menunggu persetujuan.
+            </p>
+          ) : (
+            dps.map((dp) => (
+              <KartuData
+                key={dp.id}
+                judul={dp.supplier.nama}
+                subjudul={new Date(dp.tanggal_permintaan).toLocaleDateString("id-ID", {
+                  dateStyle: "medium",
+                  timeZone: "Asia/Jakarta",
+                })}
+                status={
+                  <span
+                    className="whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold"
+                    style={{ background: "color-mix(in srgb, var(--warning) 14%, transparent)", color: "var(--warning)" }}
+                  >
+                    Menunggu
+                  </span>
+                }
+                baris={[
+                  {
+                    label: "Nominal diajukan",
+                    nilai: (
+                      <span className="font-mono text-base font-black tabular-nums">
+                        Rp {dp.nominal_diajukan.toLocaleString("id-ID")}
+                      </span>
+                    ),
+                  },
+                  {
+                    label: "Alasan",
+                    nilai: dp.keterangan ? (
+                      <span className="text-xs italic" style={{ color: "var(--muted)" }}>
+                        &ldquo;{dp.keterangan}&rdquo;
+                      </span>
+                    ) : (
+                      <span className="text-xs" style={{ color: "var(--muted-faint)" }}>Tidak diisi</span>
+                    ),
+                  },
+                ]}
+                aksi={<DPApprovalActions dp={dp} />}
+              />
+            ))
+          )}
+        </div>
+
+        <div className="overflow-x-auto hidden md:block">
           <table className="tabel-lembut text-sm text-slate-600">
             <thead>
               <tr>

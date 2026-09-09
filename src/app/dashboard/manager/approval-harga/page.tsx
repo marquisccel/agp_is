@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
+import KartuData from "@/components/ui/KartuData"
 
 export default async function ApprovalHargaList() {
   const session = await getServerSession(authOptions)
@@ -34,7 +35,45 @@ export default async function ApprovalHargaList() {
         )}
       />
 
-      <div className="section overflow-hidden">
+      {/* Antrean persetujuan jadi umpan kartu di ponsel: satu keputusan per
+          kartu, nilainya menonjol, tombol masuk di kaki dalam jangkauan
+          jempol. Manager membuka layar ini untuk memutuskan, bukan untuk
+          membandingkan kolom. */}
+      <div className="daftar-kartu">
+        {pendingApprovals.length === 0 ? (
+          <p className="section section-body text-center text-sm text-slate-400">
+            Tidak ada transaksi yang menunggu approval harga.
+          </p>
+        ) : (
+          pendingApprovals.map((draft) => (
+            <KartuData
+              key={draft.id}
+              judul={draft.supplier.nama}
+              subjudul={`${draft.warehouse.nama} · ${new Date(draft.updatedAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}`}
+              baris={[
+                {
+                  label: "Total nilai",
+                  nilai: (
+                    <span className="font-mono text-base font-black tabular-nums">
+                      Rp {(draft.total_nilai_setelah_retur || 0).toLocaleString("id-ID")}
+                    </span>
+                  ),
+                },
+              ]}
+              aksi={
+                <Link
+                  href={`/dashboard/manager/approval-harga/${draft.id}`}
+                  className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 text-sm font-bold"
+                >
+                  Review Transaksi
+                </Link>
+              }
+            />
+          ))
+        )}
+      </div>
+
+      <div className="section overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="border-b border-slate-200/70 bg-white/55 text-xs font-black uppercase tracking-[0.08em] text-slate-500">

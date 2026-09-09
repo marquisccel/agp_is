@@ -21,27 +21,46 @@ export default function PenyaringLipat({
   utama,
   children,
   jumlahAktif = 0,
+  kelasDesktop = "section section-body grid grid-cols-1 gap-3 md:grid-cols-3",
 }: {
   /** Kendali yang tetap terlihat, biasanya kolom pencarian. */
   utama?: ReactNode
   /** Kendali yang disembunyikan di balik tombol saat di ponsel. */
   children: ReactNode
   jumlahAktif?: number
+  /**
+   * Kelas pembungkus di layar lebar. Diisi string kosong bila pemanggil sudah
+   * punya pembungkusnya sendiri: membungkus penyaring tidak boleh mengubah
+   * susunan apa pun di layar lebar, dan sebagian halaman memakai tata letak
+   * bertingkat yang tidak bisa diwakili satu grid tiga lajur.
+   */
+  kelasDesktop?: string
 }) {
   const ponsel = useLayarPonsel()
   const [terbuka, setTerbuka] = useState(false)
 
   if (!ponsel) {
+    if (!kelasDesktop) {
+      return (
+        <>
+          {utama}
+          {children}
+        </>
+      )
+    }
     return (
-      <div className="section section-body grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className={kelasDesktop}>
         {utama}
         {children}
       </div>
     )
   }
 
+  // Pembungkus kartu ikut dilepas kalau pemanggil sudah punya sendiri, sama
+  // seperti di layar lebar. Tanpa ini, halaman yang sudah membungkus
+  // penyaringnya dalam .section akan tampil sebagai kartu di dalam kartu.
   return (
-    <div className="section section-body space-y-3">
+    <div className={kelasDesktop ? "section section-body space-y-3" : "space-y-3"}>
       <div className="flex items-center gap-2">
         {utama && <div className="min-w-0 flex-1">{utama}</div>}
         <button
