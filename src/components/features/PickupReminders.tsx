@@ -99,10 +99,13 @@ export default function PickupReminders({ suppliers }: { suppliers: Supplier[] }
                 </div>
               </div>
 
+              {/* -m-2 supaya sasaran sentuhnya menjadi 44px tanpa menggeser
+                  ikonnya: yang membesar area ketuknya, bukan tampilannya. */}
               <button
                 onClick={() => handleDismiss(supplier.id)}
-                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+                className="-m-2 grid h-11 w-11 shrink-0 place-items-center text-slate-400 transition-colors hover:text-slate-600"
                 title="Sembunyikan sementara"
+                aria-label="Sembunyikan pengingat ambilan ini"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />

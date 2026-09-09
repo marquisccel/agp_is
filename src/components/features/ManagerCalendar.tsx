@@ -218,14 +218,14 @@ export default function ManagerCalendar({ calendarData, selectedBulan, selectedT
           <div className="flex w-full items-center justify-between gap-2 sm:w-auto">
             <button
               onClick={prevMonth}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-lg font-bold text-slate-500 transition-colors hover:bg-slate-50 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-lg font-bold text-slate-500 transition-colors hover:bg-slate-50 sm:h-8 sm:w-8"
             >&lt;</button>
             <span className="min-w-0 flex-1 text-center text-sm font-bold text-slate-700 sm:min-w-[140px]">
               {MONTHS_ID[viewMonth]} {viewYear}
             </span>
             <button
               onClick={nextMonth}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-lg font-bold text-slate-500 transition-colors hover:bg-slate-50 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-lg font-bold text-slate-500 transition-colors hover:bg-slate-50 sm:h-8 sm:w-8"
             >&gt;</button>
           </div>
         </div>

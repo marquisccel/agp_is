@@ -596,7 +596,7 @@ export default function ManagerAnalytics({
                      sasaran yang terlalu tipis untuk jempol, jadi tombolnya
                      diberi tinggi minimum tanpa mengubah letak visual
                      teksnya. */
-                  className="-mx-2 mt-2 inline-flex min-h-[40px] items-center px-2 text-[11.5px] font-bold"
+                  className="-mx-2 mt-2 inline-flex min-h-11 items-center px-2 text-[11.5px] font-bold"
                   style={{ color: "var(--brand-strong)" }}
                 >
                   {skuExpanded ? "Tampilkan lebih sedikit" : `Tampilkan ${skuTersembunyi} SKU lainnya`}

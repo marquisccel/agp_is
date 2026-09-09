@@ -830,7 +830,7 @@ export default async function ManagerDashboard({
           ) : (
             <span className="stat-delta flat">Semua sudah diputuskan</span>
           )}
-          <Link href="/dashboard/manager/approval-harga" className="inline-flex min-h-[38px] items-center text-[11.5px] font-bold" style={{ color: "var(--brand-strong)" }}>
+          <Link href="/dashboard/manager/approval-harga" className="inline-flex min-h-11 items-center text-[11.5px] font-bold" style={{ color: "var(--brand-strong)" }}>
             Lihat detail →
           </Link>
         </div>
@@ -846,7 +846,7 @@ export default async function ManagerDashboard({
           ) : (
             <span className="stat-delta flat">Semua sudah divalidasi</span>
           )}
-          <Link href="/dashboard/manager/approval-dp" className="inline-flex min-h-[38px] items-center text-[11.5px] font-bold" style={{ color: "var(--brand-strong)" }}>
+          <Link href="/dashboard/manager/approval-dp" className="inline-flex min-h-11 items-center text-[11.5px] font-bold" style={{ color: "var(--brand-strong)" }}>
             Lihat detail →
           </Link>
         </div>

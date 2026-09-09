@@ -174,7 +174,7 @@ export default function SettingsPage() {
           <button
             onClick={handleProfileSave}
             disabled={profileStatus === "saving"}
-            className="btn-primer premium-button flex items-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
+            className="btn-primer premium-button flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
           >
             {profileStatus === "saving" ? (
               <span>Menyimpan...</span>
@@ -213,7 +213,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => setShowOld(!showOld)}
                 aria-label="Tampilkan atau sembunyikan kata sandi"
-                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
               >
                 {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -236,7 +236,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={() => setShowNew(!showNew)}
                   aria-label="Tampilkan atau sembunyikan kata sandi"
-                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
                 >
                   {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -258,7 +258,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
                   aria-label="Tampilkan atau sembunyikan kata sandi"
-                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center" style={{ color: "var(--muted-faint)" }}
                 >
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -301,7 +301,7 @@ export default function SettingsPage() {
             /* Gradasi oranye-kuning membuat tombol ini satu-satunya yang
                berbeda bentuk di seluruh aplikasi, dan warnanya menyiratkan
                bahaya padahal mengganti kata sandi adalah tindakan biasa. */
-            className="btn-primer premium-button flex items-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
+            className="btn-primer premium-button flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
           >
             {pwStatus === "saving" ? (
               <span>Mengubah...</span>

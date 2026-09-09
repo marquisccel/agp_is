@@ -39,7 +39,7 @@ export default function TautanRincian({
     >
       <Link
         href={href}
-        className="inline-flex min-h-[38px] items-center text-[11.5px] font-bold transition-opacity hover:opacity-75"
+        className="inline-flex min-h-11 items-center text-[11.5px] font-bold transition-opacity hover:opacity-75"
         style={{ color: "var(--brand-strong)" }}
       >
         {children} →

@@ -1561,7 +1561,10 @@ a:focus-visible {
   }
 
   .segmented :is(button, a) {
-    min-height: 38px;
+    /* 44px, sama seperti tombol lain. Keping penyaring berjejer rapat, dan
+       justru pada deret rapat itulah ketukan paling sering meleset ke keping
+       sebelahnya. */
+    min-height: 44px;
     padding: 8px 14px;
     font-size: 12px;
     flex: 0 0 auto;
@@ -1569,9 +1572,14 @@ a:focus-visible {
     scroll-snap-align: start;
   }
 
+  /* 44px, bukan 40px. Empat piksel itu terdengar sepele, tapi tombol
+     "Simpan Profil" dan "Ubah Password" berhenti persis di 42px dan sudah
+     berada di bawah ambang sasaran sentuh. Diletakkan di sini karena aturan
+     tak berlapis ini mengalahkan utilitas min-h-11 yang berlapis, sehingga
+     menaikkannya per tombol di markup tidak akan pernah berpengaruh. */
   .btn-primer,
   .btn-netral {
-    min-height: 40px;
+    min-height: 44px;
   }
 
   /*
@@ -2287,6 +2295,15 @@ a:focus-visible {
   border-bottom: none;
 }
 
+/* Sebagian nilai di badan kartu berupa tautan, misalnya "Lihat" pada bukti
+   transfer. Ambang sasaran sentuhnya dipasang di sini supaya berlaku untuk
+   tiap kartu tanpa harus diingat satu per satu di tiap halaman. */
+.kartu-baris :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .kartu-baris > dt {
   flex: 0 0 auto;
   max-width: 45%;
@@ -2300,6 +2317,7 @@ a:focus-visible {
 .kartu-baris > dd {
   margin: 0;
   min-width: 0;
+
   text-align: right;
   font-size: 13px;
   font-weight: 600;
