@@ -81,7 +81,7 @@ Sisanya biarkan apa adanya. Bagian penyimpanan berkas (`S3_*`) memang sengaja di
 **5. Siapkan tabel dan isi data contoh**
 
 ```bash
-npx prisma migrate dev && npm run seed
+npx prisma migrate dev && npm run seed -- --saya-yakin
 ```
 
 **6. Jalankan**
@@ -441,7 +441,7 @@ Bagian [Untuk Manager](#untuk-manager-mencoba-dalam-10-menit) di atas sudah cuku
 | `npm run dev` | menjalankan dalam mode pengembangan |
 | `npm run build` | membangun untuk produksi, sekaligus `prisma generate` |
 | `npm start` | menjalankan hasil build |
-| `npm run seed` | mengisi ulang data contoh, aman diulang |
+| `npm run seed -- --saya-yakin` | mengisi ulang data contoh, aman diulang. Menghapus seluruh isi basis data lebih dulu, jadi menolak jalan tanpa `--saya-yakin` |
 | `npm run lint` | pemeriksaan gaya kode |
 | `npm test` | uji unit aritmetika dan aturan bisnis |
 | `npm run test:smoke` | uji asap terhadap API yang sedang berjalan |
@@ -473,7 +473,7 @@ Data tidak hilang saat `docker compose stop`, karena tersimpan di volume Docker.
 docker compose down -v
 ```
 
-Setelah itu ulangi `docker compose up -d`, `npx prisma migrate dev`, lalu `npm run seed`.
+Setelah itu ulangi `docker compose up -d`, `npx prisma migrate dev`, lalu `npm run seed -- --saya-yakin`.
 
 ---
 
@@ -492,7 +492,7 @@ Kata sandi di `POSTGRES_PASSWORD` berbeda dengan yang tertulis di dalam `DATABAS
 Node.js masih di bawah 20.9. Periksa dengan `node -v`, lalu pasang versi LTS terbaru.
 
 **Halaman terbuka tetapi tidak bisa masuk**
-Pastikan `npm run seed` sudah berjalan tanpa galat. Perintah itu aman diulang: ia membersihkan data lama lalu mengisi ulang.
+Pastikan `npm run seed -- --saya-yakin` sudah berjalan tanpa galat. Perintah itu aman diulang: ia membersihkan data lama lalu mengisi ulang.
 
 **Ragu isi `.env` sudah benar**
 Berkas `.env` hanya berlaku di komputer sendiri dan tidak memengaruhi orang lain. Aman dihapus lalu diulang dari `cp .env.example .env`.

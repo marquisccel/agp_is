@@ -69,7 +69,10 @@ jobs:
         run: npx prisma migrate deploy
 
       - name: Seed database
-        run: npm run seed
+        # --saya-yakin: seed menghapus seluruh isi basis data lebih dulu, jadi
+        # skripnya menolak jalan tanpa persetujuan eksplisit. Di sini aman
+        # karena basis datanya layanan Postgres sekali pakai milik job ini.
+        run: npm run seed -- --saya-yakin
 
       - name: Build
         run: npm run build

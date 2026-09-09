@@ -1,10 +1,63 @@
 // seed.js - versi JavaScript agar bisa dijalankan langsung tanpa ts-node
+//
+// ── Kenapa ada penjaga --saya-yakin ──────────────────────────────────
+//
+// Skrip ini diawali sembilan deleteMany() yang mengosongkan SELURUH tabel,
+// lalu mengisinya dengan akun contoh berkata sandi "password123". Alamat
+// basis datanya diambil dari DATABASE_URL di berkas .env, dan di repositori
+// ini nilai itu menunjuk basis data produksi. Artinya satu kali `npm run
+// seed` yang salah waktu sudah cukup untuk menghapus seluruh data pembelian
+// perusahaan dan menggantinya dengan data mainan.
+//
+// Peringatan soal itu memang sudah ada di README dan dua berkas panduan
+// penggelaran, tapi peringatan di dokumen tidak menghentikan perintah yang
+// terlanjur diketik. Penjaga ini menghentikannya, dan sekalian mencetak
+// alamat basis data yang akan dihapus supaya tidak ada yang keliru sasaran.
+//
+// Bentuknya sengaja dibuat sama persis dengan scripts/isi-demo.mjs: kedua
+// skrip sama-sama menghapus seluruh isi basis data, jadi keduanya sebaiknya
+// ditahan dan dikonfirmasi dengan cara yang sama.
+//
+//   node seed.js --saya-yakin
+//   npm run seed -- --saya-yakin
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
+const YAKIN = process.argv.includes('--saya-yakin');
+
+function gagal(pesan) {
+  console.error('');
+  console.error('GAGAL: ' + pesan);
+  console.error('');
+  process.exit(1);
+}
+
 async function main() {
+  const alamat = (process.env.DATABASE_URL || '').match(/@([^/?]+)/);
+  console.log('');
+  console.log('══════════════════════════════════════════════════════════');
+  console.log('  PENGISI DATA CONTOH');
+  console.log('══════════════════════════════════════════════════════════');
+  console.log('');
+  console.log('  Basis data tujuan : ' + (alamat ? alamat[1] : 'TIDAK TERBACA'));
+  console.log('');
+  console.log('  Skrip ini MENGHAPUS seluruh isi basis data di alamat itu,');
+  console.log('  lalu menggantinya dengan akun dan data contoh.');
+  console.log('');
+
+  if (!YAKIN) {
+    gagal(
+      'berhenti demi keamanan.\n' +
+      '\n' +
+      '       Pastikan alamat di atas BUKAN basis data produksi, lalu ulangi\n' +
+      '       dengan menambahkan --saya-yakin di akhir perintah:\n' +
+      '\n' +
+      '         npm run seed -- --saya-yakin',
+    );
+  }
+
   console.log('Clearing existing data...');
   await prisma.auditLog.deleteMany();
   await prisma.returItem.deleteMany();

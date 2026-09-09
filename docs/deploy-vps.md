@@ -145,7 +145,10 @@ curl http://127.0.0.1:3000/api/health
 # harapan: {"status":"ok","db":"up",...}
 ```
 
-> **Jangan jalankan `npm run seed` di produksi.** Seed membuat akun contoh
+> **Jangan jalankan `npm run seed` di produksi.** Perintah itu menolak jalan
+> tanpa `--saya-yakin` dan mencetak alamat basis data tujuannya lebih dulu,
+> tapi penjaga itu hanya menahan kekeliruan, bukan menggantikan pertimbangan.
+> Seed menghapus seluruh isi basis data, lalu membuat akun contoh
 > dengan password `password123` yang sama untuk semua role. Akun asli
 > dibuat lewat menu Master Data → Pengguna → Daftarkan Akun Baru.
 

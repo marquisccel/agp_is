@@ -98,6 +98,11 @@ Pengaturan, hapus ketiga nilai di atas dari `.env`.
 
 > **JANGAN menjalankan `node seed.js` di basis data produksi.**
 >
+> Skrip itu menolak jalan tanpa `--saya-yakin` dan mencetak alamat basis
+> data yang akan dihapus sebelum berhenti, jadi salah ketik sekali tidak
+> langsung berakibat. Penjaga itu tetap bisa dilewati kalau flag-nya
+> ditambahkan, dan di produksi tidak ada alasan menambahkannya.
+>
 > Skrip itu diawali `deleteMany()` pada seluruh tabel. Menjalankannya bukan
 > sekadar menambah data contoh, tapi **menghapus semua transaksi, bukti
 > transfer, dan jejak audit** yang sudah masuk. Setelah itu ia mengisi ulang

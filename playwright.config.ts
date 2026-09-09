@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test"
 
 /**
  * Fase 7 - Playwright flow test. Butuh server yang jalan (npm run dev atau
- * npm run start) dengan Postgres terisi seed data (npm run seed) di alamat
+ * npm run start) dengan Postgres terisi seed data (npm run seed -- --saya-yakin) di alamat
  * PLAYWRIGHT_BASE_URL (default http://localhost:3000). Tidak menyalakan
  * server sendiri (webServer) karena dev server biasanya sudah jalan
  * terpisah saat development -- lihat catatan di README/roadmap.
