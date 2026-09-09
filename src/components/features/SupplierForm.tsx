@@ -432,7 +432,7 @@ export default function SupplierForm({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+      <div className="aksi-form flex items-center justify-between gap-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
         {isEdit && (
           <button
             type="button"

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
+import KartuData from "@/components/ui/KartuData"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 export default async function StaffSuppliersPage({
@@ -77,7 +78,10 @@ export default async function StaffSuppliersPage({
           deret filternya membungkus jadi dua baris hanya karena itu. Kalau
           nanti tetap membungkus di layar yang lebih sempit, tombolnya rata
           atas dengan baris filter pertama, bukan mengambang di tengah. */}
-      <div className="section section-body flex items-start justify-between gap-2">
+      {/* Ditumpuk di ponsel. Sebaris dengan tombolnya, deret penyaring
+          hanya kebagian 182px dari 390px layar, sehingga keping pertamanya
+          pun sudah terpotong sebelum digeser. */}
+      <div className="section section-body flex flex-col items-stretch gap-3 md:flex-row md:items-start md:justify-between md:gap-2">
         {/* Deret filter dibungkus wadah sendiri yang boleh membungkus ke
             baris berikutnya, sementara tombolnya shrink-0 di luar wadah itu.
             Sebelumnya semuanya satu deret flex-wrap: begitu kedua deret
@@ -133,7 +137,7 @@ export default async function StaffSuppliersPage({
 
         <Link
           href="/dashboard/staff/suppliers/new"
-          className="btn-primer premium-button shrink-0 rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
+          className="btn-primer premium-button flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
         >
           Tambah Lapak
         </Link>
@@ -164,7 +168,68 @@ export default async function StaffSuppliersPage({
             const hasMapSignal = isMapReady || Boolean(supplier.link?.trim())
 
             return (
-              <div key={supplier.id} className="section section-body flex items-center justify-between gap-4">
+              <div key={supplier.id}>
+                {/* Data Lapak termasuk lima daftar utama yang mendapat kartu
+                    tangan. Bentuk lamanya menaruh seluruh keterangan dalam
+                    satu baris abu yang dipisah titik tengah; di layar 390px
+                    baris itu pecah jadi empat baris rapat dan tidak ada satu
+                    pun keterangan yang bisa dipindai tanpa membaca semuanya. */}
+                <div className="md:hidden">
+                  <KartuData
+                    judul={
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full"
+                          style={{ background: supplier.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
+                          aria-hidden="true"
+                        />
+                        {supplier.nama}
+                      </span>
+                    }
+                    subjudul={supplier.transactionStatus === "GREEN" ? "Lapak aktif" : "Belum ada transaksi"}
+                    status={
+                      isMapReady ? undefined : (
+                        <span className="text-[10px] font-bold uppercase tracking-[0.05em]" style={{ color: "var(--warning)" }}>
+                          Tanpa koordinat
+                        </span>
+                      )
+                    }
+                    baris={[
+                      { label: "Kontak WA", nilai: supplier.kontak_wa || "", sembunyikanBilaKosong: true },
+                      { label: "Rekening", nilai: bankInfo, sembunyikanBilaKosong: true },
+                      {
+                        label: "Target bulanan",
+                        nilai: supplier.target_bulanan_kg > 0
+                          ? `${supplier.target_bulanan_kg.toLocaleString("id-ID")} kg`
+                          : "",
+                        sembunyikanBilaKosong: true,
+                      },
+                      { label: "Hari ambilan", nilai: pickupDays || "", sembunyikanBilaKosong: true },
+                    ]}
+                    aksi={
+                      <>
+                        {hasMapSignal && (
+                          <a
+                            href={getSupplierMapHref({ ...supplier })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-netral premium-button rounded-[var(--radius-sm)] px-4 text-sm"
+                          >
+                            Maps
+                          </a>
+                        )}
+                        <Link
+                          href={`/dashboard/staff/suppliers/${supplier.id}/edit`}
+                          className="btn-netral premium-button rounded-[var(--radius-sm)] px-4 text-sm"
+                        >
+                          Edit
+                        </Link>
+                      </>
+                    }
+                  />
+                </div>
+
+                <div className="section section-body hidden items-center justify-between gap-4 md:flex">
                 <div className="min-w-0 flex-1">
                   {/* Pola yang sama dengan Data Lapak Manager: satu titik
                       berwarna di samping nama untuk memindai, keterangannya
@@ -226,6 +291,7 @@ export default async function StaffSuppliersPage({
                   >
                     Edit
                   </Link>
+                  </div>
                 </div>
               </div>
             )

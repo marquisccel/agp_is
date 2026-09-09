@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useRef, useState, type FormEvent } from "react"
 import dynamic from "next/dynamic"
 import type { Supplier } from "@prisma/client"
 import RingkasanLapak from "@/components/features/RingkasanLapak"
@@ -11,6 +11,9 @@ import PotonganFields, { type BarisPotongan } from "@/components/features/Potong
 import NumberInput from "@/components/ui/NumberInput"
 import StandarHargaSku, { type StandarHarga } from "@/components/features/StandarHargaSku"
 import { pesanError } from "@/lib/pesanError"
+import { useLayarPonsel } from "@/lib/useLayarPonsel"
+import StickyActionBar from "@/components/ui/StickyActionBar"
+import WizardLangkah from "@/components/ui/WizardLangkah"
 
 // Lazy-load to avoid SSR issues
 const NotaDraft = dynamic(() => import("./NotaDraft"), { ssr: false })
@@ -93,6 +96,13 @@ export default function PurchaseForm({
   const [error, setError] = useState("")
   const [notaData, setNotaData] = useState<NotaData | null>(null)
 
+  // Di ponsel form ini dipecah jadi empat langkah; di layar lebar tetap satu
+  // halaman seperti semula. Yang berbeda hanya komponen mana yang dipasang,
+  // jadi seluruh state di atas dipakai bersama oleh kedua bentuk.
+  const ponsel = useLayarPonsel()
+  const [langkah, setLangkah] = useState(0)
+  const formRef = useRef<HTMLFormElement>(null)
+
   // Sisa kasbon per lapak diambil sekali saat form dibuka; dipakai untuk
   // membatasi berapa yang boleh dipotong di nota ini.
   useEffect(() => {
@@ -138,6 +148,22 @@ export default function PurchaseForm({
 
     // Dijaga di sini juga, bukan hanya di server: pesan gagal setelah nota
     // terkirim jauh lebih membingungkan buat Staff di lapangan.
+    //
+    // Dua penjagaan pertama dulu ditanggung atribut required pada isiannya.
+    // Pada bentuk bertahap, langkah yang tidak sedang dibuka tidak dipasang
+    // di DOM, sehingga peramban tidak lagi bisa memvalidasinya saat tombol
+    // Simpan ditekan di langkah terakhir. Pemeriksaannya karena itu pindah
+    // ke sini, tempat yang berlaku untuk kedua bentuk.
+    if (!supplierId) {
+      setError("Pilih lapak terlebih dahulu.")
+      setLangkah(0)
+      return
+    }
+    if (!items.some((i) => i.sku_name && i.berat_estimasi > 0 && i.harga_per_kg > 0)) {
+      setError("Isi minimal satu item dengan SKU, berat, dan harga.")
+      setLangkah(1)
+      return
+    }
     if (dpMelebihiSaldo) {
       setError(`DP yang digunakan melebihi sisa kasbon lapak (${fmtRp(sisaDp)}).`)
       return
@@ -219,6 +245,7 @@ export default function PurchaseForm({
       setBeratPotonganKarung(0)
       setHargaPotonganKarung(0)
       setDpDigunakan("")
+      setLangkah(0)
     } catch (err) {
       setError(pesanError(err))
     } finally {
@@ -233,6 +260,327 @@ export default function PurchaseForm({
   const dpMelebihiSaldo = dpAngka > sisaDp
   const dpMelebihiNota = dpAngka > totalEstimasiSetelahPotongan
 
+  // ── Bagian-bagian form ────────────────────────────────────────────
+  //
+  // Dipisah jadi empat potongan JSX supaya bentuk bertahap di ponsel dan
+  // bentuk satu halaman di layar lebar memakai markup yang SAMA. Menyalin
+  // markup-nya jadi dua versi berarti tiap perubahan isian harus dikerjakan
+  // dua kali, dan cepat atau lambat salah satunya tertinggal.
+
+  const bagianLapak = (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Supplier Search Dropdown */}
+      <div className="space-y-2 relative">
+        <label className="text-sm font-semibold text-slate-700">Lapak / Supplier</label>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Ketik nama / inisial supplier..."
+            className="field-input field-lg"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setIsOpen(true)
+              if (!e.target.value) {
+                setSupplierId("")
+              }
+            }}
+            onFocus={() => setIsOpen(true)}
+          />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+
+          {isOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => {
+                setIsOpen(false)
+                const currentSupplier = suppliers.find(s => s.id === supplierId)
+                setSearchQuery(currentSupplier ? currentSupplier.nama : "")
+              }} />
+              
+              <div className="absolute left-0 right-0 z-20 mt-1.5 max-h-60 divide-y divide-[var(--border)] overflow-y-auto rounded-[var(--radius-sm)] border shadow-xl"
+                style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+                {filteredSuppliers.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-slate-400 italic">Lapak tidak ditemukan</div>
+                ) : (
+                  filteredSuppliers.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className={`w-full text-left px-4 py-3 text-sm transition-colors flex justify-between items-center ${s.id === supplierId ? 'font-bold' : 'text-slate-700 hover:bg-[var(--bg-tint)]'}`}
+                      style={s.id === supplierId ? { background: "var(--brand-soft)", color: "var(--brand-strong)" } : undefined}
+                      onClick={() => {
+                        setSupplierId(s.id)
+                        setSearchQuery(s.nama)
+                        setIsOpen(false)
+                      }}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate">{s.nama}</span>
+                        {/* Pil berbunyi "Hijau"/"Merah" -- nama warna,
+                            bukan artinya. Diganti pola titik + kata,
+                            sama seperti daftar Data Lapak. */}
+                        <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-normal" style={{ color: "var(--muted)" }}>
+                          <span
+                            className="h-1.5 w-1.5 shrink-0 rounded-full"
+                            style={{ background: s.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
+                            aria-hidden="true"
+                          />
+                          <span>{s.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
+                          <span aria-hidden="true">&middot;</span>
+                          <span>Target {Number(s.target_bulanan_kg || 0).toLocaleString("id-ID")} kg</span>
+                        </span>
+                      </span>
+                      {s.kontak_wa && <span className="ml-3 text-[10px] text-slate-400 font-normal">{s.kontak_wa}</span>}
+                    </button>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+        </div>
+        <input type="hidden" name="supplierId" value={supplierId} required />
+        {selectedSupplier && (
+          <RingkasanLapak lapak={selectedSupplier} namaGudang={namaGudang} tampilkanKontak />
+        )}
+      </div>
+
+      {/* Gudang is read-only from session */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">Gudang</label>
+        <div className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-100 text-slate-600 font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          {namaGudang}
+        </div>
+      </div>
+
+      {/* Metode Bayar */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">Metode Timbangan</label>
+        <ElegantSelect
+          value={metodeBayar}
+          options={METODE_BAYAR_OPTIONS}
+          onChange={setMetodeBayar}
+          ariaLabel="Pilih metode timbangan"
+          className="w-full"
+        />
+      </div>
+
+      {/* Jenis Pengambilan (mode logistik) */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-700">Jenis Pengambilan</label>
+        <ElegantSelect
+          value={jenisPengambilan}
+          options={JENIS_PENGAMBILAN_OPTIONS}
+          onChange={setJenisPengambilan}
+          ariaLabel="Pilih jenis pengambilan barang"
+          className="w-full"
+        />
+        <p className="text-xs text-slate-400">
+          Dipakai untuk rekap efektivitas armada di dashboard Manager.
+        </p>
+      </div>
+    </div>
+  )
+
+  // Item Barang
+  const bagianItem = (
+    <div className="pt-4 border-t border-slate-100">
+      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Item Barang</h3>
+
+      <div className="space-y-3">
+        {items.map((item, idx) => (
+          <div key={idx} className="flex flex-wrap md:flex-nowrap gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div className="w-full md:flex-1 space-y-1">
+              <label className="text-xs font-medium text-slate-500">Jenis SKU</label>
+              <ElegantSelect
+                value={item.sku_name}
+                options={SKU_OPTIONS}
+                onChange={(value) => updateItem(idx, "sku_name", value)}
+                ariaLabel="Pilih SKU"
+                className="w-full"
+              />
+            </div>
+            <div className="w-full md:w-28 space-y-1">
+              <label className="text-xs font-medium text-slate-500">Spec</label>
+              <ElegantSelect
+                value={item.spec}
+                options={SPEC_OPTIONS}
+                onChange={(value) => updateItem(idx, "spec", value)}
+                ariaLabel="Pilih spec SKU"
+                className="w-full"
+              />
+            </div>
+            <div className="w-full md:w-1/4 space-y-1">
+              <label className="field-label">Berat Lapak (KG)</label>
+              <NumberInput
+                aria-label="Berat Lapak (KG)"
+                min="0" step="0.01" required
+                className="field-input"
+                value={item.berat_estimasi}
+                onValueChange={(n) => updateItem(idx, "berat_estimasi", n)}
+              />
+            </div>
+            <div className="w-full md:w-1/4 space-y-1">
+              <label className="field-label">Harga/KG (Rp)</label>
+              <NumberInput
+                aria-label="Harga/KG (Rp)"
+                min="0" required
+                className="field-input"
+                value={item.harga_per_kg}
+                onValueChange={(n) => updateItem(idx, "harga_per_kg", n)}
+              />
+              <StandarHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
+            </div>
+            {items.length > 1 && (
+              <div className="w-full md:w-auto pt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => removeItem(idx)}
+                  className="btn-netral tone-danger rounded-[var(--radius-sm)] p-2"
+                  title="Hapus"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Tombol Tambah SKU di bawah list agar tidak perlu scroll ke atas */}
+      <button
+        type="button"
+        onClick={addItem}
+        className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-dashed rounded-xl text-sm font-semibold transition-all hover:bg-[var(--brand-soft)]"
+        style={{ borderColor: "var(--brand-soft-strong)", color: "var(--brand-strong)" }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tambah SKU
+      </button>
+    </div>
+  )
+
+  const bagianPotongan = (
+    <>
+      <PotonganFields
+        baris={barisPotongan}
+        total={totalDeductions}
+        eyebrow="Opsional"
+        judul="Potongan Tambahan"
+        deskripsi="Isi berat (KG) dan harga per KG; nilai potongan dihitung otomatis."
+      />
+
+      {/* Potongan Kasbon (DP) -- kasbon yang sudah disetujui Manager
+          langsung dipotong di nota ini, tidak lagi menunggu tahap
+          verifikasi gudang. */}
+      {supplierId && (
+        <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-sm font-bold text-slate-800">Potongan Kasbon (DP)</h3>
+            <span className="text-xs text-slate-500">
+              Sisa kasbon lapak ini:{" "}
+              <span className="font-mono font-bold tabular-nums" style={{ color: sisaDp > 0 ? "var(--brand-strong)" : "var(--muted-faint)" }}>
+                {fmtRp(sisaDp)}
+              </span>
+            </span>
+          </div>
+
+          {sisaDp <= 0 ? (
+            <p className="mt-2 text-xs text-slate-400">
+              Lapak ini belum punya sisa kasbon yang disetujui, jadi tidak ada yang bisa dipotong.
+            </p>
+          ) : (
+            <>
+              <div className="relative mt-3">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 font-semibold text-slate-400">Rp</div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={fmtDigitInput(dpDigunakan)}
+                  onChange={(e) => setDpDigunakan(e.target.value.replace(/\D/g, ""))}
+                  placeholder="0"
+                  className="w-full rounded-xl border border-slate-200 py-3 pl-12 pr-4 font-mono text-lg font-bold tabular-nums outline-none"
+                />
+              </div>
+              {dpAngka > 0 && (
+                <p className="mt-2 text-xs font-bold" style={{ color: "var(--brand-strong)" }}>
+                  ≈ {fmtSkalaRupiah(dpAngka)} rupiah
+                </p>
+              )}
+              {dpMelebihiSaldo && (
+                <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+                  Melebihi sisa kasbon lapak ({fmtRp(sisaDp)}).
+                </p>
+              )}
+              {!dpMelebihiSaldo && dpMelebihiNota && (
+                <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+                  Melebihi nilai nota setelah potongan ({fmtRp(totalEstimasiSetelahPotongan)}).
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </>
+  )
+
+  const bagianTinjau = (
+    <>
+      {/* Estimasi Total */}
+      {items.some(i => i.berat_estimasi > 0 && i.harga_per_kg > 0) && (
+        <div className="rounded-xl border px-5 py-4" style={{ background: "var(--brand-soft)", borderColor: "var(--brand-soft-strong)" }}>
+          <div className="flex flex-col justify-between gap-1 md:flex-row md:items-center">
+            <span className="text-sm font-medium text-slate-600">Nilai nota setelah potongan</span>
+            <span className="font-mono text-base font-bold tabular-nums text-slate-800">
+              {fmtRp(totalEstimasiSetelahPotongan)}
+            </span>
+          </div>
+          {totalDeductions > 0 && (
+            <p className="mt-0.5 text-xs text-slate-500">
+              Nilai kotor {fmtRp(totalNilaiEstimasi)} − potongan {fmtRp(totalDeductions)}
+            </p>
+          )}
+          {dpAngka > 0 && (
+            <div className="mt-1 flex flex-col justify-between gap-1 md:flex-row md:items-center">
+              <span className="text-sm font-medium text-slate-600">Potongan kasbon</span>
+              <span className="font-mono text-base font-bold tabular-nums" style={{ color: "var(--danger)" }}>
+                − {fmtRp(dpAngka)}
+              </span>
+            </div>
+          )}
+          <div className="mt-3 flex flex-col justify-between gap-1 border-t pt-3 md:flex-row md:items-center" style={{ borderColor: "var(--brand-soft-strong)" }}>
+            <span className="text-sm font-bold" style={{ color: "var(--brand-strong)" }}>
+              Estimasi dibayar ke lapak
+            </span>
+            <span className="font-mono text-xl font-extrabold tabular-nums" style={{ color: "var(--brand-strong)" }}>
+              {fmtRp(totalDibayarKeLapak)}
+            </span>
+          </div>
+        </div>
+      )}
+    </>
+  )
+
+  const langkahForm = [
+    { judul: "Lapak & Metode", keterangan: "Pilih lapak, lalu tentukan cara timbang dan pengambilannya." },
+    { judul: "Item Barang", keterangan: "Masukkan SKU, berat lapak, dan harga per kilogram." },
+    { judul: "Potongan", keterangan: "Isi bila ada potongan atau kasbon yang dipakai. Boleh dilewati." },
+    { judul: "Tinjau & Simpan", keterangan: "Periksa estimasi pembayaran sebelum nota dibuat." },
+  ]
+  const isiLangkah = [bagianLapak, bagianItem, bagianPotongan, bagianTinjau]
+  const langkahTerakhir = langkahForm.length - 1
+
+  // Validasi peramban hanya melihat isian yang sedang dipasang, yaitu isian
+  // langkah yang sedang dibuka. Itu persis yang diinginkan: kesalahan
+  // ditunjukkan saat meninggalkan langkahnya, bukan menumpuk di akhir.
+  const majuLangkah = () => {
+    if (formRef.current && !formRef.current.reportValidity()) return
+    setError("")
+    setLangkah((n) => Math.min(n + 1, langkahTerakhir))
+  }
+
   return (
     <>
       {/* Nota Modal */}
@@ -240,310 +588,87 @@ export default function PurchaseForm({
         <NotaDraft data={notaData} onClose={() => setNotaData(null)} />
       )}
 
-      <form onSubmit={handleSubmit} className="premium-workflow space-y-6">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        className={`premium-workflow space-y-6 ${ponsel ? "punya-bilah-aksi" : ""}`}
+      >
         {error && <div className="notice tone-warning text-sm font-medium">{error}</div>}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Supplier Search Dropdown */}
-          <div className="space-y-2 relative">
-            <label className="text-sm font-semibold text-slate-700">Lapak / Supplier</label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Ketik nama / inisial supplier..."
-                className="field-input field-lg"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value)
-                  setIsOpen(true)
-                  if (!e.target.value) {
-                    setSupplierId("")
-                  }
-                }}
-                onFocus={() => setIsOpen(true)}
-              />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </div>
+        {ponsel ? (
+          <>
+            <WizardLangkah
+              langkah={langkah}
+              total={langkahForm.length}
+              judul={langkahForm[langkah].judul}
+              keterangan={langkahForm[langkah].keterangan}
+            />
 
-              {isOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => {
-                    setIsOpen(false)
-                    const currentSupplier = suppliers.find(s => s.id === supplierId)
-                    setSearchQuery(currentSupplier ? currentSupplier.nama : "")
-                  }} />
-                  
-                  <div className="absolute left-0 right-0 z-20 mt-1.5 max-h-60 divide-y divide-[var(--border)] overflow-y-auto rounded-[var(--radius-sm)] border shadow-xl"
-                    style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-                    {filteredSuppliers.length === 0 ? (
-                      <div className="px-4 py-3 text-sm text-slate-400 italic">Lapak tidak ditemukan</div>
-                    ) : (
-                      filteredSuppliers.map((s) => (
-                        <button
-                          key={s.id}
-                          type="button"
-                          className={`w-full text-left px-4 py-3 text-sm transition-colors flex justify-between items-center ${s.id === supplierId ? 'font-bold' : 'text-slate-700 hover:bg-[var(--bg-tint)]'}`}
-                          style={s.id === supplierId ? { background: "var(--brand-soft)", color: "var(--brand-strong)" } : undefined}
-                          onClick={() => {
-                            setSupplierId(s.id)
-                            setSearchQuery(s.nama)
-                            setIsOpen(false)
-                          }}
-                        >
-                          <span className="min-w-0">
-                            <span className="block truncate">{s.nama}</span>
-                            {/* Pil berbunyi "Hijau"/"Merah" -- nama warna,
-                                bukan artinya. Diganti pola titik + kata,
-                                sama seperti daftar Data Lapak. */}
-                            <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-normal" style={{ color: "var(--muted)" }}>
-                              <span
-                                className="h-1.5 w-1.5 shrink-0 rounded-full"
-                                style={{ background: s.transactionStatus === "GREEN" ? "var(--success)" : "var(--danger)" }}
-                                aria-hidden="true"
-                              />
-                              <span>{s.transactionStatus === "GREEN" ? "Aktif" : "Belum aktif"}</span>
-                              <span aria-hidden="true">&middot;</span>
-                              <span>Target {Number(s.target_bulanan_kg || 0).toLocaleString("id-ID")} kg</span>
-                            </span>
-                          </span>
-                          {s.kontak_wa && <span className="ml-3 text-[10px] text-slate-400 font-normal">{s.kontak_wa}</span>}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </>
+            {isiLangkah[langkah]}
+
+            {/* Tombol lanjut/simpan menempel di bawah supaya tidak perlu
+                menggulir habis satu langkah hanya untuk pindah langkah. */}
+            <StickyActionBar
+              keterangan={
+                langkah === langkahTerakhir && totalDibayarKeLapak > 0
+                  ? `Estimasi dibayar ${fmtRp(totalDibayarKeLapak)}`
+                  : undefined
+              }
+            >
+              {langkah > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setLangkah((n) => Math.max(n - 1, 0))}
+                  className="btn-netral rounded-[var(--radius-md)] px-4 text-sm font-bold"
+                >
+                  Kembali
+                </button>
               )}
+              {langkah < langkahTerakhir ? (
+                <button
+                  type="button"
+                  onClick={majuLangkah}
+                  className="btn-primer flex-1 rounded-[var(--radius-md)] px-4 text-sm font-bold"
+                >
+                  Lanjut
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primer flex flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading && <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />}
+                  {loading ? "Menyimpan..." : "Simpan & Buat Nota Draft"}
+                </button>
+              )}
+            </StickyActionBar>
+          </>
+        ) : (
+          <>
+            {bagianLapak}
+            {bagianItem}
+            {bagianPotongan}
+            {bagianTinjau}
+            <div className="pt-2">
+              {/* Tombol utama memakai bentuk monokrom yang sama dengan tombol
+                  Masuk: hitam, berbalik jadi putih saat disentuh. Warna hover
+                  ditangani CSS, bukan penangan onMouseEnter -- selain lebih
+                  ringkas, gaya inline dari penangan itu tidak ikut hilang saat
+                  tombolnya menjadi disabled. */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primer flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3.5 font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading && (
+                  <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />
+                )}
+                {loading ? "Menyimpan..." : "Simpan & Buat Nota Draft"}
+              </button>
             </div>
-            <input type="hidden" name="supplierId" value={supplierId} required />
-            {selectedSupplier && (
-              <RingkasanLapak lapak={selectedSupplier} namaGudang={namaGudang} tampilkanKontak />
-            )}
-          </div>
-
-          {/* Gudang is read-only from session */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Gudang</label>
-            <div className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-100 text-slate-600 font-medium flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              {namaGudang}
-            </div>
-          </div>
-
-          {/* Metode Bayar */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Metode Timbangan</label>
-            <ElegantSelect
-              value={metodeBayar}
-              options={METODE_BAYAR_OPTIONS}
-              onChange={setMetodeBayar}
-              ariaLabel="Pilih metode timbangan"
-              className="w-full"
-            />
-          </div>
-
-          {/* Jenis Pengambilan (mode logistik) */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Jenis Pengambilan</label>
-            <ElegantSelect
-              value={jenisPengambilan}
-              options={JENIS_PENGAMBILAN_OPTIONS}
-              onChange={setJenisPengambilan}
-              ariaLabel="Pilih jenis pengambilan barang"
-              className="w-full"
-            />
-            <p className="text-xs text-slate-400">
-              Dipakai untuk rekap efektivitas armada di dashboard Manager.
-            </p>
-          </div>
-        </div>
-
-        {/* Item Barang */}
-        <div className="pt-4 border-t border-slate-100">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Item Barang</h3>
-
-          <div className="space-y-3">
-            {items.map((item, idx) => (
-              <div key={idx} className="flex flex-wrap md:flex-nowrap gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div className="w-full md:flex-1 space-y-1">
-                  <label className="text-xs font-medium text-slate-500">Jenis SKU</label>
-                  <ElegantSelect
-                    value={item.sku_name}
-                    options={SKU_OPTIONS}
-                    onChange={(value) => updateItem(idx, "sku_name", value)}
-                    ariaLabel="Pilih SKU"
-                    className="w-full"
-                  />
-                </div>
-                <div className="w-full md:w-28 space-y-1">
-                  <label className="text-xs font-medium text-slate-500">Spec</label>
-                  <ElegantSelect
-                    value={item.spec}
-                    options={SPEC_OPTIONS}
-                    onChange={(value) => updateItem(idx, "spec", value)}
-                    ariaLabel="Pilih spec SKU"
-                    className="w-full"
-                  />
-                </div>
-                <div className="w-full md:w-1/4 space-y-1">
-                  <label className="field-label">Berat Lapak (KG)</label>
-                  <NumberInput
-                    aria-label="Berat Lapak (KG)"
-                    min="0" step="0.01" required
-                    className="field-input"
-                    value={item.berat_estimasi}
-                    onValueChange={(n) => updateItem(idx, "berat_estimasi", n)}
-                  />
-                </div>
-                <div className="w-full md:w-1/4 space-y-1">
-                  <label className="field-label">Harga/KG (Rp)</label>
-                  <NumberInput
-                    aria-label="Harga/KG (Rp)"
-                    min="0" required
-                    className="field-input"
-                    value={item.harga_per_kg}
-                    onValueChange={(n) => updateItem(idx, "harga_per_kg", n)}
-                  />
-                  <StandarHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
-                </div>
-                {items.length > 1 && (
-                  <div className="w-full md:w-auto pt-6 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => removeItem(idx)}
-                      className="btn-netral tone-danger rounded-[var(--radius-sm)] p-2"
-                      title="Hapus"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Tombol Tambah SKU di bawah list agar tidak perlu scroll ke atas */}
-          <button
-            type="button"
-            onClick={addItem}
-            className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-dashed rounded-xl text-sm font-semibold transition-all hover:bg-[var(--brand-soft)]"
-            style={{ borderColor: "var(--brand-soft-strong)", color: "var(--brand-strong)" }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Tambah SKU
-          </button>
-        </div>
-
-        <PotonganFields
-          baris={barisPotongan}
-          total={totalDeductions}
-          eyebrow="Opsional"
-          judul="Potongan Tambahan"
-          deskripsi="Isi berat (KG) dan harga per KG; nilai potongan dihitung otomatis."
-        />
-
-        {/* Potongan Kasbon (DP) -- kasbon yang sudah disetujui Manager
-            langsung dipotong di nota ini, tidak lagi menunggu tahap
-            verifikasi gudang. */}
-        {supplierId && (
-          <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="text-sm font-bold text-slate-800">Potongan Kasbon (DP)</h3>
-              <span className="text-xs text-slate-500">
-                Sisa kasbon lapak ini:{" "}
-                <span className="font-mono font-bold tabular-nums" style={{ color: sisaDp > 0 ? "var(--brand-strong)" : "var(--muted-faint)" }}>
-                  {fmtRp(sisaDp)}
-                </span>
-              </span>
-            </div>
-
-            {sisaDp <= 0 ? (
-              <p className="mt-2 text-xs text-slate-400">
-                Lapak ini belum punya sisa kasbon yang disetujui, jadi tidak ada yang bisa dipotong.
-              </p>
-            ) : (
-              <>
-                <div className="relative mt-3">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 font-semibold text-slate-400">Rp</div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={fmtDigitInput(dpDigunakan)}
-                    onChange={(e) => setDpDigunakan(e.target.value.replace(/\D/g, ""))}
-                    placeholder="0"
-                    className="w-full rounded-xl border border-slate-200 py-3 pl-12 pr-4 font-mono text-lg font-bold tabular-nums outline-none"
-                  />
-                </div>
-                {dpAngka > 0 && (
-                  <p className="mt-2 text-xs font-bold" style={{ color: "var(--brand-strong)" }}>
-                    ≈ {fmtSkalaRupiah(dpAngka)} rupiah
-                  </p>
-                )}
-                {dpMelebihiSaldo && (
-                  <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
-                    Melebihi sisa kasbon lapak ({fmtRp(sisaDp)}).
-                  </p>
-                )}
-                {!dpMelebihiSaldo && dpMelebihiNota && (
-                  <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
-                    Melebihi nilai nota setelah potongan ({fmtRp(totalEstimasiSetelahPotongan)}).
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+          </>
         )}
-
-        {/* Estimasi Total */}
-        {items.some(i => i.berat_estimasi > 0 && i.harga_per_kg > 0) && (
-          <div className="rounded-xl border px-5 py-4" style={{ background: "var(--brand-soft)", borderColor: "var(--brand-soft-strong)" }}>
-            <div className="flex flex-col justify-between gap-1 md:flex-row md:items-center">
-              <span className="text-sm font-medium text-slate-600">Nilai nota setelah potongan</span>
-              <span className="font-mono text-base font-bold tabular-nums text-slate-800">
-                {fmtRp(totalEstimasiSetelahPotongan)}
-              </span>
-            </div>
-            {totalDeductions > 0 && (
-              <p className="mt-0.5 text-xs text-slate-500">
-                Nilai kotor {fmtRp(totalNilaiEstimasi)} − potongan {fmtRp(totalDeductions)}
-              </p>
-            )}
-            {dpAngka > 0 && (
-              <div className="mt-1 flex flex-col justify-between gap-1 md:flex-row md:items-center">
-                <span className="text-sm font-medium text-slate-600">Potongan kasbon</span>
-                <span className="font-mono text-base font-bold tabular-nums" style={{ color: "var(--danger)" }}>
-                  − {fmtRp(dpAngka)}
-                </span>
-              </div>
-            )}
-            <div className="mt-3 flex flex-col justify-between gap-1 border-t pt-3 md:flex-row md:items-center" style={{ borderColor: "var(--brand-soft-strong)" }}>
-              <span className="text-sm font-bold" style={{ color: "var(--brand-strong)" }}>
-                Estimasi dibayar ke lapak
-              </span>
-              <span className="font-mono text-xl font-extrabold tabular-nums" style={{ color: "var(--brand-strong)" }}>
-                {fmtRp(totalDibayarKeLapak)}
-              </span>
-            </div>
-          </div>
-        )}
-
-        <div className="pt-2">
-          {/* Tombol utama memakai bentuk monokrom yang sama dengan tombol
-              Masuk: hitam, berbalik jadi putih saat disentuh. Warna hover
-              ditangani CSS, bukan penangan onMouseEnter -- selain lebih
-              ringkas, gaya inline dari penangan itu tidak ikut hilang saat
-              tombolnya menjadi disabled. */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primer flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3.5 font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading && (
-              <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />
-            )}
-            {loading ? "Menyimpan..." : "Simpan & Buat Nota Draft"}
-          </button>
-        </div>
       </form>
     </>
   )

@@ -125,7 +125,7 @@ export default function DPRequestForm({ suppliers, role = "ADMIN" }: { suppliers
         />
       </div>
 
-      <div className="flex justify-end gap-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+      <div className="aksi-form flex justify-end gap-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
         <button
           type="button"
           onClick={() => router.back()}

@@ -1539,10 +1539,34 @@ a:focus-visible {
    * Jari bukan tetikus. Tombol setinggi 30 sampai 31 piksel sering
    * meleset, apalagi tombol pengganti tampilan yang berjejer rapat.
    */
+  /*
+   * Penyaring jadi deret keping yang digeser mendatar, bukan dibungkus ke
+   * baris berikutnya.
+   *
+   * Dengan pembungkusan, label seperti "Belum ada koordinat (2)" pecah jadi
+   * tiga baris dan satu deret penyaring memakan seperempat layar sebelum
+   * satu pun data terlihat. Digeser, tingginya tetap satu baris berapa pun
+   * jumlah dan panjang pilihannya.
+   */
+  .segmented {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+
+  .segmented::-webkit-scrollbar {
+    display: none;
+  }
+
   .segmented :is(button, a) {
     min-height: 38px;
     padding: 8px 14px;
     font-size: 12px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    scroll-snap-align: start;
   }
 
   .btn-primer,
@@ -1848,6 +1872,50 @@ a:focus-visible {
   .punya-bilah-aksi {
     padding-bottom: 76px;
   }
+
+  /*
+   * Baris tombol penutup form yang sudah ada di markup, dinaikkan jadi bilah
+   * menempel tanpa mengubah susunan komponennya.
+   *
+   * Form panjang seperti Data Lapak berakhir di layar keempat: tombol
+   * Simpan di ujungnya baru terlihat setelah seluruh isian digulir habis,
+   * dan siapa pun yang ingin memeriksa ulang isian di atas harus menggulir
+   * turun lagi hanya untuk menekannya. Yang berubah cuma posisinya; urutan
+   * dan isi tombolnya tetap seperti di layar lebar.
+   */
+  .aksi-form {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--tinggi-bilah-bawah) + var(--aman-bawah));
+    z-index: 55;
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 10px calc(16px + var(--aman-kanan)) 10px calc(16px + var(--aman-kiri));
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(18px) saturate(170%);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 20px -12px rgba(20, 24, 26, 0.25);
+  }
+
+  /* Tombol dibagi rata selebar layar. Di layar lebar keduanya menempel ke
+     ujung kanan, tapi di ponsel dua tombol kecil berdempetan di satu sudut
+     adalah sasaran sentuh yang buruk. */
+  .aksi-form > button,
+  .aksi-form > a {
+    flex: 1 1 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  /* Ruang di ujung form supaya isian terakhirnya tidak tertutup bilah. */
+  form:has(> .aksi-form) {
+    padding-bottom: 84px;
+  }
 }
 
 /* ── Bottom sheet ───────────────────────────────────────────────────── */
@@ -2023,6 +2091,194 @@ a:focus-visible {
   a:active {
     transform: none;
   }
+}
+
+/* ── Kepala form bertahap ───────────────────────────────────────────── */
+.wizard-kepala {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: -16px -16px 0;
+  padding: 12px 16px 14px;
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+}
+
+.wizard-baris {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wizard-hitungan {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-strong);
+}
+
+.wizard-judul {
+  margin-top: 3px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.wizard-keterangan {
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Batang kemajuan. Lebarnya diatur gaya sebaris dari komponennya, karena
+   nilainya berubah tiap langkah dan hanya komponen yang tahu angkanya. */
+.wizard-batang {
+  margin-top: 10px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-tint);
+  overflow: hidden;
+}
+
+.wizard-batang > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
+  transition: width 320ms var(--ease-spring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wizard-batang > span { transition: none; }
+}
+
+/* ── Kartu daftar utama ─────────────────────────────────────────────── */
+/* Dipakai KartuData: identitas di kepala, data di badan, kendali di kaki.
+   Hanya hidup di ponsel; di layar lebar daftarnya kembali berupa tabel. */
+/* Lebar layarnya diputuskan di sini, bukan lewat utilitas md:hidden di
+   markup. Aturan tak berlapis seperti .daftar-kartu menang atas utilitas
+   Tailwind yang berlapis, jadi display: flex di sini akan mengalahkan
+   md:hidden dan kartunya ikut tampil di layar lebar bersama tabelnya. */
+.daftar-kartu {
+  display: none;
+}
+
+@media screen and (max-width: 767px) {
+  .daftar-kartu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.kartu-data {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.kartu-kepala {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunken);
+}
+
+.kartu-kepala-tautan {
+  text-decoration: none;
+  color: inherit;
+  min-height: 44px;
+}
+
+.kartu-judul {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.kartu-subjudul {
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted-faint);
+  overflow-wrap: anywhere;
+}
+
+.kartu-status {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.kartu-badan {
+  margin: 0;
+  padding: 2px 14px;
+}
+
+.kartu-baris {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.kartu-baris:last-child {
+  border-bottom: none;
+}
+
+.kartu-baris > dt {
+  flex: 0 0 auto;
+  max-width: 45%;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-faint);
+}
+
+.kartu-baris > dd {
+  margin: 0;
+  min-width: 0;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+/* Kaki kartu: kendali dalam jangkauan jempol, dipisahkan latar yang lebih
+   gelap supaya tidak terbaca sebagai data. */
+.kartu-kaki {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-sunken);
+}
+
+.kartu-kaki > * {
+  flex: 1 1 auto;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Kartu tabel dibatasi "screen": hasil cetak nota dan laporan harus tetap

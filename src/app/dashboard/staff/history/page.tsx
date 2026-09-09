@@ -8,6 +8,7 @@ import PageHeader from "@/components/ui/PageHeader"
 import StatusPill from "@/components/ui/StatusPill"
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 import { statusPembayaran } from "@/lib/paymentStatus"
+import KartuData from "@/components/ui/KartuData"
 
 export default async function StaffHistoryPage() {
   const session = await getServerSession(authOptions)
@@ -36,7 +37,90 @@ export default async function StaffHistoryPage() {
         description="Pantau status transaksi yang telah Anda buat."
       />
 
-      <div className="section overflow-hidden">
+      {/* Daftar ini termasuk lima daftar utama yang mendapat kartu tangan,
+          bukan kartu hasil mesin data-label. Alasannya ada di KartuData:
+          nomor nota dan status perlu bobot lebih besar daripada metode
+          timbangan, dan tombol nota perlu berada di kaki kartu.
+
+          Tabelnya tetap ada dan tetap menjadi satu-satunya bentuk di layar
+          lebar; yang bertukar hanya mana yang ditampilkan. */}
+      <div className="daftar-kartu md:hidden">
+        {purchases.length === 0 ? (
+          <p className="section section-body text-center text-sm" style={{ color: "var(--muted-faint)" }}>
+            Belum ada riwayat transaksi.
+          </p>
+        ) : (
+          purchases.map((purchase) => {
+            const status = getPurchaseStatus(purchase.status_approval)
+            const bayar = statusPembayaran(purchase)
+            const bisaLihatNota = ["approved", "sudah_transfer"].includes(purchase.status_approval)
+
+            return (
+              <KartuData
+                key={purchase.id}
+                judul={purchase.supplier.nama}
+                subjudul={new Date(purchase.createdAt).toLocaleString("id-ID", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: "Asia/Jakarta",
+                })}
+                status={
+                  <>
+                    <StatusPill label={status.label} tone={status.tone} />
+                    {bayar.sisa > 0 && <StatusPill label={bayar.label} tone={bayar.tone} />}
+                  </>
+                }
+                baris={[
+                  {
+                    label: "Metode bayar",
+                    nilai: purchase.metode_pembayaran_terpilih?.replace("_", " ") || "-",
+                  },
+                  { label: "Total item", nilai: `${purchase.items.length} jenis` },
+                  {
+                    label: "Bukti transfer",
+                    nilai: purchase.bukti_transfer ? (
+                      <a
+                        href={purchase.bukti_transfer}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 font-bold"
+                        style={{ color: "var(--brand-strong)" }}
+                      >
+                        <Image
+                          src={purchase.bukti_transfer}
+                          alt=""
+                          unoptimized
+                          width={28}
+                          height={28}
+                          className="h-7 w-7 rounded-[var(--radius-sm)] border object-cover"
+                          style={{ borderColor: "var(--border)" }}
+                        />
+                        Lihat
+                      </a>
+                    ) : (
+                      "Belum ada"
+                    ),
+                  },
+                ]}
+                aksi={
+                  bisaLihatNota ? (
+                    <a
+                      href={`/nota/${purchase.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                    >
+                      Lihat Nota
+                    </a>
+                  ) : undefined
+                }
+              />
+            )
+          })
+        )}
+      </div>
+
+      <div className="section overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="tabel-lembut text-left text-sm text-slate-600">
             <thead>
