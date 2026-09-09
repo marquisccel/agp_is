@@ -1660,9 +1660,9 @@ a:focus-visible {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Padding sel 20px kiri-kanan menghabiskan 40px per kolom. Pada tabel
-     lima kolom itu 200px dari 375px layar, dan tabel yang sebenarnya muat
-     jadi terpaksa digeser. */
+  /* Berlaku selama tabelnya masih berupa tabel, yaitu sebelum PelabelTabel
+     menandainya. Padding sel 20px kiri-kanan menghabiskan 40px per kolom;
+     pada tabel lima kolom itu 200px dari 375px layar. */
   .tabel-lembut thead th {
     padding: 10px 14px;
     font-size: 10px;
@@ -1681,6 +1681,121 @@ a:focus-visible {
   .uang-grid > div {
     padding: 12px 14px;
   }
+}
+
+/* Kartu tabel dibatasi "screen": hasil cetak nota dan laporan harus tetap
+   berupa tabel, dan lebar kertas dalam satuan cetak tidak selalu di atas
+   ambang 767px. */
+@media screen and (max-width: 767px) {
+  /* -------------------------------------------------------------------
+     Tabel jadi kartu.
+
+     Menggeser tabel enam kolom ke samping berarti pembaca harus mengingat
+     baris mana yang sedang dilihat sambil menggeser -- kolom pertama sudah
+     keluar layar begitu kolom terakhir masuk. Di ponsel setiap baris
+     karena itu dipecah jadi satu kartu, dan tiap sel membawa nama kolomnya
+     sendiri di sebelah kiri.
+
+     Nama kolom diambil dari thead oleh PelabelTabel dan ditulis sebagai
+     atribut data-label pada tiap sel, bukan diketik ulang di markup ke-17
+     tabel. Sebelum skripnya jalan, tabelnya tetap terbaca sebagai tabel
+     biasa yang bisa digeser.
+
+     ------------------------------------------------------------------- */
+  .tabel-lembut[data-kartu],
+  .tabel-lembut[data-kartu] tbody,
+  .tabel-lembut[data-kartu] tbody tr,
+  .tabel-lembut[data-kartu] tbody td {
+    display: block;
+    width: auto;
+}
+
+/* Judul kolom pindah ke dalam tiap sel, jadi barisnya tidak dipakai. */
+.tabel-lembut[data-kartu] thead {
+  display: none;
+}
+
+.tabel-lembut[data-kartu] tbody tr {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  margin: 10px 12px;
+  overflow: hidden;
+}
+
+.tabel-lembut[data-kartu] tbody tr:first-child { margin-top: 12px; }
+.tabel-lembut[data-kartu] tbody tr:last-child { margin-bottom: 12px; }
+
+/* Sorotan baris tidak ada gunanya tanpa tetikus, dan pada kartu justru
+   terbaca seperti kartu itu sedang terpilih. */
+.tabel-lembut[data-kartu] tbody tr:hover { background: var(--surface); }
+
+.tabel-lembut[data-kartu] tbody td {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  text-align: right;
+}
+
+.tabel-lembut[data-kartu] tbody tr td:last-child { border-bottom: none; }
+
+.tabel-lembut[data-kartu] tbody td::before {
+  content: attr(data-label);
+  flex: 0 0 auto;
+  max-width: 45%;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-faint);
+}
+
+/* Sel tanpa nama kolom: baris kosong ("Belum ada data") yang memakai
+   colspan, dan sel yang label kolomnya memang kosong. */
+.tabel-lembut[data-kartu] tbody td[colspan]::before,
+.tabel-lembut[data-kartu] tbody td:not([data-label])::before,
+.tabel-lembut[data-kartu] tbody td[data-label=""]::before {
+  content: none;
+}
+
+.tabel-lembut[data-kartu] tbody td[colspan] {
+  display: block;
+  text-align: center;
+}
+
+/* Perataan khusus kolom tidak berlaku lagi: di dalam kartu setiap nilai
+   menempel ke tepi kanan, berhadapan dengan nama kolomnya. */
+.tabel-lembut[data-kartu] tbody td.angka-tabel,
+.tabel-lembut[data-kartu] tbody td.kolom-kiri,
+.tabel-lembut[data-kartu] tbody td.kolom-tengah,
+.tabel-lembut[data-kartu] tbody td.kolom-kanan,
+.tabel-lembut[data-kartu] tbody td.kolom-aksi {
+  text-align: right;
+  width: auto;
+  white-space: normal;
+}
+
+/* Baris kendali diberi ruang lebih dan tombolnya dibiarkan turun kalau
+   tidak muat sebaris dengan namanya. */
+.tabel-lembut[data-kartu] tbody td.kolom-aksi {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 11px;
+  padding-bottom: 11px;
+  background: var(--surface-sunken);
+}
+
+/* Wadah tabel tidak perlu digeser lagi saat isinya sudah jadi kartu. */
+.section:has(> table.tabel-lembut[data-kartu]),
+div.overflow-hidden:has(> table.tabel-lembut[data-kartu]),
+div:has(> table.tabel-lembut[data-kartu]) {
+  overflow-x: visible;
+}
 }
 
 /* Layar paling sempit yang masih dipakai di lapangan (iPhone SE, 375px, dan

@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { isOperationalRole } from "@/lib/roles"
 import AgpMark from "@/components/ui/AgpMark"
+import PelabelTabel from "@/components/layout/PelabelTabel"
 
 type NavItem = {
   name: string
@@ -196,6 +197,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="liquid-shell flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible">
+      {/* Menyalin judul kolom ke tiap sel supaya tabel bisa tampil sebagai
+          kartu di ponsel. Tidak menggambar apa pun. */}
+      <PelabelTabel />
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm print:hidden"
