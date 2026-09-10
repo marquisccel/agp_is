@@ -353,7 +353,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 </div>
                 <button
                   onClick={() => handleCopy(supplier.nomor_rekening || "")}
-                  className="premium-button flex w-full items-center justify-center gap-2 rounded-[10px] bg-white py-2.5 text-xs font-bold hover:bg-slate-100" style={{ color: "var(--brand-strong)" }}
+                  className="premium-button flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-white py-2.5 text-xs font-bold hover:bg-slate-100" style={{ color: "var(--brand-strong)" }}
                 >
                   {copied ? (
                     <>

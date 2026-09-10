@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
+import PilihanPil from "@/components/ui/PilihanPil"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
@@ -407,7 +408,7 @@ export default function ManagerSuppliersClient({
               Filter performa berdasarkan gudang, periode, grade, dan kata kunci tanpa kehilangan konteks operasional.
             </p>
           </div>
-          <div className="text-right">
+          <div className="hidden text-right md:block">
             <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500">Tonase periode ini</p>
             <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums text-slate-900">{fmtKg(totalWeightFiltered)}</p>
           </div>
@@ -420,6 +421,19 @@ export default function ManagerSuppliersClient({
 
             Keempatnya tetap berfungsi sebagai penyaring; yang aktif
             ditandai latar brand-soft. */}
+        {/* Ponsel: tonase jadi baris pertama pita ringkasan, selebar
+            penuh, di atas empat petak kinerja. Di kepala kartu ia jatuh ke
+            baris sendiri di bawah deskripsi, menjorok dan melayang tanpa
+            hubungan dengan petak-petak di bawahnya, padahal ia angka
+            induk yang dipecah oleh keempat petak itu. */}
+        <div
+          className="flex items-baseline justify-between gap-3 border-b bg-slate-50 px-4 py-3 md:hidden"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500">Tonase periode ini</span>
+          <span className="font-mono text-lg font-extrabold tabular-nums text-slate-900">{fmtKg(totalWeightFiltered)}</span>
+        </div>
+
         <div className="stat-strip" style={{ borderRadius: 0, border: "none", borderBottom: "1px solid var(--border)", boxShadow: "none" }}>
           {filterCards.map((card) => {
             const active = selectedGradeFilter === card.id
@@ -444,7 +458,7 @@ export default function ManagerSuppliersClient({
           })}
         </div>
 
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
 
           {/* Label penyaringnya dulu berbunyi "Hijau" dan "Merah" -- nama
               warna, bukan artinya -- padahal daftar di bawahnya sudah
@@ -459,8 +473,20 @@ export default function ManagerSuppliersClient({
               mengambil sisa lebar dan digeser, tombolnya selebar isinya. Dengan
               flex-wrap, tombolnya terlempar ke baris sendiri dan menggantung
               di kanan tanpa pasangan. */}
-          <div className="mt-4 flex items-center gap-2 sm:flex-wrap sm:justify-between sm:gap-3">
-          <div className="segmented inline-flex min-w-0 flex-1 sm:flex-none">
+          <div className="flex items-center gap-2 sm:mt-4 sm:flex-wrap sm:justify-between sm:gap-3">
+          <PilihanPil
+            value={selectedStatusFilter}
+            options={[
+              { value: "all" as const, label: "Semua status" },
+              { value: "GREEN" as const, label: "Aktif", jumlah: greenSupplierCount },
+              { value: "RED" as const, label: "Belum aktif", jumlah: redSupplierCount },
+            ]}
+            onChange={setSelectedStatusFilter}
+            ariaLabel="Saring status lapak"
+            className="flex-1 sm:hidden"
+          />
+          <div className="hidden min-w-0 sm:block sm:flex-none">
+          <div className="segmented inline-flex">
             <button
               onClick={() => setSelectedStatusFilter("all")}
               className={selectedStatusFilter === "all" ? "active" : ""}
@@ -482,6 +508,7 @@ export default function ManagerSuppliersClient({
               Belum aktif ({redSupplierCount})
             </button>
           </div>
+          </div>
 
           <button
             onClick={handleOpenImportModal}
@@ -498,7 +525,18 @@ export default function ManagerSuppliersClient({
       </section>
 
       <section className="section section-body">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <PilihanPil
+            value={selectedWarehouseId}
+            options={[
+              { value: "all", label: "Semua gudang" },
+              ...warehouses.map((warehouse) => ({ value: warehouse.id, label: namaGudang(warehouse.nama) })),
+            ]}
+            onChange={setSelectedWarehouseId}
+            ariaLabel="Saring gudang"
+            className="sm:hidden"
+          />
+          <div className="hidden sm:block">
           <div className="segmented flex flex-wrap">
             <button
               onClick={() => setSelectedWarehouseId("all")}
@@ -516,8 +554,9 @@ export default function ManagerSuppliersClient({
               </button>
             ))}
           </div>
+          </div>
 
-          <div className="grid gap-2 sm:grid-cols-[140px_112px_minmax(220px,280px)]">
+          <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-2 sm:grid-cols-[140px_112px_minmax(220px,280px)]">
             <ElegantSelect
               value={selectedMonth}
               onChange={setSelectedMonth}
@@ -532,8 +571,8 @@ export default function ManagerSuppliersClient({
               className="w-full"
               options={YEARS.map((year) => ({ value: year, label: String(year) }))}
             />
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <div className="relative col-span-2 sm:col-span-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Cari nama, bank, gudang..."
@@ -596,7 +635,7 @@ export default function ManagerSuppliersClient({
                       />
                       <Link
                         href={`/dashboard/manager/suppliers/${supplier.id}`}
-                        className="truncate text-lg font-black tracking-[-0.02em] text-slate-950 hover:text-[color:var(--brand-strong)]"
+                        className="-my-2 truncate py-2 text-lg font-black tracking-[-0.02em] text-slate-950 hover:text-[color:var(--brand-strong)]"
                       >
                         {supplier.nama}
                       </Link>
@@ -684,10 +723,10 @@ export default function ManagerSuppliersClient({
                     {supplier.nomor_rekening ? (
                       <button
                         onClick={() => handleCopy(supplier.id, supplier.nomor_rekening || "")}
-                        className="flex min-w-0 items-center gap-2 text-left font-bold text-slate-800 hover:text-[color:var(--brand-strong)]"
+                        className="flex min-h-11 min-w-0 items-center gap-2 text-left font-bold text-slate-800 hover:text-[color:var(--brand-strong)] md:min-h-0"
                         title="Salin nomor rekening"
                       >
-                        <span className="truncate">{supplier.nama_bank} - {supplier.nomor_rekening}</span>
+                        <span className="truncate">{supplier.nama_bank} · {supplier.nomor_rekening}</span>
                         {copiedId === supplier.id ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4 text-slate-400" />}
                       </button>
                     ) : (
@@ -720,7 +759,7 @@ export default function ManagerSuppliersClient({
                         href={getWaLink(supplier.kontak_wa)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="premium-button btn-netral grid h-[34px] w-[34px] place-items-center"
+                        className="premium-button btn-netral grid h-11 w-11 place-items-center md:h-[34px] md:w-[34px]"
                         title="Chat WhatsApp"
                         aria-label={`Chat WhatsApp ${supplier.nama}`}
                       >
@@ -730,7 +769,7 @@ export default function ManagerSuppliersClient({
                     <button
                       onClick={() => handleDelete(supplier.id)}
                       disabled={deletingId === supplier.id}
-                      className="premium-button btn-netral tone-danger grid h-[34px] w-[34px] place-items-center disabled:opacity-50"
+                      className="premium-button btn-netral tone-danger grid h-11 w-11 place-items-center disabled:opacity-50 md:h-[34px] md:w-[34px]"
                       title="Hapus lapak"
                       aria-label={`Hapus lapak ${supplier.nama}`}
                     >
@@ -878,7 +917,7 @@ export default function ManagerSuppliersClient({
                   const file = e.target.files?.[0]
                   if (file) handleImportFile(file)
                 }}
-                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[color:var(--brand)] file:px-4 file:py-2 file:text-xs file:font-bold file:text-white"
+                className="block w-full text-sm text-slate-600 file:mr-3 file:min-h-11 file:rounded-lg file:border-0 file:bg-[color:var(--brand)] file:px-4 file:py-2 file:text-xs file:font-bold file:text-white"
               />
               <textarea
                 value={importCsvText}

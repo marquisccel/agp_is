@@ -152,7 +152,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
             return (
               <div
                 key={item.id}
-                className="space-y-3 rounded-[var(--radius-md)] border p-4"
+                className="space-y-3 rounded-[var(--radius-lg)] border p-4"
                 style={isOver ? { borderColor: "var(--warning-soft)", background: "var(--warning-soft)" } : { borderColor: "var(--border)", background: "var(--surface)" }}
               >
                 {/* SKU Header */}
@@ -170,47 +170,53 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                   )}
                 </div>
 
-                {/* Timbangan comparison */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-lg p-3">
-                  <div className="text-center">
-                    <div className="text-[10px] text-slate-400 font-medium mb-1">Lapak</div>
-                    <div className="text-sm font-bold text-slate-700 font-mono">{lapakW.toFixed(2)}<span className="text-[9px] font-normal ml-0.5">kg</span></div>
+                {/* Perbandingan timbangan: tiga lajur sama lebar dalam satu
+                    pita, dipisah garis tipis. Selisihnya berupa lencana
+                    berwarna (merah untuk susut, kuning untuk lebih) supaya
+                    arahnya terbaca sebelum angkanya dibaca. Satuan kg ada
+                    di label, bukan diulang di tiap angka. */}
+                <div className="grid grid-cols-3 divide-x overflow-hidden rounded-[var(--radius-md)] border bg-slate-50" style={{ borderColor: "var(--border)" }}>
+                  <div className="px-2 py-2.5 text-center" style={{ borderColor: "var(--border)" }}>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Lapak (kg)</div>
+                    <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-700">{lapakW.toFixed(2)}</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-[10px] text-slate-400 font-medium mb-1">Gudang</div>
-                    <div className="text-sm font-bold text-slate-800 font-mono">{gudangW.toFixed(2)}<span className="text-[9px] font-normal ml-0.5">kg</span></div>
+                  <div className="px-2 py-2.5 text-center" style={{ borderColor: "var(--border)" }}>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Gudang (kg)</div>
+                    <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-900">{gudangW.toFixed(2)}</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-[10px] text-slate-400 font-medium mb-1">Selisih</div>
+                  <div className="flex flex-col items-center px-2 py-2.5 text-center" style={{ borderColor: "var(--border)" }}>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Selisih</div>
                     {diff === 0 ? (
-                      <div className="text-xs font-bold" style={{ color: "var(--muted)" }}>Sama</div>
+                      <span className="mt-1 rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>Sama</span>
                     ) : (
-                      <div className="font-mono text-xs font-bold" style={{ color: diff < 0 ? "var(--danger)" : "var(--warning)" }}>
+                      <span
+                        className="mt-1 whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums"
+                        style={diff < 0 ? { background: "var(--danger-soft)", color: "var(--danger)" } : { background: "var(--warning-soft)", color: "var(--warning)" }}
+                      >
                         {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
-                      </div>
+                      </span>
                     )}
                   </div>
                 </div>
 
-                {/* Harga info */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-white border border-slate-100 rounded-lg p-2.5">
-                    <div className="text-[10px] text-slate-400 font-medium">Harga Beli / kg</div>
-                    <div className="mt-0.5 text-sm font-bold" style={{ color: isOver ? "var(--warning)" : "var(--foreground)" }}>
+                {/* Harga: baris label-nilai, bukan dua kotak bertepi di dalam
+                    kartu yang sudah bertepi. */}
+                <dl className="space-y-1.5 text-sm">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Harga beli / kg</dt>
+                    <dd className="font-mono font-bold tabular-nums" style={{ color: isOver ? "var(--warning)" : "var(--foreground)" }}>
                       Rp {item.harga_per_kg.toLocaleString("id-ID")}
-                    </div>
+                    </dd>
                   </div>
-                  <div className="bg-white border border-slate-100 rounded-lg p-2.5">
-                    <div className="text-[10px] text-slate-400 font-medium">Maks Standar / kg</div>
-                    <div className="text-sm font-medium mt-0.5 text-slate-600">
-                      Rp {maxPrice.toLocaleString("id-ID")}
-                    </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Maks standar / kg</dt>
+                    <dd className="font-mono tabular-nums text-slate-600">Rp {maxPrice.toLocaleString("id-ID")}</dd>
                   </div>
-                </div>
+                </dl>
 
                 {/* Subtotal */}
-                <div className="flex justify-between items-center pt-1 border-t border-slate-100">
-                  <span className="text-xs text-slate-500 font-medium">Subtotal Item</span>
+                <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                  <span className="text-xs font-semibold text-slate-500">Subtotal item</span>
                   <span className="text-sm font-extrabold text-slate-800 font-mono">
                     Rp {item.subtotal.toLocaleString("id-ID")}
                   </span>
@@ -222,37 +228,45 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
       </div>
 
       {/* Scale Comparison Summary */}
-      <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-4">
+      <div className="space-y-4 rounded-[var(--radius-lg)] border border-slate-200/60 bg-slate-50 p-4 sm:p-5">
         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2v20"/><path d="M5 5h14"/><path d="M3 21h18"/>
           </svg>
           Perbandingan Timbangan Total (Lapak vs Gudang)
         </h4>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-center">
-            <div className="text-[10px] text-slate-400 font-medium leading-tight">Lapak (Staff)</div>
-            <div className="text-base font-bold text-slate-800 mt-1 font-mono">
+        {/* Tiga lajur dalam satu pita bertepi, dipisah garis tipis.
+            Tiga kotak berbayang di dalam kartu abu membuat angkanya
+            berdesakan di layar 360px: tiap kotak cuma 90px, dan angka
+            beserta satuannya patah. Satuan kini di label. */}
+        <div className="grid grid-cols-3 divide-x overflow-hidden rounded-[var(--radius-md)] border bg-white" style={{ borderColor: "var(--border)" }}>
+          <div className="px-2 py-3 text-center" style={{ borderColor: "var(--border)" }}>
+            <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Lapak (kg)</div>
+            <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-800 sm:text-base">
               {(purchase.berat_timbangan_lapak || 0).toFixed(2)}
-              <span className="text-[10px] font-normal ml-0.5">KG</span>
             </div>
           </div>
-          <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-center">
-            <div className="text-[10px] text-slate-400 font-medium leading-tight">Gudang (Admin)</div>
-            <div className="text-base font-bold text-slate-800 mt-1 font-mono">
+          <div className="px-2 py-3 text-center" style={{ borderColor: "var(--border)" }}>
+            <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Gudang (kg)</div>
+            <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-800 sm:text-base">
               {(purchase.berat_timbangan_gudang || 0).toFixed(2)}
-              <span className="text-[10px] font-normal ml-0.5">KG</span>
             </div>
           </div>
-          <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-center">
-            <div className="text-[10px] text-slate-400 font-medium leading-tight">Selisih / Susut</div>
-            <div className="mt-1 font-mono text-base font-bold" style={{ color: selisihTotal === 0 ? "var(--foreground)" : selisihTotal < 0 ? "var(--danger)" : "var(--warning)" }}>
+          <div className="flex flex-col items-center px-2 py-3 text-center" style={{ borderColor: "var(--border)" }}>
+            <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Selisih (kg)</div>
+            <span
+              className="mt-1 whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-xs font-bold tabular-nums sm:text-sm"
+              style={selisihTotal === 0
+                ? { background: "var(--bg-tint)", color: "var(--muted)" }
+                : selisihTotal < 0
+                  ? { background: "var(--danger-soft)", color: "var(--danger)" }
+                  : { background: "var(--warning-soft)", color: "var(--warning)" }}
+            >
               {selisihTotal > 0 ? `+${selisihTotal.toFixed(2)}` : selisihTotal.toFixed(2)}
-              <span className="text-[10px] font-normal ml-0.5">KG</span>
-            </div>
+            </span>
             {beratTimbanganLapak > 0 && (
-              <div className="mt-0.5 text-[10px] font-semibold" style={{ color: selisihTotal === 0 ? "var(--muted-faint)" : selisihTotal < 0 ? "var(--danger)" : "var(--warning)" }}>
-                ({((selisihTotal / beratTimbanganLapak) * 100).toFixed(1)}%)
+              <div className="mt-1 text-[10px] font-semibold tabular-nums" style={{ color: selisihTotal === 0 ? "var(--muted-faint)" : selisihTotal < 0 ? "var(--danger)" : "var(--warning)" }}>
+                {((selisihTotal / beratTimbanganLapak) * 100).toFixed(1)}%
               </div>
             )}
           </div>
@@ -269,15 +283,15 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
             ? "Hasil timbangan staff (lapak) dan admin (gudang) sesuai sempurna."
             : selisihTotal < 0
               ? `Peringatan: penyusutan timbangan gudang ${Math.abs(selisihTotal).toFixed(2)} KG (${beratTimbanganLapak > 0 ? Math.abs((selisihTotal / beratTimbanganLapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`
-              : `ℹ Timbangan gudang bertambah: +${selisihTotal.toFixed(2)} KG (+${beratTimbanganLapak > 0 ? ((selisihTotal / beratTimbanganLapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`}
+              : `Timbangan gudang bertambah: +${selisihTotal.toFixed(2)} KG (+${beratTimbanganLapak > 0 ? ((selisihTotal / beratTimbanganLapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`}
         </div>
       </div>
 
       {/* Total + Action Buttons */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div className="space-y-4 rounded-[var(--radius-lg)] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div>
           <div className="text-xs text-slate-500 font-medium">Total Dibayar (Setelah Retur &amp; DP)</div>
-          <div className="text-2xl font-extrabold text-slate-800 mt-1">
+          <div className="mt-1 font-mono text-2xl font-extrabold tabular-nums text-slate-800">
             Rp {(purchase.total_dibayar || 0).toLocaleString("id-ID")}
           </div>
         </div>
@@ -285,14 +299,14 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
           <button
             onClick={() => handleAction("reject")}
             disabled={loading}
-            className="btn-netral tone-danger premium-button flex-1 px-5 py-3 text-sm disabled:opacity-50"
+            className="btn-netral tone-danger premium-button min-h-11 flex-1 px-5 py-3 text-sm disabled:opacity-50"
           >
             {loading ? "Memproses..." : "Tolak (Dibatalkan)"}
           </button>
           <button
             onClick={() => handleAction("approve")}
             disabled={loading}
-            className="flex-1 px-5 py-3 rounded-xl font-bold text-sm text-white transition-colors disabled:opacity-70"
+            className="min-h-11 flex-1 rounded-[var(--radius-md)] px-5 py-3 text-sm font-bold text-white transition-colors disabled:opacity-70"
             style={{ background: "var(--success)" }}
             onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "#128a3e" }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "var(--success)" }}
