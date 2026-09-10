@@ -148,7 +148,16 @@ export default function LoginPage() {
             berubah. */}
         <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#e7f1e3_0%,#f3f6f1_38%,#f5f5f7_100%)] px-5 py-10 sm:px-6 lg:bg-none lg:bg-[#f5f5f7] lg:px-10 lg:py-8">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(3,96,48,0.10),transparent_46%)] lg:bg-[radial-gradient(circle_at_50%_0%,rgba(3,96,48,0.13),transparent_42%),radial-gradient(circle_at_100%_80%,rgba(85,145,51,0.11),transparent_36%)]" />
-          <div className="w-full max-w-[380px] lg:max-w-[420px]">
+          {/* Dua aksen cahaya kabur di belakang kartu, khusus ponsel. Tanpa
+              sesuatu di belakangnya, lapisan kaca kartu tidak punya apa pun
+              untuk dikaburkan dan terbaca sebagai kotak putih biasa. */}
+          <div aria-hidden="true" className="pointer-events-none absolute -left-16 top-24 h-56 w-56 rounded-full bg-[rgba(85,145,51,0.22)] blur-3xl lg:hidden" />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-20 bottom-24 h-64 w-64 rounded-full bg-[rgba(3,96,48,0.14)] blur-3xl lg:hidden" />
+          {/* Kolom konten mengisi tinggi layar: kartu di tengah, hak cipta di
+              dasar. Sebelumnya hak cipta menempel 20px di bawah kartu dan
+              ikut melayang di tengah layar bersama kartunya. */}
+          <div className="relative flex min-h-[calc(100dvh-5rem)] w-full max-w-[380px] flex-col lg:block lg:min-h-0 lg:max-w-[420px]">
+            <div className="my-auto lg:my-0">
             {/* Identitas ponsel: lambang di atas, nama di bawahnya, rata
                 tengah. Deretan logo-dan-teks mendatar yang dulu dipakai
                 memaksa nama perusahaan yang panjang turun baris di layar
@@ -168,7 +177,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="glass-panel rounded-[22px] p-5 sm:p-7 lg:rounded-[30px] lg:p-8">
+            <div className="kartu-masuk p-6 sm:p-7 lg:p-8">
               {/* Di ponsel judulnya masuk ke kartu: kartunya jadi satu unit
                   utuh di bawah identitas perusahaan, bukan tiga blok lepas
                   (lambang, judul, kartu) yang berebut perhatian. Hanya salah
@@ -226,7 +235,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="btn-primer inline-flex h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60 lg:h-12"
+                  className="btn-primer mt-1 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-[15px] font-bold tracking-tight shadow-[0_10px_24px_-12px_rgba(48,84,38,0.7)] disabled:cursor-not-allowed disabled:opacity-60 lg:mt-0 lg:text-sm lg:shadow-none"
                 >
                   {isLoading && <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />}
                   {isLoading ? "Memproses..." : "Masuk"}
@@ -241,7 +250,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <p className="mt-5 text-center text-xs text-slate-400 lg:hidden">
+            </div>
+
+            <p className="pt-8 text-center text-xs text-slate-400 lg:hidden">
               &copy; {new Date().getFullYear()} Agrapana Greenworks Polymer
             </p>
           </div>
