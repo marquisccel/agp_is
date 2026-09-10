@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import PendingTerminAlerts from "@/components/features/PendingTerminAlerts"
 import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import PageHeader from "@/components/ui/PageHeader"
+import { ClipboardCheck } from "lucide-react"
 import KartuData from "@/components/ui/KartuData"
 
 export default async function AdminDashboard() {
@@ -61,11 +62,43 @@ export default async function AdminDashboard() {
         title="Double Check Transaksi"
         description="Daftar draft pembelian yang menunggu validasi berat dan retur."
         actions={
-          <span className="text-sm font-semibold" style={{ color: drafts.length > 0 ? "var(--warning)" : "var(--muted-faint)" }}>
+          <span className="sembunyi-ponsel text-sm font-semibold" style={{ color: drafts.length > 0 ? "var(--warning)" : "var(--muted-faint)" }}>
             {drafts.length > 0 ? `${drafts.length} menunggu dicek` : "Tidak ada antrean"}
           </span>
         }
       />
+
+      {/* Ponsel: jumlah antrean jadi pita peringatan dengan lencana angka
+          yang kontras. Sebagai teks kuning kecil di dalam kartu judul, angka
+          yang justru menentukan kerja Admin hari itu terbaca seperti
+          keterangan tambahan. */}
+      <div
+        className={`hanya-ponsel -mt-3 flex items-center justify-between gap-3 rounded-xl border p-3 ${
+          drafts.length > 0 ? "border-amber-200/80 bg-amber-50" : "border-slate-200/70 bg-slate-50"
+        }`}
+      >
+        <div className="flex min-w-0 items-center gap-2.5">
+          <ClipboardCheck
+            className={`h-5 w-5 shrink-0 ${drafts.length > 0 ? "text-amber-600" : "text-slate-400"}`}
+            aria-hidden="true"
+          />
+          <div className="min-w-0">
+            <p className={`text-sm font-bold ${drafts.length > 0 ? "text-amber-800" : "text-slate-600"}`}>
+              {drafts.length > 0 ? "Menunggu dicek" : "Tidak ada antrean"}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              {drafts.length > 0 ? "Validasi berat dan retur tiap draft" : "Semua draft sudah divalidasi"}
+            </p>
+          </div>
+        </div>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums ${
+            drafts.length > 0 ? "bg-amber-500 text-white" : "bg-slate-200 text-slate-600"
+          }`}
+        >
+          {drafts.length}
+        </span>
+      </div>
 
       {/* Antrean Double Check adalah layar kerja Admin, bukan tabel yang
           sesekali dilihat: yang dicari cuma nama lapak dan tombol masuk.

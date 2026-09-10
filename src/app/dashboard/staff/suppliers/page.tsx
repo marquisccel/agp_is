@@ -6,12 +6,14 @@ import Link from "next/link"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 import KartuData from "@/components/ui/KartuData"
+import PenyaringLapakPonsel from "@/components/features/PenyaringLapakPonsel"
+import { Plus } from "lucide-react"
 import { getSupplierMapHref, hasResolvedSupplierCoordinates } from "@/lib/supplierLocation"
 
 export default async function StaffSuppliersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string; location?: string }>
+  searchParams?: Promise<{ status?: string; location?: string; q?: string }>
 }) {
   const session = await getServerSession(authOptions)
   if (!session || !isOperationalRole(session.user.role)) redirect("/login")
@@ -27,6 +29,9 @@ export default async function StaffSuppliersPage({
       ? resolvedSearchParams.location
       : "all"
 
+  const kataCari = (resolvedSearchParams?.q || "").trim()
+  const kataKecil = kataCari.toLowerCase()
+
   const allSuppliers = warehouseId
     ? await prisma.supplier.findMany({
         where: { warehouseId },
@@ -37,8 +42,17 @@ export default async function StaffSuppliersPage({
     ? allSuppliers
     : allSuppliers.filter((supplier) => supplier.transactionStatus === selectedStatus)
   const filteredSuppliers = suppliers.filter((supplier) => {
-    if (selectedLocation === "ready") return hasResolvedSupplierCoordinates(supplier)
-    if (selectedLocation === "missing") return !hasResolvedSupplierCoordinates(supplier)
+    if (selectedLocation === "ready" && !hasResolvedSupplierCoordinates(supplier)) return false
+    if (selectedLocation === "missing" && hasResolvedSupplierCoordinates(supplier)) return false
+    // Kolom cari hanya ada di ponsel (PenyaringLapakPonsel); di layar lebar
+    // parameter q tidak pernah terisi, jadi penyaring ini tidak berpengaruh.
+    if (kataKecil) {
+      const teks = [supplier.nama, supplier.nama_bank, supplier.nomor_rekening, supplier.kontak_wa]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+      if (!teks.includes(kataKecil)) return false
+    }
     return true
   })
   const greenCount = allSuppliers.filter((supplier) => supplier.transactionStatus === "GREEN").length
@@ -87,7 +101,17 @@ export default async function StaffSuppliersPage({
             Sebelumnya semuanya satu deret flex-wrap: begitu kedua deret
             filter memenuhi lebar kartu, tombolnya ikut terdorong turun dan
             berdiri sendirian di baris kedua. */}
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
+        {allSuppliers.length > 0 && (
+          <div className="hanya-ponsel">
+            <PenyaringLapakPonsel
+              status={selectedStatus}
+              location={selectedLocation}
+              q={kataCari}
+              jumlah={{ semua: allSuppliers.length, aktif: greenCount, belum: redCount, siap: mapReadyCount, kosong: mapMissingCount }}
+            />
+          </div>
+        )}
+        <div className="sembunyi-ponsel flex min-w-0 flex-wrap items-center gap-2">
         {allSuppliers.length > 0 && (
           <>
           {/* Dua deret pil berwarna-warni -- hitam, hijau, merah, biru,
@@ -137,8 +161,16 @@ export default async function StaffSuppliersPage({
 
         <Link
           href="/dashboard/staff/suppliers/new"
-          className="btn-primer premium-button flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
+          className="btn-primer premium-button sembunyi-ponsel flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
         >
+          Tambah Lapak
+        </Link>
+        {/* Ponsel: tombol utama selebar kartu di bawah bilah penyaring. */}
+        <Link
+          href="/dashboard/staff/suppliers/new"
+          className="hanya-ponsel flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Tambah Lapak
         </Link>
       </div>

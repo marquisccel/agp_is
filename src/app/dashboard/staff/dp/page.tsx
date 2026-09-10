@@ -2,6 +2,7 @@ import { authOptions } from "@/lib/authOptions"
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { Plus } from "lucide-react"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 import StatusPill from "@/components/ui/StatusPill"
@@ -34,12 +35,25 @@ export default async function DPListStaff() {
         actions={(
           <Link
             href="/dashboard/staff/dp/new"
-            className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
+            className="btn-primer premium-button sembunyi-ponsel rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
           >
             Pengajuan Kasbon Baru
           </Link>
         )}
       />
+
+      {/* Ponsel: tombol aksi di luar kartu judul, rata kanan tepat di
+          bawahnya. Di dalam kartu judul ia melebar selebar kartu dan
+          terbaca sebagai bagian dari judul, bukan tindakan. */}
+      <div className="hanya-ponsel -mt-3 flex justify-end">
+        <Link
+          href="/dashboard/staff/dp/new"
+          className="sentuh-luas-y inline-flex h-10 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          Pengajuan Kasbon Baru
+        </Link>
+      </div>
 
       <div className="section overflow-hidden">
         <div className="overflow-x-auto">
