@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 import KartuData from "@/components/ui/KartuData"
 
 export default async function ApprovalHargaList() {
@@ -24,15 +25,11 @@ export default async function ApprovalHargaList() {
 
   return (
     <div className="space-y-6">
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Persetujuan manager"
         title="Approval Harga"
         description="Daftar transaksi yang melebihi standar harga maksimum."
-        actions={(
-          <Link href="/dashboard/manager" className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
-            Kembali ke Dashboard
-          </Link>
-        )}
       />
 
       {/* Antrean persetujuan jadi umpan kartu di ponsel: satu keputusan per

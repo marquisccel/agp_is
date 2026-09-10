@@ -7,6 +7,7 @@ import type { ReactNode } from "react"
 import { Activity, CheckCircle2, Clock3, Download, FileWarning, ReceiptText } from "lucide-react"
 import ReportYearSelect from "@/components/features/ReportYearSelect"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 import PrintButton from "@/components/ui/PrintButton"
 import { formatAuditAction } from "@/lib/auditLabels"
 
@@ -161,7 +162,8 @@ export default async function ManagerReportsPage({
 
   return (
     <div className="space-y-6 print:p-0 print:space-y-4">
-      <div className="print:hidden">
+      <div className="space-y-6 print:hidden">
+        <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
         <PageHeader
           eyebrow="Laporan eksekutif"
           title="Rekap Laporan Performa"
@@ -181,12 +183,6 @@ export default async function ManagerReportsPage({
                 Export CSV
               </Link>
               <PrintButton />
-              <Link
-                href="/dashboard/manager"
-                className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
-              >
-                Kembali ke Dashboard
-              </Link>
             </>
           )}
         />

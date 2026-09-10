@@ -3,9 +3,7 @@
 import { useState, type CSSProperties } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import {
-  ArrowLeft,
   CheckCircle,
   Clock,
   DollarSign,
@@ -17,6 +15,7 @@ import { fmtRp } from "@/lib/format"
 import { getPurchaseStatus, PURCHASE_STATUS_DESCRIPTIONS, type StatusTone } from "@/lib/purchaseStatusLabels"
 import StatusPill, { TONE_STYLE } from "@/components/ui/StatusPill"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 import KoreksiKekurangan from "@/components/features/KoreksiKekurangan"
 import { kewajibanKeLapak } from "@/lib/settlement"
 
@@ -116,7 +115,6 @@ export default function ManagerPurchaseDetailClient({
   purchase: Purchase
   skuPrices: SkuPriceStandard[]
 }) {
-  const router = useRouter()
   const [showProof, setShowProof] = useState(false)
 
   const s = getPurchaseStatus(purchase.status_approval)
@@ -195,6 +193,7 @@ export default function ManagerPurchaseDetailClient({
 
   return (
     <div className="premium-workflow space-y-6">
+      <TombolKembali />
       <PageHeader
         eyebrow="Detail transaksi"
         title={`Transaksi ${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}`}
@@ -217,13 +216,6 @@ export default function ManagerPurchaseDetailClient({
               Edit Transaksi
             </Link>
           )}
-          <button
-            onClick={() => router.back()}
-            className="premium-button btn-netral flex items-center gap-2 px-4 py-2 text-xs"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Kembali
-          </button>
           </>
         }
       />

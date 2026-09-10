@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/authOptions"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import ManagerSkuPricesClient from "@/components/features/ManagerSkuPricesClient"
-import Link from "next/link"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 import { SKU_LIST } from "@/lib/skuList"
 
 export default async function SkuPricesPage() {
@@ -25,18 +25,11 @@ export default async function SkuPricesPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Standar harga"
         title="Pengaturan Standar Harga SKU"
         description="Atur standar harga per SKU untuk masing-masing gudang."
-        actions={(
-          <Link
-            href="/dashboard/manager"
-            className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
-          >
-            Kembali ke Dashboard
-          </Link>
-        )}
       />
 
       <ManagerSkuPricesClient warehouses={warehouses} allSkus={allSkus} />

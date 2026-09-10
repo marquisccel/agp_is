@@ -3,9 +3,9 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect, notFound } from "next/navigation"
 import SupplierForm from "@/components/features/SupplierForm"
-import Link from "next/link"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 
 export default async function EditSupplierPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -24,15 +24,11 @@ export default async function EditSupplierPage({ params }: { params: Promise<{ i
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <TombolKembali href="/dashboard/staff/suppliers" />
       <PageHeader
         eyebrow="Data lapak"
         title="Edit Lapak"
         description={<>Perbarui data <span className="font-semibold text-slate-700">{supplier.nama}</span>.</>}
-        actions={
-          <Link href="/dashboard/staff/suppliers" className="btn-netral premium-button px-4 py-2 text-sm">
-            Kembali
-          </Link>
-        }
       />
 
       <div className="section section-body">

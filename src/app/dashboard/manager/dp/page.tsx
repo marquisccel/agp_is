@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import DpSummaryAnalytics from "@/components/features/DpSummaryAnalytics"
-import Link from "next/link"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 
 export default async function ManagerDpPage() {
   const session = await getServerSession(authOptions)
@@ -80,18 +80,11 @@ export default async function ManagerDpPage() {
 
   return (
     <div className="space-y-6">
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Kendali kasbon"
         title="Rekap Saldo Uang Muka (DP) & Kasbon"
         description="Pantau dan analisis detail pemakaian serta sisa saldo dana kasbon supplier."
-        actions={(
-          <Link
-            href="/dashboard/manager"
-            className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors"
-          >
-            Kembali ke Dashboard
-          </Link>
-        )}
       />
 
       <DpSummaryAnalytics

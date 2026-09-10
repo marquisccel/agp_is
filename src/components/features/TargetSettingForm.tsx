@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AlertTriangle, CheckCircle2, Loader2, Save } from "lucide-react"
 import type { Warehouse, WarehouseTarget } from "@prisma/client"
-import Link from "next/link"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 import { getWorkingDaysInMonth } from "@/lib/workingDays"
 import { namaGudang } from "@/lib/namaGudang"
 import { pesanError } from "@/lib/pesanError"
@@ -232,6 +232,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
           dengan jumlah hari kerja menggantung sendirian di pojok kanan
           bawah. Kotaknya tidak membawa apa pun yang tidak muat di kepala
           halaman, jadi dibuang seluruhnya dan isinya naik ke sini. */}
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Rencana kinerja"
         title="Setting Target Gudang"
@@ -286,12 +287,6 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
           ariaLabel="Pilih tahun target"
           className="w-full sm:w-28"
         />
-        <Link
-          href="/dashboard/manager"
-          className="premium-button btn-netral flex w-full items-center justify-center whitespace-nowrap px-4 py-2.5 text-sm font-semibold sm:w-auto"
-        >
-          Kembali ke Dashboard
-        </Link>
         </div>
       </div>
 

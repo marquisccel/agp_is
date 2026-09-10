@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import SusutLebihAnalytics, { type TransaksiSusutDetail } from "@/components/features/SusutLebihAnalytics"
 import MonthYearFilter from "@/components/features/MonthYearFilter"
-import Link from "next/link"
 import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 
 export default async function ManagerSusutPage({
   searchParams
@@ -123,6 +123,7 @@ export default async function ManagerSusutPage({
 
   return (
     <div className="space-y-6">
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Kendali timbangan"
         title="Analisis Penyusutan Timbangan"
@@ -130,12 +131,6 @@ export default async function ManagerSusutPage({
         actions={(
           <>
             <MonthYearFilter selectedBulan={selectedBulan} selectedTahun={selectedTahun} />
-            <Link
-              href="/dashboard/manager"
-              className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors"
-            >
-              Kembali ke Dashboard
-            </Link>
           </>
         )}
       />
