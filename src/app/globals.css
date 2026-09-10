@@ -1636,6 +1636,53 @@ a:focus-visible {
   }
 
   /*
+   * Sinyal kartu Data Lapak (Kuantitas, Susut, Harga). Di layar lebar ketiganya
+   * tiga lajur dalam satu kotak bertepi. Di ponsel lajurnya bertumpuk, dan
+   * kotak itu jadi kotak bertepi di dalam kartu -- satu-satunya di antara
+   * kartu data lain yang sudah datar. Di sini ia dilepas jadi baris
+   * label-nilai yang dipisah garis tipis: label di kiri, angka dan
+   * keterangannya rata kanan, garis proporsi selebar baris di bawahnya.
+   */
+  .sinyal-lapak {
+    gap: 0;
+    border: none;
+    border-top: 1px solid #f1f5f9;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .sinyal-lapak > .sinyal {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0 16px;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    background: transparent;
+  }
+
+  .sinyal-lapak > .sinyal:last-child {
+    border-bottom: none;
+  }
+
+  .sinyal-lapak > .sinyal > .field-label {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+  }
+
+  .sinyal-lapak > .sinyal > p {
+    grid-column: 2;
+    margin-top: 0;
+    text-align: right;
+  }
+
+  .sinyal-lapak > .sinyal > .sinyal-batang {
+    grid-column: 1 / -1;
+  }
+
+  /*
    * Jari bukan tetikus. Tombol setinggi 30 sampai 31 piksel sering
    * meleset, apalagi tombol pengganti tampilan yang berjejer rapat.
    */

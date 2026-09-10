@@ -629,10 +629,11 @@ export default function ManagerSuppliersClient({
                   </div>
                 </div>
 
-                <div
-                  className="mt-4 grid gap-px overflow-hidden rounded-[var(--radius-md)] border md:grid-cols-3"
-                  style={{ background: "var(--border)", borderColor: "var(--border)" }}
-                >
+                {/* Warnanya lewat kelas, bukan gaya sebaris: di ponsel kotak
+                    bertepi ini didatarkan jadi baris label-nilai oleh
+                    .sinyal-lapak di globals.css, dan gaya sebaris tidak bisa
+                    ditimpa dari sana. */}
+                <div className="sinyal-lapak mt-4 grid gap-px overflow-hidden rounded-[var(--radius-md)] border border-[color:var(--border)] bg-[var(--border)] md:grid-cols-3">
                   <Signal
                     label="Kuantitas"
                     value={supplier.target_bulanan_kg > 0 ? `${Math.min(perf.targetPct, 999).toFixed(0)}%` : "-"}
@@ -701,7 +702,7 @@ export default function ManagerSuppliersClient({
                       tersenggol. Sekarang semuanya satu bentuk, dan hapus
                       baru memerah saat disentuh. */}
                   <div className="flex flex-wrap items-center gap-2">
-                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button btn-netral px-3 py-2 text-xs">
+                    <Link href={`/dashboard/manager/suppliers/${supplier.id}`} className="premium-button btn-netral inline-flex items-center px-3 py-2 text-xs">
                       Detail
                     </Link>
                     <button
@@ -1004,7 +1005,7 @@ function Signal({
   }[tone]
 
   return (
-    <div className="px-4 py-3.5" style={{ background: "var(--surface)" }}>
+    <div className="sinyal bg-[var(--surface)] px-4 py-3.5">
       <span className="field-label">{label}</span>
       {/* Ukurannya TETAP, tidak lagi menyesuaikan panjang isinya.
           Sebelumnya panjang teks yang menentukan ukuran, sehingga "Aman"
@@ -1026,7 +1027,7 @@ function Signal({
         <p className="mt-0.5 text-[11px]" style={{ color: "var(--muted-faint)" }}>{sub}</p>
       )}
       {proporsi !== undefined && (
-        <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
+        <div className="sinyal-batang mt-2 h-[3px] w-full overflow-hidden rounded-full" style={{ background: "var(--bg-tint)" }}>
           <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(proporsi, 0), 1) * 100}%`, background: warna }} />
         </div>
       )}
