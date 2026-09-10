@@ -193,7 +193,7 @@ export default function ManagerPurchaseDetailClient({
 
   return (
     <div className="premium-workflow space-y-6">
-      <TombolKembali />
+      <TombolKembali judul={`Transaksi ${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}`} />
       <PageHeader
         eyebrow="Detail transaksi"
         title={`Transaksi ${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}`}

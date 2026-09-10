@@ -216,7 +216,7 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
   return (
     <div className="premium-workflow space-y-6">
-      <TombolKembali />
+      <TombolKembali judul={`Detail Lapak ${supplier.nama}`} />
       <PageHeader
         eyebrow="Profil lapak"
         title={`Detail Lapak ${supplier.nama}`}

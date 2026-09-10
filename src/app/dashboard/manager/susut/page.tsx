@@ -123,7 +123,7 @@ export default async function ManagerSusutPage({
 
   return (
     <div className="space-y-6">
-      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" judul="Analisis Susut" />
       <PageHeader
         eyebrow="Kendali timbangan"
         title="Analisis Penyusutan Timbangan"

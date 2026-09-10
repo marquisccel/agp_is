@@ -24,7 +24,7 @@ export default async function EditSupplierPage({ params }: { params: Promise<{ i
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <TombolKembali href="/dashboard/staff/suppliers" />
+      <TombolKembali href="/dashboard/staff/suppliers" judul="Edit Lapak" />
       <PageHeader
         eyebrow="Data lapak"
         title="Edit Lapak"

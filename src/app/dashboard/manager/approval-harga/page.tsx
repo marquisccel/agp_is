@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
-import TombolKembali from "@/components/ui/TombolKembali"
 import KartuData from "@/components/ui/KartuData"
 
 export default async function ApprovalHargaList() {
@@ -25,7 +24,6 @@ export default async function ApprovalHargaList() {
 
   return (
     <div className="space-y-6">
-      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Persetujuan manager"
         title="Approval Harga"
