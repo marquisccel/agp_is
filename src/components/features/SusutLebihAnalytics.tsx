@@ -294,7 +294,11 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                             ? `+${fmtKg(row.totalLebih)} (${fmtPct(row.pctLebih)})`
                             : "Timbangan cocok"}
                       </td>
-                      <td className="kolom-tengah">
+                      {/* kolom-aksi hanya di sel, tidak di judulnya: lebar kolom
+                          tabel ini dikunci oleh judul (table-fixed), jadi
+                          tampilan layar lebar tidak berubah, sementara di ponsel
+                          tombolnya pindah ke bilah aksi di kaki rekaman. */}
+                      <td className="kolom-tengah kolom-aksi">
                         <button
                           onClick={() => setSelectedLapak(row)}
                           className="btn-netral premium-button whitespace-nowrap px-3 py-1.5 text-xs"

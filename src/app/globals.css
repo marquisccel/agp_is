@@ -1166,6 +1166,17 @@ a:focus-visible {
     0 6px 16px -8px rgba(48, 84, 38, 0.4);
 }
 
+/* Pemilih ElegantSelect yang sedang terbuka. Nilainya sama persis dengan
+   gaya sebaris yang dulu ditulis di komponennya; di ponsel ia digantikan
+   cincin fokus oleh aturan di blok layar sempit. */
+.field-input[data-terbuka] {
+  background: var(--surface);
+  border-color: rgba(85, 145, 51, 0.72);
+  box-shadow:
+    inset 0 1px 1.5px rgba(16, 24, 20, 0.035),
+    0 6px 16px -8px rgba(48, 84, 38, 0.4);
+}
+
 .field-input:disabled {
   color: var(--muted-faint);
   cursor: not-allowed;
@@ -1533,6 +1544,95 @@ a:focus-visible {
      jadi selektor satu kelas di sini akan kalah betapa pun urutannya. */
   .field-input.field-lg {
     font-size: 16px;
+  }
+
+  /*
+   * Sistem isian ponsel: satu tinggi, satu latar, satu tanda fokus.
+   *
+   * Sebelumnya tinggi isian ditentukan padding dan ukuran hurufnya masing-
+   * masing, jadi kolom teks 46px bersebelahan dengan pemilih 42px dan kolom
+   * lapak 52px dalam satu form. Latarnya --bg-tint, abu kehijauan yang di
+   * layar ponsel beresolusi tinggi terbaca keruh, seperti kolom yang
+   * dinonaktifkan. Di sini semuanya dipatok 44px, berlatar putih, bertepi
+   * slate-200.
+   *
+   * Ukuran hurufnya sengaja TETAP 16px, bukan 14px. Di bawah 16px, Safari
+   * di iPhone memperbesar seluruh halaman begitu kolomnya disentuh dan tidak
+   * mengembalikannya sesudah dilepas -- aturan di atas blok ini ada karena
+   * persoalan itu.
+   *
+   * Selektornya memakai :is() dengan .field-input.field-lg supaya kekhususan
+   * dua kelas milik varian besar tidak mengalahkan tinggi yang dipatok di
+   * sini. Textarea dikecualikan: isian bertingkat baris memang harus lebih
+   * tinggi dari satu baris.
+   */
+  :is(.field-input, .field-input.field-lg):not(textarea) {
+    height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .field-input {
+    background: var(--surface);
+    border-color: #e2e8f0;
+    color: #1e293b;
+    border-radius: 10px;
+  }
+
+  textarea.field-input {
+    min-height: 96px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  /*
+   * Fokus berupa cincin 2px berwarna brand 20%, ditambah tepi brand penuh.
+   * Warnanya --brand, bukan emerald: hijau aplikasi ini diambil dari logo
+   * resmi PT, dan emerald yang lebih kebiruan akan jadi hijau kedua yang
+   * tidak berasal dari mana pun.
+   */
+  .field-input:focus,
+  .field-input[data-terbuka] {
+    background: var(--surface);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 20%, transparent);
+  }
+
+  .field-input.is-invalid:focus {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 20%, transparent);
+  }
+
+  .field-input:disabled {
+    background: #f8fafc;
+  }
+
+  /*
+   * Tombol di kepala halaman, misalnya "Kembali ke Dashboard". Di layar lebar
+   * ia duduk di ujung kanan judul; di ponsel judulnya sudah memakan seluruh
+   * lebar, sehingga tombolnya jatuh ke baris sendiri sebagai pil kecil yang
+   * menggantung di kiri bawah. Di sini ia dijadikan selebar kartu, sama
+   * seperti tombol aksi di bagian lain aplikasi.
+   */
+  .page-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header-actions > :is(a, button) {
+    width: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 6px;
   }
 
   /*
@@ -2082,33 +2182,70 @@ a:focus-visible {
   color: var(--brand-strong);
 }
 
-.laci-kaki {
+.laci-profil {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 12px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #f1f5f9;
+  border-radius: var(--radius-md);
+  background: #f8fafc;
 }
 
-.laci-keluar {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.laci-avatar {
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  min-height: 44px;
-  padding: 0 16px;
-  border-radius: var(--radius-sm);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.laci-peran {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface);
-  font-size: 13px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Aksi merusak bergaya "ghost": merah di atas latar merah muda tipis, tanpa
+   tepi. Selebar laci dan diletakkan paling bawah, terpisah dari daftar
+   menu, supaya tidak tertekan saat jempol sedang menggulir daftar di atasnya. */
+.laci-keluar {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: #fef2f2;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--danger);
+  color: #dc2626;
   transition: background-color 160ms var(--ease-system), transform 160ms var(--ease-system);
 }
 
+.laci-keluar:hover {
+  background: #fee2e2;
+}
+
 .laci-keluar:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
 }
 
 /* ── Umpan balik sentuhan ───────────────────────────────────────────── */
@@ -2227,6 +2364,27 @@ a:focus-visible {
     flex-direction: column;
     gap: 10px;
   }
+
+  /* Daftar yang sudah berada di dalam kartu induk (.section) tidak perlu
+     kotak sendiri per rekaman: kartu di dalam kartu memberi dua lapis tepi
+     dan bayangan, dan lebar isinya terpotong dua kali oleh jarak tepi.
+     Rekamannya dibuat datar dan dipisah satu garis tipis, sama seperti
+     tabel yang dijadikan daftar. */
+  .section .daftar-kartu {
+    gap: 0;
+    padding: 0;
+  }
+
+  .section .daftar-kartu > .kartu-data {
+    border: none;
+    border-bottom: 1px solid #f1f5f9;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .section .daftar-kartu > .kartu-data:last-child {
+    border-bottom: none;
+  }
 }
 
 .kartu-data {
@@ -2237,14 +2395,16 @@ a:focus-visible {
   box-shadow: var(--shadow-card);
 }
 
+/* Kepala, badan, dan kaki dipisah garis tipis saja, tanpa latar abu yang
+   berbeda. Latar berlapis membuat satu kartu terbaca sebagai tiga kotak
+   yang ditumpuk, dan di daftar sepanjang layar polanya jadi belang. */
 .kartu-kepala {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-sunken);
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .kartu-kepala-tautan {
@@ -2279,20 +2439,18 @@ a:focus-visible {
 
 .kartu-badan {
   margin: 0;
-  padding: 2px 14px;
+  padding: 8px 16px;
 }
 
+/* Baris kunci-nilai tanpa garis antarbaris: jarak vertikal sudah cukup
+   memisahkan, dan garis di tiap baris membuat badan kartu tampak seperti
+   formulir bergaris. */
 .kartu-baris {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 14px;
-  padding: 8px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-}
-
-.kartu-baris:last-child {
-  border-bottom: none;
+  gap: 16px;
+  padding: 5px 0;
 }
 
 /* Sebagian nilai di badan kartu berupa tautan, misalnya "Lihat" pada bukti
@@ -2306,12 +2464,12 @@ a:focus-visible {
 
 .kartu-baris > dt {
   flex: 0 0 auto;
-  max-width: 45%;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  max-width: 42%;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--muted-faint);
+  color: #94a3b8;
 }
 
 .kartu-baris > dd {
@@ -2321,19 +2479,18 @@ a:focus-visible {
   text-align: right;
   font-size: 13px;
   font-weight: 600;
-  color: var(--foreground);
+  color: #1e293b;
   overflow-wrap: anywhere;
 }
 
-/* Kaki kartu: kendali dalam jangkauan jempol, dipisahkan latar yang lebih
-   gelap supaya tidak terbaca sebagai data. */
+/* Kaki kartu: kendali dalam jangkauan jempol, dipisahkan garis tipis
+   supaya tidak terbaca sebagai data. */
 .kartu-kaki {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--border);
-  background: var(--surface-sunken);
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .kartu-kaki > * {
@@ -2360,19 +2517,24 @@ a:focus-visible {
    ambang 767px. */
 @media screen and (max-width: 767px) {
   /* -------------------------------------------------------------------
-     Tabel jadi kartu.
+     Tabel jadi daftar rekaman.
 
      Menggeser tabel enam kolom ke samping berarti pembaca harus mengingat
      baris mana yang sedang dilihat sambil menggeser -- kolom pertama sudah
      keluar layar begitu kolom terakhir masuk. Di ponsel setiap baris
-     karena itu dipecah jadi satu kartu, dan tiap sel membawa nama kolomnya
-     sendiri di sebelah kiri.
+     karena itu dipecah jadi satu rekaman, dan tiap sel membawa nama
+     kolomnya sendiri di kiri, nilainya di kanan.
 
      Nama kolom diambil dari thead oleh PelabelTabel dan ditulis sebagai
      atribut data-label pada tiap sel, bukan diketik ulang di markup ke-17
      tabel. Sebelum skripnya jalan, tabelnya tetap terbaca sebagai tabel
      biasa yang bisa digeser.
 
+     Rekamannya DATAR di dalam kartu induknya, dipisah satu garis tipis,
+     bukan kotak bertepi di dalam kartu. Bentuk kotak sempat dipakai, dan
+     di layar kecil ia bertumpuk jadi tiga lapis tepi (kartu, bingkai
+     tabel, kotak rekaman) yang membuat halamannya terasa berat dan sempit
+     tanpa menambah keterangan apa pun.
      ------------------------------------------------------------------- */
   .tabel-lembut[data-kartu],
   .tabel-lembut[data-kartu] tbody,
@@ -2380,94 +2542,175 @@ a:focus-visible {
   .tabel-lembut[data-kartu] tbody td {
     display: block;
     width: auto;
-}
+  }
 
-/* Judul kolom pindah ke dalam tiap sel, jadi barisnya tidak dipakai. */
-.tabel-lembut[data-kartu] thead {
-  display: none;
-}
+  /* Judul kolom pindah ke dalam tiap sel, jadi barisnya tidak dipakai. */
+  .tabel-lembut[data-kartu] thead {
+    display: none;
+  }
 
-.tabel-lembut[data-kartu] tbody tr {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  margin: 10px 12px;
-  overflow: hidden;
-}
+  .tabel-lembut[data-kartu] tbody tr {
+    /* Tinggi tetap milik bentuk tabel (Aktivitas Terbaru mengunci barisnya
+       55px) memotong rekaman yang kini bertingkat beberapa baris. */
+    height: auto;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    background: transparent;
+  }
 
-.tabel-lembut[data-kartu] tbody tr:first-child { margin-top: 12px; }
-.tabel-lembut[data-kartu] tbody tr:last-child { margin-bottom: 12px; }
+  .tabel-lembut[data-kartu] tbody tr:last-child {
+    border-bottom: none;
+  }
 
-/* Sorotan baris tidak ada gunanya tanpa tetikus, dan pada kartu justru
-   terbaca seperti kartu itu sedang terpilih. */
-.tabel-lembut[data-kartu] tbody tr:hover { background: var(--surface); }
+  /* Sorotan baris tidak ada gunanya tanpa tetikus. */
+  .tabel-lembut[data-kartu] tbody tr:hover {
+    background: transparent;
+  }
 
-.tabel-lembut[data-kartu] tbody td {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 9px 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-  text-align: right;
-}
+  .tabel-lembut[data-kartu] tbody td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 5px 0;
+    border: none;
+    text-align: right;
+    font-size: 13px;
+    color: #1e293b;
+    /* Utilitas bentuk tabel -- whitespace-nowrap, truncate, max-w-0 --
+       dimaksudkan untuk kolom sempit sebaris. Di rekaman bertingkat baris,
+       max-w-0 membuat nilainya menyusut sampai hilang sama sekali, dan
+       truncate memotong kalimat yang sebenarnya muat di baris berikutnya. */
+    white-space: normal;
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+  }
 
-.tabel-lembut[data-kartu] tbody tr td:last-child { border-bottom: none; }
+  /* Lencana status sengaja tetap sebaris; hanya teks yang tadinya dipotong
+     elipsis yang dibiarkan turun ke baris berikutnya. */
+  .tabel-lembut[data-kartu] tbody td :is(.truncate, .whitespace-nowrap) {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
 
-.tabel-lembut[data-kartu] tbody td::before {
-  content: attr(data-label);
-  flex: 0 0 auto;
-  max-width: 45%;
-  text-align: left;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted-faint);
-}
+  .tabel-lembut[data-kartu] tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    max-width: 42%;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    /* Sel angka memakai font-mono; nama kolomnya tidak ikut. */
+    font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  }
 
-/* Sel tanpa nama kolom: baris kosong ("Belum ada data") yang memakai
-   colspan, dan sel yang label kolomnya memang kosong. */
-.tabel-lembut[data-kartu] tbody td[colspan]::before,
-.tabel-lembut[data-kartu] tbody td:not([data-label])::before,
-.tabel-lembut[data-kartu] tbody td[data-label=""]::before {
-  content: none;
-}
+  /* Sel yang isinya bertingkat -- nama lapak lalu gudangnya di bawah --
+     dijadikan grid dua lajur. Sebagai flex, tiap blok di dalamnya berjejer
+     menyamping di sebelah nama kolom, dan baris keduanya terjepit jadi
+     kolom sempit di tengah. Di grid, nama kolom tetap di lajur kiri dan
+     seluruh isinya bertumpuk di lajur kanan. Hanya sel yang memuat blok
+     (div/p) di samping anak lain yang diubah, supaya teks dan lencana
+     sebaris di sel lain tidak ikut terpecah jadi baris-baris terpisah. */
+  .tabel-lembut[data-kartu] tbody td:has(> :is(div, p) ~ *, > * ~ :is(div, p)) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0 16px;
+    align-items: baseline;
+  }
 
-.tabel-lembut[data-kartu] tbody td[colspan] {
-  display: block;
-  text-align: center;
-}
+  .tabel-lembut[data-kartu] tbody td:has(> :is(div, p) ~ *, > * ~ :is(div, p))::before {
+    grid-column: 1;
+    grid-row: 1;
+  }
 
-/* Perataan khusus kolom tidak berlaku lagi: di dalam kartu setiap nilai
-   menempel ke tepi kanan, berhadapan dengan nama kolomnya. */
-.tabel-lembut[data-kartu] tbody td.angka-tabel,
-.tabel-lembut[data-kartu] tbody td.kolom-kiri,
-.tabel-lembut[data-kartu] tbody td.kolom-tengah,
-.tabel-lembut[data-kartu] tbody td.kolom-kanan,
-.tabel-lembut[data-kartu] tbody td.kolom-aksi {
-  text-align: right;
-  width: auto;
-  white-space: normal;
-}
+  .tabel-lembut[data-kartu] tbody td:has(> :is(div, p) ~ *, > * ~ :is(div, p)) > * {
+    grid-column: 2;
+    text-align: right;
+  }
 
-/* Baris kendali diberi ruang lebih dan tombolnya dibiarkan turun kalau
-   tidak muat sebaris dengan namanya. */
-.tabel-lembut[data-kartu] tbody td.kolom-aksi {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 11px;
-  padding-bottom: 11px;
-  background: var(--surface-sunken);
-}
+  /* Sel tanpa nama kolom: baris kosong ("Belum ada data") yang memakai
+     colspan, dan sel yang label kolomnya memang kosong. */
+  .tabel-lembut[data-kartu] tbody td[colspan]::before,
+  .tabel-lembut[data-kartu] tbody td:not([data-label])::before,
+  .tabel-lembut[data-kartu] tbody td[data-label=""]::before {
+    content: none;
+  }
 
-/* Wadah tabel tidak perlu digeser lagi saat isinya sudah jadi kartu. */
-.section:has(> table.tabel-lembut[data-kartu]),
-div.overflow-hidden:has(> table.tabel-lembut[data-kartu]),
-div:has(> table.tabel-lembut[data-kartu]) {
-  overflow-x: visible;
-}
+  .tabel-lembut[data-kartu] tbody td[colspan] {
+    display: block;
+    padding: 20px 0;
+    text-align: center;
+  }
+
+  /* Perataan khusus kolom tidak berlaku lagi: di dalam rekaman setiap nilai
+     menempel ke tepi kanan, berhadapan dengan nama kolomnya. */
+  .tabel-lembut[data-kartu] tbody td.angka-tabel,
+  .tabel-lembut[data-kartu] tbody td.kolom-kiri,
+  .tabel-lembut[data-kartu] tbody td.kolom-tengah,
+  .tabel-lembut[data-kartu] tbody td.kolom-kanan,
+  .tabel-lembut[data-kartu] tbody td.kolom-aksi {
+    text-align: right;
+    width: auto;
+  }
+
+  /* Kolom aksi jadi bilah kecil di kaki rekaman: tanpa nama kolom, dipisah
+     garis tipis dari datanya, tombolnya berjejer rata kanan. Sebelumnya ia
+     tampil sebagai satu baris data berlabel "AKSI" dengan tombol yang
+     mengambang di tengah kanan, sejajar dengan label, seakan tombol itu
+     nilai dari sebuah kolom. */
+  .tabel-lembut[data-kartu] tbody td.kolom-aksi {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .tabel-lembut[data-kartu] tbody td.kolom-aksi::before {
+    content: none;
+  }
+
+  /* Pembungkus deretan tombol (Nonaktifkan + hapus di Master Data) ikut
+     rata kanan; utilitas justify-center miliknya untuk kolom tabel. */
+  .tabel-lembut[data-kartu] tbody td.kolom-aksi > div {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .tabel-lembut[data-kartu] tbody td.kolom-aksi :is(button, a) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Wadah tabel tidak perlu digeser lagi saat isinya sudah jadi daftar. */
+  .section:has(> table.tabel-lembut[data-kartu]),
+  div.overflow-hidden:has(> table.tabel-lembut[data-kartu]),
+  div:has(> table.tabel-lembut[data-kartu]) {
+    overflow-x: visible;
+  }
+
+  /* Bingkai dan jendela gulir yang dipasang di sekeliling tabel khusus untuk
+     bentuk tabel. Dalam bentuk daftar, bingkainya jadi lapis tepi kedua di
+     dalam kartu, dan jendela gulir setinggi 315px menyisakan kurang dari dua
+     rekaman yang terlihat sekaligus di dalam halaman yang juga menggulir. */
+  .bingkai-tabel:has(table.tabel-lembut[data-kartu]) {
+    border: none;
+    border-radius: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .isi-bertabel:has(table.tabel-lembut[data-kartu]) {
+    padding: 0;
+  }
 }
 
 /* Layar paling sempit yang masih dipakai di lapangan (iPhone SE, 375px, dan
@@ -2482,10 +2725,12 @@ div:has(> table.tabel-lembut[data-kartu]) {
     padding: 18px 15px;
   }
 
-  /* Label mikro huruf besar. Pada deret tiga lajur di halaman detail
-     transaksi, satu sel hanya selebar 61px sementara kata "TIMBANGAN" pada
-     11px menuntut 66px, sehingga labelnya keluar dari selnya. */
-  .field-label {
+  /* Label mikro huruf besar, KHUSUS deret tiga lajur timbangan di halaman
+     detail transaksi. Satu sel di sana hanya selebar 61px sementara kata
+     "TIMBANGAN" menuntut 66px. Dulu aturan ini berlaku ke seluruh
+     .field-label, sehingga label form di mana pun ikut mengecil jadi 9.5px
+     di layar 320-400px -- terlalu kecil untuk dibaca sebagai label isian. */
+  .deret-timbangan .field-label {
     font-size: 9.5px;
     letter-spacing: 0.03em;
   }

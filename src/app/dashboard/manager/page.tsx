@@ -916,7 +916,7 @@ export default async function ManagerDashboard({
             <p className="mt-1 text-xs leading-5 text-slate-500">Aktivitas paling baru dan jejak operasional terakhir.</p>
           </div>
         </div>
-        <div className="p-5">
+        <div className="isi-bertabel p-5">
           {/* Tabel sungguhan, bukan grid tiruan. Dengan grid, lebar kolom
               di kepala dan di tiap baris ditulis dua kali dan harus dijaga
               tetap sama -- kolom Waktu sempat meleset dari isinya persis
@@ -931,8 +931,8 @@ export default async function ManagerDashboard({
           {recentLogs.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-400">Belum ada aktivitas.</div>
           ) : (
-            <div className="overflow-hidden rounded-lg border" style={{ borderColor: "var(--border)" }}>
-              <div className="max-h-[315px] overflow-y-auto">
+            <div className="bingkai-tabel overflow-hidden rounded-lg border" style={{ borderColor: "var(--border)" }}>
+              <div className="bingkai-tabel max-h-[315px] overflow-y-auto">
                 <table className="tabel-lembut w-full text-left text-sm">
                   <thead className="sticky top-0 z-10">
                     <tr>

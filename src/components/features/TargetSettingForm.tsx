@@ -288,7 +288,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
         />
         <Link
           href="/dashboard/manager"
-          className="premium-button btn-netral flex items-center whitespace-nowrap px-4 py-2.5 text-sm font-semibold"
+          className="premium-button btn-netral flex w-full items-center justify-center whitespace-nowrap px-4 py-2.5 text-sm font-semibold sm:w-auto"
         >
           Kembali ke Dashboard
         </Link>

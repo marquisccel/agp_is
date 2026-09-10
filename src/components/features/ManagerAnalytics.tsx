@@ -386,7 +386,12 @@ export default function ManagerAnalytics({
               Bandingkan realisasi tonase terhadap target operasional untuk periode aktif.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Satu baris, tanpa pembungkusan. Dengan flex-wrap, pemilih gudang
+              yang w-full terlempar ke baris sendiri di bawah tombol, sehingga
+              di ponsel keduanya bertumpuk seperti dua kendali yang tidak
+              berhubungan. Di sini pemilih mengambil sisa lebar dan tombolnya
+              selebar isinya. */}
+          <div className="flex w-full items-center gap-2 sm:w-auto">
             {/* Pintu ke Setting Target ditaruh di sini, bukan di sidebar.
                 Kartu ini yang memberi tahu "kurang 36 ton lagi", dan
                 tindakan berikutnya memang meninjau targetnya -- pintunya
@@ -398,7 +403,7 @@ export default function ManagerAnalytics({
                 di kartu ini; dropdown-nya hanya mengubah apa yang dilihat. */}
             <Link
               href="/dashboard/manager/targets"
-              className="premium-button btn-primer flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-bold"
+              className="premium-button btn-primer flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-bold"
             >
               <Target className="h-3.5 w-3.5" />
               Setting Target
@@ -408,7 +413,7 @@ export default function ManagerAnalytics({
               options={warehouseOptions}
               onChange={setSelectedWarehouseId}
               ariaLabel="Pilih collection center"
-              className="w-full sm:w-64"
+              className="flex-1 sm:w-64 sm:flex-none"
               menuClassName="sm:w-72"
             />
           </div>

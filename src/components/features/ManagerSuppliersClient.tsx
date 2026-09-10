@@ -9,6 +9,7 @@ import {
   Award,
   Check,
   Copy,
+  MapPin,
   MessageCircle,
   Search,
   Trash2,
@@ -454,8 +455,12 @@ export default function ManagerSuppliersClient({
               deret penyaring status. Di kepala kartu ia berdiri sendirian di
               pojok kanan atas, jauh dari apa pun yang berhubungan dengannya,
               sementara ruang di kanan deret penyaring ini melompong. */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="segmented inline-flex">
+          {/* Di ponsel keduanya sebaris tanpa pembungkusan: deret penyaring
+              mengambil sisa lebar dan digeser, tombolnya selebar isinya. Dengan
+              flex-wrap, tombolnya terlempar ke baris sendiri dan menggantung
+              di kanan tanpa pasangan. */}
+          <div className="mt-4 flex items-center gap-2 sm:flex-wrap sm:justify-between sm:gap-3">
+          <div className="segmented inline-flex min-w-0 flex-1 sm:flex-none">
             <button
               onClick={() => setSelectedStatusFilter("all")}
               className={selectedStatusFilter === "all" ? "active" : ""}
@@ -480,9 +485,13 @@ export default function ManagerSuppliersClient({
 
           <button
             onClick={handleOpenImportModal}
-            className="premium-button btn-netral px-4 py-2 text-xs"
+            className="premium-button btn-netral inline-flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-bold sm:px-4"
           >
-            Import Koordinat
+            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+            {/* Label pendek di ponsel: sebaris dengan deret penyaring, tulisan
+                lengkapnya memakan separuh baris. */}
+            <span className="sm:hidden">Import</span>
+            <span className="hidden sm:inline">Import Koordinat</span>
           </button>
           </div>
         </div>
@@ -763,7 +772,7 @@ export default function ManagerSuppliersClient({
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold text-slate-700">Link Google Maps</label>
+                <label className="field-label">Link Google Maps</label>
                 <input
                   type="text"
                   value={locationLink}
@@ -774,7 +783,7 @@ export default function ManagerSuppliersClient({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Latitude</label>
+                <label className="field-label">Latitude</label>
                 <input
                   type="number"
                   step="any"
@@ -786,7 +795,7 @@ export default function ManagerSuppliersClient({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Longitude</label>
+                <label className="field-label">Longitude</label>
                 <input
                   type="number"
                   step="any"

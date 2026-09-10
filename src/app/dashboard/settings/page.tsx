@@ -174,7 +174,7 @@ export default function SettingsPage() {
           <button
             onClick={handleProfileSave}
             disabled={profileStatus === "saving"}
-            className="btn-primer premium-button flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
+            className="btn-primer premium-button flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60 sm:w-auto"
           >
             {profileStatus === "saving" ? (
               <span>Menyimpan...</span>
@@ -301,7 +301,7 @@ export default function SettingsPage() {
             /* Gradasi oranye-kuning membuat tombol ini satu-satunya yang
                berbeda bentuk di seluruh aplikasi, dan warnanya menyiratkan
                bahaya padahal mengganti kata sandi adalah tindakan biasa. */
-            className="btn-primer premium-button flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60"
+            className="btn-primer premium-button flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60 sm:w-auto"
           >
             {pwStatus === "saving" ? (
               <span>Mengubah...</span>

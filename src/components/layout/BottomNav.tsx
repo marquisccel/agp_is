@@ -8,6 +8,7 @@ import { useState } from "react"
 import { LogOut, MoreHorizontal } from "lucide-react"
 import BottomSheet from "@/components/ui/BottomSheet"
 import { butirAktif, menuUntuk, type ButirNav } from "@/lib/menuNavigasi"
+import { formatPeran } from "@/lib/auditLabels"
 
 /**
  * Bilah navigasi tetap di tepi bawah layar, hanya di bawah lg.
@@ -116,7 +117,6 @@ export default function BottomNav({
         terbuka={laciTerbuka}
         onTutup={() => setLaciTerbuka(false)}
         judul="Menu lainnya"
-        deskripsi={user.name ?? undefined}
       >
         <ul className="laci-menu">
           {lainnya.map((butir) => {
@@ -142,8 +142,17 @@ export default function BottomNav({
           })}
         </ul>
 
-        <div className="laci-kaki">
-          <div className="min-w-0">
+        {/* Profil dan tombol Keluar dipisah jadi dua baris. Sebaris, nama dan
+            email yang panjang terpotong elipsis demi memberi tempat tombol,
+            dan tombol Keluar -- satu-satunya aksi yang mengakhiri sesi --
+            tampak seperti keterangan tambahan di pojok kanan profil. Di sini
+            profil berdiri sebagai kartu, dan Keluar menjadi pilihan terakhir
+            selebar laci, di tempat jempol berhenti. */}
+        <div className="laci-profil">
+          <span className="laci-avatar" aria-hidden="true">
+            {(user.name ?? user.email ?? "?").trim().charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold" style={{ color: "var(--foreground)" }}>
               {user.name}
             </p>
@@ -151,15 +160,17 @@ export default function BottomNav({
               {user.email}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="laci-keluar"
-          >
-            <LogOut size={16} />
-            Keluar
-          </button>
+          <span className="laci-peran">{formatPeran(user.role)}</span>
         </div>
+
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="laci-keluar"
+        >
+          <LogOut size={16} />
+          Keluar
+        </button>
       </BottomSheet>
     </>
   )

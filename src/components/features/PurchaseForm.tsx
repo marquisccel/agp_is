@@ -271,7 +271,7 @@ export default function PurchaseForm({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Supplier Search Dropdown */}
       <div className="space-y-2 relative">
-        <label className="text-sm font-semibold text-slate-700">Lapak / Supplier</label>
+        <label className="field-label">Lapak / Supplier</label>
         <div className="relative">
           <input
             type="text"
@@ -348,7 +348,7 @@ export default function PurchaseForm({
 
       {/* Gudang is read-only from session */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">Gudang</label>
+        <label className="field-label">Gudang</label>
         <div className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-100 text-slate-600 font-medium flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           {namaGudang}
@@ -357,7 +357,7 @@ export default function PurchaseForm({
 
       {/* Metode Bayar */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">Metode Timbangan</label>
+        <label className="field-label">Metode Timbangan</label>
         <ElegantSelect
           value={metodeBayar}
           options={METODE_BAYAR_OPTIONS}
@@ -369,7 +369,7 @@ export default function PurchaseForm({
 
       {/* Jenis Pengambilan (mode logistik) */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">Jenis Pengambilan</label>
+        <label className="field-label">Jenis Pengambilan</label>
         <ElegantSelect
           value={jenisPengambilan}
           options={JENIS_PENGAMBILAN_OPTIONS}
@@ -393,7 +393,7 @@ export default function PurchaseForm({
         {items.map((item, idx) => (
           <div key={idx} className="flex flex-wrap md:flex-nowrap gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100">
             <div className="w-full md:flex-1 space-y-1">
-              <label className="text-xs font-medium text-slate-500">Jenis SKU</label>
+              <label className="field-label">Jenis SKU</label>
               <ElegantSelect
                 value={item.sku_name}
                 options={SKU_OPTIONS}
@@ -403,7 +403,7 @@ export default function PurchaseForm({
               />
             </div>
             <div className="w-full md:w-28 space-y-1">
-              <label className="text-xs font-medium text-slate-500">Spec</label>
+              <label className="field-label">Spec</label>
               <ElegantSelect
                 value={item.spec}
                 options={SPEC_OPTIONS}
@@ -501,7 +501,7 @@ export default function PurchaseForm({
                   value={fmtDigitInput(dpDigunakan)}
                   onChange={(e) => setDpDigunakan(e.target.value.replace(/\D/g, ""))}
                   placeholder="0"
-                  className="w-full rounded-xl border border-slate-200 py-3 pl-12 pr-4 font-mono text-lg font-bold tabular-nums outline-none"
+                  className="h-11 w-full rounded-[10px] border border-slate-200 bg-white pl-12 pr-4 font-mono text-lg font-bold tabular-nums text-slate-800 outline-none transition-[border-color,box-shadow] focus:border-[color:var(--brand)] focus:ring-2 focus:ring-[color:var(--brand)]/20"
                 />
               </div>
               {dpAngka > 0 && (

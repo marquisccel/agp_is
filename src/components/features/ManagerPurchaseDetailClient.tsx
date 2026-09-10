@@ -405,7 +405,7 @@ export default function ManagerPurchaseDetailClient({
                 kategori: selisih nol berarti cocok, jadi netral -- tidak
                 perlu dirayakan dengan hijau di setiap nota yang normal. */}
             <div
-              className="grid grid-cols-3 gap-px border-t text-center"
+              className="deret-timbangan grid grid-cols-3 gap-px border-t text-center"
               style={{ borderColor: "var(--border)", background: "var(--border)" }}
             >
               <div className="px-4 py-4" style={{ background: "var(--surface-sunken)" }}>

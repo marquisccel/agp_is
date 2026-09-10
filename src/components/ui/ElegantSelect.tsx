@@ -104,15 +104,13 @@ export default function ElegantSelect<T extends string | number>({
            kolom pilihan tampak putih -- dua kolom bersebelahan terbaca
            seperti berasal dari dua komponen berbeda. */
         className={`field-input flex items-center justify-between gap-2 text-left font-bold disabled:cursor-not-allowed ${triggerClassName}`}
-        style={
-          open
-            ? {
-                background: "var(--surface)",
-                borderColor: "rgba(85, 145, 51, 0.72)",
-                boxShadow: "inset 0 1px 1.5px rgba(16, 24, 20, 0.035), 0 6px 16px -8px rgba(48, 84, 38, 0.4)",
-              }
-            : undefined
-        }
+        // Keadaan terbuka ditandai atribut, bukan gaya sebaris. Dengan gaya
+        // sebaris, tampilannya terkunci satu bentuk untuk semua lebar layar
+        // dan tidak bisa mengikuti cincin fokus ponsel di globals.css --
+        // pemilih yang sedang terbuka tampak lain sendiri dibanding kolom teks
+        // yang sedang disentuh tepat di sebelahnya. Safari juga tidak memberi
+        // fokus pada tombol yang diketuk, jadi :focus saja tidak cukup.
+        data-terbuka={open ? "" : undefined}
       >
         <span className="truncate">{selected?.label}</span>
         <ChevronDown
