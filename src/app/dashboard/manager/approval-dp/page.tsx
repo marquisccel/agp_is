@@ -37,7 +37,7 @@ export default async function DPApprovalManager() {
 
   return (
     <div className="space-y-6">
-      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" judul="Approval DP" />
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Persetujuan manager"
         title="Approval Kasbon (DP)"

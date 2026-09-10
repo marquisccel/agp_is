@@ -163,7 +163,7 @@ export default async function ManagerReportsPage({
   return (
     <div className="space-y-6 print:p-0 print:space-y-4">
       <div className="space-y-6 print:hidden">
-        <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" judul="Rekap Laporan" />
+        <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
         <PageHeader
           eyebrow="Laporan eksekutif"
           title="Rekap Laporan Performa"

@@ -450,7 +450,7 @@ export default function SupplierForm({
         <button
           type="submit"
           disabled={loading}
-          className="btn-primer premium-button ml-auto rounded-[var(--radius-sm)] px-6 py-3 font-bold disabled:opacity-70"
+          className="btn-primer premium-button ml-auto whitespace-nowrap rounded-[var(--radius-sm)] px-4 py-3 text-sm font-bold disabled:opacity-70 sm:px-6"
         >
           {loading ? "Menyimpan..." : isEdit ? "Update Lapak" : "Simpan Lapak"}
         </button>

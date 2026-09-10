@@ -32,7 +32,7 @@ export default async function ApprovalHargaDetailPage({ params }: { params: Prom
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Halaman ini satu-satunya di alur Manager yang tidak punya jalan
           kembali selain tombol Back peramban, jadi tautannya tetap perlu ada. */}
-      <TombolKembali href="/dashboard/manager/approval-harga" judul="Review Harga" />
+      <TombolKembali href="/dashboard/manager/approval-harga" />
       <PageHeader
         eyebrow="Persetujuan harga"
         title="Review Harga Pembelian"

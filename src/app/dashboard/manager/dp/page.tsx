@@ -80,7 +80,7 @@ export default async function ManagerDpPage() {
 
   return (
     <div className="space-y-6">
-      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" judul="Rekap DP" />
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Kendali kasbon"
         title="Rekap Saldo Uang Muka (DP) & Kasbon"

@@ -25,7 +25,7 @@ export default async function SkuPricesPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
-      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" judul="Harga Standar SKU" />
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Standar harga"
         title="Pengaturan Standar Harga SKU"

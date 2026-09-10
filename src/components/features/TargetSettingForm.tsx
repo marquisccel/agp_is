@@ -232,7 +232,7 @@ export default function TargetSettingForm({ warehouses, existingTargets }: { war
           dengan jumlah hari kerja menggantung sendirian di pojok kanan
           bawah. Kotaknya tidak membawa apa pun yang tidak muat di kepala
           halaman, jadi dibuang seluruhnya dan isinya naik ke sini. */}
-      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" judul="Setting Target" />
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Rencana kinerja"
         title="Setting Target Gudang"

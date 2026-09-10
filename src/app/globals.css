@@ -740,6 +740,40 @@ a:focus-visible {
   justify-content: center;
 }
 
+/* Bentuk ponsel: wadah slate-100 berpadding 4px dan bersudut 12px, keping
+   aktif berupa kartu putih melayang. Keping tampak 36px; ::before
+   memperluas sasaran sentuhnya ke 44px, setinggi wadahnya. */
+@media (max-width: 639px) {
+  .segmented.segmented-penuh {
+    background: #f1f5f9;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 12px;
+  }
+
+  .segmented.segmented-penuh :is(button, a) {
+    position: relative;
+    min-height: 36px;
+    padding: 0 6px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .segmented.segmented-penuh :is(button, a)::before {
+    content: "";
+    position: absolute;
+    inset: -4px 0;
+  }
+
+  .segmented.segmented-penuh :is(button, a).active {
+    background: #ffffff;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+}
+
 @media (min-width: 640px) {
   .segmented.segmented-penuh {
     display: inline-flex;
@@ -757,6 +791,7 @@ a:focus-visible {
   .segmented.segmented-bertumpuk :is(button, a) {
     flex-direction: column;
     gap: 0;
+    min-height: 42px;
     padding: 5px 4px;
     line-height: 1.2;
     font-size: 11.5px;
@@ -784,25 +819,17 @@ a:focus-visible {
   inset: -2px 0;
 }
 
-/* Sasaran sentuh 44px untuk tombol yang tampak lebih kecil (tombol bulat
-   36px di sub-kepala navigasi). */
-.sentuh-luas {
+/* Sasaran sentuh 44px untuk pil pendek (30px, mis. "Kembali" di ponsel),
+   diperluas ke atas dan bawah saja supaya tidak menutupi elemen di
+   sebelahnya. */
+.sentuh-luas-y {
   position: relative;
 }
 
-.sentuh-luas::before {
+.sentuh-luas-y::before {
   content: "";
   position: absolute;
-  inset: -4px;
-}
-
-/* Sub-kepala navigasi kembali (TombolKembali dengan judul). Di ponsel
-   judul halaman sudah tertulis di sub-kepala, jadi judul besar di kartu
-   PageHeader tepat sesudahnya disembunyikan supaya tidak tertulis dua kali. */
-@media (max-width: 767px) {
-  .navigasi-balik.dengan-judul + .page-hero h2 {
-    display: none;
-  }
+  inset: -7px 0;
 }
 
 /* Pembantu tampil-per-lebar untuk elemen yang kelas dasarnya menetapkan
