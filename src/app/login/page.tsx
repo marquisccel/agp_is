@@ -140,20 +140,27 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f5f5f7] px-4 py-8 sm:px-6 lg:px-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(3,96,48,0.13),transparent_42%),radial-gradient(circle_at_100%_80%,rgba(85,145,51,0.11),transparent_36%)]" />
-          <div className="w-full max-w-[420px]">
-            <div className="mb-8 lg:hidden">
-              <div className="flex items-center gap-3.5">
-                <AgpLogo ukuran={46} className="agp-mark shrink-0" />
-                <div>
-                  <p className="text-base font-black leading-none tracking-[-0.02em] text-slate-950">Agrapana Greenworks Polymer</p>
-                  <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Information System</p>
-                </div>
-              </div>
+        {/* Di bawah lg panel foto hilang, jadi sisi ini yang memikul seluruh
+            kesan pertama. Latarnya diberi gradasi hijau tipis dari atas --
+            cukup untuk terasa bermerek tanpa bersaing dengan kartu form --
+            dan kolomnya sedikit dipersempit supaya kartu tidak terbaca
+            seperti dialog yang memenuhi layar. Tampilan lg ke atas tidak
+            berubah. */}
+        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#e7f1e3_0%,#f3f6f1_38%,#f5f5f7_100%)] px-5 py-10 sm:px-6 lg:bg-none lg:bg-[#f5f5f7] lg:px-10 lg:py-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(3,96,48,0.10),transparent_46%)] lg:bg-[radial-gradient(circle_at_50%_0%,rgba(3,96,48,0.13),transparent_42%),radial-gradient(circle_at_100%_80%,rgba(85,145,51,0.11),transparent_36%)]" />
+          <div className="w-full max-w-[380px] lg:max-w-[420px]">
+            {/* Identitas ponsel: lambang di atas, nama di bawahnya, rata
+                tengah. Deretan logo-dan-teks mendatar yang dulu dipakai
+                memaksa nama perusahaan yang panjang turun baris di layar
+                320px dan lambangnya jadi tampak terlepas di pojok. */}
+            <div className="mb-7 flex flex-col items-center text-center lg:hidden">
+              <AgpLogo ukuran={56} className="agp-mark" />
+              <p className="mt-3 text-[15px] font-black leading-none tracking-[-0.02em] text-slate-950">Agrapana Greenworks Polymer</p>
+              <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Information System</p>
             </div>
 
-            <div className="relative mb-7">
+            {/* Judul untuk lg ke atas tetap di luar kartu seperti semula. */}
+            <div className="relative mb-7 hidden lg:block">
               <span className="section-eyebrow">Secure workspace</span>
               <h1 className="mt-3 text-4xl font-black leading-none tracking-[-0.055em] text-slate-950">Masuk ke AGP IS</h1>
               <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -161,16 +168,27 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="glass-panel rounded-[30px] p-6 sm:p-8">
-              <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="glass-panel rounded-[22px] p-5 sm:p-7 lg:rounded-[30px] lg:p-8">
+              {/* Di ponsel judulnya masuk ke kartu: kartunya jadi satu unit
+                  utuh di bawah identitas perusahaan, bukan tiga blok lepas
+                  (lambang, judul, kartu) yang berebut perhatian. Hanya salah
+                  satu dari dua judul ini yang pernah tampil. */}
+              <div className="mb-5 text-center lg:hidden">
+                <h1 className="text-[22px] font-black leading-tight tracking-[-0.035em] text-slate-950">Masuk ke AGP IS</h1>
+                <p className="mt-1 text-[13px] leading-5 text-slate-500">
+                  Gunakan akun terdaftar sesuai role operasional.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5">
                 {error && (
                   <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                     {error}
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700" htmlFor="email">
+                <div className="space-y-1.5 lg:space-y-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 lg:text-sm lg:font-bold lg:normal-case lg:tracking-normal lg:text-slate-700" htmlFor="email">
                     Email
                   </label>
                   <div className="relative">
@@ -181,14 +199,14 @@ export default function LoginPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="field-input field-icon h-12"
+                      className="field-input field-icon h-11 lg:h-12"
                       placeholder="nama@agp.local"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700" htmlFor="password">
+                <div className="space-y-1.5 lg:space-y-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 lg:text-sm lg:font-bold lg:normal-case lg:tracking-normal lg:text-slate-700" htmlFor="password">
                     Password
                   </label>
                   <div className="relative">
@@ -199,7 +217,7 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="field-input field-icon h-12"
+                      className="field-input field-icon h-11 lg:h-12"
                       placeholder="Masukkan password"
                     />
                   </div>
@@ -208,14 +226,14 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="btn-primer inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-primer inline-flex h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold tracking-tight disabled:cursor-not-allowed disabled:opacity-60 lg:h-12"
                 >
                   {isLoading && <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />}
                   {isLoading ? "Memproses..." : "Masuk"}
                 </button>
               </form>
 
-              <div className="mt-6 border-t border-slate-100 pt-5">
+              <div className="mt-5 border-t border-slate-100 pt-4 lg:mt-6 lg:pt-5">
                 <div className="flex items-start gap-3 text-xs leading-5 text-slate-500">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--brand-strong)" }} />
                   <p>Akses hanya untuk staff, admin, dan manager yang terdaftar di sistem.</p>
