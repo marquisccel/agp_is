@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/Toast"
 import { skemaPembayaran, statusPembayaran } from "@/lib/paymentStatus"
 import { kewajibanKeLapak } from "@/lib/settlement"
 import KoreksiKekurangan from "@/components/features/KoreksiKekurangan"
+import KeadaanKosong from "@/components/ui/KeadaanKosong"
 
 type TransferFilter = "all" | "pending" | "transferred" | "termin"
 type PurchaseWithRelations = Purchase & {
@@ -159,7 +160,7 @@ export default function TransferList({
 
       <div className="space-y-4">
         {purchases.length > 0 && (
-          <div className="section section-body flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="section section-body flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               <span className="section-eyebrow">Antrean pembayaran</span>
               <p className="mt-1 text-sm font-semibold" style={{ color: "var(--muted)" }}>
@@ -170,17 +171,23 @@ export default function TransferList({
                 tangan, lengkap dengan bayangan dan warna aktifnya sendiri.
                 Bentuknya jadi mirip tapi tidak sama dengan penyaring di
                 layar lain. */}
-            <div className="flex flex-wrap items-center gap-3">
+            {/* Ponsel: pemilih gudang ringkas (40px, huruf 12px) di atas
+                deret segmen yang pas selebar kartu. Keempat segmennya
+                memuat label dan jumlah bertumpuk dua baris, karena
+                "Menunggu (3)" sebaris tidak muat di seperempat lebar layar
+                320px dan deretnya sempat terpotong di tepi kanan. */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
             {warehouses && warehouses.length > 0 && (
               <ElegantSelect
                 value={gudangTerpilih}
                 options={[{ value: "all", label: "Semua Gudang" }, ...warehouses.map((w) => ({ value: w.id, label: w.nama }))]}
                 onChange={setGudangTerpilih}
                 ariaLabel="Pilih gudang"
-                className="w-44"
+                className="w-full sm:w-44"
+                triggerClassName="pemicu-ringkas"
               />
             )}
-            <div className="segmented flex-wrap">
+            <div className="segmented segmented-penuh segmented-bertumpuk sm:flex-wrap">
               {filterOptions.map((option) => (
                 <button
                   key={option.id}
@@ -192,7 +199,7 @@ export default function TransferList({
                       Kurung membuat angkanya terbaca sebagai jumlah, bukan
                       sambungan kata. */}
                   <span>{option.label}</span>
-                  <span style={{ color: activeFilter === option.id ? "var(--brand)" : "var(--muted-faint)" }}>
+                  <span className="jumlah-segmen" style={{ color: activeFilter === option.id ? "var(--brand)" : "var(--muted-faint)" }}>
                     ({option.count})
                   </span>
                 </button>
@@ -203,8 +210,12 @@ export default function TransferList({
         )}
 
         {purchases.length === 0 && (
-          <div className="section section-body p-12 text-center text-sm font-medium" style={{ color: "var(--muted-faint)" }}>
-            Belum ada transaksi yang sudah disetujui.
+          <div className="section">
+            <KeadaanKosong
+              ikon={ReceiptText}
+              judul="Belum Ada Antrean Pembayaran"
+              keterangan="Transaksi yang sudah disetujui akan muncul di sini untuk ditransfer."
+            />
           </div>
         )}
 

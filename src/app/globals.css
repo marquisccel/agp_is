@@ -727,90 +727,6 @@ a:focus-visible {
   box-shadow: 0 1px 3px rgba(20, 24, 26, 0.12);
 }
 
-/* Di dalam @layer components, bukan tak berlapis seperti kebanyakan aturan
-   di berkas ini: deret pil dipakai berdampingan dengan utilitas responsif
-   (sm:hidden, md:hidden) yang memilih di layar mana ia muncul. Aturan tak
-   berlapis selalu menang atas utilitas Tailwind yang berlapis, sehingga
-   display: flex di bawah akan mengalahkan sm:hidden dan pilnya tetap tampil
-   di desktop bersama kontrol penggantinya. */
-@layer components {
-  /* Deret pilihan berbentuk pil (komponen PilihanPil). Digeser mendatar
-     kalau tidak muat; bilah gulirnya disembunyikan karena pil yang terpotong
-     di tepi sudah cukup menandakan ada lanjutannya. */
-  .pil-gulir {
-    display: flex;
-    gap: 6px;
-    /* Tanpa ini, lebar total seluruh pil ikut dihitung sebagai lebar minimum
-       wadah flex/grid di atasnya, dan kartu yang memuatnya melebar keluar
-       layar alih-alih membiarkan deretnya digeser. */
-    min-width: 0;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* Ruang untuk sasaran sentuh ::before di bawah, supaya tidak terpotong
-       oleh overflow wadah. */
-    padding-block: 4px;
-    margin-block: -4px;
-  }
-
-  .pil-gulir::-webkit-scrollbar {
-    display: none;
-  }
-
-  .pil {
-    position: relative;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 36px;
-    padding: 0 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 12.5px;
-    font-weight: 700;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color 160ms var(--ease-system), color 160ms var(--ease-system), border-color 160ms var(--ease-system);
-  }
-
-  /* Sasaran sentuh 44px tanpa membuat pilnya tampak gemuk. */
-  .pil::before {
-    content: "";
-    position: absolute;
-    inset: -4px 0;
-  }
-
-  .pil:hover {
-    border-color: var(--border-strong);
-    color: var(--foreground);
-  }
-
-  .pil[aria-checked="true"] {
-    background: var(--brand-strong);
-    border-color: var(--brand-strong);
-    color: #fff;
-  }
-
-  .pil-jumlah {
-    min-width: 20px;
-    padding: 1px 6px;
-    border-radius: 999px;
-    background: var(--bg-tint);
-    color: var(--muted);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-  }
-
-  .pil[aria-checked="true"] .pil-jumlah {
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-  }
-}
-
 /* Deret segmen selebar wadahnya dengan keping sama lebar. Dipakai di
    ponsel untuk penyaring yang pilihannya sedikit dan sejajar dengan
    kontrol lain selebar kartu. Mulai sm kembali selebar isinya. */
@@ -833,6 +749,72 @@ a:focus-visible {
   .segmented.segmented-penuh :is(button, a) {
     flex: 0 0 auto;
   }
+}
+
+/* Segmen dua baris (label di atas, jumlah di bawah) untuk deret yang
+   pilihannya empat dan harus pas selebar kartu di ponsel. */
+@media (max-width: 639px) {
+  .segmented.segmented-bertumpuk :is(button, a) {
+    flex-direction: column;
+    gap: 0;
+    padding: 5px 4px;
+    line-height: 1.2;
+    font-size: 11.5px;
+  }
+
+  .segmented.segmented-bertumpuk .jumlah-segmen {
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+}
+
+/* Pemicu menu pilihan versi ringkas: 40px dan huruf 12px setengah tebal,
+   untuk penyaring pendamping di atas deret segmen. Sasaran sentuhnya tetap
+   44px lewat ::before. */
+.field-input.pemicu-pilih.pemicu-ringkas {
+  position: relative;
+  height: 40px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.field-input.pemicu-pilih.pemicu-ringkas::before {
+  content: "";
+  position: absolute;
+  inset: -2px 0;
+}
+
+/* Sasaran sentuh 44px untuk tombol yang tampak lebih kecil (tombol bulat
+   36px di sub-kepala navigasi). */
+.sentuh-luas {
+  position: relative;
+}
+
+.sentuh-luas::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+
+/* Sub-kepala navigasi kembali (TombolKembali dengan judul). Di ponsel
+   judul halaman sudah tertulis di sub-kepala, jadi judul besar di kartu
+   PageHeader tepat sesudahnya disembunyikan supaya tidak tertulis dua kali. */
+@media (max-width: 767px) {
+  .navigasi-balik.dengan-judul + .page-hero h2 {
+    display: none;
+  }
+}
+
+/* Pembantu tampil-per-lebar untuk elemen yang kelas dasarnya menetapkan
+   display sendiri (.stat-tile, .segmented, dan sejenisnya). Utilitas
+   hidden/md:hidden berlapis dan kalah dari aturan tak berlapis itu, jadi
+   pembantu ini sengaja memakai !important. */
+@media (max-width: 767px) {
+  .sembunyi-ponsel { display: none !important; }
+}
+
+@media (min-width: 768px) {
+  .hanya-ponsel { display: none !important; }
 }
 
 /* Target vs Realisasi -- progress ring, bukan stacked bar */

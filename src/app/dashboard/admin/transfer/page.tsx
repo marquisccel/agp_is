@@ -5,6 +5,7 @@ import TransferList from "@/components/features/TransferList"
 import { redirect } from "next/navigation"
 import { isOperationalRole } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
+import BarisRingkasan from "@/components/ui/BarisRingkasan"
 
 function formatRp(value: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -58,6 +59,7 @@ export default async function AdminTransferPage() {
   const summaryCards = [
     {
       label: "Menunggu Transfer",
+      urutan: "md:order-1",
       value: pendingTransfer.length.toLocaleString("id-ID"),
       sub: formatRp(pendingTransfer.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
       satuan: "nota",
@@ -65,22 +67,26 @@ export default async function AdminTransferPage() {
       description: "Perlu upload bukti",
     },
     {
-      label: "Sudah Transfer",
-      value: transferred.length.toLocaleString("id-ID"),
-      sub: formatRp(transferred.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
-      satuan: "nota",
-      tone: "",
-      description: "Bukti tersimpan",
-    },
-    {
       label: "Termin Belum Lunas",
+      urutan: "md:order-3",
       value: pendingTermin.length.toLocaleString("id-ID"),
       sub: formatRp(pendingTermin.reduce((sum, purchase) => sum + (purchase.nominal_belum_lunas || 0), 0)),
       satuan: "nota",
       tone: pendingTermin.length > 0 ? "tone-danger" : "",
       description: "Sisa yang belum dibayar ke lapak",
     },
+    {
+      label: "Sudah Transfer",
+      urutan: "md:order-2 sembunyi-ponsel",
+      value: transferred.length.toLocaleString("id-ID"),
+      sub: formatRp(transferred.reduce((sum, purchase) => sum + getPayableValue(purchase), 0)),
+      satuan: "nota",
+      tone: "",
+      description: "Bukti tersimpan",
+    },
   ]
+
+  const kartuSudah = summaryCards.find((c) => c.label === "Sudah Transfer")
 
   return (
     <div className="space-y-6">
@@ -92,9 +98,13 @@ export default async function AdminTransferPage() {
       {/* Bentuknya disamakan dengan baris ringkasan di dashboard Manager,
           supaya angka ringkasan di seluruh aplikasi terbaca dengan cara
           yang sama. */}
+      {/* Di ponsel "Menunggu" dan "Belum lunas" berbagi baris, lalu "Sudah
+          transfer" jadi baris mendatar tersendiri (BarisRingkasan). Urutan
+          DOM-nya Menunggu, Belum lunas, Sudah; kelas md:order-* mengembalikan
+          urutan tiga lajur di layar lebar menjadi Menunggu, Sudah, Belum. */}
       <div className="stat-strip strip-3">
         {summaryCards.map((card) => (
-          <div key={card.label} className={`stat-tile ${card.tone}`}>
+          <div key={card.label} className={`stat-tile ${card.tone} ${card.urutan}`}>
             <span className="stat-label">{card.label}</span>
             <div className="stat-value-row">
               <span className="stat-value">{card.value}</span>
@@ -104,6 +114,14 @@ export default async function AdminTransferPage() {
           </div>
         ))}
       </div>
+      {kartuSudah && (
+        <BarisRingkasan
+          label="Sudah transfer"
+          keterangan={`${kartuSudah.value} nota · ${kartuSudah.description}`}
+          nilai={kartuSudah.sub}
+          className="-mt-3"
+        />
+      )}
       <TransferList purchases={purchases} bolehKoreksi={session.user.role === "ADMIN"} />
     </div>
   )

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import TransferList from "@/components/features/TransferList"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
+import BarisRingkasan from "@/components/ui/BarisRingkasan"
 import { fmtRp } from "@/lib/format"
 
 /**
@@ -57,6 +58,7 @@ export default async function ManagerTransferPage() {
   const ringkasan = [
     {
       label: "Menunggu Transfer",
+      urutan: "md:order-1",
       value: menunggu.length.toLocaleString("id-ID"),
       satuan: "nota",
       sub: fmtRp(menunggu.reduce((sum, p) => sum + nilaiTransfer(p), 0)),
@@ -64,22 +66,26 @@ export default async function ManagerTransferPage() {
       tone: menunggu.length > 0 ? "tone-warning" : "",
     },
     {
-      label: "Sudah Transfer",
-      value: sudah.length.toLocaleString("id-ID"),
-      satuan: "nota",
-      sub: fmtRp(sudah.reduce((sum, p) => sum + nilaiTransfer(p), 0)),
-      description: "Bukti tersimpan",
-      tone: "",
-    },
-    {
       label: "Belum Lunas",
+      urutan: "md:order-3",
       value: belumLunas.length.toLocaleString("id-ID"),
       satuan: "nota",
       sub: fmtRp(belumLunas.reduce((sum, p) => sum + (p.nominal_belum_lunas || 0), 0)),
       description: "Sisa yang belum dibayar ke lapak",
       tone: belumLunas.length > 0 ? "tone-danger" : "",
     },
+    {
+      label: "Sudah Transfer",
+      urutan: "md:order-2 sembunyi-ponsel",
+      value: sudah.length.toLocaleString("id-ID"),
+      satuan: "nota",
+      sub: fmtRp(sudah.reduce((sum, p) => sum + nilaiTransfer(p), 0)),
+      description: "Bukti tersimpan",
+      tone: "",
+    },
   ]
+
+  const kartuSudah = ringkasan.find((c) => c.label === "Sudah Transfer")
 
   return (
     <div className="space-y-6">
@@ -89,9 +95,13 @@ export default async function ManagerTransferPage() {
         description="Bayar dan pantau pelunasan ke lapak untuk seluruh gudang."
       />
 
+      {/* Di ponsel "Menunggu" dan "Belum lunas" berbagi baris, lalu "Sudah
+          transfer" jadi baris mendatar tersendiri (BarisRingkasan). Urutan
+          DOM-nya Menunggu, Belum lunas, Sudah; kelas md:order-* mengembalikan
+          urutan tiga lajur di layar lebar menjadi Menunggu, Sudah, Belum. */}
       <div className="stat-strip strip-3">
         {ringkasan.map((card) => (
-          <div key={card.label} className={`stat-tile ${card.tone}`}>
+          <div key={card.label} className={`stat-tile ${card.tone} ${card.urutan}`}>
             <span className="stat-label">{card.label}</span>
             <div className="stat-value-row">
               <span className="stat-value">{card.value}</span>
@@ -101,6 +111,14 @@ export default async function ManagerTransferPage() {
           </div>
         ))}
       </div>
+      {kartuSudah && (
+        <BarisRingkasan
+          label="Sudah transfer"
+          keterangan={`${kartuSudah.value} nota · ${kartuSudah.description}`}
+          nilai={kartuSudah.sub}
+          className="-mt-3"
+        />
+      )}
 
       <TransferList purchases={purchases} warehouses={warehouses} bolehKoreksi />
     </div>

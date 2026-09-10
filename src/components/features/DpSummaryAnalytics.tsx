@@ -2,10 +2,12 @@
 
 import { useState } from "react"
 import { fmtRp } from "@/lib/format"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, WalletCards } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { namaGudang } from "@/lib/namaGudang"
 import TautanRincian from "@/components/ui/TautanRincian"
+import BarisRingkasan from "@/components/ui/BarisRingkasan"
+import KeadaanKosong from "@/components/ui/KeadaanKosong"
 
 interface DpSupplierRow {
   supplierId: string
@@ -98,7 +100,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
           <span className="stat-delta flat">Sudah dipotongkan di nota</span>
         </div>
 
-        <div className={`stat-tile${totalRemaining > 0 ? " tone-warning" : ""}`}>
+        <div className={`stat-tile sembunyi-ponsel${totalRemaining > 0 ? " tone-warning" : ""}`}>
           <span className="stat-label">Masih Menggantung</span>
           <div className="stat-value-row">
             <span className="stat-value">{fmtRp(totalRemaining)}</span>
@@ -108,6 +110,16 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
           </span>
         </div>
       </div>
+
+      {/* Ponsel: saldo menggantung jadi baris mendatar di bawah dua petak,
+          berwarna kuning hanya kalau memang ada yang menggantung. */}
+      <BarisRingkasan
+        label="Masih menggantung"
+        keterangan={totalRemaining > 0 ? "Sudah keluar, belum jadi barang" : "Tidak ada yang menggantung"}
+        nilai={fmtRp(totalRemaining)}
+        nada={totalRemaining > 0 ? "peringatan" : "netral"}
+        className="m-4"
+      />
 
       {summaryOnly && (
         <TautanRincian href="/dashboard/manager/dp" garisAtas={false}>Lihat rincian per lapak</TautanRincian>
@@ -133,10 +145,11 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         </div>
         <div>
         {filtered.length === 0 ? (
-          <div className="rounded-[var(--radius-lg)] border border-dashed py-12 text-center text-sm" style={{ borderColor: "var(--border)", color: "var(--muted-faint)" }}>
-            <p className="font-semibold">Belum ada data DP / Kasbon disetujui.</p>
-            <p className="text-xs mt-1">Data saldo akan terisi setelah manager menyetujui pengajuan DP lapak.</p>
-          </div>
+          <KeadaanKosong
+            ikon={WalletCards}
+            judul="Belum Ada Kasbon Disetujui"
+            keterangan="Saldo per lapak akan terisi setelah Manager menyetujui pengajuan kasbon."
+          />
         ) : (
           /* Bentuknya disamakan dengan daftar di Analisis Susut: satu baris
              tabel per lapak, bukan kartu bertumpuk.
