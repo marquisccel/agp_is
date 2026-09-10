@@ -236,7 +236,7 @@ export default function DoubleCheckForm({
   // kolom seperti semula.
 
   const blokTimbangan = (
-    <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+    <div className="rounded-[var(--radius-lg)] border p-4 md:p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
       <div className="mb-4">
         <span className="section-eyebrow">Verifikasi</span>
         <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Data Timbangan</h3>
@@ -245,7 +245,7 @@ export default function DoubleCheckForm({
           timbangan gudang, bukan salinan angka lapak.
         </p>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         <div>
           <label className="field-label">Metode Pembayaran Final</label>
           <ElegantSelect
@@ -253,7 +253,7 @@ export default function DoubleCheckForm({
             options={METODE_BAYAR_OPTIONS}
             onChange={setMetodeBayar}
             ariaLabel="Pilih metode pembayaran final"
-            className="mt-1 w-full"
+            className="w-full"
           />
         </div>
         <div>
@@ -263,10 +263,13 @@ export default function DoubleCheckForm({
             options={PAYMENT_PERCENTAGE_OPTIONS}
             onChange={setPersentasePembayaran}
             ariaLabel="Pilih persentase pembayaran"
-            className="mt-1 w-full"
+            className="w-full"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        {/* items-end: label kedua kolom bisa berbeda tinggi di ponsel (satu
+            patah dua baris, satu tiga baris karena lencananya), dan tanpa ini
+            kedua kolom angka duduk di ketinggian yang berbeda. */}
+        <div className="grid grid-cols-2 items-end gap-3 md:gap-4">
           <div>
             <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
               Timbangan Lapak (KG)
@@ -298,8 +301,12 @@ export default function DoubleCheckForm({
           </div>
         </div>
 
-        {/* Real-time comparison badge/panel */}
-        {timbanganLapak > 0 && (
+        {/* Real-time comparison badge/panel.
+            Baru muncul setelah berat gudang diisi. Sebelumnya panel ini
+            tampil sejak halaman dibuka, dan karena kolom gudang sengaja
+            dikosongkan, isinya selalu "Susut 100%" berwarna merah -- peringatan
+            palsu yang muncul sebelum Admin menimbang apa pun. */}
+        {timbanganLapak > 0 && timbanganGudang > 0 && (
           <div
             className="mt-4 flex flex-col gap-2 rounded-[var(--radius-md)] border p-4 shadow-sm"
             style={{ background: "var(--surface)", borderColor: "var(--border)" }}
@@ -344,7 +351,7 @@ export default function DoubleCheckForm({
   )
 
   const blokItem = (
-    <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+    <div className="rounded-[var(--radius-lg)] border p-4 md:p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
       <div className="mb-4">
         <span className="section-eyebrow">Rincian</span>
         <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Finalisasi Item per SKU</h3>
@@ -357,7 +364,7 @@ export default function DoubleCheckForm({
           const diff = gudangWeight - lapakWeight
 
           return (
-            <div key={idx} className="space-y-3 rounded-[var(--radius-md)] border p-4 shadow-sm transition-all hover:shadow-md" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+            <div key={idx} className="space-y-3 rounded-[var(--radius-md)] border p-3 shadow-sm transition-all hover:shadow-md md:p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="flex flex-col justify-between gap-2 border-b pb-2 sm:flex-row sm:items-center" style={{ borderColor: "var(--border)" }}>
                 <div>
                   <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{item.sku_name}</span>
@@ -405,7 +412,11 @@ export default function DoubleCheckForm({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              {/* Berat lapak (hanya dibaca) dan berat gudang berpasangan dua
+                  lajur juga di ponsel: keduanya angka pendek yang dibaca
+                  sambil dibandingkan, dan bertumpuk memanjangkan tiap item
+                  tanpa manfaat. */}
+              <div className="grid grid-cols-2 gap-3 pt-1 md:gap-4">
                 {/* Read-only Lapak Weight */}
                 <div className="space-y-1">
                   <label className="field-label">
@@ -451,7 +462,7 @@ export default function DoubleCheckForm({
           kosong. Yang selalu menyala kuning berhenti berarti
           peringatan. Nada perhatian kini hanya melekat pada angka
           potongannya. */}
-      <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+      <div className="rounded-[var(--radius-lg)] border p-4 md:p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
         <div className="mb-4 flex items-center justify-between">
           <div>
             <span className="section-eyebrow">Koreksi</span>
@@ -529,7 +540,7 @@ export default function DoubleCheckForm({
           saldo kasbon sudah terpotong saat Staff membuat nota. Kalau
           Admin bisa mengubahnya, saldo lapak akan terpotong dua kali dan
           angka di nota yang sudah dipegang lapak jadi tidak cocok. */}
-      <div className="rounded-[var(--radius-lg)] border p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+      <div className="rounded-[var(--radius-lg)] border p-4 md:p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
         <h3 className="text-lg font-bold text-slate-800">Potongan Kasbon (DP)</h3>
         <p className="mt-1 text-xs text-slate-500">
           Sudah dipotong saat Staff membuat nota. Nilainya tidak bisa diubah di tahap ini.
@@ -650,7 +661,7 @@ export default function DoubleCheckForm({
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className={`premium-workflow space-y-8 ${ponsel ? "punya-bilah-aksi" : ""}`}
+      className="premium-workflow space-y-5 md:space-y-8"
     >
       {error && <div className="notice tone-warning text-sm font-medium">{error}</div>}
 

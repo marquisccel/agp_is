@@ -268,7 +268,7 @@ export default function PurchaseForm({
   // dua kali, dan cepat atau lambat salah satunya tertinggal.
 
   const bagianLapak = (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
       {/* Supplier Search Dropdown */}
       <div className="space-y-2 relative">
         <label className="field-label">Lapak / Supplier</label>
@@ -386,12 +386,16 @@ export default function PurchaseForm({
 
   // Item Barang
   const bagianItem = (
-    <div className="pt-4 border-t border-slate-100">
-      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Item Barang</h3>
+    <div className="border-t border-slate-100 pt-4">
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-800 md:mb-4">Item Barang</h3>
 
       <div className="space-y-3">
         {items.map((item, idx) => (
-          <div key={idx} className="flex flex-wrap md:flex-nowrap gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100">
+          /* Ponsel: kisi dua lajur, SKU dan spec sebaris lalu berat dan
+             harga sebaris. Bertumpuk satu per baris, satu item memakan
+             hampir satu layar penuh; berpasangan, dua item muat sekaligus
+             tanpa menggulir. */
+          <div key={idx} className="grid grid-cols-2 items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 md:flex md:flex-nowrap md:p-4">
             <div className="w-full md:flex-1 space-y-1">
               <label className="field-label">Jenis SKU</label>
               <ElegantSelect
@@ -434,7 +438,7 @@ export default function PurchaseForm({
               <StandarHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
             </div>
             {items.length > 1 && (
-              <div className="w-full md:w-auto pt-6 flex justify-end">
+              <div className="col-span-2 flex justify-end md:w-auto md:pt-6">
                 <button
                   type="button"
                   onClick={() => removeItem(idx)}
@@ -591,7 +595,7 @@ export default function PurchaseForm({
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className={`premium-workflow space-y-6 ${ponsel ? "punya-bilah-aksi" : ""}`}
+        className="premium-workflow space-y-4 md:space-y-6"
       >
         {error && <div className="notice tone-warning text-sm font-medium">{error}</div>}
 
@@ -606,8 +610,8 @@ export default function PurchaseForm({
 
             {isiLangkah[langkah]}
 
-            {/* Tombol lanjut/simpan menempel di bawah supaya tidak perlu
-                menggulir habis satu langkah hanya untuk pindah langkah. */}
+            {/* Tombol lanjut/simpan di kaki kartu form, dipisah garis tipis
+                dari isian langkah (lihat .bilah-aksi di globals.css). */}
             <StickyActionBar
               keterangan={
                 langkah === langkahTerakhir && totalDibayarKeLapak > 0

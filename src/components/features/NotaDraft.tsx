@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { fmtAngka } from "@/lib/format"
 import { Download, X, CheckCircle } from "lucide-react"
 import { useToast } from "@/components/ui/Toast"
@@ -199,7 +200,22 @@ function NotaContent({ data }: { data: NotaData }) {
   )
 }
 
-export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: () => void }) {
+/**
+ * Modal nota dirender ke document.body lewat portal, dengan lapisan di atas
+ * bilah navigasi bawah (z 60) dan lembar bawah (z 200).
+ *
+ * Sebelumnya modal ini dirender di dalam form pembelian dengan z-50. Bilah
+ * aksi form yang waktu itu melayang di z-55 ikut tampil DI ATAS latar modal,
+ * sehingga tombol "Lanjut" halaman menembus dan menutupi tombol di dalam
+ * nota. Di dalam form pula, modal fixed bisa terkurung wadah ber-transform
+ * (animasi masuk halaman) alih-alih menutupi seluruh layar.
+ */
+export default function NotaDraft(props: { data: NotaData; onClose: () => void }) {
+  if (typeof document === "undefined") return null
+  return createPortal(<NotaDraftIsi {...props} />, document.body)
+}
+
+function NotaDraftIsi({ data, onClose }: { data: NotaData; onClose: () => void }) {
   // visibleRef = shown in modal preview
   const visibleRef = useRef<HTMLDivElement>(null)
   // hiddenRef = off-screen, clean DOM without Tailwind classes, used for html2canvas capture
@@ -283,7 +299,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
   // Success state
   if (saved === "downloaded") {
     return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-9 h-9 text-emerald-500" />
@@ -297,7 +313,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
           </p>
           <button
             onClick={onClose}
-            className="btn-primer premium-button w-full rounded-[var(--radius-sm)] py-3 font-bold"
+            className="h-11 w-full rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
           >
             Selesai
           </button>
@@ -326,7 +342,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
       </div>
 
       {/* Visible modal */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[95vh] flex flex-col">
 
           {/* Header */}
@@ -339,7 +355,8 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              aria-label="Tutup nota"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
             >
               <X className="w-5 h-5" />
             </button>
@@ -361,7 +378,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="btn-primer premium-button flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] py-3 text-sm font-bold disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-60"
               >
                 {downloading ? (
                   <>
@@ -384,7 +401,7 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
                 <button
                   onClick={handleShareWa}
                   disabled={downloading}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl font-bold text-sm hover:from-emerald-400 hover:to-green-400 transition-all shadow-md shadow-emerald-500/10"
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
                 >
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -398,9 +415,9 @@ export default function NotaDraft({ data, onClose }: { data: NotaData; onClose: 
               <button
                 onClick={onClose}
                 disabled={downloading}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-200 text-slate-500 font-semibold text-sm hover:bg-slate-50 hover:text-slate-700 transition-all disabled:opacity-50"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
               >
-                Lewati - Simpan Tanpa Unduh
+                Lewati, simpan tanpa unduh
               </button>
             </div>
           </div>

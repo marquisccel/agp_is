@@ -819,8 +819,8 @@ a:focus-visible {
   inset: -2px 0;
 }
 
-/* Sasaran sentuh 44px untuk pil pendek (30px, mis. "Kembali" di ponsel),
-   diperluas ke atas dan bawah saja supaya tidak menutupi elemen di
+/* Sasaran sentuh 44px untuk tombol setinggi 40px (mis. "Kembali" di
+   ponsel), diperluas ke atas dan bawah saja supaya tidak menutupi elemen di
    sebelahnya. */
 .sentuh-luas-y {
   position: relative;
@@ -829,7 +829,16 @@ a:focus-visible {
 .sentuh-luas-y::before {
   content: "";
   position: absolute;
-  inset: -7px 0;
+  inset: -2px 0;
+}
+
+/* Wadah aksi kepala halaman yang seluruh isinya khusus layar lebar
+   (.sembunyi-ponsel) ikut disembunyikan di ponsel, supaya jarak grid di
+   kartu judul tidak menyisakan baris kosong. */
+@media (max-width: 767px) {
+  .page-header-actions:not(:has(> :not(.sembunyi-ponsel))) {
+    display: none;
+  }
 }
 
 /* Pembantu tampil-per-lebar untuk elemen yang kelas dasarnya menetapkan
@@ -2251,86 +2260,53 @@ a:focus-visible {
     padding-right: calc(16px + var(--aman-kanan));
   }
 
-  /* ── Bilah aksi menempel ──────────────────────────────────────────── */
-  .bilah-aksi {
-    position: fixed;
-    left: 0;
-    right: 0;
-    /* Duduk persis di atas bilah navigasi, bukan menimpanya. */
-    bottom: calc(var(--tinggi-bilah-bawah) + var(--aman-bawah));
-    z-index: 55;
+  /* ── Kaki aksi form (StickyActionBar dan .aksi-form) ───────────────── */
+  /*
+   * Tombol Lanjut/Kembali/Simpan di ponsel duduk di kaki kartu form, di alur
+   * dokumen, bukan melayang di atas bilah navigasi.
+   *
+   * Versi melayang sempat dipakai supaya tombolnya selalu terjangkau tanpa
+   * menggulir. Harganya: bilah itu menutupi seperlima layar di atas bilah
+   * navigasi, isian terakhir tiap langkah tersembunyi di baliknya, dan
+   * karena z-index-nya lebih tinggi daripada modal nota yang dirender di
+   * dalam form, tombol Lanjut ikut muncul di atas modal. Langkah wizard
+   * kini cukup pendek untuk dilihat utuh, jadi tombolnya boleh berada di
+   * ujungnya, dipisah garis tipis dari isian di atasnya.
+   */
+  .bilah-aksi,
+  .aksi-form {
+    position: static;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    padding: 10px calc(16px + var(--aman-kanan)) 10px calc(16px + var(--aman-kiri));
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(18px) saturate(170%);
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -6px 20px -12px rgba(20, 24, 26, 0.25);
+    gap: 8px;
+    margin: 4px 0 0;
+    padding: 16px 0 0;
+    border-top: 1px solid #f1f5f9;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
+  /* Ringkasan (mis. estimasi dibayar) di baris sendiri di atas tombol. */
   .bilah-aksi-keterangan {
+    flex: 1 1 100%;
     min-width: 0;
-    flex: 1 1 auto;
-    font-size: 11.5px;
+    font-size: 12px;
+    font-weight: 600;
     line-height: 1.3;
     color: var(--muted);
   }
 
   .bilah-aksi-tombol {
     display: flex;
-    flex: 0 0 auto;
+    flex: 1 1 100%;
     gap: 8px;
   }
 
-  /* Tanpa keterangan, tombolnya mengisi lebar penuh seperti tombol utama
-     aplikasi ponsel pada umumnya. */
-  .bilah-aksi:not(:has(.bilah-aksi-keterangan)) .bilah-aksi-tombol {
-    flex: 1 1 auto;
-  }
-
-  .bilah-aksi-tombol > * {
-    min-height: 44px;
-  }
-
-  /* Halaman yang memakai bilah aksi menyisakan ruang tambahan supaya isi
-     terakhirnya tidak tertutup. Kelas ini dipasang pada wadah form. */
-  .punya-bilah-aksi {
-    padding-bottom: 76px;
-  }
-
-  /*
-   * Baris tombol penutup form yang sudah ada di markup, dinaikkan jadi bilah
-   * menempel tanpa mengubah susunan komponennya.
-   *
-   * Form panjang seperti Data Lapak berakhir di layar keempat: tombol
-   * Simpan di ujungnya baru terlihat setelah seluruh isian digulir habis,
-   * dan siapa pun yang ingin memeriksa ulang isian di atas harus menggulir
-   * turun lagi hanya untuk menekannya. Yang berubah cuma posisinya; urutan
-   * dan isi tombolnya tetap seperti di layar lebar.
-   */
-  .aksi-form {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(var(--tinggi-bilah-bawah) + var(--aman-bawah));
-    z-index: 55;
-    display: flex;
-    gap: 8px;
-    margin: 0;
-    padding: 10px calc(16px + var(--aman-kanan)) 10px calc(16px + var(--aman-kiri));
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(18px) saturate(170%);
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -6px 20px -12px rgba(20, 24, 26, 0.25);
-  }
-
-  /* Tombol dibagi rata selebar layar. Di layar lebar keduanya menempel ke
-     ujung kanan, tapi di ponsel dua tombol kecil berdempetan di satu sudut
-     adalah sasaran sentuh yang buruk. */
+  .bilah-aksi-tombol > *,
   .aksi-form > button,
   .aksi-form > a {
-    flex: 1 1 0;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
@@ -2338,9 +2314,14 @@ a:focus-visible {
     margin: 0;
   }
 
-  /* Ruang di ujung form supaya isian terakhirnya tidak tertutup bilah. */
-  form:has(> .aksi-form) {
-    padding-bottom: 84px;
+  /* Kembali selebar isinya, tombol maju mengisi sisa lebar. */
+  .bilah-aksi-tombol > .btn-primer {
+    flex: 1 1 auto;
+  }
+
+  .aksi-form > button,
+  .aksi-form > a {
+    flex: 1 1 0;
   }
 }
 
@@ -2635,7 +2616,7 @@ a:focus-visible {
   .daftar-kartu {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
 
   /* Daftar yang sudah berada di dalam kartu induk (.section) tidak perlu

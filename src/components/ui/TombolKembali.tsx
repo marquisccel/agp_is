@@ -37,14 +37,23 @@ export default function TombolKembali({
     // ring slate-200 dan bayangan tipis: latar halaman ini abu muda yang
     // hampir sama dengan slate-100, jadi tanpa tepi pilnya nyaris hilang.
     "inline-flex min-h-11 items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-200"
-  // Tampak 30px, sasaran sentuhnya 44px lewat .sentuh-luas-y.
+  // Ponsel: panah di gelembung bundar 32px dan tulisan 14px di sampingnya,
+  // tanpa latar pil. Pil abu berhuruf 12px sebelumnya membuat tulisannya
+  // tampak kerdil di dalam kotak yang lebih besar dari isinya. Wadahnya
+  // transparan setinggi 40px; sasaran sentuhnya 44px lewat .sentuh-luas-y.
   const kelasPonsel =
-    "sentuh-luas-y inline-flex items-center gap-1.5 rounded-xl border border-slate-200/60 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
+    "sentuh-luas-y -ml-1 inline-flex h-10 items-center gap-2 rounded-xl pl-1 pr-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
 
-  const tombol = (kelas: string, teks: string) => {
+  const tombol = (kelas: string, teks: string, gelembung = false) => {
     const isi = (
       <>
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        {gelembung ? (
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200/80 text-slate-700">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          </span>
+        ) : (
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        )}
         {teks}
       </>
     )
@@ -60,10 +69,10 @@ export default function TombolKembali({
   }
 
   return (
-    // mb-3 di ponsel mendekatkan pil ke kartu judul yang ia layani; mb-6 di
-    // layar lebar menyamai jarak space-y-6 halaman yang tertimpa kelas ini.
-    <div className="navigasi-balik mb-3 md:mb-6">
-      <div className="md:hidden">{tombol(kelasPonsel, "Kembali")}</div>
+    // mb-2 di ponsel mendekatkan tombol ke kartu judul yang ia layani; mb-6
+    // di layar lebar menyamai jarak space-y-6 halaman yang tertimpa kelas ini.
+    <div className="navigasi-balik mb-2 md:mb-6">
+      <div className="md:hidden">{tombol(kelasPonsel, "Kembali", true)}</div>
       <div className="hidden md:block">{tombol(kelasPil, label)}</div>
     </div>
   )
