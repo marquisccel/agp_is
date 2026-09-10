@@ -280,28 +280,33 @@ export default function SupplierForm({
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="field-label">Latitude (Opsional)</label>
-          <input
-            type="number"
-            step="any"
-            value={latitude}
-            onChange={(e) => setLatitude(e.target.value)}
-            className="field-input"
-            placeholder="Contoh: -7.8165"
-          />
-        </div>
+        {/* Latitude dan longitude sebaris di ponsel: satu pasangan
+            koordinat berangka pendek. Mulai md pembungkusnya lebur ke grid
+            dua lajur induk. */}
+        <div className="grid grid-cols-2 gap-3 md:contents">
+          <div className="space-y-2">
+            <label className="field-label">Latitude <span className="normal-case tracking-normal font-medium text-slate-400">(opsional)</span></label>
+            <input
+              type="number"
+              step="any"
+              value={latitude}
+              onChange={(e) => setLatitude(e.target.value)}
+              className="field-input"
+              placeholder="Contoh: -7.8165"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <label className="field-label">Longitude (Opsional)</label>
-          <input
-            type="number"
-            step="any"
-            value={longitude}
-            onChange={(e) => setLongitude(e.target.value)}
-            className="field-input"
-            placeholder="Contoh: 112.0111"
-          />
+          <div className="space-y-2">
+            <label className="field-label">Longitude <span className="normal-case tracking-normal font-medium text-slate-400">(opsional)</span></label>
+            <input
+              type="number"
+              step="any"
+              value={longitude}
+              onChange={(e) => setLongitude(e.target.value)}
+              className="field-input"
+              placeholder="Contoh: 112.0111"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">

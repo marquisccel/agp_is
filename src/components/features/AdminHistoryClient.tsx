@@ -167,12 +167,13 @@ export default function AdminHistoryClient({
                     nilai: <span className="font-mono tabular-nums">{formatRp(totalNilai)}</span>,
                   },
                 ]}
+                aksiRata="kanan"
                 aksi={
                   <>
                     {purchase.status_approval === "menunggu_verifikasi" && (
                       <Link
                         href={`${basePath}/check/${purchase.id}`}
-                        className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                        className="btn-netral premium-button inline-flex items-center rounded-[var(--radius-sm)] px-4 text-xs font-bold"
                       >
                         Cek
                       </Link>
@@ -181,7 +182,7 @@ export default function AdminHistoryClient({
                       <Link
                         href={`/nota/${purchase.id}`}
                         target="_blank"
-                        className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                        className="btn-netral premium-button inline-flex items-center rounded-[var(--radius-sm)] px-4 text-xs font-bold"
                       >
                         Nota
                       </Link>
@@ -189,7 +190,7 @@ export default function AdminHistoryClient({
                     {purchase.status_approval !== "sudah_transfer" && (
                       <Link
                         href={`${basePath}/edit/${purchase.id}`}
-                        className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                        className="btn-netral premium-button inline-flex items-center rounded-[var(--radius-sm)] px-4 text-xs font-bold"
                       >
                         Edit
                       </Link>

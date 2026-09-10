@@ -53,13 +53,17 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
 
   if (showEdit) {
     return (
-      <div className="flex items-center justify-center gap-2">
+      /* Di ponsel label turun ke baris sendiri dan kolom nominalnya mengisi
+         sisa lebar di samping kedua tombol. Sebaris seperti di tabel, label
+         + kolom 160px + dua tombol butuh sekitar 400px, lebih lebar dari
+         kartu di layar 360px. */
+      <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto md:flex-nowrap md:justify-center">
         {dialog}
         {toastHost}
         {/* Kolomnya dulu berdiri tanpa keterangan apa pun: sebuah kotak
             berisi "15000000" di sebelah dua ikon. Tidak ada yang memberi
             tahu bahwa itu nominal yang akan DISETUJUI, bukan yang diajukan. */}
-        <label className="field-label whitespace-nowrap" style={{ marginBottom: 0 }}>
+        <label className="field-label w-full whitespace-nowrap md:w-auto" style={{ marginBottom: 0 }}>
           Setujui sebesar
         </label>
         <NumberInput
@@ -67,12 +71,12 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
           value={nominal}
           onValueChange={setNominal}
           pemisahRibuan
-          className="field-input w-40 text-right font-mono"
+          className="field-input min-w-0 flex-1 text-right font-mono md:w-40 md:flex-none"
         />
         <button
           onClick={() => handleAction("approve", nominal)}
           disabled={loading || nominal <= 0}
-          className="btn-primer premium-button rounded-[var(--radius-sm)] p-2 disabled:opacity-50"
+          className="btn-primer premium-button grid h-11 w-11 shrink-0 place-items-center rounded-xl disabled:opacity-50 md:h-auto md:w-auto md:rounded-[var(--radius-sm)] md:p-2"
           title="Simpan dan setujui"
           aria-label="Simpan dan setujui"
         >
@@ -81,7 +85,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
         <button
           onClick={() => setShowEdit(false)}
           disabled={loading}
-          className="btn-netral premium-button p-2 disabled:opacity-50"
+          className="btn-netral premium-button grid h-11 w-11 shrink-0 place-items-center rounded-xl disabled:opacity-50 md:h-auto md:w-auto md:rounded-[var(--radius-sm)] md:p-2"
           title="Batal"
           aria-label="Batal ubah nominal"
         >
@@ -113,7 +117,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
       <button
         onClick={() => setShowEdit(true)}
         disabled={loading}
-        className="btn-netral premium-button whitespace-nowrap px-3 py-1.5 text-xs disabled:opacity-50"
+        className="btn-netral premium-button inline-flex h-11 items-center whitespace-nowrap rounded-xl px-4 text-xs font-bold disabled:opacity-50 md:h-auto md:rounded-[var(--radius-sm)] md:px-3 md:py-1.5 md:font-semibold"
       >
         Edit Nominal
       </button>
@@ -123,7 +127,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
         disabled={loading}
         title="Setujui pengajuan kasbon ini"
         aria-label="Setujui pengajuan kasbon ini"
-        className="btn-primer premium-button grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] disabled:opacity-50"
+        className="btn-primer premium-button grid h-11 w-11 place-items-center rounded-xl disabled:opacity-50 md:h-8 md:w-8 md:rounded-[var(--radius-sm)]"
       >
         <Check className="h-4 w-4" aria-hidden="true" />
       </button>
@@ -141,7 +145,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
         disabled={loading}
         title="Tolak pengajuan kasbon ini"
         aria-label="Tolak pengajuan kasbon ini"
-        className="btn-netral tone-danger premium-button grid h-8 w-8 place-items-center disabled:opacity-50"
+        className="btn-netral tone-danger premium-button grid h-11 w-11 place-items-center rounded-xl disabled:opacity-50 md:h-8 md:w-8 md:rounded-[var(--radius-sm)]"
       >
         <X className="h-4 w-4" aria-hidden="true" />
       </button>

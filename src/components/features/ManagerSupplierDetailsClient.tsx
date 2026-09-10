@@ -2,9 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import {
-  ArrowLeft,
   Calendar,
   Check,
   Copy,
@@ -15,6 +13,7 @@ import {
 } from "lucide-react"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 import StatusPill from "@/components/ui/StatusPill"
 import { getPurchaseStatus, getDpStatus } from "@/lib/purchaseStatusLabels"
 import { getSupplierMapHref, resolveSupplierCoordinates } from "@/lib/supplierLocation"
@@ -82,7 +81,6 @@ interface Supplier {
 
 
 export default function ManagerSupplierDetailsClient({ supplier }: { supplier: Supplier }) {
-  const router = useRouter()
   const [copied, setCopied] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"transaksi" | "dp">("transaksi")
@@ -218,19 +216,11 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
 
   return (
     <div className="premium-workflow space-y-6">
+      <TombolKembali />
       <PageHeader
         eyebrow="Profil lapak"
         title={`Detail Lapak ${supplier.nama}`}
         description={namaGudang(supplier.warehouse?.nama)}
-        actions={
-          <button
-            onClick={() => router.back()}
-            className="premium-button btn-netral flex items-center gap-2 px-4 py-2.5 text-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Kembali
-          </button>
-        }
       />
 
       {/* Profile & Info Cards */}
@@ -400,14 +390,17 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 />
               </div>
             </div>
-            <div className="space-y-4 bg-white p-6">
-              <div>
-                <span className="field-label">Latitude</span>
-                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.latitude}</span>
-              </div>
-              <div>
-                <span className="field-label">Longitude</span>
-                <span className="mt-1 block font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.longitude}</span>
+            <div className="space-y-4 bg-white p-4 sm:p-6">
+              {/* Satu pasangan koordinat, satu baris. */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="min-w-0">
+                  <span className="field-label">Latitude</span>
+                  <span className="mt-1 block truncate font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.latitude}</span>
+                </div>
+                <div className="min-w-0">
+                  <span className="field-label">Longitude</span>
+                  <span className="mt-1 block truncate font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.longitude}</span>
+                </div>
               </div>
               <div>
                 <span className="field-label">Sumber</span>

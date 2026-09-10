@@ -1,10 +1,10 @@
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth/next"
 import { prisma } from "@/lib/prisma"
-import Link from "next/link"
 import DPApprovalActions from "@/components/features/DPApprovalActions"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 import KartuData from "@/components/ui/KartuData"
 import StatusPill from "@/components/ui/StatusPill"
 import { getDpStatus } from "@/lib/purchaseStatusLabels"
@@ -37,15 +37,11 @@ export default async function DPApprovalManager() {
 
   return (
     <div className="space-y-6">
+      <TombolKembali href="/dashboard/manager" label="Kembali ke Dashboard" />
       <PageHeader
         eyebrow="Persetujuan manager"
         title="Approval Kasbon (DP)"
         description="Pengajuan yang menunggu keputusan Manager, beserta riwayat keputusan untuk pemantauan penyetuju."
-        actions={(
-          <Link href="/dashboard/manager" className="btn-netral premium-button px-4 py-2.5 text-sm">
-            Kembali ke Dashboard
-          </Link>
-        )}
       />
 
       <div className="section overflow-hidden">
@@ -101,6 +97,7 @@ export default async function DPApprovalManager() {
                     ),
                   },
                 ]}
+                aksiRata="kanan"
                 aksi={<DPApprovalActions dp={dp} />}
               />
             ))

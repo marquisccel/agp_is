@@ -526,16 +526,6 @@ export default function ManagerSuppliersClient({
 
       <section className="section section-body">
         <div className="flex flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <PilihanPil
-            value={selectedWarehouseId}
-            options={[
-              { value: "all", label: "Semua gudang" },
-              ...warehouses.map((warehouse) => ({ value: warehouse.id, label: namaGudang(warehouse.nama) })),
-            ]}
-            onChange={setSelectedWarehouseId}
-            ariaLabel="Saring gudang"
-            className="sm:hidden"
-          />
           <div className="hidden sm:block">
           <div className="segmented flex flex-wrap">
             <button
@@ -556,7 +546,23 @@ export default function ManagerSuppliersClient({
           </div>
           </div>
 
+          {/* Ponsel: gudang, bulan, tahun, dan pencarian satu bentuk --
+              tinggi 44px, sudut 12px, huruf yang sama -- tersusun gudang
+              selebar penuh, bulan dan tahun sebaris, lalu pencarian. Deret
+              pil gudang yang sempat dipakai berbeda bentuk dari tiga kontrol
+              di bawahnya, sehingga satu bilah penyaring terbaca seperti dua
+              komponen yang kebetulan bertumpuk. */}
           <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-2 sm:grid-cols-[140px_112px_minmax(220px,280px)]">
+            <ElegantSelect
+              value={selectedWarehouseId}
+              onChange={setSelectedWarehouseId}
+              ariaLabel="Saring gudang"
+              className="col-span-2 w-full sm:hidden"
+              options={[
+                { value: "all", label: "Semua Gudang" },
+                ...warehouses.map((warehouse) => ({ value: warehouse.id, label: namaGudang(warehouse.nama) })),
+              ]}
+            />
             <ElegantSelect
               value={selectedMonth}
               onChange={setSelectedMonth}
@@ -656,7 +662,10 @@ export default function ManagerSuppliersClient({
                       jadi menarik mata lebih dulu daripada nama lapaknya --
                       padahal ia kesimpulan dari ketiga angka di sebelahnya
                       dan paling masuk akal dibaca bersama mereka. */}
-                  <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4 md:min-w-[340px]">
+                  <div
+                    className="grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-4 text-left sm:grid-cols-4 md:min-w-[340px] md:border-t-0 md:pt-0 md:text-center"
+                    style={{ borderColor: "#f1f5f9" }}
+                  >
                     <MiniMetric label="Volume" value={perf.totalGudangWeight > 0 ? fmtKg(perf.totalGudangWeight) : "0 KG"} />
                     <MiniMetric label="Harga Avg" value={perf.avgPrice > 0 ? `${fmtRp(perf.avgPrice)}/KG` : "-"} />
                     <MiniMetric label="Transaksi" value={String(perf.totalTransactions)} />
@@ -822,28 +831,33 @@ export default function ManagerSuppliersClient({
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="field-label">Latitude</label>
-                <input
-                  type="number"
-                  step="any"
-                  value={locationLatitude}
-                  onChange={(event) => setLocationLatitude(event.target.value)}
-                  className="field-input"
-                  placeholder="-7.8165"
-                />
-              </div>
+              {/* Latitude dan longitude sebaris di ponsel: satu pasangan
+                  koordinat berangka pendek. Mulai md pembungkusnya lebur ke
+                  grid dua lajur induk. */}
+              <div className="grid grid-cols-2 gap-3 md:contents">
+                <div className="space-y-2">
+                  <label className="field-label">Latitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={locationLatitude}
+                    onChange={(event) => setLocationLatitude(event.target.value)}
+                    className="field-input"
+                    placeholder="-7.8165"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <label className="field-label">Longitude</label>
-                <input
-                  type="number"
-                  step="any"
-                  value={locationLongitude}
-                  onChange={(event) => setLocationLongitude(event.target.value)}
-                  className="field-input"
-                  placeholder="112.0111"
-                />
+                <div className="space-y-2">
+                  <label className="field-label">Longitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={locationLongitude}
+                    onChange={(event) => setLocationLongitude(event.target.value)}
+                    className="field-input"
+                    placeholder="112.0111"
+                  />
+                </div>
               </div>
             </div>
 
@@ -987,11 +1001,11 @@ export default function ManagerSuppliersClient({
 
 function MiniMetric({ label, value, warna }: { label: string; value: string; warna?: string }) {
   return (
-    <div>
-      <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">{label}</p>
+    <div className="min-w-0">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
       <p
-        className="mt-1 whitespace-nowrap text-sm font-black tracking-[-0.02em]"
-        style={{ fontVariantNumeric: "tabular-nums", color: warna ?? "var(--foreground)" }}
+        className="mt-0.5 truncate text-sm font-bold md:whitespace-nowrap"
+        style={{ fontVariantNumeric: "tabular-nums", color: warna ?? "#1e293b" }}
       >
         {value}
       </p>

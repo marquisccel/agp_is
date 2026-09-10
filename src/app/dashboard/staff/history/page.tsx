@@ -195,6 +195,7 @@ export default async function StaffHistoryPage() {
                     ),
                   },
                 ]}
+                aksiRata="kanan"
                 aksi={
                   bisaLihatNota ? (
                     <a

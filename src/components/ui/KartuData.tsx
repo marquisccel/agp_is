@@ -31,6 +31,7 @@ export default function KartuData({
   baris,
   aksi,
   href,
+  aksiRata = "penuh",
 }: {
   judul: ReactNode
   subjudul?: ReactNode
@@ -41,6 +42,12 @@ export default function KartuData({
   aksi?: ReactNode
   /** Bila diisi, seluruh kepala kartu menjadi tautan ke rincian. */
   href?: string
+  /**
+   * "kanan": tombol di kaki kartu selebar isinya dan rata kanan, untuk
+   * aksi pendamping seperti Detail dan Hapus. Bawaannya "penuh": tombol
+   * membagi lebar kaki kartu, untuk satu aksi utama seperti Lakukan Cek.
+   */
+  aksiRata?: "penuh" | "kanan"
 }) {
   const isiKepala = (
     <>
@@ -73,7 +80,7 @@ export default function KartuData({
           ))}
       </dl>
 
-      {aksi && <div className="kartu-kaki">{aksi}</div>}
+      {aksi && <div className={aksiRata === "kanan" ? "kartu-kaki kartu-kaki-kanan" : "kartu-kaki"}>{aksi}</div>}
     </article>
   )
 }

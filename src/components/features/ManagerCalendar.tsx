@@ -205,7 +205,11 @@ export default function ManagerCalendar({ calendarData, selectedBulan, selectedT
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+    /* Di layar di bawah 360px kalender dibuat selebar layar (menembus
+       padding halaman). Tujuh lajur tanggal butuh 7 x 44px = 308px untuk
+       sasaran sentuh yang layak, sementara kartu di layar 320px cuma 288px;
+       tanpa ini tiap tanggal hanya 34px. */
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm max-[359px]:-mx-4 max-[359px]:rounded-none max-[359px]:border-x-0">
       {/* ── Header ── */}
       <div className="p-5 border-b border-slate-100">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -235,7 +239,7 @@ export default function ManagerCalendar({ calendarData, selectedBulan, selectedT
           cuma dapat 39px per sel dengan padding 16px, di bawah ambang sasaran
           sentuh. Delapan piksel ini ditambah perluasan ::after sel-kalender
           (menutup celah antarsel) membawa tiap sel ke 44px. */}
-      <div className="px-3 py-4 sm:p-5">
+      <div className="px-3 py-4 max-[359px]:px-0.5 sm:p-5">
         {/* ── Day Headers ── */}
         <div className="grid grid-cols-7 mb-2">
           {DAYS_ID.map((d, i) => (

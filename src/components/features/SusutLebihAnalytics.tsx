@@ -179,9 +179,15 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
           satu kartu. */}
       {!summaryOnly && (
       <div className="section overflow-hidden">
-      <div className="section-shell-head flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Penyaring tampilan dan pengurutan dalam satu bilah. Di ponsel
+          keduanya selebar kartu dan setinggi 44px, bertumpuk rapat; label
+          "Urutkan" disembunyikan karena pilihan di dalam menunya sudah
+          menyebut arah urutannya. Sebelumnya deret penyaringnya bisa
+          digeser sementara pemilih urutan menggantung 176px di kiri dengan
+          labelnya, dua kontrol yang tidak sejajar di tepi mana pun. */}
+      <div className="section-shell-head flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         {/* Show mode toggle */}
-        <div className="segmented w-full overflow-x-auto sm:w-auto flex">
+        <div className="segmented segmented-penuh sm:w-auto">
           {([
             { key: "semua", label: "Semua Lapak" },
             { key: "susut", label: "Ada Susut" },
@@ -190,7 +196,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
             <button
               key={m.key}
               onClick={() => setShowMode(m.key)}
-              className={`shrink-0 ${showMode === m.key ? "active" : ""}`}
+              className={showMode === m.key ? "active" : ""}
             >
               {m.label}
             </button>
@@ -198,14 +204,14 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
         </div>
 
         {/* Sort */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-semibold">Urutkan:</span>
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <span className="hidden text-xs font-semibold text-slate-400 sm:inline">Urutkan:</span>
           <ElegantSelect
             value={sortBy}
             options={sortOptions}
             onChange={setSortBy}
             ariaLabel="Urutkan analisis susut"
-            className="w-44"
+            className="w-full sm:w-44"
             menuClassName="w-48"
           />
         </div>

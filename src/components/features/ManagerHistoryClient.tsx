@@ -8,6 +8,7 @@ import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import StatusPill from "@/components/ui/StatusPill"
+import KartuData from "@/components/ui/KartuData"
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 import { statusPembayaran } from "@/lib/paymentStatus"
 
@@ -155,7 +156,7 @@ export default function ManagerHistoryClient({
         </div>
       </div>
 
-      <div className="section overflow-hidden">
+      <div className="section hidden overflow-hidden md:block">
         <div className="overflow-x-auto">
           <table className="tabel-lembut text-left text-sm text-slate-600">
             <thead>
@@ -274,6 +275,87 @@ export default function ManagerHistoryClient({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Ponsel: satu kartu per nota. Diletakkan SESUDAH tabel di DOM,
+          bukan sebelumnya: di layar lebar kartu-kartu ini disembunyikan, dan
+          pencarian teks seperti getByText(...).first() pada uji E2E memilih
+          kemunculan pertama menurut urutan DOM -- kalau kartunya lebih dulu,
+          yang terpilih elemen tersembunyi.
+
+          Kartunya menggantikan tabel yang dipecah otomatis per sel, yang di
+          ponsel menghasilkan label bertingkat "GUDANG / TANGGAL" setinggi tiga
+          baris dan baris "AKSI" berisi tombol di tengah data. Di sini
+          identitas di kepala, angka rata kanan di badan, dan aksi berkumpul
+          di pojok kanan bawah. */}
+      <div className="daftar-kartu">
+        {filteredPurchases.length === 0 ? (
+          <p className="section section-body text-center text-sm text-slate-400">
+            Tidak ada transaksi yang cocok dengan kriteria filter.
+          </p>
+        ) : (
+          filteredPurchases.map((purchase) => {
+            const totalBerat = purchase.items.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
+            const totalNilai = purchase.total_dibayar ?? purchase.total_nilai_setelah_retur ?? purchase.total_nilai_sebelum_retur ?? 0
+            const status = getPurchaseStatus(purchase.status_approval)
+            const bayar = statusPembayaran(purchase)
+            const nomor = purchase.nomor_nota || `#${purchase.id.split("-")[0]}`
+            return (
+              <KartuData
+                key={purchase.id}
+                judul={purchase.supplier.nama}
+                subjudul={`${purchase.warehouse.nama} · ${new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
+                status={<StatusPill label={status.label} tone={status.tone} />}
+                baris={[
+                  { label: "Nota", nilai: <span className="font-mono">{nomor}</span> },
+                  // Sisa pembayaran jadi baris di badan, bukan pil kedua di
+                  // kepala: dua pil bertumpuk di kanan menjepit nama lapak
+                  // sampai patah dua baris beserta tanggalnya, dan pil
+                  // "Belum dibayar Rp 38.811.150" tidak muat di layar 320px.
+                  ...(bayar.sisa > 0
+                    ? [{
+                        label: bayar.label.startsWith("Kurang") ? "Kurang bayar" : "Belum dibayar",
+                        nilai: <span className="font-mono tabular-nums" style={{ color: "var(--warning)" }}>{formatRp(bayar.sisa)}</span>,
+                      }]
+                    : []),
+                  { label: "Staff", nilai: purchase.staff.nama },
+                  { label: "Barang", nilai: `${totalBerat.toFixed(1)} kg · ${purchase.items.length} SKU` },
+                  { label: "Nilai dibayar", nilai: <span className="font-mono tabular-nums">{formatRp(totalNilai)}</span> },
+                ]}
+                aksiRata="kanan"
+                aksi={
+                  <>
+                    {purchase.status_approval === "menunggu_approval_harga" ? (
+                      <Link
+                        href={`/dashboard/manager/approval-harga/${purchase.id}`}
+                        className="premium-button inline-flex items-center gap-1 rounded-[var(--radius-sm)] border px-3 text-xs font-bold"
+                        style={{ borderColor: "var(--warning-soft)", background: "var(--warning-soft)", color: "var(--warning)" }}
+                      >
+                        Approval Harga <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
+                      <Link href={`/nota/${purchase.id}`} target="_blank" className="btn-netral premium-button inline-flex items-center rounded-[var(--radius-sm)] px-3 text-xs font-bold">
+                        Nota
+                      </Link>
+                    ) : null}
+                    <Link href={`/dashboard/manager/purchases/${purchase.id}`} className="btn-netral premium-button inline-flex items-center rounded-[var(--radius-sm)] px-4 text-xs font-bold">
+                      Detail
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(purchase.id)}
+                      disabled={deletingId === purchase.id}
+                      className="btn-netral tone-danger premium-button grid place-items-center rounded-[var(--radius-sm)] disabled:opacity-50"
+                      title="Hapus transaksi"
+                      aria-label={`Hapus transaksi ${nomor}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </>
+                }
+              />
+            )
+          })
+        )}
       </div>
     </div>
   )
