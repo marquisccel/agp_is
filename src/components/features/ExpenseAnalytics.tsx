@@ -26,7 +26,7 @@ export default function ExpenseAnalytics({ warehouseExpenses }: ExpenseAnalytics
           <p className="section-eyebrow">Cost breakdown</p>
           <h3 className="text-[15.5px] font-bold text-slate-900">Pengeluaran per Gudang</h3>
           <p className="mt-1 text-xs leading-5 text-slate-400">
-            Total nilai transaksi dibayar ke supplier -- ringkasan global sudah ada di baris statistik atas.
+            Total nilai transaksi yang dibayar ke supplier per gudang. Ringkasan seluruh gudang ada di baris statistik di atas.
           </p>
         </div>
       </div>

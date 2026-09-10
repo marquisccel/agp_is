@@ -4,6 +4,7 @@ import { useState } from "react"
 import { fmtKg, fmtRpPerKg, fmtAngka } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import TautanRincian from "@/components/ui/TautanRincian"
+import PilihanPil from "@/components/ui/PilihanPil"
 
 interface TopSupplier {
   supplierId: string
@@ -69,7 +70,31 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
           <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Top 10 Lapak</h3>
           <p className="mt-1 text-xs leading-5 text-slate-500">Peringkat supplier berdasarkan volume atau harga rata-rata per gudang.</p>
         </div>
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+        {/* Ponsel: dua deret pil, gudang di atas lalu mode urutan. Pemilih
+            gudang berbentuk menu tarik-turun menyembunyikan pilihannya di
+            balik satu ketukan tambahan, padahal pilihannya cuma empat; di
+            layar lebar menu itu tetap dipakai karena ruangnya ada. */}
+        <div className="flex w-full min-w-0 flex-col gap-2.5 md:hidden">
+          <PilihanPil
+            value={selectedWarehouseId}
+            options={[
+              { value: "all", label: "Semua Gudang" },
+              ...warehouseTopData.map(w => ({ value: w.warehouseId, label: w.warehouseName })),
+            ]}
+            onChange={setSelectedWarehouseId}
+            ariaLabel="Pilih gudang supplier"
+          />
+          <PilihanPil
+            value={mode}
+            options={[
+              { value: "volume" as const, label: "Urut volume" },
+              { value: "harga" as const, label: "Urut harga" },
+            ]}
+            onChange={setMode}
+            ariaLabel="Urutkan lapak"
+          />
+        </div>
+        <div className="hidden w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center md:flex">
           <ElegantSelect
             value={selectedWarehouseId}
             options={warehouseOptions}
@@ -85,13 +110,47 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
         </div>
       </div>
 
-      <div className="p-5">
+      <div className="px-4 py-2 md:p-5">
         {suppliers.length === 0 ? (
           <div className="text-center text-slate-400 text-sm py-12">
             <p>Belum ada data transaksi untuk pilihan ini.</p>
           </div>
         ) : (
-          <table className="w-full text-left text-xs">
+          <>
+          {/* Ponsel: tiap lapak satu baris grid tiga lajur (peringkat,
+              identitas, angka). Tabel lima kolom di layar 360px memaksa nama
+              lapak patah jadi tiga baris dan "Rp 8.910/KG" patah di tengah,
+              sehingga barisnya berbeda-beda tinggi dan angkanya tidak lagi
+              berbaris. Angka yang sedang dipakai mengurutkan tampil paling
+              tebal di kanan; angka lainnya menjadi keterangan kecil. */}
+          <ol className="md:hidden">
+            {suppliers.map((s, i) => {
+              const isTop = i === 0
+              const utama = mode === "volume" ? fmtKg(s.totalKg) : fmtRpPerKg(s.avgHarga)
+              const kedua = mode === "volume" ? fmtRpPerKg(s.avgHarga) : fmtKg(s.totalKg)
+              return (
+                <li
+                  key={s.supplierId}
+                  className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-x-3 border-b py-3 last:border-b-0"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <span className="font-mono text-[11px] font-bold tabular-nums" style={{ color: isTop ? "var(--brand-strong)" : "var(--muted-faint)" }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-slate-800">{s.nama}</span>
+                    <span className="mt-0.5 block text-[11px] text-slate-400">{fmtAngka(s.transaksi)} transaksi</span>
+                  </span>
+                  <span className="text-right">
+                    <span className="block whitespace-nowrap font-mono text-[13px] font-bold tabular-nums" style={{ color: "var(--brand-strong)" }}>{utama}</span>
+                    <span className="mt-0.5 block whitespace-nowrap font-mono text-[11px] tabular-nums text-slate-500">{kedua}</span>
+                  </span>
+                </li>
+              )
+            })}
+          </ol>
+
+          <table className="hidden w-full text-left text-xs md:table">
             <thead>
               <tr className="border-b" style={{ borderColor: "var(--border)" }}>
                 <th className="w-10 pb-2 text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">No</th>
@@ -122,6 +181,7 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
               })}
             </tbody>
           </table>
+          </>
         )}
       </div>
       <TautanRincian href="/dashboard/manager/suppliers">

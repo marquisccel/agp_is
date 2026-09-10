@@ -97,7 +97,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
           <p className="section-eyebrow">Weighing variance</p>
           <h3 className="text-[15.5px] font-bold text-slate-900">Analisis Susut &amp; Lebih Timbangan per Lapak</h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Selisih timbangan lapak vs timbangan gudang - susut berarti gudang lebih kecil dari lapak
+            Selisih timbangan lapak dan gudang. Susut berarti timbangan gudang lebih kecil daripada timbangan lapak.
           </p>
         </div>
         {/* Warehouse filter */}
@@ -333,7 +333,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                 type="button"
                 aria-label="Tutup detail susut"
                 onClick={() => setSelectedLapak(null)}
-                className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-200/50 rounded-xl transition-all"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-slate-400 transition-all hover:bg-slate-200/50 hover:text-slate-600"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -346,10 +346,10 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
               {selectedLapak.detailTransaksi && selectedLapak.detailTransaksi.length > 0 ? (
                 selectedLapak.detailTransaksi.map((tx) => {
                   return (
-                    <div key={tx.purchaseId} className="border border-slate-100 rounded-lg p-4 bg-slate-50/50 space-y-3">
+                    <div key={tx.purchaseId} className="space-y-3 rounded-[var(--radius-lg)] border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
                       {/* Tx Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                        <div>
+                        <div className="flex items-center justify-between gap-2 sm:block">
                           <span className="font-mono font-bold text-slate-700 text-sm">
                             {tx.nomorNota || `#${tx.purchaseId.split("-")[0]}`}
                           </span>
@@ -357,18 +357,62 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                             {new Date(tx.tanggal).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}
                           </span>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="hidden gap-2 sm:flex">
                           <span className="text-xs font-mono font-medium px-2 py-0.5 bg-slate-100 rounded text-slate-600 flex items-center">
                             Lapak: {tx.beratLapak.toFixed(1)} kg / Gudang: {tx.beratGudang.toFixed(1)} kg
                           </span>
-                          <span className={`text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg border ${tx.selisih < 0 ? "bg-rose-50 text-rose-600 border-rose-100" : tx.selisih > 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-100 text-slate-650"}`}>
+                          <span className={`hidden text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg border sm:inline ${tx.selisih < 0 ? "bg-rose-50 text-rose-600 border-rose-100" : tx.selisih > 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-100 text-slate-650"}`}>
                             {tx.selisih === 0 ? "Sesuai" : tx.selisih < 0 ? `Susut: ${tx.selisih.toFixed(1)} kg` : `Lebih: +${tx.selisih.toFixed(1)} kg`}
                           </span>
                         </div>
                       </div>
 
+                      {/* Ponsel: total timbangan nota sebagai pita tiga lajur, lalu
+                          rincian SKU sebagai baris ringkas. Tabel empat kolom
+                          di dalam modal selebar 300px memaksa tiap angka patah
+                          jadi "1846.0" dan "kg" di dua baris, dan kolom Selisih
+                          terpotong di tepi kanan sehingga harus digeser. */}
+                      <div className="grid grid-cols-3 divide-x overflow-hidden rounded-[var(--radius-md)] border bg-white sm:hidden" style={{ borderColor: "var(--border)" }}>
+                        <div className="px-2 py-2 text-center" style={{ borderColor: "var(--border)" }}>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Lapak (kg)</div>
+                          <div className="mt-0.5 font-mono text-sm font-bold tabular-nums text-slate-700">{tx.beratLapak.toFixed(1)}</div>
+                        </div>
+                        <div className="px-2 py-2 text-center" style={{ borderColor: "var(--border)" }}>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Gudang (kg)</div>
+                          <div className="mt-0.5 font-mono text-sm font-bold tabular-nums text-slate-900">{tx.beratGudang.toFixed(1)}</div>
+                        </div>
+                        <div className="flex flex-col items-center px-2 py-2 text-center" style={{ borderColor: "var(--border)" }}>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Selisih</div>
+                          <span
+                            className="mt-0.5 whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums"
+                            style={tx.selisih < 0 ? { background: "var(--danger-soft)", color: "var(--danger)" } : tx.selisih > 0 ? { background: "var(--success-soft)", color: "var(--success)" } : { background: "var(--bg-tint)", color: "var(--muted)" }}
+                          >
+                            {tx.selisih === 0 ? "Sesuai" : tx.selisih < 0 ? tx.selisih.toFixed(1) : `+${tx.selisih.toFixed(1)}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      <ul className="divide-y overflow-hidden rounded-[var(--radius-md)] border bg-white sm:hidden" style={{ borderColor: "var(--border)" }}>
+                        {tx.skus.map((sku, sIdx) => (
+                          <li key={sIdx} className="flex items-center justify-between gap-3 px-3 py-2.5" style={{ borderColor: "var(--border)" }}>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-slate-700">{sku.skuName}</p>
+                              <p className="mt-0.5 font-mono text-[11px] tabular-nums text-slate-500">
+                                {sku.beratLapak.toFixed(1)} → {sku.beratGudang.toFixed(1)} kg
+                              </p>
+                            </div>
+                            <span
+                              className="shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums"
+                              style={sku.selisih < 0 ? { background: "var(--danger-soft)", color: "var(--danger)" } : sku.selisih > 0 ? { background: "var(--success-soft)", color: "var(--success)" } : { background: "var(--bg-tint)", color: "var(--muted)" }}
+                            >
+                              {sku.selisih === 0 ? "0 kg" : sku.selisih < 0 ? `${sku.selisih.toFixed(1)} kg` : `+${sku.selisih.toFixed(1)} kg`}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+
                       {/* Sku Breakdown */}
-                      <div className="overflow-x-auto rounded-xl border border-slate-100">
+                      <div className="hidden overflow-x-auto rounded-xl border border-slate-100 sm:block">
                         <table className="w-full text-left text-xs text-slate-600">
                           <thead>
                             <tr className="bg-slate-100 font-semibold text-slate-500">
@@ -414,7 +458,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
               <button
                 type="button"
                 onClick={() => setSelectedLapak(null)}
-                className="text-white font-bold px-6 py-2.5 rounded-lg text-xs transition-colors"
+                className="min-h-11 w-full rounded-[var(--radius-md)] px-6 py-2.5 text-sm font-bold text-white transition-colors sm:w-auto sm:text-xs"
                 style={{ background: "var(--brand)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = "var(--brand-strong)" }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "var(--brand)" }}

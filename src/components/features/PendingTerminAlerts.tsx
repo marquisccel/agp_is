@@ -88,7 +88,7 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
        pernah berhenti berhenti diperhatikan, dan mengganggu di layar
        yang dibuka sepanjang hari. */
     <div
-      className="animate-in fade-in space-y-4 rounded-[var(--radius-lg)] border p-5 shadow-sm duration-200"
+      className="animate-in fade-in space-y-4 rounded-[var(--radius-lg)] border p-4 shadow-sm duration-200 md:p-5"
       style={{ background: "var(--warning-soft)", borderColor: "color-mix(in srgb, var(--warning) 25%, transparent)" }}
     >
       {toastHost}
@@ -123,22 +123,32 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
           return (
             <div
               key={alert.id}
-              className="flex flex-col gap-3 rounded-[var(--radius-md)] border p-3.5 md:flex-row md:items-center md:justify-between"
+              className="flex flex-col gap-3 rounded-[var(--radius-md)] border p-4 md:flex-row md:items-center md:justify-between md:p-3.5"
               style={{ background: "var(--surface)", borderColor: "var(--border)" }}
             >
-              {/* Kiri: identitas nota. Nama lapak yang dicari mata lebih
-                  dulu, sisanya satu baris keterangan abu yang tidak ikut
-                  menarik perhatian. */}
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold" style={{ color: "var(--foreground)" }}>{alert.supplier.nama}</p>
-                <p className="mt-0.5 truncate text-[11px]" style={{ color: "var(--muted-faint)" }}>
-                  <span className="font-mono">{alert.nomor_nota || "tanpa nomor"}</span>
-                  {" · "}{tanggal}
-                  {" · sudah dibayar "}{alert.persentase_pembayaran}% dari {formatRp(alert.total_nilai_setelah_retur)}
-                </p>
+              {/* Kepala: nama lapak dan porsi yang sudah dibayar. Di ponsel
+                  porsinya jadi pil di kanan nama; sebelumnya ia ekor kalimat
+                  keterangan yang terpotong elipsis tepat di angkanya. */}
+              <div className="flex min-w-0 items-start justify-between gap-3 md:block">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold" style={{ color: "var(--foreground)" }}>{alert.supplier.nama}</p>
+                  <p className="mt-0.5 truncate text-[11px]" style={{ color: "var(--muted-faint)" }}>
+                    <span className="font-mono">{alert.nomor_nota || "tanpa nomor"}</span>
+                    {" · "}{tanggal}
+                    <span className="hidden md:inline">
+                      {" · sudah dibayar "}{alert.persentase_pembayaran}% dari {formatRp(alert.total_nilai_setelah_retur)}
+                    </span>
+                  </p>
+                </div>
+                <span
+                  className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold tabular-nums md:hidden"
+                  style={{ background: "color-mix(in srgb, var(--warning) 14%, transparent)", color: "var(--warning)" }}
+                >
+                  {alert.persentase_pembayaran}% dibayar
+                </span>
               </div>
 
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
+              <div className="flex flex-col gap-3 md:shrink-0 md:flex-row md:items-center">
                 <input
                   ref={(el) => { fileInputs.current[alert.id] = el }}
                   type="file"
@@ -151,48 +161,60 @@ export default function PendingTerminAlerts({ initialAlerts }: PendingTerminAler
                   }}
                 />
 
-                {/* Angka kurangnya berdiri sebagai teks, bukan di dalam
-                    kotak isian, dan rata tengah supaya label serta angkanya
-                    bertumpuk di satu sumbu. Ini satu-satunya angka di baris
-                    ini, jadi ia yang boleh paling menonjol.
+                {/* Angka kurangnya satu-satunya angka yang dicari di kartu
+                    ini, jadi ia yang paling menonjol. Di ponsel ia duduk di
+                    pita sendiri, label di kiri dan angka di kanan; di layar
+                    lebar kembali bertumpuk rata tengah di antara identitas
+                    dan tombol.
 
                     Kata "Kurang" dipakai supaya sama dengan halaman Transfer
                     Pembayaran; label sebelumnya, "Dibayar sekarang", ambigu
                     antara jumlah yang sudah dibayar dan yang harus dibayar. */}
-                <div className="min-w-[150px] text-center">
+                <div
+                  className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] bg-[var(--warning-soft)] px-3 py-2.5 md:block md:min-w-[150px] md:bg-transparent md:p-0 md:text-center"
+                >
                   <span className="block text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--muted-faint)" }}>
                     Kurang
+                    <span className="mt-0.5 block whitespace-nowrap text-[10.5px] font-medium normal-case tracking-normal md:hidden">
+                      dari {formatRp(alert.total_nilai_setelah_retur)}
+                    </span>
                   </span>
-                  <span className="mt-0.5 block font-mono text-base font-black tabular-nums" style={{ color: "var(--warning)" }}>
+                  <span className="block shrink-0 whitespace-nowrap font-mono text-base font-black tabular-nums min-[400px]:text-lg md:mt-0.5 md:text-base" style={{ color: "var(--warning)" }}>
                     {formatRp(alert.nominal_belum_lunas)}
                   </span>
                 </div>
 
-                <Link
-                  href={`/nota/${alert.id}`}
-                  className="btn-netral premium-button flex h-[42px] items-center gap-1.5 px-3.5 text-xs"
-                >
-                  <FileText className="h-4 w-4" />
-                  Nota
-                </Link>
+                {/* Dua tombol berbagi lebar sama rata di kaki kartu. Dulu
+                    "Nota" menempel di samping angka dan "Catat Pelunasan"
+                    turun sendirian ke baris berikutnya, rata kanan, sehingga
+                    kartunya tampak berantakan walau isinya cuma tiga hal. */}
+                <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 md:flex md:gap-3">
+                  <Link
+                    href={`/nota/${alert.id}`}
+                    className="btn-netral premium-button flex h-11 items-center justify-center gap-1.5 px-4 text-xs md:h-[42px] md:px-3.5"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Nota
+                  </Link>
 
-                <button
-                  onClick={() => fileInputs.current[alert.id]?.click()}
-                  disabled={isPending}
-                  className="btn-netral premium-button flex h-[42px] cursor-pointer items-center justify-center gap-1.5 px-4 text-xs font-bold disabled:opacity-50"
-                >
-                  {loadingId === alert.id ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Menyimpan
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Catat Pelunasan
-                    </>
-                  )}
-                </button>
+                  <button
+                    onClick={() => fileInputs.current[alert.id]?.click()}
+                    disabled={isPending}
+                    className="btn-primer premium-button flex h-11 cursor-pointer items-center justify-center gap-1.5 px-4 text-xs font-bold disabled:opacity-50 md:h-[42px]"
+                  >
+                    {loadingId === alert.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Menyimpan
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4" />
+                        Catat Pelunasan
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           );

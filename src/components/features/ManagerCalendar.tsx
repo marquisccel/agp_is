@@ -231,7 +231,11 @@ export default function ManagerCalendar({ calendarData, selectedBulan, selectedT
         </div>
       </div>
 
-      <div className="p-4 sm:p-5">
+      {/* px-3 di ponsel, bukan p-4: tujuh lajur tanggal di layar 360px
+          cuma dapat 39px per sel dengan padding 16px, di bawah ambang sasaran
+          sentuh. Delapan piksel ini ditambah perluasan ::after sel-kalender
+          (menutup celah antarsel) membawa tiap sel ke 44px. */}
+      <div className="px-3 py-4 sm:p-5">
         {/* ── Day Headers ── */}
         <div className="grid grid-cols-7 mb-2">
           {DAYS_ID.map((d, i) => (
@@ -304,7 +308,7 @@ export default function ManagerCalendar({ calendarData, selectedBulan, selectedT
                   onMouseEnter={() => setHoveredKey(key)}
                   onMouseLeave={() => setHoveredKey(null)}
                   className={`
-                    w-full aspect-square rounded-md sm:rounded-lg flex flex-col items-center justify-center
+                    sel-kalender w-full aspect-square rounded-md sm:rounded-lg flex flex-col items-center justify-center
                     text-[11px] sm:text-xs font-medium transition-all duration-150
                     ${cellBg} ${todayRing} ${selRing} ${cursor} ${shadow}
                   `}

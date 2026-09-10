@@ -206,6 +206,45 @@ a:focus-visible {
   backdrop-filter: var(--sidebar-blur);
 }
 
+/* Sel tanggal kalender. Sasaran sentuhnya diperluas 2px ke tiap sisi --
+   separuh celah gap-1 di antara sel -- supaya celah itu tidak lagi menjadi
+   daerah mati tempat ketukan hilang, tanpa menumpuki sel sebelahnya. */
+.sel-kalender {
+  position: relative;
+}
+
+.sel-kalender::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+}
+
+/* Kartu form masuk. Di layar lebar sama persis dengan .glass-panel; di
+   ponsel, tempat kartu ini jadi satu-satunya benda di layar, ia dibuat
+   lebih membulat dengan lapisan kaca putih dan bayangan panjang yang
+   lembut, supaya terbaca melayang di atas gradasi, bukan ditempel. */
+.kartu-masuk {
+  background: var(--sidebar-material);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: var(--sidebar-blur);
+  border-radius: 30px;
+}
+
+@media (max-width: 1023px) {
+  .kartu-masuk {
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(255, 255, 255, 0.9);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 24px 56px -28px rgba(24, 58, 30, 0.38),
+      0 4px 14px -6px rgba(24, 58, 30, 0.12);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+  }
+}
+
 .premium-button {
   border-radius: var(--radius-md);
   transition: transform 260ms var(--ease-spring),
@@ -444,6 +483,21 @@ a:focus-visible {
 .stat-tile .stat-delta.flat { color: var(--muted-faint); }
 .stat-tile .stat-delta.pending { color: var(--warning); }
 
+/* Tautan di kaki tile ("Lihat detail"). margin-top: auto mendorongnya ke
+   dasar tile, jadi dua tile bersebelahan yang teksnya berbeda panjang
+   tetap punya tautan di garis yang sama. */
+.stat-tile .stat-tautan {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-strong);
+  text-decoration: none;
+}
+
 /* Nada perhatian pada satu tile. Dipakai untuk angka yang bukan
    kesalahan tapi menggantung -- misalnya saldo kasbon yang sudah keluar
    tapi belum jadi barang. Nol tetap netral, supaya warnanya hanya menyala
@@ -671,6 +725,90 @@ a:focus-visible {
   background: var(--surface);
   color: var(--foreground);
   box-shadow: 0 1px 3px rgba(20, 24, 26, 0.12);
+}
+
+/* Di dalam @layer components, bukan tak berlapis seperti kebanyakan aturan
+   di berkas ini: deret pil dipakai berdampingan dengan utilitas responsif
+   (sm:hidden, md:hidden) yang memilih di layar mana ia muncul. Aturan tak
+   berlapis selalu menang atas utilitas Tailwind yang berlapis, sehingga
+   display: flex di bawah akan mengalahkan sm:hidden dan pilnya tetap tampil
+   di desktop bersama kontrol penggantinya. */
+@layer components {
+  /* Deret pilihan berbentuk pil (komponen PilihanPil). Digeser mendatar
+     kalau tidak muat; bilah gulirnya disembunyikan karena pil yang terpotong
+     di tepi sudah cukup menandakan ada lanjutannya. */
+  .pil-gulir {
+    display: flex;
+    gap: 6px;
+    /* Tanpa ini, lebar total seluruh pil ikut dihitung sebagai lebar minimum
+       wadah flex/grid di atasnya, dan kartu yang memuatnya melebar keluar
+       layar alih-alih membiarkan deretnya digeser. */
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Ruang untuk sasaran sentuh ::before di bawah, supaya tidak terpotong
+       oleh overflow wadah. */
+    padding-block: 4px;
+    margin-block: -4px;
+  }
+
+  .pil-gulir::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pil {
+    position: relative;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 160ms var(--ease-system), color 160ms var(--ease-system), border-color 160ms var(--ease-system);
+  }
+
+  /* Sasaran sentuh 44px tanpa membuat pilnya tampak gemuk. */
+  .pil::before {
+    content: "";
+    position: absolute;
+    inset: -4px 0;
+  }
+
+  .pil:hover {
+    border-color: var(--border-strong);
+    color: var(--foreground);
+  }
+
+  .pil[aria-checked="true"] {
+    background: var(--brand-strong);
+    border-color: var(--brand-strong);
+    color: #fff;
+  }
+
+  .pil-jumlah {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--bg-tint);
+    color: var(--muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .pil[aria-checked="true"] .pil-jumlah {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
 }
 
 /* Target vs Realisasi -- progress ring, bukan stacked bar */
@@ -1867,6 +2005,25 @@ a:focus-visible {
    * bawah; di situ barulah geser mendatar menguntungkan, dengan tiap petak
    * selebar 62% layar supaya jelas masih ada lanjutannya di sebelah kanan.
    */
+  /* Deret tiga petak (mis. Saldo DP: disetujui, terpakai, menggantung).
+     Tiga lajur di layar 360px menyisakan 100px per petak, dan angka
+     ratusan juta rupiah patah jadi dua baris atau terpotong. Dua petak
+     pertama berbagi baris, petak ketiga selebar penuh di bawahnya. */
+  .stat-strip.strip-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat-strip.strip-3 > :nth-child(3):last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Pil tren (mis. "12,3% naik") turun ke baris sendiri kalau tidak muat
+     di samping angka, alih-alih mendorong angkanya keluar petak. */
+  .stat-tile .stat-value-row {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
   .stat-strip:has(> :nth-child(5)) {
     grid-auto-flow: column;
     grid-auto-columns: 62%;

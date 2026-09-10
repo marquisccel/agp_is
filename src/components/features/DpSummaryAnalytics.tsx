@@ -74,9 +74,8 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
           Bentuknya kini sama dengan baris ringkasan di dashboard Manager,
           dan warnanya hanya menyala kalau memang ada saldo menggantung. */}
       <div
-        className="stat-strip"
+        className="stat-strip strip-3"
         style={{
-          gridTemplateColumns: "repeat(3, 1fr)",
           borderRadius: 0,
           border: "none",
           borderBottom: summaryOnly ? "1px solid var(--border)" : "none",

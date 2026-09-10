@@ -92,7 +92,7 @@ export default async function AdminTransferPage() {
       {/* Bentuknya disamakan dengan baris ringkasan di dashboard Manager,
           supaya angka ringkasan di seluruh aplikasi terbaca dengan cara
           yang sama. */}
-      <div className="stat-strip" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+      <div className="stat-strip strip-3">
         {summaryCards.map((card) => (
           <div key={card.label} className={`stat-tile ${card.tone}`}>
             <span className="stat-label">{card.label}</span>

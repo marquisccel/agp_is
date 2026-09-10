@@ -802,6 +802,12 @@ export default async function ManagerDashboard({
           periode ke bawah lipatan layar. */}
       <PendingTerminAlerts initialAlerts={pendingTermins} />
 
+      {/* Urutan tile mengikuti jenis datanya: dua angka periode (tonase dan
+          pengeluaran) di baris pertama, dua antrean keputusan di baris
+          kedua. Di ponsel grid ini jadi dua lajur, dan urutan lama menaruh
+          tonase berpasangan dengan approval harga -- dua hal yang dibaca
+          dengan cara berbeda duduk sebaris, sementara pasangannya masing-
+          masing terpisah ke baris lain. */}
       <div className="stat-strip">
         <div className="stat-tile">
           <span className="stat-label">Total Tonase Bulan Ini</span>
@@ -820,6 +826,23 @@ export default async function ManagerDashboard({
         </div>
 
         <div className="stat-tile">
+          <span className="stat-label">Pengeluaran Bulan Ini</span>
+          <div className="stat-value-row">
+            <span className="stat-value">{fmtRp(globalExpenses.bulanan)}</span>
+            {expenseDeltaPct !== null && (
+              /* Pengeluaran naik itu kabar buruk, jadi panah naik sengaja
+                 diberi warna danger -- kebalikan dari metrik tonase. */
+              <span className={`trend ${expenseDeltaPct > 0 ? "down" : "up"}`}>
+                {Math.abs(expenseDeltaPct).toFixed(1)}% {expenseDeltaPct >= 0 ? "↗" : "↘"}
+              </span>
+            )}
+          </div>
+          <span className="stat-delta flat">
+            {expenseDeltaPct === null ? "Belum ada data bulan lalu" : "dibanding bulan lalu"}
+          </span>
+        </div>
+
+        <div className="stat-tile">
           <span className="stat-label">Approval Harga</span>
           <div className="stat-value-row">
             <span className="stat-value">{waitingApprovalHarga}</span>
@@ -830,7 +853,7 @@ export default async function ManagerDashboard({
           ) : (
             <span className="stat-delta flat">Semua sudah diputuskan</span>
           )}
-          <Link href="/dashboard/manager/approval-harga" className="inline-flex min-h-11 items-center text-[11.5px] font-bold" style={{ color: "var(--brand-strong)" }}>
+          <Link href="/dashboard/manager/approval-harga" className="stat-tautan">
             Lihat detail →
           </Link>
         </div>
@@ -846,26 +869,9 @@ export default async function ManagerDashboard({
           ) : (
             <span className="stat-delta flat">Semua sudah divalidasi</span>
           )}
-          <Link href="/dashboard/manager/approval-dp" className="inline-flex min-h-11 items-center text-[11.5px] font-bold" style={{ color: "var(--brand-strong)" }}>
+          <Link href="/dashboard/manager/approval-dp" className="stat-tautan">
             Lihat detail →
           </Link>
-        </div>
-
-        <div className="stat-tile">
-          <span className="stat-label">Pengeluaran Bulan Ini</span>
-          <div className="stat-value-row">
-            <span className="stat-value">{fmtRp(globalExpenses.bulanan)}</span>
-            {expenseDeltaPct !== null && (
-              /* Pengeluaran naik itu kabar buruk, jadi panah naik sengaja
-                 diberi warna danger -- kebalikan dari metrik tonase. */
-              <span className={`trend ${expenseDeltaPct > 0 ? "down" : "up"}`}>
-                {Math.abs(expenseDeltaPct).toFixed(1)}% {expenseDeltaPct >= 0 ? "↗" : "↘"}
-              </span>
-            )}
-          </div>
-          <span className="stat-delta flat">
-            {expenseDeltaPct === null ? "Belum ada data bulan lalu" : "dibanding bulan lalu"}
-          </span>
         </div>
       </div>
 

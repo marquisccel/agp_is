@@ -590,7 +590,7 @@ export default function ManagerAnalytics({
               <span className="text-xs text-slate-500">{fmtKg(grandTotalAllKg)} total volume</span>
             </div>
 
-            <div className="p-5">
+            <div className="p-4 md:p-5">
               <SkuPriceChart rows={skuRows} avgPrice={grandAvgAllPrice} />
 
               {skuTersembunyi > 0 && (

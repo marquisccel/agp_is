@@ -89,7 +89,7 @@ export default async function ManagerTransferPage() {
         description="Bayar dan pantau pelunasan ke lapak untuk seluruh gudang."
       />
 
-      <div className="stat-strip" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+      <div className="stat-strip strip-3">
         {ringkasan.map((card) => (
           <div key={card.label} className={`stat-tile ${card.tone}`}>
             <span className="stat-label">{card.label}</span>

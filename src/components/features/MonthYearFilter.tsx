@@ -44,7 +44,10 @@ export default function MonthYearFilter({
         options={monthOptions}
         onChange={bulan => handlePeriodChange(bulan, selectedTahun)}
         ariaLabel="Pilih bulan"
-        className="flex-1 sm:w-36 sm:flex-none"
+        // Bulan diberi porsi lebih besar daripada tahun: "September" butuh
+        // hampir dua kali lebar "2026", dan dengan porsi sama rata namanya
+        // terpotong jadi "Septem..." di layar 360px.
+        className="flex-[1.6] sm:w-36 sm:flex-none"
         menuClassName="w-44"
       />
 
