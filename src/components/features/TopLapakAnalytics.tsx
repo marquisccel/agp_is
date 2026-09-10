@@ -4,7 +4,6 @@ import { useState } from "react"
 import { fmtKg, fmtRpPerKg, fmtAngka } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import TautanRincian from "@/components/ui/TautanRincian"
-import PilihanPil from "@/components/ui/PilihanPil"
 
 interface TopSupplier {
   supplierId: string
@@ -70,28 +69,30 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
           <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Top 10 Lapak</h3>
           <p className="mt-1 text-xs leading-5 text-slate-500">Peringkat supplier berdasarkan volume atau harga rata-rata per gudang.</p>
         </div>
-        {/* Ponsel: dua deret pil, gudang di atas lalu mode urutan. Pemilih
-            gudang berbentuk menu tarik-turun menyembunyikan pilihannya di
-            balik satu ketukan tambahan, padahal pilihannya cuma empat; di
-            layar lebar menu itu tetap dipakai karena ruangnya ada. */}
-        <div className="flex w-full min-w-0 flex-col gap-2.5 md:hidden">
-          <PilihanPil
+        {/* Ponsel: dua pemilih berdampingan dengan bentuk yang sama persis,
+            gudang di kiri dan urutan di kanan. Dua deret pil yang sempat
+            dipakai memakan dua baris penuh dan terbaca sebagai dua jenis
+            kontrol berbeda, padahal keduanya sama-sama penyaring daftar. */}
+        <div className="grid w-full min-w-0 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-2 md:hidden">
+          <ElegantSelect
             value={selectedWarehouseId}
             options={[
-              { value: "all", label: "Semua Gudang" },
+              { value: "all", label: "Semua gudang" },
               ...warehouseTopData.map(w => ({ value: w.warehouseId, label: w.warehouseName })),
             ]}
             onChange={setSelectedWarehouseId}
             ariaLabel="Pilih gudang supplier"
+            className="w-full"
           />
-          <PilihanPil
+          <ElegantSelect
             value={mode}
             options={[
-              { value: "volume" as const, label: "Urut volume" },
-              { value: "harga" as const, label: "Urut harga" },
+              { value: "volume" as const, label: "Volume" },
+              { value: "harga" as const, label: "Harga" },
             ]}
             onChange={setMode}
             ariaLabel="Urutkan lapak"
+            className="w-full"
           />
         </div>
         <div className="hidden w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center md:flex">

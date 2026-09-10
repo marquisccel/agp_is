@@ -103,7 +103,7 @@ export default function ElegantSelect<T extends string | number>({
            di satu baris form kolom teks tampak abu bertepi lembut sementara
            kolom pilihan tampak putih -- dua kolom bersebelahan terbaca
            seperti berasal dari dua komponen berbeda. */
-        className={`field-input flex items-center justify-between gap-2 text-left font-bold disabled:cursor-not-allowed ${triggerClassName}`}
+        className={`field-input pemicu-pilih flex items-center justify-between gap-2 text-left disabled:cursor-not-allowed ${triggerClassName}`}
         // Keadaan terbuka ditandai atribut, bukan gaya sebaris. Dengan gaya
         // sebaris, tampilannya terkunci satu bentuk untuk semua lebar layar
         // dan tidak bisa mengikuti cincin fokus ponsel di globals.css --

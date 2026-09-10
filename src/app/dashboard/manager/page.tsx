@@ -775,19 +775,19 @@ export default async function ManagerDashboard({
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
               <Link
                 href="/dashboard/manager/reports"
-                className="premium-button btn-primer flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-semibold group"
+                className="premium-button btn-primer flex h-11 items-center justify-center gap-2 whitespace-nowrap px-4 text-sm font-semibold group"
               >
                 Rekap Laporan
               </Link>
               <Link
                 href="/dashboard/manager/sku-prices"
-                className="premium-button btn-netral flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-semibold group"
+                className="premium-button btn-netral flex h-11 items-center justify-center gap-2 whitespace-nowrap px-4 text-sm font-semibold group"
               >
                 Harga Standar SKU
               </Link>
               <a
                 href={`/api/manager/export?bulan=${selectedBulan}&tahun=${selectedTahun}`}
-                className="premium-button btn-netral flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-semibold group"
+                className="premium-button btn-netral flex h-11 items-center justify-center gap-2 whitespace-nowrap px-4 text-sm font-semibold group"
               >
                 Export Excel
               </a>

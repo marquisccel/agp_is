@@ -811,6 +811,30 @@ a:focus-visible {
   }
 }
 
+/* Deret segmen selebar wadahnya dengan keping sama lebar. Dipakai di
+   ponsel untuk penyaring yang pilihannya sedikit dan sejajar dengan
+   kontrol lain selebar kartu. Mulai sm kembali selebar isinya. */
+.segmented.segmented-penuh {
+  display: flex;
+  width: 100%;
+}
+
+.segmented.segmented-penuh :is(button, a) {
+  flex: 1 1 0;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .segmented.segmented-penuh {
+    display: inline-flex;
+    width: auto;
+  }
+
+  .segmented.segmented-penuh :is(button, a) {
+    flex: 0 0 auto;
+  }
+}
+
 /* Target vs Realisasi -- progress ring, bukan stacked bar */
 .target-grid {
   display: grid;
@@ -1286,6 +1310,26 @@ a:focus-visible {
 
 .field-input::placeholder { color: var(--muted-faint); font-weight: 400; }
 
+/* Pemicu menu pilihan (ElegantSelect). Satu bentuk untuk seluruh aplikasi:
+   latar slate-50 transparan, tepi slate-200, sudut 12px, huruf 14px
+   sedang. Sebelumnya pemicunya memakai huruf tebal sementara tombol di
+   sebelahnya setengah tebal, sehingga pemilih bulan tampak lebih "keras"
+   daripada tombol aksi di bawahnya walaupun keduanya satu kelompok. */
+.field-input.pemicu-pilih {
+  background: rgba(248, 250, 252, 0.8);
+  border-color: #e2e8f0;
+  border-radius: 12px;
+  padding-left: 14px;
+  padding-right: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.field-input.pemicu-pilih:hover:not(:disabled) {
+  border-color: #cbd5e1;
+}
+
 /* Tampilan isian saat disentuh.
    Riwayat singkatnya: mula-mula cincin 3px --brand-soft yang pekat, lalu
    tiga cincin translusen, lalu bayangan hijau berkabut. Ketiganya sama
@@ -1711,10 +1755,15 @@ a:focus-visible {
   }
 
   .field-input {
-    background: var(--surface);
+    /* Latar slate-50 transparan, sama dengan pemicu menu pilihan, supaya
+       kolom teks dan pemilih dalam satu bilah penyaring berbentuk sama.
+       Saat disentuh latarnya memutih (lihat :focus di bawah). */
+    background: rgba(248, 250, 252, 0.8);
     border-color: #e2e8f0;
     color: #1e293b;
-    border-radius: 10px;
+    /* 12px, sama dengan pemicu menu pilihan dan kartu kecil, supaya kolom
+       teks dan pemilih yang bersebelahan bersudut sama. */
+    border-radius: 12px;
   }
 
   textarea.field-input {
@@ -1804,16 +1853,27 @@ a:focus-visible {
     border-bottom: none;
   }
 
+  /* Pasangan label/nilai disamakan dengan metrik di kepala kartu: label
+     11px abu huruf besar, nilai 14px tebal. Warna nilainya tetap mengikuti
+     keadaan (susut merah, lebih hijau). */
   .sinyal-lapak > .sinyal > .field-label {
     grid-column: 1;
     grid-row: 1;
     margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
   }
 
   .sinyal-lapak > .sinyal > p {
     grid-column: 2;
     margin-top: 0;
     text-align: right;
+  }
+
+  .sinyal-lapak > .sinyal > p:first-of-type {
+    font-size: 14px;
+    font-weight: 700;
   }
 
   .sinyal-lapak > .sinyal > .sinyal-batang {
@@ -2703,6 +2763,19 @@ a:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Varian aksi rata kanan: tombol selebar isinya, berkumpul di pojok kanan
+   bawah. Tombol yang membagi lebar kartu cocok untuk satu aksi utama; untuk
+   Detail dan ikon Hapus, dua tombol selebar setengah kartu membuat ikon
+   hapus sama besarnya dengan aksi yang paling sering dipakai. */
+.kartu-kaki.kartu-kaki-kanan {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.kartu-kaki.kartu-kaki-kanan > * {
+  flex: 0 0 auto;
 }
 
 /* Sebagian kaki kartu diisi komponen yang membawa barisan tombolnya sendiri,

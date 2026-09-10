@@ -159,7 +159,22 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="min-w-0">
+            {/* Di bawah lg kepala layar membawa identitas perusahaan di samping
+                lambang, bukan nama menu. Setiap halaman sudah dibuka kartu
+                judulnya sendiri tepat di bawah kepala ini, jadi nama menu di
+                sini hanya mengulang judul yang sama dua kali dalam satu layar,
+                sementara lambangnya berdiri tanpa nama. Di layar lebar
+                identitas itu sudah ada di sidebar, jadi kepala tetap memuat
+                nama halaman. */}
+            <div className="min-w-0 lg:hidden">
+              <p className="truncate text-sm font-bold leading-tight text-slate-900">
+                Agrapana Greenworks Polymer
+              </p>
+              <p className="mt-0.5 truncate text-[10px] font-bold uppercase leading-tight tracking-wider" style={{ color: "var(--brand-strong)" }}>
+                Information System
+              </p>
+            </div>
+            <div className="hidden min-w-0 lg:block">
               <h2 className="truncate text-[15px] font-black tracking-[-0.01em] text-slate-950">
                 {currentPageName}
               </h2>
