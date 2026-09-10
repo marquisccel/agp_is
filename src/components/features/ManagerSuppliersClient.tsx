@@ -400,26 +400,13 @@ export default function ManagerSuppliersClient({
       {toastHost}
       <section className="section">
         <div className="section-shell-head">
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <p className="section-eyebrow">Lapak intelligence</p>
             <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kinerja Lapak</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Filter performa berdasarkan gudang, periode, grade, dan kata kunci tanpa kehilangan konteks operasional.
             </p>
           </div>
-          {/* Import koordinat di ponsel: tombol ikon di pojok kanan atas
-              kartu, terpisah dari penyaring. Sebagai tombol bertulisan di
-              ujung deret penyaring, ia terbaca seperti salah satu pilihan
-              saring padahal ia membuka formulir. */}
-          <button
-            type="button"
-            onClick={handleOpenImportModal}
-            aria-label="Import koordinat lapak"
-            title="Import koordinat lapak"
-            className="grid h-11 w-11 shrink-0 place-items-center self-start rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 md:hidden"
-          >
-            <MapPin className="h-4 w-4" aria-hidden="true" />
-          </button>
           <div className="hidden text-right md:block">
             <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500">Tonase periode ini</p>
             <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums text-slate-900">{fmtKg(totalWeightFiltered)}</p>
@@ -486,6 +473,10 @@ export default function ManagerSuppliersClient({
               flex-wrap, tombolnya terlempar ke baris sendiri dan menggantung
               di kanan tanpa pasangan. */}
           <div className="flex items-center gap-2 sm:mt-4 sm:flex-wrap sm:justify-between sm:gap-3">
+          {/* Ponsel: pemilih status mengisi sisa lebar dan tombol Import
+              berdiri di kanannya, satu baris. Sebagai ikon di pojok kepala
+              kartu, tombol itu terpisah dari kontrol lain dan terbaca
+              seperti bagian judul. */}
           <ElegantSelect
             value={selectedStatusFilter}
             options={[
@@ -495,8 +486,17 @@ export default function ManagerSuppliersClient({
             ]}
             onChange={setSelectedStatusFilter}
             ariaLabel="Saring status lapak"
-            className="w-full sm:hidden"
+            className="min-w-0 flex-1 sm:hidden"
           />
+          <button
+            type="button"
+            onClick={handleOpenImportModal}
+            aria-label="Import koordinat lapak"
+            className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 md:hidden"
+          >
+            <MapPin className="h-4 w-4" aria-hidden="true" />
+            Import
+          </button>
           <div className="hidden min-w-0 sm:block sm:flex-none">
           <div className="segmented inline-flex">
             <button

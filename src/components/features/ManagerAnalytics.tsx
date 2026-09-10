@@ -454,7 +454,12 @@ export default function ManagerAnalytics({
             <p className="mt-1 text-xs leading-5 text-slate-500">{chartConfig.description}</p>
           </div>
           {/* Toggle Buttons */}
-          <div className="segmented w-full sm:w-auto grid grid-cols-3 sm:flex">
+          {/* Di ponsel tiga keping sama lebar mengisi kartu (segmented-penuh).
+              Kelas grid-cols-3 yang dulu dipasang di sini tidak pernah
+              berlaku: aturan .segmented yang tak berlapis menetapkan
+              display: inline-flex, sehingga kepingnya selebar isinya dan
+              deretnya menyisakan ruang kosong di kanan. */}
+          <div className="segmented segmented-penuh sm:w-auto">
             {chartModes.map(mode => (
               <button
                 key={mode.key}
