@@ -391,7 +391,7 @@ export default function EditTransaksiForm({
                     <button
                       onClick={() => removeItem(idx)}
                       disabled={items.length === 1 || terkunci}
-                      className="btn-netral tone-danger rounded-[var(--radius-sm)] p-2 disabled:opacity-30"
+                      className="btn-netral tone-danger inline-flex min-w-11 items-center justify-center rounded-[var(--radius-sm)] p-2 disabled:opacity-30 md:min-w-0"
                       title="Hapus item"
                       aria-label={`Hapus item ${idx + 1}`}
                     >

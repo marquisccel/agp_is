@@ -38,7 +38,7 @@ const METODE_BAYAR_OPTIONS = [
 ]
 
 const PAYMENT_PERCENTAGE_OPTIONS = [
-  { value: 100, label: "Full Pembayaran (100% - Lunas)" },
+  { value: 100, label: "Lunas penuh (100%)" },
   { value: 90, label: "Termin 90% + 10% Pelunasan" },
   { value: 80, label: "Termin 80% + 20% Pelunasan" },
   { value: 75, label: "Termin 75% + 25% Pelunasan" },

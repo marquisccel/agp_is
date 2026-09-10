@@ -263,21 +263,19 @@ export default function AdminHistoryClient({
                       <td className="text-center">
                         <div className="flex items-center justify-center gap-2 flex-wrap">
                           {purchase.status_approval === "menunggu_verifikasi" ? (
-                            <Link href={`${basePath}/check/${purchase.id}`}>
-                              {/* Dulu kuning berpanah, berdampingan dengan
-                                  tombol netral -- dua bentuk berbeda untuk
-                                  dua aksi yang sama-sama sekadar membuka
-                                  halaman lain. Status "menunggu verifikasi"
-                                  sudah dibawa lencana di kolom sebelahnya. */}
-                              <button className="btn-netral premium-button px-3 py-1.5 text-xs">
-                                Cek
-                              </button>
+                            /* Dulu kuning berpanah, berdampingan dengan
+                               tombol netral -- dua bentuk berbeda untuk dua
+                               aksi yang sama-sama sekadar membuka halaman
+                               lain. Status "menunggu verifikasi" sudah
+                               dibawa lencana di kolom sebelahnya. Tautannya
+                               kini dibentuk langsung sebagai tombol, bukan
+                               <button> bersarang di dalam <Link>. */
+                            <Link href={`${basePath}/check/${purchase.id}`} className="btn-netral premium-button inline-flex items-center px-3 py-1.5 text-xs">
+                              Cek
                             </Link>
                           ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
-                            <Link href={`/nota/${purchase.id}`} target="_blank">
-                              <button className="btn-netral premium-button px-3 py-1.5 text-xs">
-                                Nota
-                              </button>
+                            <Link href={`/nota/${purchase.id}`} target="_blank" className="btn-netral premium-button inline-flex items-center px-3 py-1.5 text-xs">
+                              Nota
                             </Link>
                           ) : null}
 
@@ -285,10 +283,8 @@ export default function AdminHistoryClient({
                               disimpan, jadi tautan ini dulu selalu berakhir
                               di form yang tidak bisa dituntaskan. */}
                           {purchase.status_approval !== "sudah_transfer" && (
-                            <Link href={`${basePath}/edit/${purchase.id}`}>
-                              <button className="btn-netral premium-button px-3 py-1.5 text-xs">
-                                Edit
-                              </button>
+                            <Link href={`${basePath}/edit/${purchase.id}`} className="btn-netral premium-button inline-flex items-center px-3 py-1.5 text-xs">
+                              Edit
                             </Link>
                           )}
                         </div>

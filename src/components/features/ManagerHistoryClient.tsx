@@ -208,7 +208,7 @@ export default function ManagerHistoryClient({
                       <td>
                         <div className="font-bold text-slate-900">{totalBerat.toFixed(1)} KG</div>
                         <div className="mt-0.5 font-mono text-xs text-slate-400">
-                          {purchase.items.length} sku - {purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}
+                          {purchase.items.length} sku · {purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}
                         </div>
                       </td>
                       <td className="font-mono font-black text-slate-950">
@@ -234,32 +234,32 @@ export default function ManagerHistoryClient({
                       <td className="text-center">
                         <div className="flex items-center justify-center gap-2">
                           {purchase.status_approval === "menunggu_approval_harga" ? (
-                            <Link href={`/dashboard/manager/approval-harga/${purchase.id}`}>
-                              <button
-                                className="premium-button whitespace-nowrap rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs font-bold"
-                                style={{ borderColor: "var(--warning-soft)", background: "var(--warning-soft)", color: "var(--warning)" }}
-                              >
-                                Approval Harga <ArrowRight className="inline h-3.5 w-3.5" />
-                              </button>
+                            /* Tautan yang dibentuk seperti tombol, bukan <button>
+                               di dalam <Link>. Tombol di dalam tautan adalah dua
+                               elemen interaktif bersarang: pembaca layar
+                               menyebutnya dua kali, dan tingginya ikut tombol
+                               dalamnya yang cuma 30px di ponsel. */
+                            <Link
+                              href={`/dashboard/manager/approval-harga/${purchase.id}`}
+                              className="premium-button inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-[var(--radius-sm)] border px-3 text-xs font-bold md:min-h-0 md:py-1.5"
+                              style={{ borderColor: "var(--warning-soft)", background: "var(--warning-soft)", color: "var(--warning)" }}
+                            >
+                              Approval Harga <ArrowRight className="inline h-3.5 w-3.5" />
                             </Link>
                           ) : purchase.status_approval === "approved" || purchase.status_approval === "sudah_transfer" ? (
-                            <Link href={`/nota/${purchase.id}`} target="_blank">
-                              <button className="premium-button btn-netral whitespace-nowrap px-3 py-1.5 text-xs">
-                                Lihat Nota
-                              </button>
+                            <Link href={`/nota/${purchase.id}`} target="_blank" className="premium-button btn-netral inline-flex items-center whitespace-nowrap px-3 py-1.5 text-xs">
+                              Lihat Nota
                             </Link>
                           ) : null}
 
-                          <Link href={`/dashboard/manager/purchases/${purchase.id}`}>
-                            <button className="premium-button btn-netral px-3 py-1.5 text-xs">
-                              Detail
-                            </button>
+                          <Link href={`/dashboard/manager/purchases/${purchase.id}`} className="premium-button btn-netral inline-flex items-center px-3 py-1.5 text-xs">
+                            Detail
                           </Link>
 
                           <button
                             onClick={() => handleDelete(purchase.id)}
                             disabled={deletingId === purchase.id}
-                            className="premium-button btn-netral tone-danger min-w-[38px] justify-center p-2 disabled:opacity-50"
+                            className="premium-button btn-netral tone-danger inline-flex min-w-11 items-center justify-center p-2 disabled:opacity-50 md:min-w-[38px]"
                             title="Hapus transaksi"
                             aria-label={`Hapus transaksi ${purchase.nomor_nota || purchase.id.split("-")[0]}`}
                           >

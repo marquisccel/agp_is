@@ -213,10 +213,8 @@ export default function ManagerPurchaseDetailClient({
               tetap tampil dan mengantar ke form yang seluruhnya terkunci --
               perjalanan yang tidak pernah bisa selesai. */}
           {!isTransferred && (
-            <Link href={`/dashboard/manager/edit/${purchase.id}`}>
-              <button className="premium-button btn-netral px-4 py-2 text-xs">
-                Edit Transaksi
-              </button>
+            <Link href={`/dashboard/manager/edit/${purchase.id}`} className="premium-button btn-netral inline-flex items-center px-4 py-2 text-xs">
+              Edit Transaksi
             </Link>
           )}
           <button
@@ -608,7 +606,7 @@ export default function ManagerPurchaseDetailClient({
               <span className="field-label">Nama lapak</span>
               <Link
                 href={`/dashboard/manager/suppliers/${purchase.supplier.id}`}
-                className="font-bold text-slate-800 text-base transition-colors block hover:text-[var(--brand-strong)]"
+                className="-my-2.5 block py-2.5 text-base font-bold text-slate-800 transition-colors hover:text-[var(--brand-strong)]"
               >
                 {purchase.supplier.nama}
               </Link>

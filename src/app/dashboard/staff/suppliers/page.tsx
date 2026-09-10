@@ -162,7 +162,7 @@ export default async function StaffSuppliersPage({
       ) : (
         <div className="space-y-3">
           {filteredSuppliers.map((supplier) => {
-            const bankInfo = [supplier.nama_bank, supplier.nomor_rekening].filter(Boolean).join(" - ")
+            const bankInfo = [supplier.nama_bank, supplier.nomor_rekening].filter(Boolean).join(" · ")
             const pickupDays = supplier.hari_ambilan?.split(",").join(", ")
             const isMapReady = hasResolvedSupplierCoordinates(supplier)
             const hasMapSignal = isMapReady || Boolean(supplier.link?.trim())
