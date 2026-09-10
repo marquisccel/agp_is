@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { Lock, Save, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
 import PageHeader from "@/components/ui/PageHeader"
 import { pesanError } from "@/lib/pesanError"
+import { formatPeran } from "@/lib/auditLabels"
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession()
@@ -129,15 +130,28 @@ export default function SettingsPage() {
         </div>
 
         <div className="section-body space-y-5">
-          {/* Identitas akun (tanpa avatar -- foto profil dihapus atas permintaan) */}
-          <div>
-            <p className="font-bold" style={{ color: "var(--foreground)" }}>{nama || "-"}</p>
-            <p className="text-xs" style={{ color: "var(--muted-faint)" }}>{email || "-"}</p>
+          {/* Identitas akun dalam satu baris: inisial, nama dan email
+              bertumpuk, lalu peran sebagai lencana di kanan. Sebelumnya
+              ketiganya bertumpuk menurun rata kiri dengan lencana di bawah
+              email, sehingga peran terbaca sebagai keterangan email, bukan
+              atribut akunnya. Foto profil tetap tidak dipakai (dihapus atas
+              permintaan); inisialnya hanya penanda visual. */}
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200/70 bg-slate-50/80 p-3">
             <span
-              className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-              style={{ background: "var(--bg-tint)", color: "var(--muted)" }}
+              aria-hidden="true"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-base font-extrabold"
+              style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}
             >
-              {role}
+              {(nama || email || "?").trim().charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-slate-900">{nama || "-"}</p>
+              <p className="truncate text-xs text-slate-500">{email || "-"}</p>
+            </div>
+            <span
+              className="shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-600"
+            >
+              {formatPeran(role)}
             </span>
           </div>
 
@@ -174,7 +188,7 @@ export default function SettingsPage() {
           <button
             onClick={handleProfileSave}
             disabled={profileStatus === "saving"}
-            className="btn-primer premium-button flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60 sm:w-auto"
+            className="btn-primer premium-button flex h-11 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-sm disabled:opacity-60 sm:w-auto"
           >
             {profileStatus === "saving" ? (
               <span>Menyimpan...</span>
@@ -301,7 +315,7 @@ export default function SettingsPage() {
             /* Gradasi oranye-kuning membuat tombol ini satu-satunya yang
                berbeda bentuk di seluruh aplikasi, dan warnanya menyiratkan
                bahaya padahal mengganti kata sandi adalah tindakan biasa. */
-            className="btn-primer premium-button flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-60 sm:w-auto"
+            className="btn-primer premium-button flex h-11 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-sm disabled:opacity-60 sm:w-auto"
           >
             {pwStatus === "saving" ? (
               <span>Mengubah...</span>

@@ -1,5 +1,8 @@
 "use client"
 
+import { Receipt } from "lucide-react"
+import KeadaanKosong from "@/components/ui/KeadaanKosong"
+
 interface ExpenseData {
   harian: number
   mingguan: number
@@ -32,7 +35,11 @@ export default function ExpenseAnalytics({ warehouseExpenses }: ExpenseAnalytics
       </div>
       <div className="p-5">
         {warehouseExpenses.length === 0 ? (
-          <p className="text-center text-slate-400 text-sm py-8">Belum ada transaksi tercatat di gudang mana pun.</p>
+          <KeadaanKosong
+            ikon={Receipt}
+            judul="Belum Ada Pengeluaran"
+            keterangan="Pengeluaran per gudang muncul setelah ada transaksi pembelian tercatat."
+          />
         ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {warehouseExpenses.map((w) => (

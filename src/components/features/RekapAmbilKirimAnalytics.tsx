@@ -2,6 +2,7 @@
 
 import { Truck, PackageCheck } from "lucide-react"
 import { fmtAngka, fmtTon } from "@/lib/format"
+import KeadaanKosong from "@/components/ui/KeadaanKosong"
 
 export interface RekapAmbilKirimRow {
   warehouseId: string
@@ -176,9 +177,11 @@ export default function RekapAmbilKirimAnalytics({
       <div className="flex flex-1 flex-col p-5">
         {!adaTercatat ? (
           <div className="flex flex-1 items-center justify-center">
-            <p className="text-center text-sm text-slate-400">
-              Belum ada transaksi dengan jenis pengambilan tercatat bulan ini.
-            </p>
+            <KeadaanKosong
+              ikon={Truck}
+              judul="Belum Ada Rekap Pengambilan"
+              keterangan="Rekap muncul setelah transaksi bulan ini mencatat jenis pengambilannya."
+            />
           </div>
         ) : (
           <>

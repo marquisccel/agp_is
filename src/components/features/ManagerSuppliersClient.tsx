@@ -16,7 +16,6 @@ import {
   Users,
 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
-import PilihanPil from "@/components/ui/PilihanPil"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
 import { fmtKg, fmtRp, fmtTon } from "@/lib/format"
@@ -401,13 +400,26 @@ export default function ManagerSuppliersClient({
       {toastHost}
       <section className="section">
         <div className="section-shell-head">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="section-eyebrow">Lapak intelligence</p>
             <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kinerja Lapak</h3>
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Filter performa berdasarkan gudang, periode, grade, dan kata kunci tanpa kehilangan konteks operasional.
             </p>
           </div>
+          {/* Import koordinat di ponsel: tombol ikon di pojok kanan atas
+              kartu, terpisah dari penyaring. Sebagai tombol bertulisan di
+              ujung deret penyaring, ia terbaca seperti salah satu pilihan
+              saring padahal ia membuka formulir. */}
+          <button
+            type="button"
+            onClick={handleOpenImportModal}
+            aria-label="Import koordinat lapak"
+            title="Import koordinat lapak"
+            className="grid h-11 w-11 shrink-0 place-items-center self-start rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 md:hidden"
+          >
+            <MapPin className="h-4 w-4" aria-hidden="true" />
+          </button>
           <div className="hidden text-right md:block">
             <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-500">Tonase periode ini</p>
             <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums text-slate-900">{fmtKg(totalWeightFiltered)}</p>
@@ -474,16 +486,16 @@ export default function ManagerSuppliersClient({
               flex-wrap, tombolnya terlempar ke baris sendiri dan menggantung
               di kanan tanpa pasangan. */}
           <div className="flex items-center gap-2 sm:mt-4 sm:flex-wrap sm:justify-between sm:gap-3">
-          <PilihanPil
+          <ElegantSelect
             value={selectedStatusFilter}
             options={[
-              { value: "all" as const, label: "Semua status" },
-              { value: "GREEN" as const, label: "Aktif", jumlah: greenSupplierCount },
-              { value: "RED" as const, label: "Belum aktif", jumlah: redSupplierCount },
+              { value: "all" as const, label: "Status: Semua" },
+              { value: "GREEN" as const, label: `Status: Aktif (${greenSupplierCount})` },
+              { value: "RED" as const, label: `Status: Belum aktif (${redSupplierCount})` },
             ]}
             onChange={setSelectedStatusFilter}
             ariaLabel="Saring status lapak"
-            className="flex-1 sm:hidden"
+            className="w-full sm:hidden"
           />
           <div className="hidden min-w-0 sm:block sm:flex-none">
           <div className="segmented inline-flex">
@@ -512,13 +524,10 @@ export default function ManagerSuppliersClient({
 
           <button
             onClick={handleOpenImportModal}
-            className="premium-button btn-netral inline-flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-bold sm:px-4"
+            className="premium-button btn-netral sembunyi-ponsel inline-flex shrink-0 items-center gap-1.5 px-4 py-2 text-xs font-bold"
           >
             <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-            {/* Label pendek di ponsel: sebaris dengan deret penyaring, tulisan
-                lengkapnya memakan separuh baris. */}
-            <span className="sm:hidden">Import</span>
-            <span className="hidden sm:inline">Import Koordinat</span>
+            Import Koordinat
           </button>
           </div>
         </div>
@@ -726,7 +735,7 @@ export default function ManagerSuppliersClient({
                   />
                 </div>
 
-                <div className="mt-5 flex flex-col gap-3 border-t pt-4 md:flex-row md:items-center md:justify-between" style={{ borderColor: "var(--border)" }}>
+                <div className="mt-0 flex flex-col gap-3 border-t border-slate-100 pt-2.5 md:mt-5 md:flex-row md:items-center md:justify-between md:border-[color:var(--border)] md:pt-4">
                   <div className="min-w-0 text-sm">
                     <span className="field-label">Rekening</span>
                     {supplier.nomor_rekening ? (

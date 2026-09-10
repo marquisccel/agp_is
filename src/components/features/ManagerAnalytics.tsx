@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react"
 import type { Warehouse } from "@prisma/client"
 import { fmtKg, fmtAngka, fmtTon, fmtRpPerKg } from "@/lib/format"
 import Link from "next/link"
-import { Target } from "lucide-react"
+import { Target, Tags } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import SkuPriceChart from "@/components/features/SkuPriceChart"
 import {
@@ -18,6 +18,7 @@ import {
   Area,
 } from "recharts"
 import { namaGudang } from "@/lib/namaGudang"
+import KeadaanKosong from "@/components/ui/KeadaanKosong"
 
 export interface WarehouseData {
   id: string
@@ -610,10 +611,11 @@ export default function ManagerAnalytics({
             </div>
           </div>
         ) : (
-          <div className="section-body py-12 text-center">
-            <p className="text-sm font-medium" style={{ color: "var(--muted)" }}>Belum ada data harga SKU</p>
-            <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Data muncul setelah ada transaksi pembelian.</p>
-          </div>
+          <KeadaanKosong
+            ikon={Tags}
+            judul="Belum Ada Data Harga SKU"
+            keterangan="Harga rata-rata per SKU muncul setelah ada transaksi pembelian."
+          />
         )}
     </div>
     </div>

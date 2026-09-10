@@ -4,6 +4,8 @@ import { useState } from "react"
 import { fmtKg, fmtRpPerKg, fmtAngka } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import TautanRincian from "@/components/ui/TautanRincian"
+import { Trophy } from "lucide-react"
+import KeadaanKosong from "@/components/ui/KeadaanKosong"
 
 interface TopSupplier {
   supplierId: string
@@ -113,9 +115,11 @@ export default function TopLapakAnalytics({ warehouseTopData }: Props) {
 
       <div className="px-4 py-2 md:p-5">
         {suppliers.length === 0 ? (
-          <div className="text-center text-slate-400 text-sm py-12">
-            <p>Belum ada data transaksi untuk pilihan ini.</p>
-          </div>
+          <KeadaanKosong
+            ikon={Trophy}
+            judul="Belum Ada Peringkat"
+            keterangan="Peringkat lapak muncul setelah ada transaksi di gudang yang dipilih."
+          />
         ) : (
           <>
           {/* Ponsel: tiap lapak satu baris grid tiga lajur (peringkat,

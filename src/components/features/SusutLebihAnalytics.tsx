@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { Scale } from "lucide-react"
 import { createPortal } from "react-dom"
 import { fmtKg, fmtPct } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { namaGudang } from "@/lib/namaGudang"
 import TautanRincian from "@/components/ui/TautanRincian"
+import KeadaanKosong from "@/components/ui/KeadaanKosong"
 
 export interface SkuSusutDetail {
   skuName: string
@@ -226,10 +228,11 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
           hanya menyala kalau angkanya memang ada. */}
       <div>
         {sorted.length === 0 ? (
-          <div className="py-12 text-center text-sm" style={{ color: "var(--muted-faint)" }}>
-            <p>Belum ada data timbangan lapak vs gudang untuk periode ini.</p>
-            <p className="mt-1 text-xs">Data muncul setelah transaksi melewati proses verifikasi gudang.</p>
-          </div>
+          <KeadaanKosong
+            ikon={Scale}
+            judul="Belum Ada Data Timbangan"
+            keterangan="Data susut akan otomatis muncul setelah transaksi diverifikasi oleh gudang."
+          />
         ) : (
           <div className="overflow-x-auto">
             {/* Tabel, bukan deretan kartu berisi kotak angka.
