@@ -11,6 +11,10 @@ import type { ReactNode } from "react"
  *
  * Di layar lebar komponen ini tidak tampil; petak ketiga di deret
  * ringkasan tetap dipakai seperti biasa (lihat .sembunyi-ponsel).
+ *
+ * Bentuknya kartu mandiri penuh (rounded-2xl, p-4), tanpa garis pemisah
+ * tengah. Nominal di kanan berukuran fluid dan tidak boleh patah, supaya
+ * tetap dominan tanpa didesak label di layar 320px.
  */
 export default function BarisRingkasan({
   label,
@@ -27,18 +31,19 @@ export default function BarisRingkasan({
 }) {
   const kelasNada =
     nada === "peringatan"
-      ? "border-amber-200/60 bg-amber-50/70"
+      ? "border-amber-200/80 bg-amber-50/80"
       : "border-slate-200/60 bg-slate-50"
-  const warnaLabel = nada === "peringatan" ? "text-amber-700" : "text-slate-500"
-  const warnaNilai = nada === "peringatan" ? "text-amber-700" : "text-slate-800"
+  const warnaLabel = nada === "peringatan" ? "text-amber-800" : "text-slate-500"
+  const warnaKeterangan = nada === "peringatan" ? "text-amber-700" : "text-slate-500"
+  const warnaNilai = nada === "peringatan" ? "text-amber-900" : "text-slate-900"
 
   return (
-    <div className={`hanya-ponsel flex items-center justify-between gap-3 rounded-xl border p-3.5 ${kelasNada} ${className}`}>
+    <div className={`hanya-ponsel flex items-center justify-between gap-3 rounded-2xl border p-4 ${kelasNada} ${className}`}>
       <div className="min-w-0">
-        <p className={`text-[10.5px] font-bold uppercase tracking-[0.06em] ${warnaLabel}`}>{label}</p>
-        {keterangan && <p className="mt-0.5 text-[11px] text-slate-500">{keterangan}</p>}
+        <p className={`text-[10.5px] font-bold uppercase tracking-wider ${warnaLabel}`}>{label}</p>
+        {keterangan && <p className={`mt-1 text-xs font-medium ${warnaKeterangan}`}>{keterangan}</p>}
       </div>
-      <p className={`shrink-0 whitespace-nowrap font-mono text-sm font-bold tabular-nums ${warnaNilai}`}>{nilai}</p>
+      <p className={`shrink-0 whitespace-nowrap font-mono text-[clamp(14px,4.5vw,18px)] font-extrabold tabular-nums ${warnaNilai}`}>{nilai}</p>
     </div>
   )
 }

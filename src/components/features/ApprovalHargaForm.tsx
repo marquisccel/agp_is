@@ -169,14 +169,15 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                     )}
                   </div>
                   {isOver && (
-                    <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200/70">Di atas standar</span>
+                    <span className="shrink-0 rounded-full border border-amber-200/80 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">Di atas standar</span>
                   )}
                 </div>
 
                 {/* Perbandingan timbangan: pita rata selebar kartu, dipotong
                     garis atas-bawah sampai ke tepi kartu (-mx-4 px-4), bukan
                     kotak bertepi membulat di dalam kartu yang juga bertepi
-                    membulat. Satuan kg ada di label, bukan di tiap angka. */}
+                    membulat. Satuan kg ada di label ketiga lajur (termasuk
+                    SELISIH (KG)), bukan diulang di tiap angka. */}
                 <div className="-mx-4 my-2 grid w-auto grid-cols-3 border-y border-slate-100 bg-slate-50/70 px-4 py-3">
                   <div className="text-left">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Lapak (kg)</div>
@@ -187,7 +188,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                     <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-900">{gudangW.toFixed(2)}</div>
                   </div>
                   <div className="flex flex-col items-end text-right">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Selisih</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Selisih (kg)</div>
                     {diff === 0 ? (
                       <span className="mt-1 rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>Sama</span>
                     ) : (
@@ -195,11 +196,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                         className="mt-1 whitespace-nowrap rounded-full px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums"
                         style={diff < 0 ? { background: "var(--danger-soft)", color: "var(--danger)" } : { background: "var(--warning-soft)", color: "var(--warning)" }}
                       >
-                        {/* "kg" berhuruf sans kecil: dengan satuan penuh
-                            berhuruf mono 11px, "-141.00 kg" lebih lebar dari
-                            lajur 73px di layar 320px dan meluap ke garis. */}
                         {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
-                        <span className="ml-0.5 font-sans text-[9.5px] font-semibold">kg</span>
                       </span>
                     )}
                   </div>
@@ -233,30 +230,32 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
         </div>
       </div>
 
-      {/* Scale Comparison Summary */}
-      <div className="space-y-4 rounded-[var(--radius-lg)] border border-slate-200/60 bg-slate-50 p-4 sm:p-5">
+      {/* Perbandingan timbangan total, total dibayar, dan tombol keputusan
+          dalam SATU kartu putih yang bentuknya sama dengan kartu item SKU di
+          atasnya. Dulu dua kartu terpisah, dan kartu perbandingan berlatar
+          abu memuat kotak putih bersudut membulat di dalamnya -- kartu di
+          dalam kartu, lalu kartu lagi di bawahnya untuk angka yang justru
+          diputuskan. Pita perbandingan kini rata ke tepi kartu (-mx-4 px-4)
+          persis pita di kartu item. */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm sm:p-5">
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
           Perbandingan Timbangan Total (Lapak vs Gudang)
         </h4>
-        {/* Tiga lajur dalam satu pita bertepi, dipisah garis tipis.
-            Tiga kotak berbayang di dalam kartu abu membuat angkanya
-            berdesakan di layar 360px: tiap kotak cuma 90px, dan angka
-            beserta satuannya patah. Satuan kini di label. */}
-        <div className="grid grid-cols-3 divide-x overflow-hidden rounded-[var(--radius-md)] border bg-white" style={{ borderColor: "var(--border)" }}>
-          <div className="px-2 py-3 text-center" style={{ borderColor: "var(--border)" }}>
+        <div className="-mx-4 mt-3 grid grid-cols-3 border-y border-slate-100 bg-slate-50/70 px-4 py-3 sm:-mx-5 sm:px-5">
+          <div className="text-left">
             <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Lapak (kg)</div>
-            <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-800 sm:text-base">
+            <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-700 sm:text-base">
               {(purchase.berat_timbangan_lapak || 0).toFixed(2)}
             </div>
           </div>
-          <div className="px-2 py-3 text-center" style={{ borderColor: "var(--border)" }}>
+          <div className="text-center">
             <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Gudang (kg)</div>
-            <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-800 sm:text-base">
+            <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-900 sm:text-base">
               {(purchase.berat_timbangan_gudang || 0).toFixed(2)}
             </div>
           </div>
-          <div className="flex flex-col items-center px-2 py-3 text-center" style={{ borderColor: "var(--border)" }}>
-            <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Selisih</div>
+          <div className="flex flex-col items-end text-right">
+            <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Selisih (kg)</div>
             <span
               className="mt-1 whitespace-nowrap rounded-full px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums sm:px-2 sm:text-sm"
               style={selisihTotal === 0
@@ -266,7 +265,6 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                   : { background: "var(--warning-soft)", color: "var(--warning)" }}
             >
               {selisihTotal > 0 ? `+${selisihTotal.toFixed(2)}` : selisihTotal.toFixed(2)}
-              <span className="ml-0.5 font-sans text-[9.5px] font-semibold sm:text-xs">kg</span>
             </span>
             {/* Persentase tidak diulang di sel ini: dua angka bertumpuk di
                 lajur selebar 90px saling berdesakan, dan persentase yang sama
@@ -274,7 +272,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
           </div>
         </div>
         <div
-          className="rounded-[var(--radius-sm)] px-4 py-2.5 text-center text-xs font-semibold"
+          className="mt-3 rounded-xl px-4 py-2.5 text-center text-xs font-semibold"
           style={selisihTotal === 0
             ? { background: "var(--bg-tint)", color: "var(--muted)" }
             : selisihTotal < 0
@@ -287,31 +285,34 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
               ? `Peringatan: penyusutan timbangan gudang ${Math.abs(selisihTotal).toFixed(2)} KG (${beratTimbanganLapak > 0 ? Math.abs((selisihTotal / beratTimbanganLapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`
               : `Timbangan gudang bertambah: +${selisihTotal.toFixed(2)} KG (+${beratTimbanganLapak > 0 ? ((selisihTotal / beratTimbanganLapak) * 100).toFixed(1) : "0"}%) vs lapak staff.`}
         </div>
-      </div>
 
-      {/* Total + Action Buttons */}
-      <div className="space-y-4 rounded-[var(--radius-lg)] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div>
-          <div className="text-xs text-slate-500 font-medium">Total Dibayar (Setelah Retur &amp; DP)</div>
-          <div className="mt-1 font-mono text-2xl font-extrabold tabular-nums text-slate-800">
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <div className="text-xs font-medium text-slate-500">Total Dibayar (Setelah Retur &amp; DP)</div>
+          <div className="mt-1 font-mono text-2xl font-extrabold tabular-nums text-slate-900">
             Rp {(purchase.total_dibayar || 0).toLocaleString("id-ID")}
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+
+        {/* Dua tombol sebaris sama lebar: Tolak kiri bernada rose lembut,
+            Setujui kanan hijau penuh. Tulisannya satu baris: 12px di bawah
+            400px (14px, "Tolak (Dibatalkan)" butuh 159px sementara lajurnya
+            148px di layar 390px dan tulisannya patah dua baris), dan di bawah
+            360px keterangan "(Dibatalkan)" dilepas karena lajurnya tinggal
+            113px. */}
+        <div className="mt-4 grid w-full grid-cols-2 gap-3">
           <button
+            type="button"
             onClick={() => handleAction("reject")}
             disabled={loading}
-            className="btn-netral tone-danger premium-button min-h-11 flex-1 px-5 py-3 text-sm disabled:opacity-50"
+            className="h-11 whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 px-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-50 min-[400px]:text-sm"
           >
-            {loading ? "Memproses..." : "Tolak (Dibatalkan)"}
+            {loading ? "Memproses..." : <>Tolak<span className="hidden min-[360px]:inline"> (Dibatalkan)</span></>}
           </button>
           <button
+            type="button"
             onClick={() => handleAction("approve")}
             disabled={loading}
-            className="min-h-11 flex-1 rounded-[var(--radius-md)] px-5 py-3 text-sm font-bold text-white transition-colors disabled:opacity-70"
-            style={{ background: "var(--success)" }}
-            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "#128a3e" }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--success)" }}
+            className="btn-primer h-11 whitespace-nowrap rounded-xl px-2 text-xs font-semibold shadow-sm disabled:opacity-70 min-[400px]:text-sm"
           >
             {loading ? "Memproses..." : "Setujui Harga"}
           </button>

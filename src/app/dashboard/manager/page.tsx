@@ -746,8 +746,10 @@ export default async function ManagerDashboard({
             <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--brand-strong)" }}>
               Agrapana Greenworks Polymer Information System
             </p>
-            {/* Ponsel: sapaan dan nama satu hierarki (tebal, slate-900,
-                ukuran sama) dalam satu alur flex-wrap sejajar garis dasar.
+            {/* Ponsel: sapaan dan nama satu ukuran dalam satu alur flex-wrap
+                sejajar garis dasar. Sapaan berbobot normal slate-600, nama
+                tebal slate-900: ukurannya serasi, dan tebal-tipis yang
+                membedakan mana sapaan mana orangnya.
 
                 Ukurannya fluid, clamp(18px, 5.8vw, 24px), bukan text-xl atau
                 text-2xl tetap. Di layar 320px ruang teks kartu judul cuma
@@ -763,9 +765,9 @@ export default async function ManagerDashboard({
                 ikut di dalam span nama supaya tidak turun sendirian.
 
                 Mulai sm kembali ke judul besar satu baris seperti semula. */}
-            <h2 className="mt-3 flex max-w-4xl flex-wrap items-baseline gap-x-1.5 text-[clamp(18px,5.8vw,24px)] font-bold leading-tight tracking-[-0.02em] text-slate-900 sm:block sm:whitespace-nowrap sm:text-3xl sm:font-semibold sm:leading-none sm:tracking-[-0.04em] sm:text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
-              <span>{getGreeting(now)},</span>{" "}
-              <span className="min-w-0 break-words sm:font-black">{displayName}.</span>
+            <h2 className="mt-3 flex max-w-4xl flex-wrap items-baseline gap-x-1.5 text-[clamp(18px,5.8vw,24px)] leading-tight tracking-[-0.02em] text-slate-900 sm:block sm:whitespace-nowrap sm:text-3xl sm:font-semibold sm:leading-none sm:tracking-[-0.04em] sm:text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
+              <span className="font-normal text-slate-600 sm:font-semibold sm:text-slate-950">{getGreeting(now)},</span>{" "}
+              <span className="min-w-0 break-words font-bold text-slate-900 sm:font-black sm:text-slate-950">{displayName}.</span>
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
               Pantau tonase, target, approval, dan risiko seluruh gudang dalam satu tampilan kerja.

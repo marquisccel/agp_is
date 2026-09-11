@@ -737,19 +737,40 @@ export default function MasterDataClient({
       {/* Tab memakai .segmented, sama dengan pemilih di dashboard Manager
           dan filter di Data Lapak -- sebelumnya kotak hitam pekat di atas
           panel kaca buram, satu-satunya pola seperti itu di aplikasi. */}
-      <div className="segmented" role="tablist">
-        {tabs.map((tab) => (
+      {/* Tab dan aksi utama halaman dalam satu baris kepala: tab di kiri,
+          "+ Akun Baru" di kanan. Membuat akun adalah satu-satunya aksi yang
+          menambah data di halaman ini, jadi ia duduk sejajar navigasi, bukan
+          terselip di dalam kartu daftar. Dari tab Ringkasan pun tombol ini
+          langsung membawa ke tab Pengguna dengan form terbuka. mb-4
+          merapatkan jarak space-y-6 supaya kepala menempel ke isinya. */}
+      <div className="mb-4 flex w-full items-center justify-between gap-3">
+        <div className="segmented" role="tablist">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={activeTab === tab.id ? "active" : undefined}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {!(activeTab === "pengguna" && formAkunTerbuka) && (
           <button
-            key={tab.id}
             type="button"
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={activeTab === tab.id ? "active" : undefined}
+            onClick={() => {
+              setActiveTab("pengguna")
+              setFormAkunTerbuka(true)
+            }}
+            className="btn-primer inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs font-semibold shadow-sm"
           >
-            {tab.label}
+            <UserPlus className="h-4 w-4" aria-hidden="true" />
+            Akun Baru
           </button>
-        ))}
+        )}
       </div>
 
       <div key={activeTab} className="soft-enter">
@@ -894,28 +915,13 @@ export default function MasterDataClient({
         <div className="space-y-4">
           <FormAkunBaru warehouses={warehouses} terbuka={formAkunTerbuka} setTerbuka={setFormAkunTerbuka} />
 
-          {/* Kartu kontrol dua baris dengan tugas yang jelas: baris atas
-              judul daftar dan satu aksi utama ringkas (Akun Baru) di kanan,
-              baris bawah kolom cari dan pemilih role sebaris. Tiga kontrol
-              dalam satu baris di ponsel membuat kolom cari tinggal 120px
-              dan placeholder-nya terpotong; bertumpuk tiga baris, bilah
-              kontrol memakan separuh layar sebelum daftar pertama terlihat. */}
+          {/* Kartu kontrol: judul daftar di atas, kolom cari dan pemilih role
+              sebaris di bawahnya. Tombol Akun Baru ada di baris kepala
+              halaman, sejajar tab. */}
           <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="text-sm font-bold text-slate-900">Daftar Pengguna</h3>
-                <p className="mt-0.5 text-xs text-slate-500">{users.length} akun terdaftar</p>
-              </div>
-              {!formAkunTerbuka && (
-                <button
-                  type="button"
-                  onClick={() => setFormAkunTerbuka(true)}
-                  className="btn-primer inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs font-semibold shadow-sm"
-                >
-                  <UserPlus className="h-4 w-4" aria-hidden="true" />
-                  Akun Baru
-                </button>
-              )}
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900">Daftar Pengguna</h3>
+              <p className="mt-0.5 text-xs text-slate-500">{users.length} akun terdaftar</p>
             </div>
             <div className="flex w-full items-center gap-2">
               <SearchBox value={searchUser} onChange={setSearchUser} placeholder="Cari pengguna..." />

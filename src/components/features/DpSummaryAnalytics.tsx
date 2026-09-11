@@ -7,6 +7,7 @@ import ElegantSelect from "@/components/ui/ElegantSelect"
 import { namaGudang } from "@/lib/namaGudang"
 import TautanRincian from "@/components/ui/TautanRincian"
 import KeadaanKosong from "@/components/ui/KeadaanKosong"
+import BarisRingkasan from "@/components/ui/BarisRingkasan"
 
 interface DpSupplierRow {
   supplierId: string
@@ -112,16 +113,13 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       </div>
 
       {/* Ponsel: susunannya sama dengan ringkasan Transfer Pembayaran --
-          dua angka "biasa" berdampingan dalam satu wadah bertint lembut, lalu
-          angka yang menuntut perhatian dalam kartu amber penuh di bawahnya.
-          Deret petak layar lebar disembunyikan di ponsel (sembunyi-ponsel):
-          di sana ketiganya sejajar dan bernada sama, jadi saldo menggantung
-          tidak lebih menonjol daripada total yang sekadar catatan.
-
-          Tiap angka: label huruf kapital kecil di atas, nominal tebal di
-          bawah, keterangan satu baris di bawahnya. Amber hanya kalau memang
-          ada yang menggantung; nol memakai wadah netral yang sama dengan
-          baris atas, supaya kuning tidak kehilangan artinya. */}
+          dua angka "biasa" berdampingan dalam satu wadah bertint lembut di
+          dalam kartu ini, lalu saldo menggantung sebagai kartu mandiri
+          selebar penuh DI BAWAH kartu ini (BarisRingkasan, sama dengan
+          "Sudah transfer"). Deret petak layar lebar disembunyikan di ponsel
+          (sembunyi-ponsel): di sana ketiganya sejajar dan bernada sama, jadi
+          saldo menggantung tidak lebih menonjol daripada total yang sekadar
+          catatan. */}
       {/* pb-0 di mode ringkas: TautanRincian di bawahnya sudah membawa
           padding atasnya sendiri.
 
@@ -144,36 +142,6 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
             <p className="mt-0.5 text-[11px] leading-snug text-slate-500">Sudah dipotongkan di nota</p>
           </div>
         </div>
-
-        <div
-          className={`grid grid-cols-2 gap-2 rounded-2xl border p-4 ${
-            totalRemaining > 0 ? "border-amber-300/80 bg-amber-100/80 shadow-sm" : "border-slate-100 bg-slate-50/80"
-          }`}
-        >
-          {/* Kolom flex dengan nominal mt-auto: di 320px label "Masih
-              menggantung" patah dua baris sementara "Lapak bersaldo" satu
-              baris, dan tanpa ini kedua angkanya duduk di ketinggian
-              berbeda. Label tetap rata atas, angka rata bawah. */}
-          <div className="flex min-w-0 flex-col">
-            <p className={`text-[10px] font-bold uppercase tracking-wider ${totalRemaining > 0 ? "text-amber-800" : "text-slate-500"}`}>
-              Masih menggantung
-            </p>
-            <p className={`mt-auto whitespace-nowrap pt-1 font-mono text-[clamp(13px,4.2vw,16px)] font-extrabold tabular-nums ${totalRemaining > 0 ? "text-amber-900" : "text-slate-900"}`}>
-              {fmtRp(totalRemaining)}
-            </p>
-          </div>
-          <div className={`flex min-w-0 flex-col border-l pl-2.5 min-[360px]:pl-3 ${totalRemaining > 0 ? "border-amber-300/70" : "border-slate-200"}`}>
-            <p className={`text-[10px] font-bold uppercase tracking-wider ${totalRemaining > 0 ? "text-amber-800" : "text-slate-500"}`}>
-              Lapak bersaldo
-            </p>
-            <p className={`mt-auto whitespace-nowrap pt-1 font-mono text-[clamp(13px,4.2vw,16px)] font-extrabold tabular-nums ${totalRemaining > 0 ? "text-amber-900" : "text-slate-900"}`}>
-              {lapakBersaldo} <span className="font-sans text-xs font-semibold">lapak</span>
-            </p>
-          </div>
-          <p className={`col-span-2 text-[11px] font-medium ${totalRemaining > 0 ? "text-amber-800" : "text-slate-500"}`}>
-            {totalRemaining > 0 ? "Sudah keluar, belum jadi barang." : "Tidak ada DP yang menggantung."}
-          </p>
-        </div>
       </div>
 
       {summaryOnly && (
@@ -181,6 +149,18 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
       )}
 
       </div>
+
+      {/* Ponsel: saldo menggantung sebagai kartu mandiri tepat di bawah
+          kartu ringkasan (-mt-3 merapatkan jarak space-y-6 induknya), sama
+          dengan kartu "Sudah transfer" di Transfer Pembayaran. Amber hanya
+          kalau memang ada yang menggantung. */}
+      <BarisRingkasan
+        label="Masih menggantung"
+        keterangan={totalRemaining > 0 ? `${lapakBersaldo} lapak bersaldo` : "Tidak ada DP yang menggantung"}
+        nilai={fmtRp(totalRemaining)}
+        nada={totalRemaining > 0 ? "peringatan" : "netral"}
+        className="-mt-3"
+      />
 
       {/* Daftar per lapak berdiri sebagai kartu tersendiri.
           Digabung dengan pita ringkasan di atasnya, satu kartu memuat dua

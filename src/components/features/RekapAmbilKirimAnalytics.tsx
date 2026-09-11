@@ -298,12 +298,19 @@ export default function RekapAmbilKirimAnalytics({
                     </th>
                     {/* Label grup dirata-kanan mengikuti kolom angkanya.
                         Judul di tengah tidak pernah sejajar dengan angka yang
-                        rata kanan, itu yang bikin header terlihat goyah. */}
-                    <th colSpan={2} className="border-r border-slate-200 px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
-                      Ambil
+                        rata kanan, itu yang bikin header terlihat goyah.
+
+                        Garis bawah tipis di bawah tiap label grup menegaskan
+                        bahwa Trans. dan Ton di bawahnya milik grup itu. Garis
+                        ditarik di span dalam sel, bukan di tepi sel, supaya
+                        menjorok sebesar padding sel: garis Ambil dan garis
+                        Kirim berhenti sebelum garis tegak pemisah, tidak
+                        menyambung jadi satu garis panjang. */}
+                    <th colSpan={2} className="border-r border-slate-200 px-2 pb-1 pt-2 text-right text-xs font-semibold">
+                      <span className="block border-b border-slate-200 pb-1">Ambil</span>
                     </th>
-                    <th colSpan={2} className="px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
-                      Kirim
+                    <th colSpan={2} className="px-2 pb-1 pt-2 text-right text-xs font-semibold">
+                      <span className="block border-b border-slate-200 pb-1">Kirim</span>
                     </th>
                     <th rowSpan={2} className="hidden py-2 pl-2 pr-3 align-bottom text-right text-xs font-semibold sm:table-cell">
                       Rekap

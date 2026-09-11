@@ -129,7 +129,7 @@ export default function DPApprovalActions({
           type="button"
           onClick={() => handleAction("approve")}
           disabled={loading}
-          className="btn-primer inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-semibold shadow-sm disabled:opacity-50"
+          className="btn-primer flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold shadow-sm disabled:opacity-50"
         >
           <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
           {loading ? "Memproses..." : "Setujui"}
@@ -138,7 +138,7 @@ export default function DPApprovalActions({
           type="button"
           onClick={() => setShowEdit(true)}
           disabled={loading}
-          className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200 disabled:opacity-50"
+          className="flex h-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 disabled:opacity-50"
         >
           Edit Nominal
         </button>
@@ -148,7 +148,7 @@ export default function DPApprovalActions({
           disabled={loading}
           title="Tolak pengajuan kasbon ini"
           aria-label="Tolak pengajuan kasbon ini"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-rose-100 bg-rose-50 px-3 text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
