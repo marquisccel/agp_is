@@ -6,7 +6,6 @@ import ManagerAnalytics, { type WarehouseData } from "@/components/features/Mana
 import ManagerCalendar from "@/components/features/ManagerCalendar"
 import TopLapakAnalytics from "@/components/features/TopLapakAnalytics"
 import SusutLebihAnalytics, { type TransaksiSusutDetail } from "@/components/features/SusutLebihAnalytics"
-import ExpenseAnalytics from "@/components/features/ExpenseAnalytics"
 import DpSummaryAnalytics from "@/components/features/DpSummaryAnalytics"
 import RekapAmbilKirimAnalytics from "@/components/features/RekapAmbilKirimAnalytics"
 import { redirect } from "next/navigation"
@@ -202,11 +201,13 @@ export default async function ManagerDashboard({
   })
 
   // ──────────────────────────────────────────
-  // 6. Build ManagerAnalytics dataMap AND Expense Metrics
+  // 6. Build ManagerAnalytics dataMap AND total pengeluaran bulan ini
   // ──────────────────────────────────────────
   const dataMap: Record<string, WarehouseData> = {}
-  const warehouseExpenses = []
-  const globalExpenses = { harian: 0, mingguan: 0, bulanan: 0 }
+  // Kartu "Pengeluaran per Gudang" (hari/minggu/bulan per gudang) dihapus
+  // atas permintaan Manager; yang tersisa hanya total bulan ini untuk petak
+  // stat pengeluaran di atas.
+  const globalExpenses = { bulanan: 0 }
 
   for (const w of warehouses) {
     const target    = targets.find(t => t.warehouseId === w.id)
@@ -216,14 +217,8 @@ export default async function ManagerDashboard({
 
     // Pengeluaran (Expenses) calculation
     const getExpense = (p: (typeof validPurchases)[number]) => p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
-    const expHarian = wPurchases.filter(p => p.createdAt >= todayStart && p.createdAt < todayEnd).reduce((s, p) => s + getExpense(p), 0)
-    const expMingguan = wPurchases.filter(p => p.createdAt >= weekStart && p.createdAt < weekEnd).reduce((s, p) => s + getExpense(p), 0)
-    const expBulanan = wPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd).reduce((s, p) => s + getExpense(p), 0)
+    globalExpenses.bulanan += wPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd).reduce((s, p) => s + getExpense(p), 0)
     
-    warehouseExpenses.push({ id: w.id, nama: w.nama, expenses: { harian: expHarian, mingguan: expMingguan, bulanan: expBulanan } })
-    globalExpenses.harian += expHarian
-    globalExpenses.mingguan += expMingguan
-    globalExpenses.bulanan += expBulanan
 
     const actual_harian   = wPurchases.filter(p => p.createdAt >= todayStart && p.createdAt < todayEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
     const actual_mingguan = wPurchases.filter(p => p.createdAt >= weekStart && p.createdAt < weekEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
@@ -874,9 +869,6 @@ export default async function ManagerDashboard({
           </Link>
         </div>
       </div>
-
-      {/* Pengeluaran Analytics */}
-      <ExpenseAnalytics warehouseExpenses={warehouseExpenses} />
 
       {/* Target vs Realisasi Charts */}
       <ManagerAnalytics warehouses={warehouses} dataMap={dataMap} skuPricesMap={skuPricesMap} />

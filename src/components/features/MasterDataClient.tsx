@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
-import { Check, MapPin, Search, Store, Trash2, UserPlus, X } from "lucide-react"
+import { Check, Eye, EyeOff, MapPin, Search, Store, Trash2, UserPlus, X } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { useConfirm } from "@/components/ui/ConfirmDialog"
 import { useToast } from "@/components/ui/Toast"
@@ -27,6 +27,7 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
   const [nama, setNama] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [lihatPassword, setLihatPassword] = useState(false)
   const [role, setRole] = useState("STAFF")
   const [warehouseId, setWarehouseId] = useState("")
   const [loading, setLoading] = useState(false)
@@ -34,7 +35,7 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
   const butuhGudang = role !== "MANAGER"
 
   const reset = () => {
-    setNama(""); setEmail(""); setPassword(""); setRole("STAFF"); setWarehouseId("")
+    setNama(""); setEmail(""); setPassword(""); setLihatPassword(false); setRole("STAFF"); setWarehouseId("")
   }
 
   const simpan = async (e: React.FormEvent) => {
@@ -103,10 +104,25 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
 
         <label className="space-y-1.5">
           <span className="field-label">Password</span>
-          <input
-            required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
-            className="field-input"
-          />
+          <div className="relative">
+            <input
+              required type={lihatPassword ? "text" : "password"} minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              className="field-input field-icon-kanan"
+            />
+            {/* Manager membuat password untuk orang lain lalu menyampaikannya;
+                tanpa bisa dilihat, salah ketik baru ketahuan saat pemilik akun
+                gagal masuk. */}
+            <button
+              type="button"
+              onClick={() => setLihatPassword((v) => !v)}
+              aria-label={lihatPassword ? "Sembunyikan password" : "Tampilkan password"}
+              aria-pressed={lihatPassword}
+              className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition-colors hover:text-slate-600"
+            >
+              {lihatPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+            </button>
+          </div>
           <span className="block text-[11px] text-slate-400">Minimal 8 karakter.</span>
         </label>
 

@@ -1,12 +1,15 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { ChevronDown } from "lucide-react"
 
 type SelectOption<T extends string | number> = {
   label: string
   value: T
+  /** Label lebih pendek untuk tombol pemicu saat pilihan ini terpilih,
+   *  mis. tanpa hitungan. Menu tetap memakai label lengkap. */
+  labelPemicu?: string
 }
 
 type ElegantSelectProps<T extends string | number> = {
@@ -34,7 +37,7 @@ export default function ElegantSelect<T extends string | number>({
   disabled = false,
 }: ElegantSelectProps<T>) {
   const [open, setOpen] = useState(false)
-  const [menuRect, setMenuRect] = useState<{ top: number; left: number; width: number } | null>(null)
+  const [menuRect, setMenuRect] = useState<{ top: number; left: number; right: number; width: number; pas?: boolean } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const selected = options.find(option => option.value === value) || options[0]
@@ -45,9 +48,23 @@ export default function ElegantSelect<T extends string | number>({
     setMenuRect({
       top: rect.bottom + 6,
       left: rect.left,
+      right: rect.right,
       width: rect.width,
     })
   }
+
+  // Menu boleh lebih lebar dari pemicunya (label menu lebih panjang dari
+  // label pemicu). Pemicu yang duduk di sisi kanan layar lalu membuka menu
+  // yang menembus tepi kanan: di layar 320px "Tanpa koordinat (2)" terpotong
+  // di luar layar. Setelah menu tergambar lebarnya diukur, dan bila tidak
+  // muat, menu disejajarkan ke tepi kanan pemicu.
+  useLayoutEffect(() => {
+    if (!open || !menuRect || menuRect.pas || !menuRef.current) return
+    const lebar = menuRef.current.offsetWidth
+    const batasKanan = window.innerWidth - 8
+    const left = menuRect.left + lebar > batasKanan ? Math.max(8, Math.min(menuRect.right, batasKanan) - lebar) : menuRect.left
+    setMenuRect({ ...menuRect, left, pas: true })
+  }, [open, menuRect])
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -112,7 +129,7 @@ export default function ElegantSelect<T extends string | number>({
         // fokus pada tombol yang diketuk, jadi :focus saja tidak cukup.
         data-terbuka={open ? "" : undefined}
       >
-        <span className="truncate">{selected?.label}</span>
+        <span className="truncate">{selected?.labelPemicu ?? selected?.label}</span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
           style={{ color: "var(--muted-faint)" }}
@@ -128,6 +145,7 @@ export default function ElegantSelect<T extends string | number>({
             top: menuRect.top,
             left: menuRect.left,
             minWidth: menuRect.width,
+            maxWidth: "calc(100vw - 16px)",
             boxShadow: "var(--shadow-hover)",
           }}
           className={`elegant-select-menu z-[120] max-h-72 overflow-y-auto rounded-[10px] border border-slate-200 bg-white p-1 ${menuClassName}`}

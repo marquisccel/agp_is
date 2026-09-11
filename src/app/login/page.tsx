@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { BarChart3, ClipboardCheck, LockKeyhole, Mail, ShieldCheck, Warehouse } from "lucide-react"
+import { BarChart3, ClipboardCheck, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, Warehouse } from "lucide-react"
 import AgpLogo from "@/components/ui/AgpLogo"
 import LatarLogin, { type GambarLatar } from "@/components/features/LatarLogin"
 
@@ -51,6 +51,7 @@ const GAMBAR_LATAR: GambarLatar[] = [
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [lihatPassword, setLihatPassword] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -222,13 +223,26 @@ export default function LoginPage() {
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
                       id="password"
-                      type="password"
+                      type={lihatPassword ? "text" : "password"}
                       required
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="field-input field-icon h-11 lg:h-12"
+                      className="field-input field-icon field-icon-kanan h-11 lg:h-12"
                       placeholder="Masukkan password"
                     />
+                    {/* Tombol mata supaya pengguna bisa memeriksa apa yang
+                        sudah diketik sebelum menekan Masuk. Sasaran sentuhnya
+                        44px penuh, rata kanan di dalam kolom. */}
+                    <button
+                      type="button"
+                      onClick={() => setLihatPassword((v) => !v)}
+                      aria-label={lihatPassword ? "Sembunyikan password" : "Tampilkan password"}
+                      aria-pressed={lihatPassword}
+                      className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition-colors hover:text-slate-600"
+                    >
+                      {lihatPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                    </button>
                   </div>
                 </div>
 

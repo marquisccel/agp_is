@@ -225,8 +225,18 @@ export default function DoubleCheckForm({
   const selisihTimbangan = timbanganGudang - timbanganLapak
   const warnaSelisih =
     selisihTimbangan === 0 ? "var(--foreground)" : selisihTimbangan < 0 ? "var(--danger)" : "var(--warning)"
-  const latarSelisih =
-    selisihTimbangan === 0 ? "var(--bg-tint)" : selisihTimbangan < 0 ? "var(--danger-soft)" : "var(--warning-soft)"
+  const nadaPanel =
+    selisihTimbangan === 0
+      ? "border-slate-200/70 bg-slate-50/70"
+      : selisihTimbangan < 0
+        ? "border-rose-200/60 bg-rose-50/70"
+        : "border-amber-200/60 bg-amber-50/70"
+  const nadaPesan =
+    selisihTimbangan === 0
+      ? "border-slate-200/70 text-slate-600"
+      : selisihTimbangan < 0
+        ? "border-rose-200/60 text-rose-600"
+        : "border-amber-200/60 text-amber-700"
 
   // ── Bagian-bagian verifikasi ──────────────────────────────────────
   //
@@ -235,9 +245,17 @@ export default function DoubleCheckForm({
   // PurchaseForm. Di layar lebar keempatnya tetap tersusun dalam grid dua
   // kolom seperti semula.
 
+  // Di ponsel tiap langkah sudah berkepala WizardLangkah ("Langkah 1 dari 4
+  // / Timbangan Gudang"). Kotak abu bertepi dengan kepala kedua di dalamnya
+  // ("VERIFIKASI / Data Timbangan") membuat satu langkah terbaca sebagai
+  // kartu di dalam kartu dengan dua judul. Di ponsel kotaknya dilepas dan
+  // isiannya langsung duduk di kartu form putih; kepala kedua disembunyikan.
+  const kelasBlok = ponsel ? "" : "rounded-[var(--radius-lg)] border p-4 md:p-6"
+  const gayaBlok = ponsel ? undefined : { background: "var(--surface-sunken)", borderColor: "var(--border)" }
+
   const blokTimbangan = (
-    <div className="rounded-[var(--radius-lg)] border p-4 md:p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
-      <div className="mb-4">
+    <div className={kelasBlok} style={gayaBlok}>
+      <div className="mb-4 sembunyi-ponsel">
         <span className="section-eyebrow">Verifikasi</span>
         <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Data Timbangan</h3>
         <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>
@@ -307,11 +325,12 @@ export default function DoubleCheckForm({
             dikosongkan, isinya selalu "Susut 100%" berwarna merah -- peringatan
             palsu yang muncul sebelum Admin menimbang apa pun. */}
         {timbanganLapak > 0 && timbanganGudang > 0 && (
-          <div
-            className="mt-4 flex flex-col gap-2 rounded-[var(--radius-md)] border p-4 shadow-sm"
-            style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-          >
-            <span className="field-label">Hasil Perbandingan Timbangan</span>
+          /* Panel tipis bernada lembut: rose untuk susut, amber untuk lebih,
+             slate untuk cocok. Panel putih berbayang dengan kotak peringatan
+             merah pekat di dalamnya terbaca seperti galat sistem, padahal
+             selisih timbangan adalah hal biasa yang cukup diperiksa. */
+          <div className={`mt-4 flex flex-col gap-2 rounded-xl border p-3.5 ${nadaPanel}`}>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Hasil Perbandingan Timbangan</span>
             {/* Nadanya diluruskan dengan Analisis Susut dan Detail
                 Transaksi: gudang menimbang LEBIH berat dari lapak
                 bukan kabar baik, melainkan selisih yang perlu
@@ -320,30 +339,27 @@ export default function DoubleCheckForm({
                 "bertambah", seolah gudang mendapat untung. Selisih
                 nol juga tidak lagi dirayakan hijau -- itu keadaan
                 yang memang diharapkan. */}
-            <div className="mt-1 flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-xs" style={{ color: "var(--muted-faint)" }}>Selisih Timbangan</div>
                 <div className="font-mono text-lg font-bold" style={{ color: warnaSelisih }}>
                   {selisihTimbangan > 0 ? `+${selisihTimbangan.toFixed(2)}` : selisihTimbangan.toFixed(2)} KG
                 </div>
               </div>
-              <div>
+              <div className="text-right">
                 <div className="text-xs" style={{ color: "var(--muted-faint)" }}>Persentase Selisih</div>
                 <div className="font-mono text-lg font-bold" style={{ color: warnaSelisih }}>
                   {timbanganLapak > 0 ? ((selisihTimbangan / timbanganLapak) * 100).toFixed(1) : "0"}%
                 </div>
               </div>
             </div>
-            <div
-              className="mt-2 rounded-[var(--radius-sm)] px-3 py-2 text-center text-xs font-semibold"
-              style={{ background: latarSelisih, color: warnaSelisih }}
-            >
+            <p className={`border-t pt-2 text-center text-xs font-medium ${nadaPesan}`}>
               {selisihTimbangan === 0
                 ? "Timbangan lapak dan gudang cocok."
                 : selisihTimbangan < 0
                   ? `Susut ${Math.abs(selisihTimbangan).toFixed(2)} KG dibanding timbangan lapak. Periksa sebelum melanjutkan.`
                   : `Lebih ${selisihTimbangan.toFixed(2)} KG dibanding timbangan lapak. Periksa sebelum melanjutkan.`}
-            </div>
+            </p>
           </div>
         )}
       </div>
@@ -351,8 +367,8 @@ export default function DoubleCheckForm({
   )
 
   const blokItem = (
-    <div className="rounded-[var(--radius-lg)] border p-4 md:p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
-      <div className="mb-4">
+    <div className={kelasBlok} style={gayaBlok}>
+      <div className="mb-4 sembunyi-ponsel">
         <span className="section-eyebrow">Rincian</span>
         <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Finalisasi Item per SKU</h3>
         <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Admin menginput kembali hasil timbangan gudang untuk setiap SKU yang masuk dari data staff.</p>
@@ -462,10 +478,10 @@ export default function DoubleCheckForm({
           kosong. Yang selalu menyala kuning berhenti berarti
           peringatan. Nada perhatian kini hanya melekat pada angka
           potongannya. */}
-      <div className="rounded-[var(--radius-lg)] border p-4 md:p-6" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
+      <div className={kelasBlok} style={gayaBlok}>
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <span className="section-eyebrow">Koreksi</span>
+            <span className="section-eyebrow sembunyi-ponsel">Koreksi</span>
             <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Retur / Potongan</h3>
           </div>
           <button type="button" onClick={addRetur} className="btn-netral premium-button px-3 py-1.5 text-xs">

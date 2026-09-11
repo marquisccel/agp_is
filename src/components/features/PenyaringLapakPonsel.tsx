@@ -61,14 +61,18 @@ export default function PenyaringLapakPonsel({
   }, [cari])
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative min-w-0 flex-1">
+    // Kisi 12 lajur, 7 untuk cari dan 5 untuk pemilih. Dengan flex dan
+    // lebar persen, pemilih menyusut duluan di layar 320px dan labelnya
+    // terpotong di tengah kata; di kisi lebarnya pasti dan labelnya
+    // dipotong rapi dengan elipsis.
+    <div className="grid grid-cols-12 gap-2">
+      <div className="relative col-span-7 min-w-0">
         <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
         <input
           type="search"
           value={cari}
           onChange={(e) => setCari(e.target.value)}
-          placeholder="Cari lapak..."
+          placeholder="Cari lapak"
           aria-label="Cari lapak"
           className="field-input field-icon"
         />
@@ -77,13 +81,17 @@ export default function PenyaringLapakPonsel({
         value={pilihan}
         onChange={(p) => arahkan(p, cari)}
         ariaLabel="Saring lapak"
-        className="w-[44%] shrink-0"
+        className="col-span-5"
+        triggerClassName="pemicu-kecil"
         options={[
-          { value: "all" as const, label: `Semua (${jumlah.semua})` },
-          { value: "GREEN" as const, label: `Aktif (${jumlah.aktif})` },
-          { value: "RED" as const, label: `Belum aktif (${jumlah.belum})` },
-          { value: "ready" as const, label: `Koordinat ada (${jumlah.siap})` },
-          { value: "missing" as const, label: `Tanpa koordinat (${jumlah.kosong})` },
+          // Pemicu selebar 5/12 baris hanya muat sekitar sebelas huruf di
+          // layar 320px, jadi di pemicu labelnya dipendekkan tanpa hitungan;
+          // hitungan lengkap tetap terbaca di menu.
+          { value: "all" as const, label: `Semua (${jumlah.semua})`, labelPemicu: "Semua" },
+          { value: "GREEN" as const, label: `Aktif (${jumlah.aktif})`, labelPemicu: "Aktif" },
+          { value: "RED" as const, label: `Belum aktif (${jumlah.belum})`, labelPemicu: "Belum aktif" },
+          { value: "ready" as const, label: `Koordinat ada (${jumlah.siap})`, labelPemicu: "Ada titik" },
+          { value: "missing" as const, label: `Tanpa koordinat (${jumlah.kosong})`, labelPemicu: "Tanpa titik" },
         ]}
       />
     </div>

@@ -313,7 +313,7 @@ function NotaDraftIsi({ data, onClose }: { data: NotaData; onClose: () => void }
           </p>
           <button
             onClick={onClose}
-            className="h-11 w-full rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+            className="h-11 w-full rounded-xl btn-primer text-sm font-semibold shadow-sm"
           >
             Selesai
           </button>
@@ -378,7 +378,7 @@ function NotaDraftIsi({ data, onClose }: { data: NotaData; onClose: () => void }
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl btn-primer text-sm font-semibold shadow-sm disabled:opacity-60"
               >
                 {downloading ? (
                   <>

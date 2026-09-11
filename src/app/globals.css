@@ -819,6 +819,25 @@ a:focus-visible {
   inset: -2px 0;
 }
 
+/* Pemicu menu pilihan berhuruf 12px setengah tebal dengan padding sempit,
+   tingginya tetap 44px. Untuk pemilih yang berbagi satu baris dengan kolom
+   cari di ponsel, supaya label seperti "Belum aktif (3)" muat di lajur
+   selebar 5/12. Pemicunya tombol, bukan kolom ketik, jadi huruf di bawah
+   16px tidak memicu perbesaran otomatis Safari. */
+.field-input.pemicu-pilih.pemicu-kecil {
+  gap: 4px;
+  padding-left: 10px;
+  padding-right: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.field-input.pemicu-pilih.pemicu-kecil > svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* Sasaran sentuh 44px untuk tombol setinggi 40px (mis. "Kembali" di
    ponsel), diperluas ke atas dan bawah saja supaya tidak menutupi elemen di
    sebelahnya. */
@@ -1957,8 +1976,19 @@ a:focus-visible {
     padding: 20px 18px;
   }
 
+  /* 16px keliling, sama dengan pt-4 kaki form (.bilah-aksi), supaya jarak
+     garis kaki ke tombol dan tombol ke tepi bawah kartu simetris. */
   .section-body {
-    padding: 14px 16px;
+    padding: 16px;
+  }
+
+  /* Kartu ponsel: sudut 16px (rounded-2xl), tepi slate-200/70, bayangan
+     shadow-sm. Satu bentuk untuk kartu judul dan kartu isi. */
+  .section,
+  .page-hero {
+    border-radius: 16px;
+    border-color: rgba(226, 232, 240, 0.7);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
   .section-body.rapat {
@@ -2247,9 +2277,12 @@ a:focus-visible {
   }
 
   /* ── Isi halaman ──────────────────────────────────────────────────── */
-  /* Ruang di bawah isi supaya kartu terakhir tidak tertutup bilah. */
+  /* Ruang di bawah isi supaya kartu terakhir tidak tertutup bilah, plus
+     40px ruang napas (setara pb-24 bersama tinggi bilah). Tanpa tambahan
+     itu tombol di kaki kartu terakhir, mis. "Lanjut" di form bertahap,
+     berhenti tepat di tepi atas bilah bawah dan tampak terpotong. */
   .liquid-shell main > .overflow-auto {
-    padding-bottom: calc(var(--tinggi-bilah-bawah) + var(--aman-bawah));
+    padding-bottom: calc(var(--tinggi-bilah-bawah) + var(--aman-bawah) + 40px);
   }
 
   /* Poni dan sudut membulat perangkat pada orientasi mendatar. */
@@ -2280,7 +2313,10 @@ a:focus-visible {
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin: 4px 0 0;
+    /* pt-4 border-t mt-4: jarak ke isian di atas garis sama dengan jarak
+       garis ke tombol, dan sama dengan padding bawah kartu form di bawah
+       tombol, jadi kakinya simetris. */
+    margin: 16px 0 0;
     padding: 16px 0 0;
     border-top: 1px solid #f1f5f9;
     background: transparent;
@@ -2538,11 +2574,15 @@ a:focus-visible {
 }
 
 /* ── Kepala form bertahap ───────────────────────────────────────────── */
+/* Tidak sticky. Kartu form (.section) ber-overflow hidden, jadi kartu itu
+   sendiri yang menjadi wadah gulir kepala ini: kepala tidak pernah menempel
+   di atas layar, tetapi tetap didorong turun sebesar padding kartu dan
+   menutupi label kolom pertama tiap langkah ("Metode Pembayaran Final",
+   "Lapak / Supplier"). */
 .wizard-kepala {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  margin: -16px -16px 0;
+  position: relative;
+  z-index: 1;
+  margin: -16px -16px 16px;
   padding: 12px 16px 14px;
   background: color-mix(in srgb, var(--background) 92%, transparent);
   backdrop-filter: blur(12px) saturate(160%);

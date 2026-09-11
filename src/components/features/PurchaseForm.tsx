@@ -385,9 +385,11 @@ export default function PurchaseForm({
   )
 
   // Item Barang
+  // Di ponsel langkah ini sudah berjudul "Item Barang" di WizardLangkah, jadi
+  // garis pemisah dan judul keduanya dilepas supaya tidak terbaca dua kali.
   const bagianItem = (
-    <div className="border-t border-slate-100 pt-4">
-      <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-800 md:mb-4">Item Barang</h3>
+    <div className={ponsel ? "" : "border-t border-slate-100 pt-4"}>
+      {!ponsel && <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800">Item Barang</h3>}
 
       <div className="space-y-3">
         {items.map((item, idx) => (

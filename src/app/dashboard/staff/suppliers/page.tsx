@@ -168,7 +168,7 @@ export default async function StaffSuppliersPage({
         {/* Ponsel: tombol utama selebar kartu di bawah bilah penyaring. */}
         <Link
           href="/dashboard/staff/suppliers/new"
-          className="hanya-ponsel flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+          className="hanya-ponsel flex h-11 w-full items-center justify-center gap-1.5 rounded-xl btn-primer text-sm font-semibold shadow-sm"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           Tambah Lapak

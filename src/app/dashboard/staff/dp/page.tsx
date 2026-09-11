@@ -48,7 +48,7 @@ export default async function DPListStaff() {
       <div className="hanya-ponsel -mt-3 flex justify-end">
         <Link
           href="/dashboard/staff/dp/new"
-          className="sentuh-luas-y inline-flex h-10 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
+          className="sentuh-luas-y inline-flex h-10 items-center gap-1.5 rounded-xl btn-primer px-4 text-xs font-bold shadow-sm"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           Pengajuan Kasbon Baru
