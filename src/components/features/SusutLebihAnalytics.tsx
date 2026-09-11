@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Scale } from "lucide-react"
+import { ArrowRight, Scale } from "lucide-react"
 import { createPortal } from "react-dom"
 import { fmtKg, fmtPct } from "@/lib/format"
 import ElegantSelect from "@/components/ui/ElegantSelect"
@@ -328,8 +328,20 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
 
       {/* Modal Detail Susut per Lapak */}
       {typeof document !== "undefined" && selectedLapak && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in scale-in duration-200">
+        /* Ketuk latar gelap juga menutup modal: satu-satunya tombol tutup
+           kini X di kepala, jadi latar jadi jalan keluar kedua yang biasa
+           dipakai di aplikasi ponsel. */
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-4"
+          onClick={() => setSelectedLapak(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Detail susut dan lebih ${selectedLapak.namaLapak}`}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in scale-in duration-200"
+          >
             {/* Header */}
             <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between gap-3 bg-slate-50">
               <div>
@@ -407,7 +419,7 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
                             <div className="min-w-0">
                               <p className="truncate text-sm font-bold text-slate-700">{sku.skuName}</p>
                               <p className="mt-0.5 font-mono text-[11px] tabular-nums text-slate-500">
-                                {sku.beratLapak.toFixed(1)} → {sku.beratGudang.toFixed(1)} kg
+                                {sku.beratLapak.toFixed(1)}{" "}<ArrowRight className="inline-block h-3 w-3 align-[-1px]" aria-hidden="true" />{" "}{sku.beratGudang.toFixed(1)} kg
                               </p>
                             </div>
                             <span
@@ -462,19 +474,10 @@ export default function SusutLebihAnalytics({ lapakData, warehouseNames, summary
               )}
             </div>
 
-            {/* Footer */}
-            <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSelectedLapak(null)}
-                className="min-h-11 w-full rounded-[var(--radius-md)] px-6 py-2.5 text-sm font-bold text-white transition-colors sm:w-auto sm:text-xs"
-                style={{ background: "var(--brand)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--brand-strong)" }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "var(--brand)" }}
-              >
-                Tutup
-              </button>
-            </div>
+            {/* Tidak ada kaki "Tutup". Modal ini hanya untuk dibaca, tanpa
+                aksi lain, jadi tombol hijau besar di kaki cuma mengulang X di
+                kepala -- dua tombol untuk satu hal, dan yang hijau (warna
+                aksi utama) justru bukan aksi apa pun. */}
           </div>
         </div>,
         document.body

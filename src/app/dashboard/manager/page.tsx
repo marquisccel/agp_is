@@ -16,6 +16,8 @@ import { ACTIVE_PURCHASE_STATUSES } from "@/lib/purchaseStatus"
 import { fmtRp } from "@/lib/format"
 import { getAuditAction } from "@/lib/auditLabels"
 import TautanRincian from "@/components/ui/TautanRincian"
+import PanahTren from "@/components/ui/PanahTren"
+import { ArrowRight } from "lucide-react"
 
 const formatActivityScope = (tableName: string) => {
   const scopeMap: Record<string, string> = {
@@ -744,12 +746,22 @@ export default async function ManagerDashboard({
             <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--brand-strong)" }}>
               Agrapana Greenworks Polymer Information System
             </p>
-            {/* whitespace-nowrap sengaja hanya dipasang mulai sm. Nama panjang
-                pada layar 375px tidak muat dalam satu baris, dan karena induknya
-                tidak menggulir, sapaan itu terpotong di tengah nama penggunanya.
-                Di layar sempit sapaan boleh turun baris. */}
+            {/* Ponsel: sapaan jadi baris kecil abu di atas, nama utuh di
+                baris sendiri. Sebaris, patahnya jatuh di mana saja: "Selamat
+                malam, paman" di baris pertama dan "sam." sendirian di baris
+                kedua, jadi nama terbelah dua. Dengan nama selalu di baris
+                sendiri, nama dua kata tetap utuh, dan nama yang terlalu
+                panjang untuk satu baris patah di antara katanya sendiri,
+                bukan di tengah sapaan. Titik ikut di dalam span nama supaya
+                tidak pernah turun sendirian.
+
+                Mulai sm keduanya kembali sebaris dengan ukuran yang sama
+                (1em mengikuti ukuran h2), seperti semula. */}
             <h2 className="mt-3 max-w-4xl text-[1.7rem] font-semibold leading-tight tracking-[-0.04em] text-slate-950 sm:whitespace-nowrap sm:text-3xl sm:leading-none md:text-[2.65rem] xl:text-[3.05rem]">
-              {getGreeting(now)}, <span className="font-black">{displayName}</span>.
+              <span className="block text-base font-medium tracking-normal text-slate-500 sm:inline sm:text-[1em] sm:font-semibold sm:tracking-[inherit] sm:text-slate-950">
+                {getGreeting(now)},
+              </span>{" "}
+              <span className="mt-0.5 block break-words font-black [text-wrap:balance] sm:mt-0 sm:inline">{displayName}.</span>
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
               Pantau tonase, target, approval, dan risiko seluruh gudang dalam satu tampilan kerja.
@@ -811,7 +823,7 @@ export default async function ManagerDashboard({
             <span className="stat-unit">Ton</span>
             {tonaseDeltaPct !== null && (
               <span className={`trend ${tonaseDeltaPct >= 0 ? "up" : "down"}`}>
-                {Math.abs(tonaseDeltaPct).toFixed(1)}% {tonaseDeltaPct >= 0 ? "↗" : "↘"}
+                {Math.abs(tonaseDeltaPct).toFixed(1)}% <PanahTren naik={tonaseDeltaPct >= 0} />
               </span>
             )}
           </div>
@@ -828,7 +840,7 @@ export default async function ManagerDashboard({
               /* Pengeluaran naik itu kabar buruk, jadi panah naik sengaja
                  diberi warna danger -- kebalikan dari metrik tonase. */
               <span className={`trend ${expenseDeltaPct > 0 ? "down" : "up"}`}>
-                {Math.abs(expenseDeltaPct).toFixed(1)}% {expenseDeltaPct >= 0 ? "↗" : "↘"}
+                {Math.abs(expenseDeltaPct).toFixed(1)}% <PanahTren naik={expenseDeltaPct >= 0} />
               </span>
             )}
           </div>
@@ -844,12 +856,12 @@ export default async function ManagerDashboard({
             <span className="stat-unit">item</span>
           </div>
           {waitingApprovalHarga > 0 ? (
-            <span className="stat-delta pending">● menunggu keputusan</span>
+            <span className="stat-delta pending"><span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" />menunggu keputusan</span>
           ) : (
             <span className="stat-delta flat">Semua sudah diputuskan</span>
           )}
           <Link href="/dashboard/manager/approval-harga" className="stat-tautan">
-            Lihat detail →
+            Lihat detail <ArrowRight className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden="true" />
           </Link>
         </div>
 
@@ -860,12 +872,12 @@ export default async function ManagerDashboard({
             <span className="stat-unit">item</span>
           </div>
           {waitingApprovalDP > 0 ? (
-            <span className="stat-delta pending">● menunggu validasi</span>
+            <span className="stat-delta pending"><span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" />menunggu validasi</span>
           ) : (
             <span className="stat-delta flat">Semua sudah divalidasi</span>
           )}
           <Link href="/dashboard/manager/approval-dp" className="stat-tautan">
-            Lihat detail →
+            Lihat detail <ArrowRight className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden="true" />
           </Link>
         </div>
       </div>

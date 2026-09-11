@@ -1,6 +1,7 @@
 "use client"
 
 import { fmtKg, fmtRpPerKg, fmtAngka } from "@/lib/format"
+import PanahTren from "@/components/ui/PanahTren"
 
 export interface SkuPriceRow {
   sku_name: string
@@ -70,7 +71,7 @@ export default function SkuPriceChart({
                   <span className="trend flat">setara</span>
                 ) : (
                   <span className={`trend ${naik ? "up" : "down"}`}>
-                    {fmtAngka(Math.abs(d.selisihPct), 1)}% {naik ? "↗" : "↘"}
+                    {fmtAngka(Math.abs(d.selisihPct), 1)}% <PanahTren naik={naik} />
                   </span>
                 )}
               </div>
@@ -112,7 +113,7 @@ export default function SkuPriceChart({
                     <span className="trend flat">setara</span>
                   ) : (
                     <span className={`trend ${naik ? "up" : "down"}`}>
-                      {fmtAngka(Math.abs(d.selisihPct), 1)}% {naik ? "↗" : "↘"}
+                      {fmtAngka(Math.abs(d.selisihPct), 1)}% <PanahTren naik={naik} />
                     </span>
                   )}
                 </td>

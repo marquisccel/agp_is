@@ -6,7 +6,6 @@ import { ChevronRight, WalletCards } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
 import { namaGudang } from "@/lib/namaGudang"
 import TautanRincian from "@/components/ui/TautanRincian"
-import BarisRingkasan from "@/components/ui/BarisRingkasan"
 import KeadaanKosong from "@/components/ui/KeadaanKosong"
 
 interface DpSupplierRow {
@@ -40,6 +39,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
   const totalApproved = filtered.reduce((s, d) => s + d.totalDp, 0)
   const totalUsed = filtered.reduce((s, d) => s + d.totalUsed, 0)
   const totalRemaining = filtered.reduce((s, d) => s + d.sisaDp, 0)
+  const lapakBersaldo = filtered.filter((d) => d.sisaDp > 0).length
   const warehouseOptions = [
     { value: "all", label: "Semua Gudang" },
     ...warehouseNames.map(w => ({ value: w.id, label: w.nama })),
@@ -111,15 +111,37 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         </div>
       </div>
 
-      {/* Ponsel: saldo menggantung jadi baris mendatar di bawah dua petak,
-          berwarna kuning hanya kalau memang ada yang menggantung. */}
-      <BarisRingkasan
-        label="Masih menggantung"
-        keterangan={totalRemaining > 0 ? "Sudah keluar, belum jadi barang" : "Tidak ada yang menggantung"}
-        nilai={fmtRp(totalRemaining)}
-        nada={totalRemaining > 0 ? "peringatan" : "netral"}
-        className="m-4"
-      />
+      {/* Ponsel: saldo menggantung jadi kartu stat dua lajur di bawah dua
+          petak -- nominalnya dan berapa lapak yang memegangnya -- dengan
+          label kecil di atas dan angka besar di bawah, sama seperti petak
+          di atasnya. Sebagai baris mendatar, nominal Rp belasan juta
+          berhimpitan dengan labelnya di layar 360px. Kuning hanya kalau
+          memang ada yang menggantung. */}
+      <div
+        className={`hanya-ponsel mx-4 mb-4 mt-3 grid grid-cols-2 gap-2 rounded-xl border p-3 ${
+          totalRemaining > 0 ? "border-amber-200/50 bg-amber-50/60" : "border-slate-200/60 bg-slate-50"
+        }`}
+      >
+        <div className="min-w-0">
+          <p className={`text-[10.5px] font-bold uppercase tracking-[0.06em] ${totalRemaining > 0 ? "text-amber-700" : "text-slate-500"}`}>
+            Masih menggantung
+          </p>
+          <p className={`mt-1 truncate font-mono text-base font-bold tabular-nums ${totalRemaining > 0 ? "text-amber-800" : "text-slate-800"}`}>
+            {fmtRp(totalRemaining)}
+          </p>
+        </div>
+        <div className={`min-w-0 border-l pl-3 ${totalRemaining > 0 ? "border-amber-200/60" : "border-slate-200"}`}>
+          <p className={`text-[10.5px] font-bold uppercase tracking-[0.06em] ${totalRemaining > 0 ? "text-amber-700" : "text-slate-500"}`}>
+            Lapak bersaldo
+          </p>
+          <p className={`mt-1 font-mono text-base font-bold tabular-nums ${totalRemaining > 0 ? "text-amber-800" : "text-slate-800"}`}>
+            {lapakBersaldo} <span className="font-sans text-xs font-semibold">lapak</span>
+          </p>
+        </div>
+        <p className="col-span-2 text-[11px] text-slate-500">
+          {totalRemaining > 0 ? "Sudah keluar, belum jadi barang." : "Tidak ada DP yang menggantung."}
+        </p>
+      </div>
 
       {summaryOnly && (
         <TautanRincian href="/dashboard/manager/dp" garisAtas={false}>Lihat rincian per lapak</TautanRincian>

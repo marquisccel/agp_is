@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
+import { ArrowRight } from "lucide-react"
 
 /**
  * Tautan kaki kartu menuju layar yang lebih rinci.
@@ -39,10 +40,10 @@ export default function TautanRincian({
     >
       <Link
         href={href}
-        className="inline-flex min-h-11 items-center text-[11.5px] font-bold transition-opacity hover:opacity-75"
+        className="inline-flex min-h-11 items-center gap-1 text-[11.5px] font-bold transition-opacity hover:opacity-75"
         style={{ color: "var(--brand-strong)" }}
       >
-        {children} →
+        {children} <ArrowRight className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden="true" />
       </Link>
     </div>
   )

@@ -150,41 +150,43 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
             const diff = gudangW - lapakW
 
             return (
+              /* Kartu tetap putih; item di atas standar ditandai tepi amber
+                 dan lencananya saja. Seluruh kartu berlatar kuning membuat
+                 pita perbandingan di dalamnya tampak seperti kotak ketiga
+                 yang menumpuk di atas dua kotak lain. */
               <div
                 key={item.id}
-                className="space-y-3 rounded-[var(--radius-lg)] border p-4"
-                style={isOver ? { borderColor: "var(--warning-soft)", background: "var(--warning-soft)" } : { borderColor: "var(--border)", background: "var(--surface)" }}
+                className={`overflow-hidden rounded-2xl border bg-white p-4 shadow-sm ${isOver ? "border-amber-200" : "border-slate-200/70"}`}
               >
-                {/* SKU Header */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-slate-800 text-sm">{item.sku_name}</div>
+                {/* Nama SKU kiri, lencana kanan, satu garis tengah. */}
+                <div className="mb-2 flex w-full items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate text-sm font-bold text-slate-800">{item.sku_name}</span>
                     {item.spec && (
-                      <span className="mt-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>
+                      <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
                         {item.spec}
                       </span>
                     )}
                   </div>
                   {isOver && (
-                    <span className="rounded-full px-2 py-1 text-[10px] font-bold" style={{ background: "var(--warning-soft)", color: "var(--warning)" }}>Di atas standar</span>
+                    <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200/70">Di atas standar</span>
                   )}
                 </div>
 
-                {/* Perbandingan timbangan: tiga lajur sama lebar dalam satu
-                    pita, dipisah garis tipis. Selisihnya berupa lencana
-                    berwarna (merah untuk susut, kuning untuk lebih) supaya
-                    arahnya terbaca sebelum angkanya dibaca. Satuan kg ada
-                    di label, bukan diulang di tiap angka. */}
-                <div className="grid grid-cols-3 divide-x overflow-hidden rounded-[var(--radius-md)] border bg-slate-50" style={{ borderColor: "var(--border)" }}>
-                  <div className="px-2 py-2.5 text-center" style={{ borderColor: "var(--border)" }}>
+                {/* Perbandingan timbangan: pita rata selebar kartu, dipotong
+                    garis atas-bawah sampai ke tepi kartu (-mx-4 px-4), bukan
+                    kotak bertepi membulat di dalam kartu yang juga bertepi
+                    membulat. Satuan kg ada di label, bukan di tiap angka. */}
+                <div className="-mx-4 my-2 grid w-auto grid-cols-3 border-y border-slate-100 bg-slate-50/70 px-4 py-3">
+                  <div className="text-left">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Lapak (kg)</div>
                     <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-700">{lapakW.toFixed(2)}</div>
                   </div>
-                  <div className="px-2 py-2.5 text-center" style={{ borderColor: "var(--border)" }}>
+                  <div className="text-center">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Gudang (kg)</div>
                     <div className="mt-1 font-mono text-sm font-bold tabular-nums text-slate-900">{gudangW.toFixed(2)}</div>
                   </div>
-                  <div className="flex flex-col items-center px-2 py-2.5 text-center" style={{ borderColor: "var(--border)" }}>
+                  <div className="flex flex-col items-end text-right">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Selisih</div>
                     {diff === 0 ? (
                       <span className="mt-1 rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>Sama</span>
@@ -201,7 +203,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
 
                 {/* Harga: baris label-nilai, bukan dua kotak bertepi di dalam
                     kartu yang sudah bertepi. */}
-                <dl className="space-y-1.5 text-sm">
+                <dl className="mt-3 space-y-1.5 text-sm">
                   <div className="flex items-baseline justify-between gap-3">
                     <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Harga beli / kg</dt>
                     <dd className="font-mono font-bold tabular-nums" style={{ color: isOver ? "var(--warning)" : "var(--foreground)" }}>
@@ -215,7 +217,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                 </dl>
 
                 {/* Subtotal */}
-                <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
                   <span className="text-xs font-semibold text-slate-500">Subtotal item</span>
                   <span className="text-sm font-extrabold text-slate-800 font-mono">
                     Rp {item.subtotal.toLocaleString("id-ID")}
@@ -264,11 +266,9 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
             >
               {selisihTotal > 0 ? `+${selisihTotal.toFixed(2)}` : selisihTotal.toFixed(2)}
             </span>
-            {beratTimbanganLapak > 0 && (
-              <div className="mt-1 text-[10px] font-semibold tabular-nums" style={{ color: selisihTotal === 0 ? "var(--muted-faint)" : selisihTotal < 0 ? "var(--danger)" : "var(--warning)" }}>
-                {((selisihTotal / beratTimbanganLapak) * 100).toFixed(1)}%
-              </div>
-            )}
+            {/* Persentase tidak diulang di sel ini: dua angka bertumpuk di
+                lajur selebar 90px saling berdesakan, dan persentase yang sama
+                sudah terbaca lengkap di pita peringatan tepat di bawah. */}
           </div>
         </div>
         <div

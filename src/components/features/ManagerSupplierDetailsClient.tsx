@@ -390,31 +390,41 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                 />
               </div>
             </div>
-            <div className="space-y-4 bg-white p-4 sm:p-6">
-              {/* Satu pasangan koordinat, satu baris. */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="min-w-0">
-                  <span className="field-label">Latitude</span>
-                  <span className="mt-1 block truncate font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.latitude}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="field-label">Longitude</span>
-                  <span className="mt-1 block truncate font-mono text-sm font-bold text-slate-950">{resolvedCoordinates.longitude}</span>
+            <div className="flex flex-col gap-4 bg-white p-4 sm:p-6">
+              {/* Koordinat sebagai pil metadata ringkas, bukan dua blok
+                  label-nilai bercetak tebal. Angkanya dibaca sesekali untuk
+                  dicocokkan, bukan dipindai; sebagai angka tebal 14px ia
+                  menyaingi nama lapak sebagai hal terpenting di kartu. */}
+              <div>
+                <span className="field-label">Koordinat</span>
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  <span className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-mono text-xs text-slate-700">
+                    <span className="font-sans text-[10px] font-semibold uppercase text-slate-400">Lat</span>
+                    <span className="truncate tabular-nums">{resolvedCoordinates.latitude}</span>
+                  </span>
+                  <span className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-mono text-xs text-slate-700">
+                    <span className="font-sans text-[10px] font-semibold uppercase text-slate-400">Lng</span>
+                    <span className="truncate tabular-nums">{resolvedCoordinates.longitude}</span>
+                  </span>
                 </div>
               </div>
               <div>
                 <span className="field-label">Sumber</span>
-                <span className="mt-1 block text-sm font-bold text-slate-950">
+                <span className="mt-1 block text-sm font-semibold text-slate-700">
                   {resolvedCoordinates.source === "manual" ? "Field latitude/longitude" : "Terbaca dari link Maps"}
                 </span>
               </div>
+              {/* Tombol garis di dasar kartu (mt-auto). Membuka aplikasi lain
+                  bukan aksi utama halaman ini, jadi ia tidak memakai tombol
+                  hijau penuh yang menyaingi tombol Edit di kepala halaman. */}
               <a
                 href={mapHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="premium-button btn-primer flex items-center justify-center gap-2 rounded-[10px] px-4 py-3 text-sm font-bold"
+                className="sentuh-luas-y mt-auto flex h-10 w-full items-center justify-center gap-2 rounded-xl border text-xs font-semibold transition-colors hover:bg-[var(--brand-soft)]"
+                style={{ borderColor: "var(--brand)", color: "var(--brand-strong)", background: "color-mix(in srgb, var(--brand-soft) 50%, transparent)" }}
               >
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4" aria-hidden="true" />
                 Buka di Google Maps
               </a>
             </div>

@@ -20,10 +20,17 @@ interface Warehouse { id: string; nama: string; lokasi: string }
  * MANAGER. Server juga menolak pemanggil non-Manager, jadi pembatasan ini
  * tidak hanya di tampilan.
  */
-function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
+function FormAkunBaru({
+  warehouses,
+  terbuka,
+  setTerbuka,
+}: {
+  warehouses: Warehouse[]
+  terbuka: boolean
+  setTerbuka: (v: boolean) => void
+}) {
   const router = useRouter()
   const { toast, host: toastHost } = useToast()
-  const [terbuka, setTerbuka] = useState(false)
   const [nama, setNama] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -64,21 +71,10 @@ function FormAkunBaru({ warehouses }: { warehouses: Warehouse[] }) {
     }
   }
 
-  if (!terbuka) {
-    return (
-      <>
-        {toastHost}
-        <button
-          type="button"
-          onClick={() => setTerbuka(true)}
-          className="premium-button btn-primer flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold"
-        >
-          <UserPlus className="h-4 w-4" />
-          Daftarkan Akun Baru
-        </button>
-      </>
-    )
-  }
+  // Tombol pembukanya ada di bilah penyaring daftar pengguna (lihat
+  // TombolAkunBaru). Saat tertutup, yang tersisa di sini hanya wadah toast,
+  // supaya pesan "berhasil dibuat" tetap tampil setelah form menutup.
+  if (!terbuka) return <>{toastHost}</>
 
   return (
     <form onSubmit={simpan} className="section section-body space-y-4">
@@ -647,6 +643,7 @@ export default function MasterDataClient({
   const [activeTab, setActiveTab] = useState<Tab>("overview")
   const [searchUser, setSearchUser] = useState("")
   const [filterRole, setFilterRole] = useState("all")
+  const [formAkunTerbuka, setFormAkunTerbuka] = useState(false)
 
   /* Tab Lapak dan Harga SKU dibuang. Keduanya cuma cermin: daftar lapak
      sudah ada di menu Data Lapak dengan grade, filter, import koordinat,
@@ -828,22 +825,40 @@ export default function MasterDataClient({
 
       {activeTab === "pengguna" && (
         <div className="space-y-4">
-          <FormAkunBaru warehouses={warehouses} />
+          <FormAkunBaru warehouses={warehouses} terbuka={formAkunTerbuka} setTerbuka={setFormAkunTerbuka} />
 
+          {/* Tombol akun baru sebaris dengan penyaring role, di sisi kanan.
+              Sebelumnya ia tombol hijau yang berdiri sendiri di atas bilah
+              penyaring, jadi di ponsel bilah itu turun satu layar penuh dan
+              tombolnya terbaca sebagai judul bagian, bukan aksi. Di ponsel
+              pemilih role dan tombol berbagi satu baris di bawah kolom cari;
+              mulai sm (sm:contents) ketiganya satu baris. */}
           <FilterBar>
             <SearchBox value={searchUser} onChange={setSearchUser} placeholder="Cari nama atau email..." />
-            <ElegantSelect
-              value={filterRole}
-              onChange={setFilterRole}
-              ariaLabel="Filter role pengguna"
-              className="w-full sm:w-48"
-              options={[
-                { value: "all", label: "Semua Role" },
-                { value: "MANAGER", label: "Manager" },
-                { value: "ADMIN", label: "Admin" },
-                { value: "STAFF", label: "Staff" },
-              ]}
-            />
+            <div className="flex items-center gap-2 sm:contents">
+              <ElegantSelect
+                value={filterRole}
+                onChange={setFilterRole}
+                ariaLabel="Filter role pengguna"
+                className="min-w-0 flex-1 sm:w-48 sm:flex-none"
+                options={[
+                  { value: "all", label: "Semua Role" },
+                  { value: "MANAGER", label: "Manager" },
+                  { value: "ADMIN", label: "Admin" },
+                  { value: "STAFF", label: "Staff" },
+                ]}
+              />
+              {!formAkunTerbuka && (
+                <button
+                  type="button"
+                  onClick={() => setFormAkunTerbuka(true)}
+                  className="btn-primer inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs font-semibold shadow-sm"
+                >
+                  <UserPlus className="h-4 w-4" aria-hidden="true" />
+                  Akun Baru
+                </button>
+              )}
+            </div>
           </FilterBar>
 
           <TabelPengguna users={filteredUsers} />

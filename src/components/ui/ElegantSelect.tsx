@@ -37,34 +37,63 @@ export default function ElegantSelect<T extends string | number>({
   disabled = false,
 }: ElegantSelectProps<T>) {
   const [open, setOpen] = useState(false)
-  const [menuRect, setMenuRect] = useState<{ top: number; left: number; right: number; width: number; pas?: boolean } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const selected = options.find(option => option.value === value) || options[0]
 
-  const updateMenuRect = () => {
-    const rect = rootRef.current?.getBoundingClientRect()
-    if (!rect) return
-    setMenuRect({
-      top: rect.bottom + 6,
-      left: rect.left,
-      right: rect.right,
-      width: rect.width,
-    })
-  }
-
-  // Menu boleh lebih lebar dari pemicunya (label menu lebih panjang dari
-  // label pemicu). Pemicu yang duduk di sisi kanan layar lalu membuka menu
-  // yang menembus tepi kanan: di layar 320px "Tanpa koordinat (2)" terpotong
-  // di luar layar. Setelah menu tergambar lebarnya diukur, dan bila tidak
-  // muat, menu disejajarkan ke tepi kanan pemicu.
+  /*
+   * Posisi menu mengikuti pemicunya tiap bingkai selama menu terbuka.
+   *
+   * Menunya dirender lewat portal ke body, bukan diposisikan absolute di
+   * dalam pemicu: sebagian besar pemilih duduk di dalam .section yang
+   * ber-overflow hidden, dan menu absolute akan terpotong tepi kartu.
+   * Akibatnya posisinya harus dihitung sendiri.
+   *
+   * Dulu dihitung ulang dari event scroll dan resize. Di Safari iPhone
+   * keduanya tidak cukup: selama gulir momentum event scroll datang
+   * jarang-jarang, dan menutupnya papan ketik (mis. setelah mengetik di
+   * kolom cari lalu mengetuk pemilih ini) menggeser tata letak tanpa event
+   * resize di window. Menunya tertinggal di posisi lama dan tampak melayang
+   * lepas dari pemicunya. Membaca posisi pemicu tiap requestAnimationFrame
+   * menangkap semua penyebab itu sekaligus; loopnya hanya hidup selama
+   * menu terbuka, dan gayanya ditulis langsung ke elemen tanpa render
+   * ulang React.
+   *
+   * Aturan penempatannya:
+   * - di bawah pemicu, berjarak 6px; kalau ruang di bawah tidak cukup dan
+   *   ruang di atas lebih lega, menu dibuka ke atas;
+   * - menu boleh lebih lebar dari pemicunya; kalau menembus tepi kanan
+   *   layar, ia disejajarkan ke tepi kanan pemicu.
+   */
   useLayoutEffect(() => {
-    if (!open || !menuRect || menuRect.pas || !menuRef.current) return
-    const lebar = menuRef.current.offsetWidth
-    const batasKanan = window.innerWidth - 8
-    const left = menuRect.left + lebar > batasKanan ? Math.max(8, Math.min(menuRect.right, batasKanan) - lebar) : menuRect.left
-    setMenuRect({ ...menuRect, left, pas: true })
-  }, [open, menuRect])
+    if (!open) return
+    let bingkai = 0
+    const ikuti = () => {
+      const root = rootRef.current
+      const menu = menuRef.current
+      if (root && menu) {
+        const r = root.getBoundingClientRect()
+        const tinggiLayar = window.innerHeight
+        const lebarLayar = window.innerWidth
+        const lebarMenu = menu.offsetWidth
+        const tinggiMenu = menu.offsetHeight
+        const ruangBawah = tinggiLayar - r.bottom - 8
+        const keAtas = ruangBawah < tinggiMenu + 6 && r.top > ruangBawah
+        const top = keAtas ? Math.max(8, r.top - 6 - tinggiMenu) : r.bottom + 6
+        const left =
+          r.left + lebarMenu > lebarLayar - 8
+            ? Math.max(8, Math.min(r.right, lebarLayar - 8) - lebarMenu)
+            : r.left
+        menu.style.top = `${Math.round(top)}px`
+        menu.style.left = `${Math.round(left)}px`
+        menu.style.minWidth = `${Math.round(r.width)}px`
+        menu.style.transformOrigin = keAtas ? "bottom" : "top"
+      }
+      bingkai = requestAnimationFrame(ikuti)
+    }
+    ikuti()
+    return () => cancelAnimationFrame(bingkai)
+  }, [open])
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -86,17 +115,6 @@ export default function ElegantSelect<T extends string | number>({
     }
   }, [])
 
-  useEffect(() => {
-    if (!open) return
-
-    updateMenuRect()
-    window.addEventListener("resize", updateMenuRect)
-    window.addEventListener("scroll", updateMenuRect, true)
-    return () => {
-      window.removeEventListener("resize", updateMenuRect)
-      window.removeEventListener("scroll", updateMenuRect, true)
-    }
-  }, [open])
 
   return (
     // min-w-0 dipasang di akar, bukan di tiap pemakaian. Label terpilih
@@ -136,15 +154,16 @@ export default function ElegantSelect<T extends string | number>({
         />
       </button>
 
-      {typeof document !== "undefined" && open && menuRect && createPortal(
+      {typeof document !== "undefined" && open && createPortal(
         <div
           ref={menuRef}
           role="listbox"
+          // top/left/minWidth tidak ditulis di sini: ditulis tiap bingkai oleh
+          // useLayoutEffect di atas, sebelum bingkai pertama tergambar.
           style={{
             position: "fixed",
-            top: menuRect.top,
-            left: menuRect.left,
-            minWidth: menuRect.width,
+            top: 0,
+            left: 0,
             maxWidth: "calc(100vw - 16px)",
             boxShadow: "var(--shadow-hover)",
           }}
@@ -163,7 +182,7 @@ export default function ElegantSelect<T extends string | number>({
                   onChange(option.value)
                   setOpen(false)
                 }}
-                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-950"
+                className="flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-950 sm:min-h-0"
                 style={active ? { background: "var(--brand-soft)", color: "var(--brand-strong)", fontWeight: 700 } : undefined}
               >
                 <span className="truncate">{option.label}</span>

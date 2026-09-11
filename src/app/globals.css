@@ -490,6 +490,7 @@ a:focus-visible {
   margin-top: auto;
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   min-height: 44px;
   width: fit-content;
   font-size: 11.5px;

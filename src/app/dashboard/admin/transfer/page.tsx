@@ -110,7 +110,18 @@ export default async function AdminTransferPage() {
               <span className="stat-value">{card.value}</span>
               <span className="stat-unit">{card.satuan}</span>
             </div>
-            <span className="stat-delta flat">{card.sub} &middot; {card.description}</span>
+            {/* Nominal dan keterangan dua baris terpisah. Sebaris dengan
+                titik tengah, "Rp 118.486.000 · Perlu upload bukti" di petak
+                selebar 143px patah di tengah keterangan dan nominalnya
+                terbaca sebagai bagian dari kalimat, bukan angka. */}
+            <span className="mt-1 block font-mono text-sm font-bold tabular-nums text-slate-900">{card.sub}</span>
+            <span
+              className={`mt-0.5 block text-[11px] font-medium ${
+                card.tone === "tone-warning" ? "text-amber-700" : card.tone === "tone-danger" ? "text-rose-700" : "text-slate-500"
+              }`}
+            >
+              {card.description}
+            </span>
           </div>
         ))}
       </div>

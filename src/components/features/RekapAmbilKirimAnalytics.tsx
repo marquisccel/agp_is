@@ -3,6 +3,7 @@
 import { Truck, PackageCheck } from "lucide-react"
 import { fmtAngka, fmtTon } from "@/lib/format"
 import KeadaanKosong from "@/components/ui/KeadaanKosong"
+import PanahTren from "@/components/ui/PanahTren"
 
 export interface RekapAmbilKirimRow {
   warehouseId: string
@@ -253,7 +254,7 @@ export default function RekapAmbilKirimAnalytics({
                         <span className="trend flat">stabil</span>
                       ) : (
                         <span className={`trend ${selisih > 0 ? "up" : "down"}`}>
-                          {selisih > 0 ? "+" : "−"}{fmtAngka(Math.abs(selisih), 1)} poin {selisih > 0 ? "↗" : "↘"}
+                          {selisih > 0 ? "+" : "-"}{fmtAngka(Math.abs(selisih), 1)} poin <PanahTren naik={selisih > 0} />
                         </span>
                       )}
                     </>
@@ -281,37 +282,35 @@ export default function RekapAmbilKirimAnalytics({
                 antarbaris supaya kepala tabel jelas terpisah dari isinya. */}
             <div className="mt-5 overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead>
+                {/* Kepala tabel satu pita abu netral. Dulu label grup Ambil
+                    bergaris bawah hijau dan Kirim bergaris bawah abu -- dua
+                    stempel setengah berwarna yang di ponsel terbaca seperti
+                    dua tab yang salah satunya aktif, padahal keduanya
+                    sejajar. Warna hijau cukup di angka ton ambil. Kedua grup
+                    dipisah garis putih tipis di dalam pita. */}
+                <thead className="bg-slate-100/80 text-slate-600">
                   <tr>
-                    <th rowSpan={2} className="pb-2 pr-2 align-bottom text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">
+                    <th rowSpan={2} className="py-2 pl-3 pr-2 align-bottom text-xs font-semibold">
                       Gudang
                     </th>
                     {/* Label grup dirata-kanan mengikuti kolom angkanya.
                         Judul di tengah tidak pernah sejajar dengan angka yang
                         rata kanan, itu yang bikin header terlihat goyah. */}
-                    <th
-                      colSpan={2}
-                      className="border-b-2 px-2 pb-1.5 text-right text-[10px] font-bold uppercase tracking-[0.05em]"
-                      style={{ color: "var(--brand-strong)", borderColor: "var(--brand)" }}
-                    >
+                    <th colSpan={2} className="border-l border-white px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
                       Ambil
                     </th>
-                    <th
-                      colSpan={2}
-                      className="border-b-2 px-2 pb-1.5 text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-500"
-                      style={{ borderColor: "var(--border-strong)" }}
-                    >
+                    <th colSpan={2} className="border-l border-white px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
                       Kirim
                     </th>
-                    <th rowSpan={2} className="hidden pb-2 pl-2 align-bottom text-right text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400 sm:table-cell">
+                    <th rowSpan={2} className="hidden border-l border-white py-2 pl-2 pr-3 align-bottom text-right text-xs font-semibold sm:table-cell">
                       Rekap
                     </th>
                   </tr>
-                  <tr className="border-b" style={{ borderColor: "var(--border-strong)" }}>
-                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-1.5 text-right text-[10px] font-medium normal-case tracking-normal text-slate-400">Trans.</th>
-                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-1.5 text-right text-[10px] font-medium normal-case tracking-normal text-slate-400">Ton</th>
-                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-1.5 text-right text-[10px] font-medium normal-case tracking-normal text-slate-400">Trans.</th>
-                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-1.5 text-right text-[10px] font-medium normal-case tracking-normal text-slate-400">Ton</th>
+                  <tr>
+                    <th className="w-px whitespace-nowrap border-l border-white px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Trans.</th>
+                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Ton</th>
+                    <th className="w-px whitespace-nowrap border-l border-white px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Trans.</th>
+                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Ton</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -321,7 +320,7 @@ export default function RekapAmbilKirimAnalytics({
                     const warnaRekap = rowTercatat === 0 ? "var(--muted-faint)" : rekap.warna
                     return (
                       <tr key={row.warehouseId} className="border-b" style={{ borderColor: "var(--border)" }}>
-                        <td className="py-3 pr-2">
+                        <td className="py-3 pl-3 pr-2">
                           <span className="block font-semibold text-slate-800">{row.warehouseName}</span>
                           <span className="mt-0.5 block text-[10.5px] font-semibold sm:hidden" style={{ color: warnaRekap }}>
                             {rekap.label}
@@ -338,7 +337,7 @@ export default function RekapAmbilKirimAnalytics({
                         <td className={`whitespace-nowrap px-2 py-3 text-right font-mono tabular-nums font-semibold ${row.kirimVolume > 0 ? "text-slate-700" : "text-slate-300"}`}>
                           {angkaTon(row.kirimVolume)}
                         </td>
-                        <td className="hidden whitespace-nowrap py-3 pl-2 text-right sm:table-cell">
+                        <td className="hidden whitespace-nowrap py-3 pl-2 pr-3 text-right sm:table-cell">
                           <span className="text-[11px] font-semibold" style={{ color: warnaRekap }}>
                             {rekap.label}
                           </span>
@@ -349,7 +348,7 @@ export default function RekapAmbilKirimAnalytics({
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td className="pr-2 pt-3">
+                    <td className="pl-3 pr-2 pt-3">
                       <span className="block text-[10px] font-black uppercase tracking-[0.05em] text-slate-500">Total</span>
                       <span className="mt-0.5 block text-[10.5px] font-bold sm:hidden" style={{ color: ringkasRekap(total.ambilVolume, total.kirimVolume).warna }}>
                         {ringkasRekap(total.ambilVolume, total.kirimVolume).label}
@@ -361,7 +360,7 @@ export default function RekapAmbilKirimAnalytics({
                     </td>
                     <td className="whitespace-nowrap px-2 pt-3 text-right font-mono tabular-nums font-bold text-slate-700">{fmtAngka(total.kirimTransaksi)}</td>
                     <td className="whitespace-nowrap px-2 pt-3 text-right font-mono tabular-nums font-black text-slate-900">{angkaTon(total.kirimVolume)}</td>
-                    <td className="hidden whitespace-nowrap pl-2 pt-3 text-right sm:table-cell">
+                    <td className="hidden whitespace-nowrap pl-2 pr-3 pt-3 text-right sm:table-cell">
                       <span className="text-[11px] font-bold" style={{ color: ringkasRekap(total.ambilVolume, total.kirimVolume).warna }}>
                         {ringkasRekap(total.ambilVolume, total.kirimVolume).label}
                       </span>

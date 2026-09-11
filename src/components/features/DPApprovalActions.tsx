@@ -19,7 +19,15 @@ type DpRow = {
  * Manager, berapa pun nominalnya dan siapa pun pengajunya. Tingkat
  * verifikasi Admin dan opsi eskalasi "forward" dihapus.
  */
-export default function DPApprovalActions({ dp }: { dp: DpRow }) {
+export default function DPApprovalActions({
+  dp,
+  varian = "tabel",
+}: {
+  dp: DpRow
+  /** "kartu" untuk kaki kartu ponsel: grup tombol berhierarki selebar
+   *  kartu. "tabel" untuk sel tabel layar lebar: ringkas, rata kanan. */
+  varian?: "tabel" | "kartu"
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
@@ -49,6 +57,16 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
       toast(err instanceof Error ? err.message : String(err), "error")
       setLoading(false)
     }
+  }
+
+  const tolak = async () => {
+    const ok = await confirm({
+      title: "Tolak pengajuan kasbon ini?",
+      description: "Pengajuan yang ditolak tidak bisa diproses ulang oleh Staff/Admin.",
+      tone: "danger",
+      confirmLabel: "Ya, tolak",
+    })
+    if (ok) handleAction("reject")
   }
 
   if (showEdit) {
@@ -96,6 +114,49 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
   }
 
   /*
+   * Kaki kartu ponsel: grup tombol berhierarki. Setujui satu-satunya tombol
+   * penuh warna dan mengisi sisa lebar; Edit Nominal abu bertulisan; Tolak
+   * ikon kecil bernada rose. Tiga kotak sama tinggi berjejer rata kanan
+   * (Edit, centang, silang) membuat keputusan utama sama beratnya dengan
+   * tombol ubah, dan centang tanpa tulisan harus ditebak artinya.
+   */
+  if (varian === "kartu") {
+    return (
+      <div className="flex w-full items-center gap-2">
+        {dialog}
+        {toastHost}
+        <button
+          type="button"
+          onClick={() => handleAction("approve")}
+          disabled={loading}
+          className="btn-primer inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-semibold shadow-sm disabled:opacity-50"
+        >
+          <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {loading ? "Memproses..." : "Setujui"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowEdit(true)}
+          disabled={loading}
+          className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200 disabled:opacity-50"
+        >
+          Edit Nominal
+        </button>
+        <button
+          type="button"
+          onClick={tolak}
+          disabled={loading}
+          title="Tolak pengajuan kasbon ini"
+          aria-label="Tolak pengajuan kasbon ini"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+    )
+  }
+
+  /*
    * Tiga tombol, dulu tiga keluarga warna: hijau, indigo, merah -- dan
    * indigo tidak dipakai di mana pun lagi dalam sistem ini. Sekarang
    * bentuknya mengikuti aturan yang sama dengan layar lain: satu aksi
@@ -133,15 +194,7 @@ export default function DPApprovalActions({ dp }: { dp: DpRow }) {
       </button>
 
       <button
-        onClick={async () => {
-          const ok = await confirm({
-            title: "Tolak pengajuan kasbon ini?",
-            description: "Pengajuan yang ditolak tidak bisa diproses ulang oleh Staff/Admin.",
-            tone: "danger",
-            confirmLabel: "Ya, tolak",
-          })
-          if (ok) handleAction("reject")
-        }}
+        onClick={tolak}
         disabled={loading}
         title="Tolak pengajuan kasbon ini"
         aria-label="Tolak pengajuan kasbon ini"

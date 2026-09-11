@@ -97,8 +97,7 @@ export default async function DPApprovalManager() {
                     ),
                   },
                 ]}
-                aksiRata="kanan"
-                aksi={<DPApprovalActions dp={dp} />}
+                aksi={<DPApprovalActions dp={dp} varian="kartu" />}
               />
             ))
           )}
