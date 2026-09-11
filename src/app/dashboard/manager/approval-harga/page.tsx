@@ -47,10 +47,8 @@ export default async function ApprovalHargaList() {
           tonase gudang) di kiri dan total nilai di kanan, supaya Manager
           tahu besar-kecilnya nota sebelum membukanya.
 
-          Tombol: hitam monokrom, bukan hijau. Semua kartu di layar ini
-          punya tombol yang sama; deretan tombol hijau penuh membuat hijau
-          (warna "setujui" di halaman berikutnya) kehilangan artinya, dan
-          tombol ini memang hanya membuka rincian, bukan memutuskan. */}
+          Tombol: hijau utama aplikasi (.btn-primer), selebar kartu, dengan
+          chevron sebagai tanda pindah layar. */}
       <div className="daftar-kartu">
         {pendingApprovals.length === 0 ? (
           <p className="section section-body text-center text-sm text-slate-400">
@@ -109,7 +107,7 @@ export default async function ApprovalHargaList() {
 
                 <Link
                   href={`/dashboard/manager/approval-harga/${draft.id}`}
-                  className="sentuh-luas-y flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-xs font-semibold tracking-wide text-white shadow-sm transition-all hover:bg-black active:scale-[0.98]"
+                  className="btn-primer sentuh-luas-y flex h-10 w-full items-center justify-center gap-2 rounded-xl text-xs font-semibold tracking-wide shadow-sm active:scale-[0.98]"
                 >
                   Review Transaksi
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />

@@ -581,18 +581,32 @@ function TabelPengguna({ users }: { users: UserData[] }) {
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600" aria-hidden="true">
                       {inisial}
                     </span>
+                    {/* Baris nama dua sisi: nama di kiri, role dan gudang rata
+                        kanan sejajar nama. Email di bawahnya selebar penuh
+                        lajur teks, tidak ikut disempitkan lencana. Manager
+                        tidak punya gudang (memegang semua), jadi lokasinya
+                        tidak ditulis. */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        <p className="truncate text-sm font-semibold text-slate-900">{user.nama}</p>
-                        {!user.aktif && (
-                          <span className="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700">Nonaktif</span>
-                        )}
+                      <div className="flex w-full items-start justify-between gap-1.5 min-[360px]:gap-2">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <p className="truncate text-sm font-bold text-slate-900">{user.nama}</p>
+                          {!user.aktif && (
+                            <span className="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700">Nonaktif</span>
+                          )}
+                        </div>
+                        <div className="ml-auto flex shrink-0 items-center gap-1 min-[360px]:gap-1.5">
+                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">{user.role}</span>
+                          {user.warehouse?.nama && (
+                            <span className="inline-flex items-center gap-0.5 text-xs text-slate-500">
+                              {/* Ikon pin dilepas di bawah 360px: 14px itu yang
+                                  membuat "Admin Madiun" terpotong di layar 320. */}
+                              <MapPin className="hidden h-3 w-3 min-[360px]:block" aria-hidden="true" />
+                              {user.warehouse.nama}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <p className="truncate font-mono text-xs text-slate-500">{user.email}</p>
-                      <div className="mt-1.5 flex min-w-0 items-center gap-2">
-                        <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">{user.role}</span>
-                        <span className="truncate text-xs text-slate-500">{user.warehouse?.nama || "Semua gudang"}</span>
-                      </div>
+                      <p className="mt-0.5 truncate font-mono text-xs text-slate-500">{user.email}</p>
                     </div>
                   </div>
                   <div className="mt-3 flex gap-2">
