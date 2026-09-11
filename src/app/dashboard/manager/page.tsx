@@ -746,20 +746,26 @@ export default async function ManagerDashboard({
             <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--brand-strong)" }}>
               Agrapana Greenworks Polymer Information System
             </p>
-            {/* Ponsel: sapaan dan nama satu alur mendatar (flex-wrap,
-                sejajar garis dasar) di 18px. Pada 27px, "Selamat malam,
-                paman sam." tidak muat satu baris di layar 375px dan patahnya
-                jatuh di tengah nama: "paman" ikut sapaan, "sam." turun
-                sendirian. Di 18px sapaan plus nama dua kata muat sebaris.
-                Nama adalah satu butir flex, jadi kalau memang terlalu
-                panjang ia turun utuh ke baris berikutnya, dan baru patah di
-                antara katanya sendiri kalau lebih panjang dari satu baris.
-                Titik ikut di dalam span nama supaya tidak turun sendirian.
+            {/* Ponsel: sapaan dan nama satu hierarki (tebal, slate-900,
+                ukuran sama) dalam satu alur flex-wrap sejajar garis dasar.
+
+                Ukurannya fluid, clamp(18px, 5.8vw, 24px), bukan text-xl atau
+                text-2xl tetap. Di layar 320px ruang teks kartu judul cuma
+                256px, sementara "Selamat malam, Paman Sam." butuh 280px pada
+                20px dan 336px pada 24px -- pada ukuran tetap mana pun nama
+                dua kata terlempar ke baris kedua. Dengan 5.8vw teksnya
+                sekitar 18.5px di 320, 22px di 375, dan mentok 24px mulai
+                414, jadi sapaan plus nama dua kata selalu muat sebaris.
+
+                Nama adalah satu butir flex: kalau memang terlalu panjang ia
+                turun utuh ke baris berikutnya, dan baru patah di antara
+                katanya sendiri kalau lebih panjang dari satu baris. Titik
+                ikut di dalam span nama supaya tidak turun sendirian.
 
                 Mulai sm kembali ke judul besar satu baris seperti semula. */}
-            <h2 className="mt-3 flex max-w-4xl flex-wrap items-baseline gap-x-1.5 text-lg leading-snug text-slate-900 sm:block sm:whitespace-nowrap sm:text-3xl sm:font-semibold sm:leading-none sm:tracking-[-0.04em] sm:text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
-              <span className="font-medium text-slate-500 sm:font-semibold sm:text-slate-950">{getGreeting(now)},</span>{" "}
-              <span className="min-w-0 break-words font-bold sm:font-black">{displayName}.</span>
+            <h2 className="mt-3 flex max-w-4xl flex-wrap items-baseline gap-x-1.5 text-[clamp(18px,5.8vw,24px)] font-bold leading-tight tracking-[-0.02em] text-slate-900 sm:block sm:whitespace-nowrap sm:text-3xl sm:font-semibold sm:leading-none sm:tracking-[-0.04em] sm:text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
+              <span>{getGreeting(now)},</span>{" "}
+              <span className="min-w-0 break-words sm:font-black">{displayName}.</span>
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
               Pantau tonase, target, approval, dan risiko seluruh gudang dalam satu tampilan kerja.

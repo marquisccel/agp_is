@@ -76,7 +76,7 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
           Bentuknya kini sama dengan baris ringkasan di dashboard Manager,
           dan warnanya hanya menyala kalau memang ada saldo menggantung. */}
       <div
-        className="stat-strip strip-3"
+        className="stat-strip strip-3 sembunyi-ponsel"
         style={{
           borderRadius: 0,
           border: "none",
@@ -111,36 +111,69 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
         </div>
       </div>
 
-      {/* Ponsel: saldo menggantung jadi kartu stat dua lajur di bawah dua
-          petak -- nominalnya dan berapa lapak yang memegangnya -- dengan
-          label kecil di atas dan angka besar di bawah, sama seperti petak
-          di atasnya. Sebagai baris mendatar, nominal Rp belasan juta
-          berhimpitan dengan labelnya di layar 360px. Kuning hanya kalau
-          memang ada yang menggantung. */}
-      <div
-        className={`hanya-ponsel mx-4 mb-4 mt-3 grid grid-cols-2 gap-2 rounded-2xl border p-4 ${
-          totalRemaining > 0 ? "border-amber-200/80 bg-amber-50" : "border-slate-200/60 bg-slate-50"
-        }`}
-      >
-        <div className="min-w-0">
-          <p className={`text-[10.5px] font-bold uppercase tracking-[0.06em] ${totalRemaining > 0 ? "text-amber-700" : "text-slate-500"}`}>
-            Masih menggantung
-          </p>
-          <p className={`mt-1 truncate font-mono text-base font-bold tabular-nums ${totalRemaining > 0 ? "text-amber-800" : "text-slate-800"}`}>
-            {fmtRp(totalRemaining)}
+      {/* Ponsel: susunannya sama dengan ringkasan Transfer Pembayaran --
+          dua angka "biasa" berdampingan dalam satu wadah bertint lembut, lalu
+          angka yang menuntut perhatian dalam kartu amber penuh di bawahnya.
+          Deret petak layar lebar disembunyikan di ponsel (sembunyi-ponsel):
+          di sana ketiganya sejajar dan bernada sama, jadi saldo menggantung
+          tidak lebih menonjol daripada total yang sekadar catatan.
+
+          Tiap angka: label huruf kapital kecil di atas, nominal tebal di
+          bawah, keterangan satu baris di bawahnya. Amber hanya kalau memang
+          ada yang menggantung; nol memakai wadah netral yang sama dengan
+          baris atas, supaya kuning tidak kehilangan artinya. */}
+      {/* pb-0 di mode ringkas: TautanRincian di bawahnya sudah membawa
+          padding atasnya sendiri.
+
+          Ukuran nominal fluid (clamp dengan vw) dan tidak boleh patah
+          (whitespace-nowrap). Huruf mono selebar 0,6em per karakter, jadi
+          "Rp 25.932.702" pada 14px butuh 109px, sementara lajur kanan di
+          layar 320px cuma sekitar 100px -- dengan ukuran tetap nominalnya
+          patah jadi "Rp" di atas dan angkanya di bawah. Padding sedikit
+          dirapatkan di bawah 360px untuk alasan yang sama. */}
+      <div className={`hanya-ponsel space-y-2 p-3 min-[360px]:p-4 ${summaryOnly ? "pb-0 min-[360px]:pb-0" : ""}`}>
+        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">DP disetujui</p>
+            <p className="mt-1 whitespace-nowrap font-mono text-[clamp(12px,3.9vw,14px)] font-bold tabular-nums text-slate-900">{fmtRp(totalApproved)}</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-slate-500">Total yang pernah dicairkan</p>
+          </div>
+          <div className="min-w-0 border-l border-slate-200 pl-2.5 min-[360px]:pl-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Sudah terpakai</p>
+            <p className="mt-1 whitespace-nowrap font-mono text-[clamp(12px,3.9vw,14px)] font-bold tabular-nums text-slate-900">{fmtRp(totalUsed)}</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-slate-500">Sudah dipotongkan di nota</p>
+          </div>
+        </div>
+
+        <div
+          className={`grid grid-cols-2 gap-2 rounded-2xl border p-4 ${
+            totalRemaining > 0 ? "border-amber-300/80 bg-amber-100/80 shadow-sm" : "border-slate-100 bg-slate-50/80"
+          }`}
+        >
+          {/* Kolom flex dengan nominal mt-auto: di 320px label "Masih
+              menggantung" patah dua baris sementara "Lapak bersaldo" satu
+              baris, dan tanpa ini kedua angkanya duduk di ketinggian
+              berbeda. Label tetap rata atas, angka rata bawah. */}
+          <div className="flex min-w-0 flex-col">
+            <p className={`text-[10px] font-bold uppercase tracking-wider ${totalRemaining > 0 ? "text-amber-800" : "text-slate-500"}`}>
+              Masih menggantung
+            </p>
+            <p className={`mt-auto whitespace-nowrap pt-1 font-mono text-[clamp(13px,4.2vw,16px)] font-extrabold tabular-nums ${totalRemaining > 0 ? "text-amber-900" : "text-slate-900"}`}>
+              {fmtRp(totalRemaining)}
+            </p>
+          </div>
+          <div className={`flex min-w-0 flex-col border-l pl-2.5 min-[360px]:pl-3 ${totalRemaining > 0 ? "border-amber-300/70" : "border-slate-200"}`}>
+            <p className={`text-[10px] font-bold uppercase tracking-wider ${totalRemaining > 0 ? "text-amber-800" : "text-slate-500"}`}>
+              Lapak bersaldo
+            </p>
+            <p className={`mt-auto whitespace-nowrap pt-1 font-mono text-[clamp(13px,4.2vw,16px)] font-extrabold tabular-nums ${totalRemaining > 0 ? "text-amber-900" : "text-slate-900"}`}>
+              {lapakBersaldo} <span className="font-sans text-xs font-semibold">lapak</span>
+            </p>
+          </div>
+          <p className={`col-span-2 text-[11px] font-medium ${totalRemaining > 0 ? "text-amber-800" : "text-slate-500"}`}>
+            {totalRemaining > 0 ? "Sudah keluar, belum jadi barang." : "Tidak ada DP yang menggantung."}
           </p>
         </div>
-        <div className={`min-w-0 border-l pl-3 ${totalRemaining > 0 ? "border-amber-200/60" : "border-slate-200"}`}>
-          <p className={`text-[10.5px] font-bold uppercase tracking-[0.06em] ${totalRemaining > 0 ? "text-amber-700" : "text-slate-500"}`}>
-            Lapak bersaldo
-          </p>
-          <p className={`mt-1 font-mono text-base font-bold tabular-nums ${totalRemaining > 0 ? "text-amber-800" : "text-slate-800"}`}>
-            {lapakBersaldo} <span className="font-sans text-xs font-semibold">lapak</span>
-          </p>
-        </div>
-        <p className="col-span-2 text-[11px] text-slate-500">
-          {totalRemaining > 0 ? "Sudah keluar, belum jadi barang." : "Tidak ada DP yang menggantung."}
-        </p>
       </div>
 
       {summaryOnly && (

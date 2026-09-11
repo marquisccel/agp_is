@@ -282,15 +282,16 @@ export default function RekapAmbilKirimAnalytics({
                 antarbaris supaya kepala tabel jelas terpisah dari isinya. */}
             <div className="mt-5 overflow-x-auto">
               <table className="w-full text-left text-xs">
-                {/* Kepala tabel datar abu sangat muda dengan garis bawah
-                    tipis. Dulu label grup Ambil bergaris bawah hijau dan
+                {/* Kepala tabel tanpa latar, menyatu dengan kartu; hanya garis
+                    bawah tipis. Dulu label grup Ambil bergaris bawah hijau dan
                     Kirim bergaris bawah abu -- dua stempel setengah berwarna
                     yang di ponsel terbaca seperti dua tab yang salah satunya
-                    aktif, padahal keduanya sejajar. Pemisah kelompok kini
-                    satu garis tegak tipis di antara Ambil dan Kirim, menerus
-                    dari kepala sampai baris total. Warna hijau cukup di
-                    angka ton ambil. */}
-                <thead className="border-b border-slate-100 bg-slate-50 text-slate-600">
+                    aktif -- lalu sempat jadi pita abu yang memotong kartu.
+                    Pemisah kelompok kini satu garis tegak di antara Ambil dan
+                    Kirim, menerus dari kepala sampai baris total, dan tiap
+                    baris gudang dibatasi garis tipis yang sama dengan garis
+                    bawah kepala. Warna hijau cukup di angka ton ambil. */}
+                <thead className="border-b border-slate-100 text-slate-600">
                   <tr>
                     <th rowSpan={2} className="py-2 pl-3 pr-2 align-bottom text-xs font-semibold">
                       Gudang
@@ -321,7 +322,7 @@ export default function RekapAmbilKirimAnalytics({
                     const rekap = ringkasRekap(row.ambilVolume, row.kirimVolume)
                     const warnaRekap = rowTercatat === 0 ? "var(--muted-faint)" : rekap.warna
                     return (
-                      <tr key={row.warehouseId} className="border-b" style={{ borderColor: "var(--border)" }}>
+                      <tr key={row.warehouseId} className="border-b border-slate-100">
                         <td className="py-3 pl-3 pr-2">
                           <span className="block font-semibold text-slate-800">{row.warehouseName}</span>
                           <span className="mt-0.5 block text-[10.5px] font-semibold sm:hidden" style={{ color: warnaRekap }}>
