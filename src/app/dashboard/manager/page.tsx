@@ -746,22 +746,20 @@ export default async function ManagerDashboard({
             <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--brand-strong)" }}>
               Agrapana Greenworks Polymer Information System
             </p>
-            {/* Ponsel: sapaan jadi baris kecil abu di atas, nama utuh di
-                baris sendiri. Sebaris, patahnya jatuh di mana saja: "Selamat
-                malam, paman" di baris pertama dan "sam." sendirian di baris
-                kedua, jadi nama terbelah dua. Dengan nama selalu di baris
-                sendiri, nama dua kata tetap utuh, dan nama yang terlalu
-                panjang untuk satu baris patah di antara katanya sendiri,
-                bukan di tengah sapaan. Titik ikut di dalam span nama supaya
-                tidak pernah turun sendirian.
+            {/* Ponsel: sapaan dan nama satu alur mendatar (flex-wrap,
+                sejajar garis dasar) di 18px. Pada 27px, "Selamat malam,
+                paman sam." tidak muat satu baris di layar 375px dan patahnya
+                jatuh di tengah nama: "paman" ikut sapaan, "sam." turun
+                sendirian. Di 18px sapaan plus nama dua kata muat sebaris.
+                Nama adalah satu butir flex, jadi kalau memang terlalu
+                panjang ia turun utuh ke baris berikutnya, dan baru patah di
+                antara katanya sendiri kalau lebih panjang dari satu baris.
+                Titik ikut di dalam span nama supaya tidak turun sendirian.
 
-                Mulai sm keduanya kembali sebaris dengan ukuran yang sama
-                (1em mengikuti ukuran h2), seperti semula. */}
-            <h2 className="mt-3 max-w-4xl text-[1.7rem] font-semibold leading-tight tracking-[-0.04em] text-slate-950 sm:whitespace-nowrap sm:text-3xl sm:leading-none md:text-[2.65rem] xl:text-[3.05rem]">
-              <span className="block text-base font-medium tracking-normal text-slate-500 sm:inline sm:text-[1em] sm:font-semibold sm:tracking-[inherit] sm:text-slate-950">
-                {getGreeting(now)},
-              </span>{" "}
-              <span className="mt-0.5 block break-words font-black [text-wrap:balance] sm:mt-0 sm:inline">{displayName}.</span>
+                Mulai sm kembali ke judul besar satu baris seperti semula. */}
+            <h2 className="mt-3 flex max-w-4xl flex-wrap items-baseline gap-x-1.5 text-lg leading-snug text-slate-900 sm:block sm:whitespace-nowrap sm:text-3xl sm:font-semibold sm:leading-none sm:tracking-[-0.04em] sm:text-slate-950 md:text-[2.65rem] xl:text-[3.05rem]">
+              <span className="font-medium text-slate-500 sm:font-semibold sm:text-slate-950">{getGreeting(now)},</span>{" "}
+              <span className="min-w-0 break-words font-bold sm:font-black">{displayName}.</span>
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
               Pantau tonase, target, approval, dan risiko seluruh gudang dalam satu tampilan kerja.
@@ -849,7 +847,12 @@ export default async function ManagerDashboard({
           </span>
         </div>
 
-        <div className="stat-tile">
+        {/* Nada tint mengikuti keadaan, sama seperti petak Transfer
+            Pembayaran: rose saat ada nota berharga di atas standar yang
+            menunggu keputusan (uang keluar melebihi batas), amber saat ada
+            kasbon menunggu. Nol tetap putih, supaya warnanya hanya menyala
+            kalau memang ada yang harus diputuskan. */}
+        <div className={`stat-tile${waitingApprovalHarga > 0 ? " tone-danger" : ""}`}>
           <span className="stat-label">Approval Harga</span>
           <div className="stat-value-row">
             <span className="stat-value">{waitingApprovalHarga}</span>
@@ -865,7 +868,7 @@ export default async function ManagerDashboard({
           </Link>
         </div>
 
-        <div className="stat-tile">
+        <div className={`stat-tile${waitingApprovalDP > 0 ? " tone-warning" : ""}`}>
           <span className="stat-label">Approval DP</span>
           <div className="stat-value-row">
             <span className="stat-value">{waitingApprovalDP}</span>

@@ -118,8 +118,8 @@ export default function DpSummaryAnalytics({ dpData, warehouseNames, summaryOnly
           berhimpitan dengan labelnya di layar 360px. Kuning hanya kalau
           memang ada yang menggantung. */}
       <div
-        className={`hanya-ponsel mx-4 mb-4 mt-3 grid grid-cols-2 gap-2 rounded-xl border p-3 ${
-          totalRemaining > 0 ? "border-amber-200/50 bg-amber-50/60" : "border-slate-200/60 bg-slate-50"
+        className={`hanya-ponsel mx-4 mb-4 mt-3 grid grid-cols-2 gap-2 rounded-2xl border p-4 ${
+          totalRemaining > 0 ? "border-amber-200/80 bg-amber-50" : "border-slate-200/60 bg-slate-50"
         }`}
       >
         <div className="min-w-0">

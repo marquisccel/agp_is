@@ -555,7 +555,74 @@ function TabelPengguna({ users }: { users: UserData[] }) {
     <>
       {dialog}
       {toastHost}
-      <div className="section overflow-hidden">
+
+      {/* Ponsel: satu kartu, baris pengguna dipisah garis tipis
+          (divide-y). Dalam mode kartu tabel, tiap pengguna jadi blok empat
+          baris label-nilai (NAMA, EMAIL, ROLE, GUDANG) setinggi 200px lebih,
+          jadi satu layar cuma memuat tiga orang dan labelnya berulang di
+          setiap blok. Di sini nama, email, role, dan gudang dibaca sebagai
+          satu kesatuan, dengan aksi selebar baris di bawahnya. */}
+      <div className="hanya-ponsel overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        {users.length === 0 ? (
+          <p className="px-4 py-10 text-center text-sm text-slate-400">Tidak ada pengguna yang cocok.</p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {users.map((user) => {
+              const sibuk = sedangProses === user.id
+              const inisial = user.nama
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((k) => k[0]?.toUpperCase())
+                .join("")
+              return (
+                <li key={user.id} className="p-4" style={user.aktif ? undefined : { opacity: 0.6 }}>
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600" aria-hidden="true">
+                      {inisial}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <p className="truncate text-sm font-semibold text-slate-900">{user.nama}</p>
+                        {!user.aktif && (
+                          <span className="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700">Nonaktif</span>
+                        )}
+                      </div>
+                      <p className="truncate font-mono text-xs text-slate-500">{user.email}</p>
+                      <div className="mt-1.5 flex min-w-0 items-center gap-2">
+                        <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">{user.role}</span>
+                        <span className="truncate text-xs text-slate-500">{user.warehouse?.nama || "Semua gudang"}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => ubahStatus(user)}
+                      disabled={sibuk}
+                      className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      {user.aktif ? "Nonaktifkan" : "Aktifkan"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => hapus(user)}
+                      disabled={sibuk}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-40"
+                      title={`Hapus akun ${user.nama}`}
+                      aria-label={`Hapus akun ${user.nama}`}
+                    >
+                      <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
+                    </button>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
+
+      <div className="section sembunyi-ponsel overflow-hidden">
         <table className="tabel-lembut text-sm">
           <thead>
             <tr>
@@ -827,27 +894,18 @@ export default function MasterDataClient({
         <div className="space-y-4">
           <FormAkunBaru warehouses={warehouses} terbuka={formAkunTerbuka} setTerbuka={setFormAkunTerbuka} />
 
-          {/* Tombol akun baru sebaris dengan penyaring role, di sisi kanan.
-              Sebelumnya ia tombol hijau yang berdiri sendiri di atas bilah
-              penyaring, jadi di ponsel bilah itu turun satu layar penuh dan
-              tombolnya terbaca sebagai judul bagian, bukan aksi. Di ponsel
-              pemilih role dan tombol berbagi satu baris di bawah kolom cari;
-              mulai sm (sm:contents) ketiganya satu baris. */}
-          <FilterBar>
-            <SearchBox value={searchUser} onChange={setSearchUser} placeholder="Cari nama atau email..." />
-            <div className="flex items-center gap-2 sm:contents">
-              <ElegantSelect
-                value={filterRole}
-                onChange={setFilterRole}
-                ariaLabel="Filter role pengguna"
-                className="min-w-0 flex-1 sm:w-48 sm:flex-none"
-                options={[
-                  { value: "all", label: "Semua Role" },
-                  { value: "MANAGER", label: "Manager" },
-                  { value: "ADMIN", label: "Admin" },
-                  { value: "STAFF", label: "Staff" },
-                ]}
-              />
+          {/* Kartu kontrol dua baris dengan tugas yang jelas: baris atas
+              judul daftar dan satu aksi utama ringkas (Akun Baru) di kanan,
+              baris bawah kolom cari dan pemilih role sebaris. Tiga kontrol
+              dalam satu baris di ponsel membuat kolom cari tinggal 120px
+              dan placeholder-nya terpotong; bertumpuk tiga baris, bilah
+              kontrol memakan separuh layar sebelum daftar pertama terlihat. */}
+          <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-slate-900">Daftar Pengguna</h3>
+                <p className="mt-0.5 text-xs text-slate-500">{users.length} akun terdaftar</p>
+              </div>
               {!formAkunTerbuka && (
                 <button
                   type="button"
@@ -859,7 +917,23 @@ export default function MasterDataClient({
                 </button>
               )}
             </div>
-          </FilterBar>
+            <div className="flex w-full items-center gap-2">
+              <SearchBox value={searchUser} onChange={setSearchUser} placeholder="Cari pengguna..." />
+              <ElegantSelect
+                value={filterRole}
+                onChange={setFilterRole}
+                ariaLabel="Filter role pengguna"
+                className="w-[40%] max-w-48 shrink-0"
+                triggerClassName="pemicu-kecil"
+                options={[
+                  { value: "all", label: "Semua Role" },
+                  { value: "MANAGER", label: "Manager" },
+                  { value: "ADMIN", label: "Admin" },
+                  { value: "STAFF", label: "Staff" },
+                ]}
+              />
+            </div>
+          </div>
 
           <TabelPengguna users={filteredUsers} />
         </div>
@@ -871,20 +945,10 @@ export default function MasterDataClient({
 }
 
 
-function FilterBar({ children }: { children: ReactNode }) {
-  return (
-    <div className="section section-body">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {children}
-      </div>
-    </div>
-  )
-}
-
 function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (value: string) => void; placeholder: string }) {
   return (
-    <div className="relative flex-1">
-      <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+    <div className="relative min-w-0 flex-1">
+      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
       <input
         type="text"
         placeholder={placeholder}

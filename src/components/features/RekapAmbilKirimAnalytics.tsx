@@ -282,13 +282,15 @@ export default function RekapAmbilKirimAnalytics({
                 antarbaris supaya kepala tabel jelas terpisah dari isinya. */}
             <div className="mt-5 overflow-x-auto">
               <table className="w-full text-left text-xs">
-                {/* Kepala tabel satu pita abu netral. Dulu label grup Ambil
-                    bergaris bawah hijau dan Kirim bergaris bawah abu -- dua
-                    stempel setengah berwarna yang di ponsel terbaca seperti
-                    dua tab yang salah satunya aktif, padahal keduanya
-                    sejajar. Warna hijau cukup di angka ton ambil. Kedua grup
-                    dipisah garis putih tipis di dalam pita. */}
-                <thead className="bg-slate-100/80 text-slate-600">
+                {/* Kepala tabel datar abu sangat muda dengan garis bawah
+                    tipis. Dulu label grup Ambil bergaris bawah hijau dan
+                    Kirim bergaris bawah abu -- dua stempel setengah berwarna
+                    yang di ponsel terbaca seperti dua tab yang salah satunya
+                    aktif, padahal keduanya sejajar. Pemisah kelompok kini
+                    satu garis tegak tipis di antara Ambil dan Kirim, menerus
+                    dari kepala sampai baris total. Warna hijau cukup di
+                    angka ton ambil. */}
+                <thead className="border-b border-slate-100 bg-slate-50 text-slate-600">
                   <tr>
                     <th rowSpan={2} className="py-2 pl-3 pr-2 align-bottom text-xs font-semibold">
                       Gudang
@@ -296,20 +298,20 @@ export default function RekapAmbilKirimAnalytics({
                     {/* Label grup dirata-kanan mengikuti kolom angkanya.
                         Judul di tengah tidak pernah sejajar dengan angka yang
                         rata kanan, itu yang bikin header terlihat goyah. */}
-                    <th colSpan={2} className="border-l border-white px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
+                    <th colSpan={2} className="border-r border-slate-200 px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
                       Ambil
                     </th>
-                    <th colSpan={2} className="border-l border-white px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
+                    <th colSpan={2} className="px-2 pb-0.5 pt-2 text-right text-xs font-semibold">
                       Kirim
                     </th>
-                    <th rowSpan={2} className="hidden border-l border-white py-2 pl-2 pr-3 align-bottom text-right text-xs font-semibold sm:table-cell">
+                    <th rowSpan={2} className="hidden py-2 pl-2 pr-3 align-bottom text-right text-xs font-semibold sm:table-cell">
                       Rekap
                     </th>
                   </tr>
                   <tr>
-                    <th className="w-px whitespace-nowrap border-l border-white px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Trans.</th>
-                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Ton</th>
-                    <th className="w-px whitespace-nowrap border-l border-white px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Trans.</th>
+                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Trans.</th>
+                    <th className="w-px whitespace-nowrap border-r border-slate-200 px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Ton</th>
+                    <th className="w-px whitespace-nowrap px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Trans.</th>
                     <th className="w-px whitespace-nowrap px-2 pb-2 pt-0.5 text-right text-[10px] font-medium text-slate-500">Ton</th>
                   </tr>
                 </thead>
@@ -328,7 +330,7 @@ export default function RekapAmbilKirimAnalytics({
                         </td>
                         <td className="whitespace-nowrap px-2 py-3 text-right font-mono tabular-nums text-slate-500">{fmtAngka(row.ambilTransaksi)}</td>
                         <td
-                          className="whitespace-nowrap px-2 py-3 text-right font-mono tabular-nums font-semibold"
+                          className="whitespace-nowrap border-r border-slate-200 px-2 py-3 text-right font-mono tabular-nums font-semibold"
                           style={{ color: row.ambilVolume > 0 ? "var(--brand-strong)" : "var(--muted-faint)" }}
                         >
                           {angkaTon(row.ambilVolume)}
@@ -355,7 +357,7 @@ export default function RekapAmbilKirimAnalytics({
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-2 pt-3 text-right font-mono tabular-nums font-bold text-slate-700">{fmtAngka(total.ambilTransaksi)}</td>
-                    <td className="whitespace-nowrap px-2 pt-3 text-right font-mono tabular-nums font-black" style={{ color: "var(--brand-strong)" }}>
+                    <td className="whitespace-nowrap border-r border-slate-200 px-2 pt-3 text-right font-mono tabular-nums font-black" style={{ color: "var(--brand-strong)" }}>
                       {angkaTon(total.ambilVolume)}
                     </td>
                     <td className="whitespace-nowrap px-2 pt-3 text-right font-mono tabular-nums font-bold text-slate-700">{fmtAngka(total.kirimTransaksi)}</td>

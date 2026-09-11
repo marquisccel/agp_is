@@ -192,10 +192,14 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                       <span className="mt-1 rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted)" }}>Sama</span>
                     ) : (
                       <span
-                        className="mt-1 whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums"
+                        className="mt-1 whitespace-nowrap rounded-full px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums"
                         style={diff < 0 ? { background: "var(--danger-soft)", color: "var(--danger)" } : { background: "var(--warning-soft)", color: "var(--warning)" }}
                       >
+                        {/* "kg" berhuruf sans kecil: dengan satuan penuh
+                            berhuruf mono 11px, "-141.00 kg" lebih lebar dari
+                            lajur 73px di layar 320px dan meluap ke garis. */}
                         {diff < 0 ? diff.toFixed(2) : `+${diff.toFixed(2)}`}
+                        <span className="ml-0.5 font-sans text-[9.5px] font-semibold">kg</span>
                       </span>
                     )}
                   </div>
@@ -231,10 +235,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
 
       {/* Scale Comparison Summary */}
       <div className="space-y-4 rounded-[var(--radius-lg)] border border-slate-200/60 bg-slate-50 p-4 sm:p-5">
-        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2v20"/><path d="M5 5h14"/><path d="M3 21h18"/>
-          </svg>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
           Perbandingan Timbangan Total (Lapak vs Gudang)
         </h4>
         {/* Tiga lajur dalam satu pita bertepi, dipisah garis tipis.
@@ -255,9 +256,9 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
             </div>
           </div>
           <div className="flex flex-col items-center px-2 py-3 text-center" style={{ borderColor: "var(--border)" }}>
-            <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Selisih (kg)</div>
+            <div className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-slate-400">Selisih</div>
             <span
-              className="mt-1 whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-xs font-bold tabular-nums sm:text-sm"
+              className="mt-1 whitespace-nowrap rounded-full px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums sm:px-2 sm:text-sm"
               style={selisihTotal === 0
                 ? { background: "var(--bg-tint)", color: "var(--muted)" }
                 : selisihTotal < 0
@@ -265,6 +266,7 @@ export default function ApprovalHargaForm({ purchase }: { purchase: PurchaseForA
                   : { background: "var(--warning-soft)", color: "var(--warning)" }}
             >
               {selisihTotal > 0 ? `+${selisihTotal.toFixed(2)}` : selisihTotal.toFixed(2)}
+              <span className="ml-0.5 font-sans text-[9.5px] font-semibold sm:text-xs">kg</span>
             </span>
             {/* Persentase tidak diulang di sel ini: dua angka bertumpuk di
                 lajur selebar 90px saling berdesakan, dan persentase yang sama
