@@ -737,12 +737,13 @@ export default function MasterDataClient({
       {/* Tab memakai .segmented, sama dengan pemilih di dashboard Manager
           dan filter di Data Lapak -- sebelumnya kotak hitam pekat di atas
           panel kaca buram, satu-satunya pola seperti itu di aplikasi. */}
-      {/* Tab dan aksi utama halaman dalam satu baris kepala: tab di kiri,
-          "+ Akun Baru" di kanan. Membuat akun adalah satu-satunya aksi yang
-          menambah data di halaman ini, jadi ia duduk sejajar navigasi, bukan
-          terselip di dalam kartu daftar. Dari tab Ringkasan pun tombol ini
-          langsung membawa ke tab Pengguna dengan form terbuka. mb-4
-          merapatkan jarak space-y-6 supaya kepala menempel ke isinya. */}
+      {/* Tab dan aksi tab dalam satu baris kepala: tab di kiri, "+ Akun
+          Baru" di kanan. Tombolnya milik tab Pengguna saja -- di tab
+          Ringkasan tidak ada daftar akun yang ditambahi, jadi tombol di sana
+          cuma aksi yang melompat ke layar lain. Tinggi baris ditentukan tab
+          (50px, lebih tinggi dari tombol 44px), jadi hilangnya tombol tidak
+          menggeser apa pun di bawahnya. mb-4 merapatkan jarak space-y-6
+          supaya kepala menempel ke isinya. */}
       <div className="mb-4 flex w-full items-center justify-between gap-3">
         <div className="segmented" role="tablist">
           {tabs.map((tab) => (
@@ -758,13 +759,10 @@ export default function MasterDataClient({
             </button>
           ))}
         </div>
-        {!(activeTab === "pengguna" && formAkunTerbuka) && (
+        {activeTab === "pengguna" && !formAkunTerbuka && (
           <button
             type="button"
-            onClick={() => {
-              setActiveTab("pengguna")
-              setFormAkunTerbuka(true)
-            }}
+            onClick={() => setFormAkunTerbuka(true)}
             className="btn-primer inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs font-semibold shadow-sm"
           >
             <UserPlus className="h-4 w-4" aria-hidden="true" />

@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import PageHeader from "@/components/ui/PageHeader"
-import KartuData from "@/components/ui/KartuData"
+import { ChevronRight } from "lucide-react"
+import { fmtRp, fmtTon } from "@/lib/format"
 
 export default async function ApprovalHargaList() {
   const session = await getServerSession(authOptions)
@@ -16,7 +17,9 @@ export default async function ApprovalHargaList() {
     where: { status_approval: "menunggu_approval_harga" },
     include: {
       supplier: true,
-      warehouse: true,
+      // Standar harga gudang ikut dimuat untuk menghitung berapa SKU di
+      // nota ini yang melewati batas -- dasar lencana status di kartu.
+      warehouse: { include: { skuPrices: true } },
       items: true
     },
     orderBy: { updatedAt: 'desc' }
@@ -30,41 +33,90 @@ export default async function ApprovalHargaList() {
         description="Daftar transaksi yang melebihi standar harga maksimum."
       />
 
-      {/* Antrean persetujuan jadi umpan kartu di ponsel: satu keputusan per
-          kartu, nilainya menonjol, tombol masuk di kaki dalam jangkauan
-          jempol. Manager membuka layar ini untuk memutuskan, bukan untuk
-          membandingkan kolom. */}
+      {/* Ponsel: satu kartu per nota yang menunggu keputusan.
+
+          Kepala: nama lapak dan gudang + tanggal di kiri, lencana status di
+          kanan. Lencananya dihitung dari standar harga gudang: "Di atas
+          standar" kalau ada SKU yang harganya melewati batas -- alasan nota
+          ini ada di antrean -- dan "Perlu review" kalau (karena standar
+          berubah sesudah nota dibuat) tidak ada lagi yang melewati batas.
+          Tanpa jumlah SKU di dalamnya: "1 SKU di atas standar" selebar 140px
+          memotong nama lapak dan kotanya di layar 320px.
+
+          Badan: wadah tint lembut berisi rincian barang (jumlah SKU dan
+          tonase gudang) di kiri dan total nilai di kanan, supaya Manager
+          tahu besar-kecilnya nota sebelum membukanya.
+
+          Tombol: hitam monokrom, bukan hijau. Semua kartu di layar ini
+          punya tombol yang sama; deretan tombol hijau penuh membuat hijau
+          (warna "setujui" di halaman berikutnya) kehilangan artinya, dan
+          tombol ini memang hanya membuka rincian, bukan memutuskan. */}
       <div className="daftar-kartu">
         {pendingApprovals.length === 0 ? (
           <p className="section section-body text-center text-sm text-slate-400">
             Tidak ada transaksi yang menunggu approval harga.
           </p>
         ) : (
-          pendingApprovals.map((draft) => (
-            <KartuData
-              key={draft.id}
-              judul={draft.supplier.nama}
-              subjudul={`${draft.warehouse.nama} · ${new Date(draft.updatedAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}`}
-              baris={[
-                {
-                  label: "Total nilai",
-                  nilai: (
-                    <span className="font-mono text-base font-black tabular-nums">
-                      Rp {(draft.total_nilai_setelah_retur || 0).toLocaleString("id-ID")}
-                    </span>
-                  ),
-                },
-              ]}
-              aksi={
+          pendingApprovals.map((draft) => {
+            const skuLewat = draft.items.filter((item) => {
+              const standar = draft.warehouse.skuPrices.find((s) => s.sku_name === item.sku_name)
+              return item.harga_per_kg > (standar ? standar.max_price_per_kg : 0)
+            }).length
+            const jumlahSku = new Set(draft.items.map((item) => item.sku_name)).size
+            const beratKg = draft.items.reduce((total, item) => total + (item.berat_final_item || 0), 0)
+            const tanggal = new Date(draft.updatedAt).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+              timeZone: "Asia/Jakarta",
+            })
+
+            return (
+              <article key={draft.id} className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-bold text-slate-900">{draft.supplier.nama}</h3>
+                    <p className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+                      <span className="truncate">{draft.warehouse.nama.trim().replace(/^gudang\s+/i, "")}</span>
+                      <span className="h-1 w-1 shrink-0 rounded-full bg-slate-300" aria-hidden="true" />
+                      <span className="shrink-0">{tanggal}</span>
+                    </p>
+                  </div>
+                  <span className="shrink-0 whitespace-nowrap rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                    {skuLewat > 0 ? "Di atas standar" : "Perlu review"}
+                  </span>
+                </div>
+
+                {/* Dua lajur: kiri selebar isinya (auto), kanan sisa lebar
+                    untuk nominal. Dengan dua lajur sama lebar, "Rp 24.009.200"
+                    butuh 125px sementara lajurnya 108px di layar 320px. */}
+                <div className="my-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Rincian</p>
+                    <p className="mt-0.5 flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-slate-700">
+                      {jumlahSku} SKU
+                      <span className="h-1 w-1 shrink-0 rounded-full bg-slate-300" aria-hidden="true" />
+                      {fmtTon(beratKg)}
+                    </p>
+                  </div>
+                  <div className="min-w-0 text-right">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total nilai</p>
+                    <p className="mt-0.5 whitespace-nowrap font-mono text-[clamp(14px,4.4vw,16px)] font-extrabold tabular-nums text-slate-900">
+                      {fmtRp(draft.total_nilai_setelah_retur || 0)}
+                    </p>
+                  </div>
+                </div>
+
                 <Link
                   href={`/dashboard/manager/approval-harga/${draft.id}`}
-                  className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 text-sm font-bold"
+                  className="sentuh-luas-y flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-xs font-semibold tracking-wide text-white shadow-sm transition-all hover:bg-black active:scale-[0.98]"
                 >
                   Review Transaksi
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
-              }
-            />
-          ))
+              </article>
+            )
+          })
         )}
       </div>
 
