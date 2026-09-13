@@ -169,6 +169,15 @@ a:focus-visible {
   outline: none;
 }
 
+/* Isian yang penanda fokusnya dipegang wadahnya (focus-within: tepi dan
+   cincin hijau di kotak pembungkus), atau oleh utilitas cincinnya sendiri.
+   Garis 3px berjarak di atas akan jadi lingkaran kedua di dalam cincin
+   itu. Dipakai mis. kolom nominal dan alasan di kotak Koreksi Pembayaran. */
+.isian-polos:focus,
+.isian-polos:focus-visible {
+  outline: none;
+}
+
 /* Kartu dasar -- dipakai di 25+ tempat. Flat: border tipis + shadow
    hairline, TANPA blur/gradient/translateY-lift seperti versi lama. */
 .interactive-surface {
@@ -3031,15 +3040,5 @@ a:focus-visible {
 
   .page-hero {
     padding: 18px 15px;
-  }
-
-  /* Label mikro huruf besar, KHUSUS deret tiga lajur timbangan di halaman
-     detail transaksi. Satu sel di sana hanya selebar 61px sementara kata
-     "TIMBANGAN" menuntut 66px. Dulu aturan ini berlaku ke seluruh
-     .field-label, sehingga label form di mana pun ikut mengecil jadi 9.5px
-     di layar 320-400px -- terlalu kecil untuk dibaca sebagai label isian. */
-  .deret-timbangan .field-label {
-    font-size: 9.5px;
-    letter-spacing: 0.03em;
   }
 }

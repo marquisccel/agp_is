@@ -111,17 +111,14 @@ export default function KoreksiKekurangan({
           onClick={tutup}
         >
           <div
-            className="animate-in fade-in flex w-full max-w-lg flex-col overflow-hidden rounded-[var(--radius-lg)] shadow-2xl duration-200"
+            className="animate-in fade-in flex w-full max-w-lg flex-col overflow-hidden rounded-2xl shadow-2xl duration-200"
             style={{ background: "var(--surface)" }}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-label="Koreksi pembayaran nota"
           >
-            <div
-              className="flex items-start justify-between gap-3 border-b p-5"
-              style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
-            >
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 p-5">
               <div className="min-w-0">
                 <span className="section-eyebrow">Koreksi pembayaran</span>
                 <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>
@@ -131,35 +128,39 @@ export default function KoreksiKekurangan({
                   Nota ini tercatat lunas. Catat berapa yang sebenarnya masih kurang dibayar ke lapak.
                 </p>
               </div>
+              {/* Tombol tutup bundar kecil tanpa tepi, gaya lembar iOS.
+                  Tampilannya 32px; sasaran sentuhnya 44px lewat ::before
+                  yang melebar 6px ke segala arah. */}
               <button
                 type="button"
                 onClick={tutup}
                 aria-label="Tutup koreksi pembayaran"
-                className="btn-netral premium-button shrink-0 p-2"
+                className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-slate-200"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
               </button>
             </div>
 
             <div className="space-y-5 p-5">
               <div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <label className="field-label" style={{ marginBottom: 0 }}>Kekurangan yang belum dibayar</label>
-                  <span className="text-xs" style={{ color: "var(--muted-faint)" }}>
+                <div className="flex items-center justify-between gap-3">
+                  <label htmlFor="nominal-kekurangan" className="field-label" style={{ marginBottom: 0 }}>Kekurangan yang belum dibayar</label>
+                  <span className="shrink-0 whitespace-nowrap rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
                     maks. {fmtRp(kewajiban)}
                   </span>
                 </div>
-                <div className="relative mt-1.5">
-                  <span
-                    className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-sm font-bold"
-                    style={{ color: "var(--muted-faint)" }}
-                  >
-                    Rp
-                  </span>
+                {/* Wadah isian yang memegang tepi dan cincin fokus
+                    (focus-within), dengan awalan "Rp" tebal di dalamnya.
+                    Isiannya sendiri polos tanpa tepi, jadi awalan dan angka
+                    terbaca satu kotak, bukan label yang ditumpangkan di atas
+                    kolom. */}
+                <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 transition-shadow focus-within:border-[var(--brand)] focus-within:ring-2 focus-within:ring-[var(--brand-soft)]">
+                  <span className="shrink-0 text-sm font-bold text-slate-700" aria-hidden="true">Rp</span>
                   <NumberInput
+                    id="nominal-kekurangan"
                     aria-label="Nominal kekurangan"
                     pemisahRibuan
-                    className="field-input field-lg field-icon text-right font-mono text-lg font-bold"
+                    className="isian-polos min-w-0 flex-1 bg-transparent py-3 text-right font-mono text-lg font-bold text-slate-900 placeholder:text-slate-400"
                     placeholder="0"
                     value={kurang}
                     onValueChange={setKurang}
@@ -179,13 +180,14 @@ export default function KoreksiKekurangan({
               </div>
 
               <div>
-                <label className="field-label">Alasan koreksi</label>
+                <label htmlFor="alasan-koreksi" className="field-label">Alasan koreksi</label>
                 {/* Pegangan ubah-ukuran bawaan textarea muncul sebagai
                     segitiga kecil menonjol di pojok kanan bawah kolom.
                     Tingginya sudah cukup untuk kalimat sepanjang ini, jadi
                     pegangannya cuma menambah benda yang tidak dipakai. */}
                 <textarea
-                  className="field-input resize-none text-sm"
+                  id="alasan-koreksi"
+                  className="isian-polos w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[var(--brand)] focus:bg-white focus:ring-2 focus:ring-[var(--brand-soft)]"
                   rows={3}
                   value={alasan}
                   onChange={(e) => setAlasan(e.target.value)}
@@ -199,17 +201,22 @@ export default function KoreksiKekurangan({
               {galat && <div className="notice tone-warning text-sm font-medium">{galat}</div>}
             </div>
 
-            <div
-              className="flex justify-end gap-2 border-t p-5"
-              style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
-            >
-              <button onClick={tutup} className="btn-netral premium-button px-4 py-2.5 text-sm">
+            {/* Batal sepertiga, Buka Kembali Nota dua pertiga lebar: aksi
+                utama yang lebih lebar dan berwarna penuh, sehingga dua tombol
+                berdampingan tidak terbaca setara. */}
+            <div className="flex gap-3 border-t border-slate-100 p-5">
+              <button
+                type="button"
+                onClick={tutup}
+                className="h-11 flex-1 rounded-xl bg-slate-100 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+              >
                 Batal
               </button>
               <button
+                type="button"
                 onClick={kirim}
                 disabled={belumLayak}
-                className="btn-primer premium-button rounded-[var(--radius-sm)] px-5 py-2.5 text-sm font-bold disabled:opacity-50"
+                className="btn-primer h-11 flex-[2] rounded-xl text-sm font-semibold shadow-sm active:scale-[0.98] disabled:opacity-50"
               >
                 {mengirim ? "Menyimpan..." : "Buka Kembali Nota"}
               </button>

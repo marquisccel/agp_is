@@ -315,7 +315,86 @@ export default function ManagerPurchaseDetailClient({
                 Dasar harga: {methodLabel}
               </span>
             </div>
-            <div className="overflow-x-auto">
+            {/* Ponsel: daftar item khusus, bukan tabel dalam mode kartu. Di
+                mode kartu, sel "Nama SKU / Spec" jadi label tiga baris di
+                kiri nama, dan lencana spec melebar jadi strip abu yang
+                melayang di tengah rekaman. Di sini tiap item: nama SKU dan
+                lencana spec berdampingan di kepala, lalu lima baris
+                label-nilai dipisah garis tipis. */}
+            <ul className="hanya-ponsel divide-y divide-slate-100">
+              {purchase.items.map(item => {
+                const lWeight = item.berat_lapak ?? item.berat_final_item ?? 0
+                const gWeight = item.berat_final_item ?? 0
+                const diff = gWeight - lWeight
+                const isOver = isItemOverLimit(item.sku_name, item.harga_per_kg)
+                const maxP = getSkuMaxPrice(item.sku_name)
+
+                return (
+                  <li key={item.id} className="px-4 py-3.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="truncate text-sm font-bold text-slate-900">{item.sku_name}</span>
+                        {item.spec && (
+                          <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+                            {item.spec}
+                          </span>
+                        )}
+                      </div>
+                      {isOver && (
+                        <span className="shrink-0 rounded-full border border-amber-200/80 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                          Di atas standar
+                        </span>
+                      )}
+                    </div>
+                    <dl className="mt-2 divide-y divide-slate-100 text-sm">
+                      <div className="flex items-center justify-between gap-3 py-2">
+                        <dt className="text-xs text-slate-500">Lapak (kg)</dt>
+                        <dd className="font-mono tabular-nums text-slate-700">{lWeight.toFixed(1)}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 py-2">
+                        <dt className="text-xs text-slate-500">Gudang (kg)</dt>
+                        <dd className="font-mono font-bold tabular-nums text-slate-900">{gWeight.toFixed(1)}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 py-2">
+                        <dt className="text-xs text-slate-500">Selisih (kg)</dt>
+                        <dd>
+                          {diff === 0 ? (
+                            <span className="rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                              Sesuai
+                            </span>
+                          ) : (
+                            <span
+                              className={`rounded-full border px-2.5 py-0.5 font-mono text-xs font-semibold tabular-nums ${
+                                diff < 0 ? "border-rose-200/60 bg-rose-50 text-rose-700" : "border-amber-200/60 bg-amber-50 text-amber-700"
+                              }`}
+                            >
+                              {diff < 0 ? diff.toFixed(1) : `+${diff.toFixed(1)}`}
+                            </span>
+                          )}
+                        </dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3 py-2">
+                        <dt className="pt-0.5 text-xs text-slate-500">Harga / kg</dt>
+                        <dd className="text-right">
+                          <span className={`font-mono font-semibold tabular-nums ${isOver ? "text-amber-700" : "text-slate-900"}`}>
+                            {fmtRp(item.harga_per_kg)}
+                          </span>
+                          {isOver && (
+                            <span className="mt-0.5 block text-[10px] font-semibold text-amber-700">Standar maks. {fmtRp(maxP)}</span>
+                          )}
+                        </dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 py-2">
+                        <dt className="text-xs font-semibold text-slate-600">Subtotal</dt>
+                        <dd className="font-mono font-extrabold tabular-nums text-slate-900">{fmtRp(item.subtotal)}</dd>
+                      </div>
+                    </dl>
+                  </li>
+                )
+              })}
+            </ul>
+
+            <div className="sembunyi-ponsel overflow-x-auto">
               <table className="tabel-lembut text-sm">
                 <thead>
                   <tr>
@@ -391,27 +470,30 @@ export default function ManagerPurchaseDetailClient({
               </table>
             </div>
 
-            {/* Ringkasan timbangan. Nadanya mengikuti keadaan, bukan
-                kategori: selisih nol berarti cocok, jadi netral -- tidak
-                perlu dirayakan dengan hijau di setiap nota yang normal. */}
-            <div
-              className="deret-timbangan grid grid-cols-3 gap-px border-t text-center"
-              style={{ borderColor: "var(--border)", background: "var(--border)" }}
-            >
-              <div className="px-4 py-4" style={{ background: "var(--surface-sunken)" }}>
-                <span className="field-label" style={{ marginBottom: 4 }}>Timbangan Lapak</span>
-                <p className="font-mono font-bold" style={{ color: "var(--foreground)" }}>{totalWeightLapak.toFixed(1)} KG</p>
-              </div>
-              <div className="px-4 py-4" style={{ background: "var(--surface-sunken)" }}>
-                <span className="field-label" style={{ marginBottom: 4 }}>Timbangan Gudang</span>
-                <p className="font-mono font-bold" style={{ color: "var(--foreground)" }}>{totalWeightGudang.toFixed(1)} KG</p>
-              </div>
-              <div className="px-4 py-4" style={{ background: "var(--surface-sunken)" }}>
-                <span className="field-label" style={{ marginBottom: 4 }}>Selisih</span>
-                <p className="font-mono font-bold"
-                  style={{ color: weightDiff === 0 ? "var(--foreground)" : weightDiff < 0 ? "var(--danger)" : "var(--warning)" }}>
-                  {weightDiff > 0 ? `+${weightDiff.toFixed(1)}` : weightDiff.toFixed(1)} KG
-                </p>
+            {/* Ringkasan timbangan: satu bilah datar bertint dengan sekat garis
+                tipis, bukan tiga kotak bertepi yang menempel di dasar kartu.
+                Label kecil di atas, angka tebal di bawah; satuan kg di label.
+                Nadanya mengikuti keadaan, bukan kategori: selisih nol berarti
+                cocok, jadi netral -- tidak perlu dirayakan dengan hijau di
+                setiap nota yang normal. */}
+            <div className="border-t border-slate-100 p-4">
+              <div className="grid grid-cols-3 divide-x divide-slate-200 rounded-2xl border border-slate-100 bg-slate-50/80 py-3 text-center">
+                <div className="min-w-0 px-2">
+                  <span className="block text-[10px] font-bold uppercase leading-tight tracking-wider text-slate-500">Lapak (kg)</span>
+                  <p className="mt-1 font-mono text-sm font-extrabold tabular-nums text-slate-900">{totalWeightLapak.toFixed(1)}</p>
+                </div>
+                <div className="min-w-0 px-2">
+                  <span className="block text-[10px] font-bold uppercase leading-tight tracking-wider text-slate-500">Gudang (kg)</span>
+                  <p className="mt-1 font-mono text-sm font-extrabold tabular-nums text-slate-900">{totalWeightGudang.toFixed(1)}</p>
+                </div>
+                <div className="min-w-0 px-2">
+                  <span className="block text-[10px] font-bold uppercase leading-tight tracking-wider text-slate-500">Selisih (kg)</span>
+                  <p className={`mt-1 font-mono text-sm font-extrabold tabular-nums ${
+                    weightDiff === 0 ? "text-slate-900" : weightDiff < 0 ? "text-rose-600" : "text-amber-600"
+                  }`}>
+                    {weightDiff > 0 ? `+${weightDiff.toFixed(1)}` : weightDiff.toFixed(1)}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -460,20 +542,24 @@ export default function ManagerPurchaseDetailClient({
                 </div>
                 <Shield className="h-4 w-4" style={{ color: "var(--muted-faint)" }} />
               </div>
-              <div className="section-body space-y-3 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Staff Input (Gudang/Lapak)</span>
-                  <span className="font-bold text-slate-800">{purchase.staff.nama}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Verifikasi Gudang</span>
-                  <span className="font-bold text-slate-800">{purchase.admin?.nama || "-"}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Manager Approval</span>
-                  <span className="font-bold text-slate-800">{purchase.manager?.nama || "-"}</span>
-                </div>
-            </div>
+              {/* Satu baris per peran, dipisah garis tipis. Nama yang sudah
+                  mengisi perannya tebal slate-900; peran yang belum terisi
+                  bertanda "-" abu muda, supaya tahap yang belum terjadi
+                  terbaca kosong sekilas, bukan setara dengan nama orang. */}
+              <dl className="divide-y divide-slate-100 px-4 sm:px-5">
+                {[
+                  { peran: "Staff Input (Gudang/Lapak)", nama: purchase.staff.nama },
+                  { peran: "Verifikasi Gudang", nama: purchase.admin?.nama },
+                  { peran: "Manager Approval", nama: purchase.manager?.nama },
+                ].map((baris) => (
+                  <div key={baris.peran} className="flex items-center justify-between gap-3 py-3">
+                    <dt className="text-xs font-medium text-slate-500">{baris.peran}</dt>
+                    <dd className={`min-w-0 truncate text-right text-sm ${baris.nama ? "font-semibold text-slate-900" : "font-medium text-slate-300"}`}>
+                      {baris.nama || "-"}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
         </div>
 
@@ -559,8 +645,7 @@ export default function ManagerPurchaseDetailClient({
                   </button>
                 ) : (
                   <span
-                    className="rounded-[var(--radius-sm)] border px-3 py-2 text-xs font-black"
-                    style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
+                    className="shrink-0 whitespace-nowrap rounded-full border border-slate-200/70 bg-slate-50 px-2.5 py-0.5 text-xs font-semibold text-slate-500"
                   >
                     Belum ada
                   </span>
