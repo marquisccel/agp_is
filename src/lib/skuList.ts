@@ -26,6 +26,13 @@ export const SKU_LIST = [
   "Saos Kecap",
   "Galon",
   "PK",
+  "PP Gelas A",
+  "PP Gelas B",
+  "Monti",
+  "Inject A",
+  "Inject B",
+  "Emberan Gabyuk",
+  "Impek",
 ] as const
 
 export type SkuName = (typeof SKU_LIST)[number]
