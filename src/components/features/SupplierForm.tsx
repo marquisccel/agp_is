@@ -7,6 +7,7 @@ import ElegantSelect from "@/components/ui/ElegantSelect"
 import { isShortGoogleMapsLink, parseCoordinatesFromMapLink } from "@/lib/supplierLocation"
 import { isValidBankAccountNumber, isValidIndonesianWaNumber } from "@/lib/supplierValidation"
 import { namaGudang } from "@/lib/namaGudang"
+import { TIER_VALUES, TIER_META } from "@/lib/supplierTier"
 
 const KNOWN_BANKS = ["BCA","BNI","BRI","BSI","BTN","Mandiri","CIMB Niaga","Danamon","Permata","Panin","OCBC NISP","Maybank","Mega","Muamalat","Jago","SeaBank","Jenius","Gopay","OVO","Dana"]
 const BANK_OPTIONS = [
@@ -36,12 +37,12 @@ const BANK_OPTIONS = [
 /* Tier adalah penilaian manual keaktifan pengiriman lapak, terpisah dari
    transactionStatus (RED/GREEN) yang berpindah sendiri secara otomatis
    saat transaksi pertama disetujui -- lihat lib/supplierStatus.ts. Tier
-   tidak pernah diubah sistem, murni isian Staff/Admin/Manager. */
+   tidak pernah diubah sistem, murni isian Staff/Admin/Manager. Label dan
+   warnanya satu sumber di lib/supplierTier.ts, supaya badge di Kinerja
+   Lapak Manager dan opsi di form ini tidak diam-diam berbeda tulisan. */
 const TIER_OPTIONS = [
   { value: "", label: "Belum diklasifikasi" },
-  { value: "TIER_1", label: "Tier 1 - Sudah Rutin Kirim & Loyal" },
-  { value: "TIER_2", label: "Tier 2 - Potensi Rutin Kirim & Masih Bagi Barang" },
-  { value: "TIER_3", label: "Tier 3 - Cari Informasi dan Peluang untuk Kirim" },
+  ...TIER_VALUES.map((v) => ({ value: v, label: `${TIER_META[v].label} - ${TIER_META[v].deskripsi}` })),
 ]
 
 function resolveBank(val: string | null | undefined): { bank: string; lainnya: string } {

@@ -6,9 +6,7 @@ import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
 import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 import { validateSupplierContactFields } from "@/lib/supplierValidation"
-
-const TIER_VALUES = ["TIER_1", "TIER_2", "TIER_3"]
-const normalizeTier = (value: unknown) => (typeof value === "string" && TIER_VALUES.includes(value) ? value : null)
+import { normalizeTier } from "@/lib/supplierTier"
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

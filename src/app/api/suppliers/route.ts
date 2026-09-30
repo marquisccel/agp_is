@@ -9,9 +9,7 @@ import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 import { validateSupplierContactFields } from "@/lib/supplierValidation"
 import { findPotentialDuplicates } from "@/lib/supplierDuplicate"
 import { DEFAULT_SUPPLIER_TRANSACTION_STATUS } from "@/lib/supplierStatus"
-
-const TIER_VALUES = ["TIER_1", "TIER_2", "TIER_3"]
-const normalizeTier = (value: unknown) => (typeof value === "string" && TIER_VALUES.includes(value) ? value : null)
+import { normalizeTier } from "@/lib/supplierTier"
 
 export async function POST(req: Request) {
   try {

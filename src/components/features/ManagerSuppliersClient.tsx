@@ -23,6 +23,7 @@ import { hasResolvedSupplierCoordinates, isShortGoogleMapsLink, parseCoordinates
 import { namaGudang } from "@/lib/namaGudang"
 import { hitungGradeLapak } from "@/lib/gradeLapak"
 import { pesanError } from "@/lib/pesanError"
+import { TIER_META, isTierValue } from "@/lib/supplierTier"
 
 interface SkuPriceStandard {
   id: string
@@ -88,16 +89,6 @@ interface Warehouse {
 type GradeFilter = "all" | "A" | "B" | "C" | "active"
 type SupplierStatusFilter = "all" | "GREEN" | "RED"
 type TierFilter = "all" | "TIER_1" | "TIER_2" | "TIER_3"
-
-/* Warna tier sengaja beda dari --success/--warning/--danger yang sudah
-   dipakai titik status Aktif/Belum aktif, supaya keduanya tidak tertukar
-   di layar yang sama. Urutan dan artinya mengikuti klasifikasi Manager:
-   Tier 1 rutin & loyal, Tier 2 berpotensi, Tier 3 baru dijajaki. */
-const TIER_META: Record<string, { label: string; warna: string }> = {
-  TIER_1: { label: "Tier 1", warna: "#22C55E" },
-  TIER_2: { label: "Tier 2", warna: "#EAB308" },
-  TIER_3: { label: "Tier 3", warna: "#F97316" },
-}
 
 const MONTHS: { value: number | "all"; label: string }[] = [
   { value: "all", label: "Semua Bulan" },
@@ -720,7 +711,7 @@ export default function ManagerSuppliersClient({
                       <span style={hasResolvedSupplierCoordinates(supplier) ? undefined : { color: "var(--warning)", fontWeight: 600 }}>
                         {hasResolvedSupplierCoordinates(supplier) ? "Koordinat lengkap" : "Belum ada koordinat"}
                       </span>
-                      {supplier.tier && TIER_META[supplier.tier] && (
+                      {isTierValue(supplier.tier) && (
                         <>
                           <span aria-hidden="true">&middot;</span>
                           <span className="inline-flex items-center gap-1 font-semibold" style={{ color: TIER_META[supplier.tier].warna }}>
