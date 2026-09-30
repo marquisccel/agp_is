@@ -8,6 +8,10 @@ import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 import { validateSupplierContactFields } from "@/lib/supplierValidation"
 import { findPotentialDuplicates } from "@/lib/supplierDuplicate"
+import { DEFAULT_SUPPLIER_TRANSACTION_STATUS } from "@/lib/supplierStatus"
+
+const TIER_VALUES = ["TIER_1", "TIER_2", "TIER_3"]
+const normalizeTier = (value: unknown) => (typeof value === "string" && TIER_VALUES.includes(value) ? value : null)
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +26,7 @@ export async function POST(req: Request) {
       link,
       latitude,
       longitude,
-      transactionStatus,
+      tier,
       nama_bank,
       nomor_rekening,
       atas_nama,
@@ -86,7 +90,11 @@ export async function POST(req: Request) {
         link: locationPayload.link,
         latitude: locationPayload.latitude,
         longitude: locationPayload.longitude,
-        transactionStatus: transactionStatus === "GREEN" ? "GREEN" : "RED",
+        // transactionStatus TIDAK diambil dari klien: field ini otomatis
+        // berpindah ke GREEN lewat markSupplierGreen() saat transaksi
+        // pertama disetujui (lib/supplierStatus.ts), bukan diisi manual.
+        transactionStatus: DEFAULT_SUPPLIER_TRANSACTION_STATUS,
+        tier: normalizeTier(tier),
         nama_bank,
         nomor_rekening,
         atas_nama,

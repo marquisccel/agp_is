@@ -65,6 +65,7 @@ interface Supplier {
   latitude: number | null
   longitude: number | null
   transactionStatus: string
+  tier: string | null
   nama_bank: string | null
   nomor_rekening: string | null
   atas_nama: string | null
@@ -86,6 +87,17 @@ interface Warehouse {
 
 type GradeFilter = "all" | "A" | "B" | "C" | "active"
 type SupplierStatusFilter = "all" | "GREEN" | "RED"
+type TierFilter = "all" | "TIER_1" | "TIER_2" | "TIER_3"
+
+/* Warna tier sengaja beda dari --success/--warning/--danger yang sudah
+   dipakai titik status Aktif/Belum aktif, supaya keduanya tidak tertukar
+   di layar yang sama. Urutan dan artinya mengikuti klasifikasi Manager:
+   Tier 1 rutin & loyal, Tier 2 berpotensi, Tier 3 baru dijajaki. */
+const TIER_META: Record<string, { label: string; warna: string }> = {
+  TIER_1: { label: "Tier 1", warna: "#22C55E" },
+  TIER_2: { label: "Tier 2", warna: "#EAB308" },
+  TIER_3: { label: "Tier 3", warna: "#F97316" },
+}
 
 const MONTHS: { value: number | "all"; label: string }[] = [
   { value: "all", label: "Semua Bulan" },
@@ -119,6 +131,7 @@ export default function ManagerSuppliersClient({
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<GradeFilter>("all")
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<SupplierStatusFilter>("all")
+  const [selectedTierFilter, setSelectedTierFilter] = useState<TierFilter>("all")
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
   const [selectedMonth, setSelectedMonth] = useState<number | "all">(currentMonth)
@@ -228,6 +241,12 @@ export default function ManagerSuppliersClient({
           latitude: locationLatitude,
           longitude: locationLongitude,
           transactionStatus: supplier.transactionStatus,
+          // Endpoint ini menulis ulang SELURUH baris supplier, bukan cuma
+          // field yang berubah -- jadi field yang tidak dikirim di sini
+          // akan tertimpa kosong. Quick edit lokasi cuma mengubah link/
+          // koordinat, tapi tetap wajib mengikutsertakan tier apa adanya,
+          // persis seperti nama_bank dan field lain di bawah ini.
+          tier: supplier.tier,
           nama_bank: supplier.nama_bank || "",
           nomor_rekening: supplier.nomor_rekening || "",
           atas_nama: supplier.atas_nama || "",
@@ -375,11 +394,15 @@ export default function ManagerSuppliersClient({
   const gradeCCount = baseFilteredSuppliers.filter((supplier) => supplier.performance.grade === "C").length
   const greenSupplierCount = baseFilteredSuppliers.filter((supplier) => supplier.transactionStatus === "GREEN").length
   const redSupplierCount = baseFilteredSuppliers.filter((supplier) => supplier.transactionStatus === "RED").length
+  const tier1Count = baseFilteredSuppliers.filter((supplier) => supplier.tier === "TIER_1").length
+  const tier2Count = baseFilteredSuppliers.filter((supplier) => supplier.tier === "TIER_2").length
+  const tier3Count = baseFilteredSuppliers.filter((supplier) => supplier.tier === "TIER_3").length
   const totalWeightFiltered = baseFilteredSuppliers.reduce((sum, supplier) => sum + supplier.performance.totalGudangWeight, 0)
 
   const filteredSuppliers = baseFilteredSuppliers.filter((supplier) => {
     if (selectedStatusFilter === "GREEN" && supplier.transactionStatus !== "GREEN") return false
     if (selectedStatusFilter === "RED" && supplier.transactionStatus !== "RED") return false
+    if (selectedTierFilter !== "all" && supplier.tier !== selectedTierFilter) return false
     if (selectedGradeFilter === "A") return supplier.performance.grade === "A"
     if (selectedGradeFilter === "B") return supplier.performance.grade === "B"
     if (selectedGradeFilter === "C") return supplier.performance.grade === "C"
@@ -488,6 +511,18 @@ export default function ManagerSuppliersClient({
             ariaLabel="Saring status lapak"
             className="min-w-0 flex-1 sm:hidden"
           />
+          <ElegantSelect
+            value={selectedTierFilter}
+            options={[
+              { value: "all" as const, label: "Tier: Semua" },
+              { value: "TIER_1" as const, label: `Tier 1 (${tier1Count})` },
+              { value: "TIER_2" as const, label: `Tier 2 (${tier2Count})` },
+              { value: "TIER_3" as const, label: `Tier 3 (${tier3Count})` },
+            ]}
+            onChange={setSelectedTierFilter}
+            ariaLabel="Saring tier lapak"
+            className="min-w-0 flex-1 sm:hidden"
+          />
           <button
             type="button"
             onClick={handleOpenImportModal}
@@ -519,6 +554,27 @@ export default function ManagerSuppliersClient({
             >
               Belum aktif ({redSupplierCount})
             </button>
+          </div>
+          </div>
+
+          <div className="hidden min-w-0 sm:block sm:flex-none">
+          <div className="segmented inline-flex">
+            <button
+              onClick={() => setSelectedTierFilter("all")}
+              className={selectedTierFilter === "all" ? "active" : ""}
+            >
+              Semua Tier
+            </button>
+            {(["TIER_1", "TIER_2", "TIER_3"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setSelectedTierFilter(t)}
+                className={selectedTierFilter === t ? "active" : ""}
+                style={selectedTierFilter === t ? { color: TIER_META[t].warna } : undefined}
+              >
+                {TIER_META[t].label} ({t === "TIER_1" ? tier1Count : t === "TIER_2" ? tier2Count : tier3Count})
+              </button>
+            ))}
           </div>
           </div>
 
@@ -599,7 +655,7 @@ export default function ManagerSuppliersClient({
           </div>
         </div>
 
-        {(selectedGradeFilter !== "all" || selectedStatusFilter !== "all") && (
+        {(selectedGradeFilter !== "all" || selectedStatusFilter !== "all" || selectedTierFilter !== "all") && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-slate-200 bg-white/70 px-4 py-3 text-sm text-slate-600">
             <span>
               Menampilkan <strong className="text-slate-950">{filteredSuppliers.length} lapak</strong> sesuai filter performa.
@@ -608,6 +664,7 @@ export default function ManagerSuppliersClient({
               onClick={() => {
                 setSelectedGradeFilter("all")
                 setSelectedStatusFilter("all")
+                setSelectedTierFilter("all")
               }}
               className="font-black text-slate-950 hover:text-[color:var(--brand-strong)]"
             >
@@ -619,7 +676,7 @@ export default function ManagerSuppliersClient({
 
       {filteredSuppliers.length > 0 ? (
         <div
-          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedMonth}-${selectedYear}-${searchQuery}`}
+          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedTierFilter}-${selectedMonth}-${selectedYear}-${searchQuery}`}
           /* Satu lapak per baris (permintaan Manager). Dua kolom membuat
              tiap kartu cuma dapat separuh lebar layar, sehingga nama lapak,
              tiga kotak nilai, dan lima tombol aksinya berdesakan -- di
@@ -663,6 +720,15 @@ export default function ManagerSuppliersClient({
                       <span style={hasResolvedSupplierCoordinates(supplier) ? undefined : { color: "var(--warning)", fontWeight: 600 }}>
                         {hasResolvedSupplierCoordinates(supplier) ? "Koordinat lengkap" : "Belum ada koordinat"}
                       </span>
+                      {supplier.tier && TIER_META[supplier.tier] && (
+                        <>
+                          <span aria-hidden="true">&middot;</span>
+                          <span className="inline-flex items-center gap-1 font-semibold" style={{ color: TIER_META[supplier.tier].warna }}>
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: TIER_META[supplier.tier].warna }} aria-hidden="true" />
+                            {TIER_META[supplier.tier].label}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                   {/* Grade berdiri sebagai angka keempat di sini, bukan
@@ -803,7 +869,7 @@ export default function ManagerSuppliersClient({
         </div>
       ) : (
         <div
-          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedMonth}-${selectedYear}-${searchQuery}-empty`}
+          key={`${selectedWarehouseId}-${selectedGradeFilter}-${selectedStatusFilter}-${selectedTierFilter}-${selectedMonth}-${selectedYear}-${searchQuery}-empty`}
           className="section section-body border-dashed p-12 text-center soft-enter"
         >
           <h4 className="font-bold" style={{ color: "var(--foreground)" }}>Lapak tidak ditemukan</h4>

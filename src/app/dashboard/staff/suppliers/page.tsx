@@ -95,12 +95,11 @@ export default async function StaffSuppliersPage({
       {/* Ditumpuk di ponsel. Sebaris dengan tombolnya, deret penyaring
           hanya kebagian 182px dari 390px layar, sehingga keping pertamanya
           pun sudah terpotong sebelum digeser. */}
-      <div className="section section-body flex flex-col items-stretch gap-3 md:flex-row md:items-start md:justify-between md:gap-2">
-        {/* Deret filter dibungkus wadah sendiri yang boleh membungkus ke
-            baris berikutnya, sementara tombolnya shrink-0 di luar wadah itu.
-            Sebelumnya semuanya satu deret flex-wrap: begitu kedua deret
-            filter memenuhi lebar kartu, tombolnya ikut terdorong turun dan
-            berdiri sendirian di baris kedua. */}
+      <div className="section section-body flex flex-col items-stretch gap-3 md:flex-row md:items-end md:justify-between md:gap-2">
+        {/* Deret filter dibungkus wadah sendiri, dua baris tetap (status lalu
+            lokasi) -- bukan flex-wrap yang jatuhnya kebetulan tergantung
+            lebar kartu. Wadah luarnya items-end supaya tombol Tambah Lapak
+            sejajar dengan baris BAWAH (lokasi), bukan baris atas (status). */}
         {allSuppliers.length > 0 && (
           <div className="hanya-ponsel">
             <PenyaringLapakPonsel
@@ -111,7 +110,7 @@ export default async function StaffSuppliersPage({
             />
           </div>
         )}
-        <div className="sembunyi-ponsel flex min-w-0 flex-wrap items-center gap-2">
+        <div className="sembunyi-ponsel flex min-w-0 flex-col gap-2">
         {allSuppliers.length > 0 && (
           <>
           {/* Dua deret pil berwarna-warni -- hitam, hijau, merah, biru,

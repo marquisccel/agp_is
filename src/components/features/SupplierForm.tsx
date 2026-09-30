@@ -33,13 +33,15 @@ const BANK_OPTIONS = [
   { value: "Dana", label: "DANA" },
   { value: "Lainnya", label: "Lainnya" },
 ]
-/* Labelnya dulu menaruh nama warna di depan ("Merah - belum aktif").
-   Yang perlu dibaca adalah keadaannya; warnanya cuma cara menampilkannya
-   di daftar. Urutannya dibalik supaya kata yang berarti datang lebih
-   dulu. */
-const TRANSACTION_STATUS_OPTIONS = [
-  { value: "RED", label: "Belum aktif" },
-  { value: "GREEN", label: "Aktif" },
+/* Tier adalah penilaian manual keaktifan pengiriman lapak, terpisah dari
+   transactionStatus (RED/GREEN) yang berpindah sendiri secara otomatis
+   saat transaksi pertama disetujui -- lihat lib/supplierStatus.ts. Tier
+   tidak pernah diubah sistem, murni isian Staff/Admin/Manager. */
+const TIER_OPTIONS = [
+  { value: "", label: "Belum diklasifikasi" },
+  { value: "TIER_1", label: "Tier 1 - Sudah Rutin Kirim & Loyal" },
+  { value: "TIER_2", label: "Tier 2 - Potensi Rutin Kirim & Masih Bagi Barang" },
+  { value: "TIER_3", label: "Tier 3 - Cari Informasi dan Peluang untuk Kirim" },
 ]
 
 function resolveBank(val: string | null | undefined): { bank: string; lainnya: string } {
@@ -70,7 +72,7 @@ export default function SupplierForm({
   const [link, setLink] = useState(initialData?.link || "")
   const [latitude, setLatitude] = useState(initialData?.latitude?.toString() || "")
   const [longitude, setLongitude] = useState(initialData?.longitude?.toString() || "")
-  const [transactionStatus, setTransactionStatus] = useState(initialData?.transactionStatus || "RED")
+  const [tier, setTier] = useState(initialData?.tier || "")
   const [namaBank, setNamaBank] = useState(initBank)
   const [namaBankLainnya, setNamaBankLainnya] = useState(initBankLainnya)
   const [nomorRekening, setNomorRekening] = useState(initialData?.nomor_rekening || "")
@@ -119,7 +121,7 @@ export default function SupplierForm({
           link,
           latitude,
           longitude,
-          transactionStatus,
+          tier: tier || null,
           nama_bank: namaBank === "Lainnya" ? namaBankLainnya : namaBank,
           nomor_rekening: nomorRekening,
           atas_nama: atasNama,
@@ -150,7 +152,7 @@ export default function SupplierForm({
       setLink("")
       setLatitude("")
       setLongitude("")
-      setTransactionStatus("RED")
+      setTier("")
       setNamaBank("")
       setNamaBankLainnya("")
       setNomorRekening("")
@@ -357,21 +359,6 @@ export default function SupplierForm({
         </div>
 
         <div className="space-y-2">
-          <label className="field-label">Status Transaksi Lapak</label>
-          <ElegantSelect
-            value={transactionStatus}
-            options={TRANSACTION_STATUS_OPTIONS}
-            onChange={setTransactionStatus}
-            ariaLabel="Pilih status transaksi supplier"
-            className="w-full"
-          />
-          <p className="mt-1.5 text-xs" style={{ color: "var(--muted-faint)" }}>
-            Lapak baru dimulai sebagai belum aktif, lalu berpindah sendiri ke aktif begitu transaksi sahnya yang pertama disetujui.
-          </p>
-        </div>
-
-
-        <div className="space-y-2">
           <label className="field-label">Target Bulanan (kg)</label>
           <input
             type="number"
@@ -380,6 +367,20 @@ export default function SupplierForm({
             onChange={(e) => setTargetBulanan(e.target.value)}
             className="field-input"
           />
+        </div>
+
+        <div className="space-y-2">
+          <label className="field-label">Tier Supplier</label>
+          <ElegantSelect
+            value={tier}
+            options={TIER_OPTIONS}
+            onChange={setTier}
+            ariaLabel="Pilih tier supplier"
+            className="w-full"
+          />
+          <p className="mt-1.5 text-xs" style={{ color: "var(--muted-faint)" }}>
+            Klasifikasi manual keaktifan pengiriman lapak.
+          </p>
         </div>
       </div>
 

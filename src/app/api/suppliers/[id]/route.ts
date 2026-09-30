@@ -2,11 +2,13 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
-import { createAuditLog } from "@/lib/audit"
 import { nonNegativeNumber, positiveInteger } from "@/lib/numberValidation"
 import { isOperationalRole } from "@/lib/roles"
 import { buildSupplierLocationPayload } from "@/lib/supplierLocation"
 import { validateSupplierContactFields } from "@/lib/supplierValidation"
+
+const TIER_VALUES = ["TIER_1", "TIER_2", "TIER_3"]
+const normalizeTier = (value: unknown) => (typeof value === "string" && TIER_VALUES.includes(value) ? value : null)
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -29,7 +31,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       link,
       latitude,
       longitude,
-      transactionStatus,
+      tier,
       nama_bank,
       nomor_rekening,
       atas_nama,
@@ -76,7 +78,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         link: locationPayload.link,
         latitude: locationPayload.latitude,
         longitude: locationPayload.longitude,
-        transactionStatus: transactionStatus === "GREEN" ? "GREEN" : "RED",
+        // transactionStatus SENGAJA tidak disentuh di sini. Field ini
+        // otomatis berpindah ke GREEN lewat markSupplierGreen() saat
+        // transaksi pertama disetujui (lib/supplierStatus.ts). Form edit
+        // lapak tidak lagi mengirim field ini sama sekali -- sebelumnya
+        // update ini diam-diam mereset status GREEN kembali ke RED setiap
+        // kali form disimpan tanpa nilai transactionStatus di body.
+        tier: normalizeTier(tier),
         nama_bank: nama_bank || null,
         nomor_rekening: nomor_rekening || null,
         atas_nama: atas_nama || null,
@@ -85,24 +93,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         hari_ambilan: hari_ambilan || null,
       },
     })
-
-    if (existing.transactionStatus !== updated.transactionStatus) {
-      await createAuditLog({
-        userId: session.user.id,
-        action: "SUPPLIER_STATUS_MANUAL_UPDATE",
-        table_name: "Supplier",
-        record_id: updated.id,
-        old_data: {
-          nama: existing.nama,
-          transactionStatus: existing.transactionStatus,
-        },
-        new_data: {
-          nama: updated.nama,
-          transactionStatus: updated.transactionStatus,
-          changedByRole: role,
-        },
-      })
-    }
 
     return NextResponse.json(updated)
   } catch (error) {

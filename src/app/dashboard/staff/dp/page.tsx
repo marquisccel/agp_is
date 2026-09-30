@@ -32,23 +32,16 @@ export default async function DPListStaff() {
         eyebrow="Kasbon lapak"
         title="Daftar Pengajuan Kasbon (DP)"
         description="Kelola dan pantau status pengajuan kasbon supplier Anda."
-        actions={(
-          <Link
-            href="/dashboard/staff/dp/new"
-            className="btn-primer premium-button sembunyi-ponsel rounded-[var(--radius-sm)] px-4 py-2.5 text-sm font-bold"
-          >
-            Pengajuan Kasbon Baru
-          </Link>
-        )}
       />
 
-      {/* Ponsel: tombol aksi di luar kartu judul, rata kanan tepat di
-          bawahnya. Di dalam kartu judul ia melebar selebar kartu dan
-          terbaca sebagai bagian dari judul, bukan tindakan. */}
-      <div className="hanya-ponsel -mt-3 flex justify-end">
+      {/* Tombol aksi jadi kartu sendiri di atas tabel, rata kanan -- bukan
+          bagian dari kartu judul. Satu bentuk untuk ponsel maupun layar
+          lebar, menggantikan dua blok terpisah (actions header + blok
+          ponsel) yang sebelumnya ada di sini. */}
+      <div className="section section-body flex justify-end py-3">
         <Link
           href="/dashboard/staff/dp/new"
-          className="sentuh-luas-y inline-flex h-10 items-center gap-1.5 rounded-xl btn-primer px-4 text-xs font-bold shadow-sm"
+          className="sentuh-luas-y btn-primer premium-button inline-flex h-11 items-center gap-1.5 rounded-[var(--radius-sm)] px-4 text-sm font-bold shadow-sm"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           Pengajuan Kasbon Baru
