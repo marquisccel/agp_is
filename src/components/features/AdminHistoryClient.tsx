@@ -28,6 +28,11 @@ interface Staff {
   nama: string
 }
 
+interface Warehouse {
+  id: string
+  nama: string
+}
+
 interface Purchase {
   id: string
   nomor_nota: string | null
@@ -40,6 +45,8 @@ interface Purchase {
   supplier: Supplier
   staff: Staff
   items: PurchaseItem[]
+  /** Hanya diisi saat viewer melihat lintas gudang (Admin sejak 30 Sep 2026). */
+  warehouse?: Warehouse
 }
 
 function formatRp(n: number) {
@@ -56,6 +63,19 @@ export default function AdminHistoryClient({
   const [search, setSearch] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedSupplier, setSelectedSupplier] = useState("all")
+  const [selectedWarehouse, setSelectedWarehouse] = useState("all")
+
+  // Hanya ada nilainya saat Admin melihat lintas gudang (30 Sep 2026);
+  // kalau tidak ada satu pun purchase membawa relasi warehouse, penyaringnya
+  // tidak ditampilkan.
+  const warehouses = Array.from(new Set(initialPurchases.map((p) => p.warehouse?.id).filter(Boolean)))
+    .map((id) => initialPurchases.find((p) => p.warehouse?.id === id)?.warehouse)
+    .filter(Boolean) as Warehouse[]
+
+  const warehouseOptions = [
+    { value: "all", label: "Semua Gudang" },
+    ...warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.nama })),
+  ]
 
   const statusOptions = [
     { value: "all", label: "Semua Status" },
@@ -81,12 +101,14 @@ export default function AdminHistoryClient({
       purchase.supplier.nama.toLowerCase().includes(query) ||
       (purchase.nomor_nota && purchase.nomor_nota.toLowerCase().includes(query)) ||
       purchase.id.toLowerCase().includes(query) ||
-      purchase.staff.nama.toLowerCase().includes(query)
+      purchase.staff.nama.toLowerCase().includes(query) ||
+      (purchase.warehouse?.nama.toLowerCase().includes(query) ?? false)
 
     const matchesStatus = selectedStatus === "all" || purchase.status_approval === selectedStatus
     const matchesSupplier = selectedSupplier === "all" || purchase.supplier.id === selectedSupplier
+    const matchesWarehouse = selectedWarehouse === "all" || purchase.warehouse?.id === selectedWarehouse
 
-    return matchesSearch && matchesStatus && matchesSupplier
+    return matchesSearch && matchesStatus && matchesSupplier && matchesWarehouse
   })
 
 
@@ -97,7 +119,7 @@ export default function AdminHistoryClient({
           di sebelahnya menaruh ikon di DALAM. Tiga kolom sebaris, dua cara
           berbeda. Sekarang ketiganya memakai .field-icon. */}
       <PenyaringLipat
-        jumlahAktif={(selectedStatus !== "all" ? 1 : 0) + (selectedSupplier !== "all" ? 1 : 0)}
+        jumlahAktif={(selectedStatus !== "all" ? 1 : 0) + (selectedSupplier !== "all" ? 1 : 0) + (selectedWarehouse !== "all" ? 1 : 0)}
         utama={
         <div className="relative">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -134,6 +156,18 @@ export default function AdminHistoryClient({
             className="w-full"
           />
         </div>
+
+        {warehouses.length > 0 && (
+          <div className="relative">
+            <ElegantSelect
+              value={selectedWarehouse}
+              options={warehouseOptions}
+              onChange={setSelectedWarehouse}
+              ariaLabel="Filter gudang transaksi"
+              className="w-full"
+            />
+          </div>
+        )}
       </PenyaringLipat>
 
       {/* Daftar Transaksi termasuk lima daftar utama yang mendapat kartu
@@ -154,7 +188,7 @@ export default function AdminHistoryClient({
               <KartuData
                 key={purchase.id}
                 judul={purchase.supplier.nama}
-                subjudul={`${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`} · ${new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
+                subjudul={`${purchase.warehouse ? `${purchase.warehouse.nama} · ` : ""}${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`} · ${new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
                 status={<StatusPill label={status.label} tone={status.tone} />}
                 baris={[
                   { label: "Staff", nilai: purchase.staff.nama },
@@ -246,7 +280,10 @@ export default function AdminHistoryClient({
                         <div className="font-bold text-slate-800">{purchase.supplier.nama}</div>
                         <div className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                           <User className="w-3 h-3 text-slate-400" />
-                          <span>Staff: {purchase.staff.nama}</span>
+                          <span>
+                            {purchase.warehouse ? `${purchase.warehouse.nama} · ` : ""}
+                            Staff: {purchase.staff.nama}
+                          </span>
                         </div>
                       </td>
                       <td>

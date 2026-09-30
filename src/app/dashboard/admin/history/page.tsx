@@ -11,19 +11,15 @@ export default async function AdminHistoryPage() {
     redirect("/login")
   }
 
-  const warehouseId = session.user.warehouseId
-  if (!warehouseId) {
-    redirect("/login")
-  }
-
-  // Fetch all purchases for the admin's warehouse
+  // Admin memeriksa-silang SEMUA gudang (arahan Manager, 30 Sep 2026),
+  // jadi tidak ada lagi filter warehouseId -- lihat lib/roles.ts.
   const purchases = await prisma.purchase.findMany({
-    where: { warehouseId },
     orderBy: { createdAt: "desc" },
     include: {
       supplier: true,
       staff: true,
-      items: true
+      items: true,
+      warehouse: { select: { id: true, nama: true } }
     }
   })
 
@@ -42,7 +38,7 @@ export default async function AdminHistoryPage() {
       <PageHeader
         eyebrow="Arsip transaksi"
         title="Daftar Transaksi"
-        description="Daftar lengkap seluruh transaksi pembelian PET di gudang Anda."
+        description="Daftar lengkap seluruh transaksi pembelian PET di semua gudang."
       />
 
       <AdminHistoryClient initialPurchases={formattedPurchases} />

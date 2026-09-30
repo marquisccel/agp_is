@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import TransferList from "@/components/features/TransferList"
 import { redirect } from "next/navigation"
-import { isOperationalRole } from "@/lib/roles"
+import { isOperationalRole, isWarehouseScoped } from "@/lib/roles"
 import PageHeader from "@/components/ui/PageHeader"
 import BarisRingkasan from "@/components/ui/BarisRingkasan"
 
@@ -21,19 +21,26 @@ export default async function AdminTransferPage() {
     redirect("/login")
   }
 
+  // Staff tetap dikurung ke gudangnya sendiri; Admin memeriksa-silang SEMUA
+  // gudang sejak arahan Manager 30 Sep 2026 (lihat lib/roles.ts).
+  const scoped = isWarehouseScoped(session.user.role)
   const warehouseId = session.user.warehouseId
-  if (!warehouseId) {
+  if (scoped && !warehouseId) {
     redirect("/login")
   }
 
   const purchases = await prisma.purchase.findMany({
     where: {
-      warehouseId,
+      ...(scoped ? { warehouseId: warehouseId ?? undefined } : {}),
       status_approval: { in: ["approved", "sudah_transfer"] }
     },
     orderBy: { updatedAt: "desc" },
-    include: { supplier: true, items: true }
+    include: { supplier: true, items: true, warehouse: { select: { id: true, nama: true } } }
   })
+
+  const warehouses = scoped
+    ? undefined
+    : await prisma.warehouse.findMany({ orderBy: { nama: "asc" }, select: { id: true, nama: true } })
 
   const getPayableValue = (purchase: (typeof purchases)[number]) =>
     purchase.total_dibayar ??
@@ -133,7 +140,7 @@ export default async function AdminTransferPage() {
           className="-mt-3"
         />
       )}
-      <TransferList purchases={purchases} bolehKoreksi={session.user.role === "ADMIN"} />
+      <TransferList purchases={purchases} warehouses={warehouses} bolehKoreksi={session.user.role === "ADMIN"} />
     </div>
   )
 }

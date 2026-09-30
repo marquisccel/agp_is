@@ -43,20 +43,9 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
       return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
     }
 
-    // Admin hanya bisa lihat transaksi warehousenya sendiri
-    const userWarehouseId = session.user.warehouseId
-    // Admin wajib punya gudang. Pola lama menulis `userWarehouseId &&`,
-    // sehingga Admin yang gudangnya kosong justru MELEWATI pemeriksaan ini
-    // dan bisa menyentuh nota gudang mana pun -- kebalikan dari yang
-    // dimaksud. Pendaftaran akun sekarang mewajibkan gudang untuk
-    // Staff/Admin, tapi akun lama atau hasil seed bisa lolos, jadi
-    // keadaannya ditolak secara tegas.
-    if (role === "ADMIN" && !userWarehouseId) {
-      return NextResponse.json({ error: "Akun Admin ini belum ditugaskan ke gudang." }, { status: 403 })
-    }
-    if (role === "ADMIN" && purchase.warehouseId !== userWarehouseId) {
-      return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
-    }
+    // Admin memeriksa-silang SEMUA gudang sejak arahan Manager 30 Sep 2026
+    // (lihat lib/roles.ts), jadi tidak ada lagi pengecekan warehouseId di
+    // sini -- sama seperti Manager.
 
     return NextResponse.json(purchase)
   } catch (error) {
@@ -102,20 +91,9 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
     }
 
-    // Admin hanya bisa edit warehousenya sendiri; Manager bisa semua
-    const userWarehouseId = session.user.warehouseId
-    // Admin wajib punya gudang. Pola lama menulis `userWarehouseId &&`,
-    // sehingga Admin yang gudangnya kosong justru MELEWATI pemeriksaan ini
-    // dan bisa menyentuh nota gudang mana pun -- kebalikan dari yang
-    // dimaksud. Pendaftaran akun sekarang mewajibkan gudang untuk
-    // Staff/Admin, tapi akun lama atau hasil seed bisa lolos, jadi
-    // keadaannya ditolak secara tegas.
-    if (role === "ADMIN" && !userWarehouseId) {
-      return NextResponse.json({ error: "Akun Admin ini belum ditugaskan ke gudang." }, { status: 403 })
-    }
-    if (role === "ADMIN" && existing.warehouseId !== userWarehouseId) {
-      return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
-    }
+    // Admin memeriksa-silang SEMUA gudang sejak arahan Manager 30 Sep 2026
+    // (lihat lib/roles.ts), sama seperti Manager -- tidak ada lagi
+    // pengecekan warehouseId di sini.
     if (existing.status_approval === "sudah_transfer") {
       return NextResponse.json({ error: "Transaksi yang sudah transfer tidak dapat diedit. Buat koreksi manual melalui alur audit." }, { status: 400 })
     }

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { fileUrl, putFile } from "@/lib/objectStorage"
-import { isOperationalRole } from "@/lib/roles"
+import { isOperationalRole, isWarehouseScoped } from "@/lib/roles"
 import { periksaUkuranUnggahan } from "@/lib/batasUnggah"
 
 const ALLOWED_PROOF_TYPES: Record<string, string> = {
@@ -25,7 +25,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id: purchaseId } = await params
     const purchase = await prisma.purchase.findUnique({ where: { id: purchaseId } })
     if (!purchase) return NextResponse.json({ error: "Not found" }, { status: 404 })
-    if (isOperationalRole(session.user.role) && purchase.warehouseId !== session.user.warehouseId) {
+    // Staff tetap dikurung ke gudangnya sendiri; Admin memeriksa-silang
+    // SEMUA gudang sejak arahan Manager 30 Sep 2026 (lihat lib/roles.ts).
+    if (isWarehouseScoped(session.user.role) && purchase.warehouseId !== session.user.warehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
     

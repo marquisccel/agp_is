@@ -45,10 +45,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Role harus STAFF, ADMIN, atau MANAGER." }, { status: 400 })
     }
 
-    // Staff dan Admin bekerja pada satu gudang; tanpa gudang, sesi mereka
-    // tidak punya warehouseId dan hampir semua alurnya langsung gagal.
-    if (role !== "MANAGER" && !warehouseId) {
-      return NextResponse.json({ error: "Staff dan Admin wajib ditugaskan ke satu gudang." }, { status: 400 })
+    // Staff bekerja pada satu gudang; tanpa gudang, sesi mereka tidak punya
+    // warehouseId dan hampir semua alurnya langsung gagal. Admin sejak
+    // arahan Manager 30 Sep 2026 memeriksa-silang SEMUA gudang, sama seperti
+    // Manager, jadi tidak lagi ditugaskan ke satu gudang (lihat lib/roles.ts).
+    if (role === "STAFF" && !warehouseId) {
+      return NextResponse.json({ error: "Staff wajib ditugaskan ke satu gudang." }, { status: 400 })
     }
 
     if (warehouseId) {
@@ -70,7 +72,7 @@ export async function POST(req: Request) {
         email: emailBersih,
         password: hashed,
         role,
-        warehouseId: role === "MANAGER" ? null : warehouseId,
+        warehouseId: role === "STAFF" ? warehouseId : null,
       },
       select: { id: true, nama: true, email: true, role: true, warehouseId: true },
     })

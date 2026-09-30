@@ -15,12 +15,14 @@ import { hitungKoreksiKekurangan, kewajibanKeLapak, SettlementError } from "@/li
  * jalan memperbaikinya -- selisihnya hilang dari sistem, dan lapak
  * menagih sesuatu yang menurut sistem sudah beres.
  *
- * Siapa yang boleh: Admin gudang yang bersangkutan dan Manager. Admin-lah
- * yang memegang transfer hariannya, jadi dialah yang pertama tahu kalau
- * nominalnya kurang; memaksanya menunggu Manager hanya menunda pencatatan
- * dan membuat selisihnya menganggur lebih lama. Admin tetap dikurung ke
- * gudangnya sendiri. Alasannya wajib dan tercatat di audit log bersama
- * nama pengoreksinya, karena ini tetap membalik catatan yang sudah ditutup.
+ * Siapa yang boleh: Admin dan Manager. Admin-lah yang memegang transfer
+ * hariannya, jadi dialah yang pertama tahu kalau nominalnya kurang;
+ * memaksanya menunggu Manager hanya menunda pencatatan dan membuat
+ * selisihnya menganggur lebih lama. Sejak arahan Manager 30 Sep 2026, Admin
+ * memeriksa-silang SEMUA gudang (lihat lib/roles.ts), jadi tidak ada lagi
+ * pengecekan gudang di sini. Alasannya wajib dan tercatat di audit log
+ * bersama nama pengoreksinya, karena ini tetap membalik catatan yang sudah
+ * ditutup.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -37,18 +39,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const purchase = await prisma.purchase.findUnique({ where: { id: purchaseId } })
     if (!purchase) {
       return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
-    }
-
-    // Admin wajib punya gudang, dan hanya boleh menyentuh notanya sendiri.
-    // Pola `warehouseId &&` sengaja dihindari: Admin tanpa gudang justru
-    // akan MELEWATI pemeriksaan ini, kebalikan dari yang dimaksud.
-    if (role === "ADMIN") {
-      if (!session.user.warehouseId) {
-        return NextResponse.json({ error: "Akun Admin ini belum ditugaskan ke gudang." }, { status: 403 })
-      }
-      if (purchase.warehouseId !== session.user.warehouseId) {
-        return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
-      }
     }
 
     if (purchase.status_approval !== "sudah_transfer") {

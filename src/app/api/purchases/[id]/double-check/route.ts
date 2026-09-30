@@ -66,9 +66,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     if (!currentPurchase) return NextResponse.json({ error: "Not found" }, { status: 404 })
-    if (currentPurchase.warehouseId !== session.user.warehouseId) {
-      return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
-    }
+    // Admin memeriksa-silang SEMUA gudang sejak arahan Manager 30 Sep 2026,
+    // jadi tidak ada lagi pengecekan warehouseId di sini -- lihat lib/roles.ts.
     if (!PENDING_VERIFICATION_STATUSES.includes(currentPurchase.status_approval)) {
       return NextResponse.json({ error: "Purchase is not waiting for warehouse verification" }, { status: 400 })
     }

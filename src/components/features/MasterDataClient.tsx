@@ -39,7 +39,10 @@ function FormAkunBaru({
   const [warehouseId, setWarehouseId] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const butuhGudang = role !== "MANAGER"
+  // Admin sejak arahan Manager 30 Sep 2026 memeriksa-silang SEMUA gudang,
+  // sama seperti Manager, jadi hanya Staff yang masih ditugaskan ke satu
+  // gudang (lihat src/lib/roles.ts).
+  const butuhGudang = role === "STAFF"
 
   const reset = () => {
     setNama(""); setEmail(""); setPassword(""); setLihatPassword(false); setRole("STAFF"); setWarehouseId("")
@@ -48,7 +51,7 @@ function FormAkunBaru({
   const simpan = async (e: React.FormEvent) => {
     e.preventDefault()
     if (butuhGudang && !warehouseId) {
-      toast("Staff dan Admin wajib ditugaskan ke satu gudang.", "error")
+      toast("Staff wajib ditugaskan ke satu gudang.", "error")
       return
     }
     setLoading(true)
@@ -126,7 +129,7 @@ function FormAkunBaru({
           <span className="field-label">Role</span>
           <ElegantSelect
             value={role}
-            onChange={(v) => { setRole(v); if (v === "MANAGER") setWarehouseId("") }}
+            onChange={(v) => { setRole(v); if (v !== "STAFF") setWarehouseId("") }}
             ariaLabel="Pilih role akun"
             className="w-full"
             options={[

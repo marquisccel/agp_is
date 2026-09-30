@@ -19,6 +19,7 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
       supplier: true,
       items: true,
       staff: true,
+      warehouse: true,
     },
   })
 
@@ -26,15 +27,8 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
     return notFound()
   }
 
-  // Halaman ini tidak pernah memeriksa gudangnya. API double-check
-  // menolak nota gudang lain saat disimpan, jadi tidak ada nota yang bisa
-  // diubah lintas gudang -- tapi isinya tetap TERBACA: nama lapak, nama
-  // staff, SKU, berat, dan harga per kg gudang lain, cukup dengan menebak
-  // id di URL. Jalur editnya sudah memeriksa ini sejak dulu; jalur ini
-  // terlewat.
-  if (purchase.warehouseId !== session.user.warehouseId) {
-    return notFound()
-  }
+  // Admin memeriksa-silang SEMUA gudang sejak arahan Manager 30 Sep 2026,
+  // jadi draft gudang mana pun boleh dibuka di sini -- lihat lib/roles.ts.
 
   const dps = await prisma.downPayment.aggregate({
     where: { supplierId: purchase.supplierId, status_approval: "approved" },
@@ -58,12 +52,20 @@ export default async function DoubleCheckPage({ params }: { params: Promise<{ id
         title="Double Check Transaksi"
         description={<>Draft {purchase.id.split("-")[0]} untuk <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>.</>}
         actions={
-          <span
-            className="rounded-[var(--radius-sm)] border px-3 py-2 text-xs font-bold"
-            style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
-          >
-            Staff: {purchase.staff.nama}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="rounded-[var(--radius-sm)] border px-3 py-2 text-xs font-bold"
+              style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
+            >
+              {purchase.warehouse.nama}
+            </span>
+            <span
+              className="rounded-[var(--radius-sm)] border px-3 py-2 text-xs font-bold"
+              style={{ borderColor: "var(--border)", background: "var(--bg-tint)", color: "var(--muted)" }}
+            >
+              Staff: {purchase.staff.nama}
+            </span>
+          </div>
         }
       />
 

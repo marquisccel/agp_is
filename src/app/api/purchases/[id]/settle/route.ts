@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
-import { isOperationalRole } from "@/lib/roles"
+import { isOperationalRole, isWarehouseScoped } from "@/lib/roles"
 import { periksaUkuranUnggahan } from "@/lib/batasUnggah"
 import { fileUrl, putFile } from "@/lib/objectStorage"
 import { hitungPelunasan, SettlementError } from "@/lib/settlement"
@@ -32,7 +32,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "Transaksi tidak ditemukan" }, { status: 404 })
     }
 
-    if (isOperationalRole(session.user.role) && purchase.warehouseId !== session.user.warehouseId) {
+    // Staff tetap dikurung ke gudangnya sendiri; Admin memeriksa-silang
+    // SEMUA gudang sejak arahan Manager 30 Sep 2026 (lihat lib/roles.ts).
+    if (isWarehouseScoped(session.user.role) && purchase.warehouseId !== session.user.warehouseId) {
       return NextResponse.json({ error: "Tidak memiliki akses ke transaksi ini" }, { status: 403 })
     }
 

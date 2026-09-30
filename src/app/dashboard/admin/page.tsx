@@ -15,15 +15,12 @@ export default async function AdminDashboard() {
     redirect("/login")
   }
 
-  const warehouseId = session.user.warehouseId
-  if (!warehouseId) {
-    redirect("/login")
-  }
+  // Admin memeriksa-silang SEMUA gudang (arahan Manager, 30 Sep 2026),
+  // jadi tidak ada lagi filter warehouseId di sini -- lihat lib/roles.ts.
 
   const rawPendingTermins = await prisma.purchase.findMany({
-    where: { 
-      status_pelunasan: "BELUM_LUNAS",
-      warehouseId: warehouseId
+    where: {
+      status_pelunasan: "BELUM_LUNAS"
     },
     include: { supplier: true },
     orderBy: { tanggal: "desc" }
@@ -42,14 +39,14 @@ export default async function AdminDashboard() {
   }))
 
   const drafts = await prisma.purchase.findMany({
-    where: { 
-      status_approval: { in: PENDING_VERIFICATION_STATUSES },
-      warehouseId: warehouseId 
+    where: {
+      status_approval: { in: PENDING_VERIFICATION_STATUSES }
     },
     include: {
       supplier: true,
       staff: true,
-      items: true
+      items: true,
+      warehouse: true
     },
     orderBy: { createdAt: 'desc' }
   })
@@ -114,7 +111,7 @@ export default async function AdminDashboard() {
             <KartuData
               key={draft.id}
               judul={draft.supplier.nama}
-              subjudul={`${new Date(draft.createdAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })} · oleh ${draft.staff.nama}`}
+              subjudul={`${draft.warehouse.nama} · ${new Date(draft.createdAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })} · oleh ${draft.staff.nama}`}
               baris={draft.items.map((i) => ({
                 label: i.sku_name,
                 nilai: `${i.berat_final_item} kg`,
@@ -138,6 +135,7 @@ export default async function AdminDashboard() {
             <thead>
               <tr>
                 <th>Tanggal / Staff</th>
+                <th>Gudang</th>
                 <th>Lapak</th>
                 <th>Item (Estimasi)</th>
                 <th className="!text-center">Aksi</th>
@@ -146,7 +144,7 @@ export default async function AdminDashboard() {
             <tbody>
               {drafts.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
+                  <td colSpan={5} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
                     Tidak ada transaksi yang menunggu double check.
                   </td>
                 </tr>
@@ -156,6 +154,9 @@ export default async function AdminDashboard() {
                     <td>
                       <div className="font-medium" style={{ color: "var(--foreground)" }}>{new Date(draft.createdAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}</div>
                       <div className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Oleh: {draft.staff.nama}</div>
+                    </td>
+                    <td className="font-medium">
+                      {draft.warehouse.nama}
                     </td>
                     <td className="font-medium">
                       {draft.supplier.nama}

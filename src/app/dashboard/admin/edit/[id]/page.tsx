@@ -12,10 +12,6 @@ export default async function EditTransaksiPage({ params }: { params: Promise<{ 
   }
 
   const { id } = await params
-  const warehouseId = session.user.warehouseId
-  if (!warehouseId) {
-    redirect("/login")
-  }
 
   const purchase = await prisma.purchase.findUnique({
     where: { id },
@@ -28,12 +24,12 @@ export default async function EditTransaksiPage({ params }: { params: Promise<{ 
 
   if (!purchase) return notFound()
 
-  if (purchase.warehouseId !== warehouseId) {
-    redirect("/dashboard/admin/history")
-  }
-
+  // Admin memeriksa-silang SEMUA gudang sejak arahan Manager 30 Sep 2026,
+  // jadi tidak ada lagi pengecekan warehouseId Admin di sini -- lihat
+  // lib/roles.ts. Daftar supplier mengikuti gudang TRANSAKSI ini, bukan
+  // gudang Admin (yang sekarang tidak lagi berarti satu gudang tertentu).
   const suppliers = await prisma.supplier.findMany({
-    where: { warehouseId },
+    where: { warehouseId: purchase.warehouseId },
     orderBy: { nama: "asc" },
   })
 

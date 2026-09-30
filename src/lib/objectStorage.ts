@@ -81,6 +81,21 @@ export async function putFile(key: string, body: Buffer, contentType: string): P
     return key
   }
 
+  if (process.env.VERCEL) {
+    // Fallback lokal TIDAK bisa dipakai di Vercel: filesystem di luar /tmp
+    // bersifat read-only, jadi mkdir di bawah akan gagal dengan ENOENT
+    // mentah -- galat yang tidak menjelaskan apa-apa ke pengguna (Manager
+    // hanya melihat "gagal upload" saat mencoba bayar lapak). Kegagalannya
+    // digagalkan lebih awal dengan pesan yang bisa langsung ditindaklanjuti:
+    // isi S3_ENDPOINT/S3_BUCKET/S3_ACCESS_KEY_ID/S3_SECRET_ACCESS_KEY di
+    // Vercel untuk environment ini, lalu deploy ulang.
+    throw new Error(
+      "Penyimpanan berkas belum dikonfigurasi di server ini. Set S3_ENDPOINT, S3_BUCKET, " +
+        "S3_ACCESS_KEY_ID, dan S3_SECRET_ACCESS_KEY di pengaturan Environment Variables Vercel " +
+        "untuk environment ini, lalu deploy ulang."
+    )
+  }
+
   const tujuan = localPath(key)
   await mkdir(path.dirname(tujuan), { recursive: true })
   await writeFile(tujuan, body)
