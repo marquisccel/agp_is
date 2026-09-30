@@ -523,7 +523,11 @@ export default function ManagerSuppliersClient({
             <MapPin className="h-4 w-4" aria-hidden="true" />
             Import
           </button>
-          <div className="hidden min-w-0 sm:block sm:flex-none">
+          {/* Status dan Tier dibungkus satu grup supaya justify-between di
+              baris induk cuma mendesak grup ini vs tombol Import -- bukan
+              menyebar rata ke tiga-tiganya, yang membuat Status dan Tier
+              berjauhan padahal keduanya sama-sama penyaring lapak. */}
+          <div className="hidden min-w-0 flex-wrap items-center gap-3 sm:flex sm:flex-none">
           <div className="segmented inline-flex">
             <button
               onClick={() => setSelectedStatusFilter("all")}
@@ -546,9 +550,7 @@ export default function ManagerSuppliersClient({
               Belum aktif ({redSupplierCount})
             </button>
           </div>
-          </div>
 
-          <div className="hidden min-w-0 sm:block sm:flex-none">
           <div className="segmented inline-flex">
             <button
               onClick={() => setSelectedTierFilter("all")}

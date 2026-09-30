@@ -34,11 +34,10 @@ export default async function DPListStaff() {
         description="Kelola dan pantau status pengajuan kasbon supplier Anda."
       />
 
-      {/* Tombol aksi jadi kartu sendiri di atas tabel, rata kanan -- bukan
-          bagian dari kartu judul. Satu bentuk untuk ponsel maupun layar
-          lebar, menggantikan dua blok terpisah (actions header + blok
-          ponsel) yang sebelumnya ada di sini. */}
-      <div className="section section-body flex justify-end py-3">
+      {/* Tombol aksi rata kanan di atas tabel, tanpa kartu pembungkus --
+          bukan lagi bagian dari kartu judul maupun kartu putih sendiri.
+          Satu bentuk untuk ponsel maupun layar lebar. */}
+      <div className="flex justify-end">
         <Link
           href="/dashboard/staff/dp/new"
           className="sentuh-luas-y btn-primer premium-button inline-flex h-11 items-center gap-1.5 rounded-[var(--radius-sm)] px-4 text-sm font-bold shadow-sm"
