@@ -93,19 +93,23 @@ export default function RemainingKasbonList() {
             <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Kontrol Kasbon Lapak</h3>
           </div>
         </div>
-
-        {data.length > 0 && (
-          <div className="text-left md:text-right">
-            <span className="field-label" style={{ marginBottom: 2 }}>Total Sisa Kasbon</span>
-            <span
-              className="block text-base font-extrabold"
-              style={{ color: "var(--warning)", fontVariantNumeric: "tabular-nums" }}
-            >
-              {fmtRp(totalOutstanding)}
-            </span>
-          </div>
-        )}
       </div>
+
+      {/* Total di barisnya sendiri, sama bentuknya dengan baris "Total
+          Sebelum Potongan" di layar Edit Transaksi (arahan Manager
+          11 Okt 2026): label di kiri, angka di kanan, bukan ditumpuk di
+          kepala kartu. */}
+      {data.length > 0 && (
+        <div
+          className="flex items-center justify-between gap-4 border-b px-5 py-4"
+          style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
+        >
+          <span className="field-label" style={{ marginBottom: 0 }}>Total Sisa Kasbon</span>
+          <span className="text-base font-extrabold" style={{ color: "var(--warning)", fontVariantNumeric: "tabular-nums" }}>
+            {fmtRp(totalOutstanding)}
+          </span>
+        </div>
+      )}
 
       <div className="section-body">
         <p className="text-xs" style={{ color: "var(--muted-faint)" }}>

@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import EditTransaksiForm from "@/components/features/EditTransaksiForm"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 
 // Staff membetulkan notanya sendiri (salah ketik) selama belum ditransfer.
 const STATUS_BISA_EDIT = ["menunggu_verifikasi", "menunggu_approval_harga", "approved"]
@@ -64,6 +65,7 @@ export default async function EditNotaStaffPage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
+      <TombolKembali href="/dashboard/staff/history" />
       <PageHeader
         eyebrow="Koreksi transaksi"
         title="Edit Transaksi"

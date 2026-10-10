@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Lock, PencilLine, Trash2 } from "lucide-react"
 import ElegantSelect from "@/components/ui/ElegantSelect"
@@ -9,6 +9,7 @@ import StatusPill from "@/components/ui/StatusPill"
 import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 import { SKU_LIST } from "@/lib/skuList"
+import { fmtDigitInput, fmtSkalaRupiah } from "@/lib/format"
 import { resolveWeightForPricing } from "@/lib/purchaseCalculation"
 
 interface PurchaseItem {
@@ -106,16 +107,53 @@ export default function EditTransaksiForm({
   const [beratLapak, setBeratLapak] = useState(initialPurchase.berat_timbangan_lapak ?? 0)
   const [beratGudang, setBeratGudang] = useState(initialPurchase.berat_timbangan_gudang ?? 0)
 
-  // Potongan
-  const [potSampah, setPotSampah] = useState(initialPurchase.potongan_sampah ?? 0)
-  const [potSusut, setPotSusut] = useState(initialPurchase.potongan_susut ?? 0)
-  const [potAir, setPotAir] = useState(initialPurchase.potongan_air ?? 0)
-  const [potKarung, setPotKarung] = useState(initialPurchase.potongan_karung ?? 0)
+  // Potongan. Di basis data, potongan_X adalah NILAI potongan (berat x harga),
+  // sedangkan berat_potongan_X dan harga_potongan_X adalah masukannya --
+  // begitu juga yang ditulis pembuatan nota dan verifikasi gudang. Form ini
+  // dulu membaca potongan_X sebagai harga per KG, sehingga nota yang tidak
+  // diubah pun menampilkan potongan yang salah (mis. Rp 1.000 padahal tidak
+  // ada) dan menyimpannya kembali dengan makna yang tertukar.
+  //
+  // Data lama yang harga_potongan_X-nya kosong tetapi nilainya ada
+  // diturunkan balik supaya nilainya tidak hilang saat disimpan ulang.
+  const awalPotongan = (nilai: number | null, berat: number | null, harga: number | null) => {
+    const n = nilai ?? 0
+    const b = berat ?? 0
+    const h = harga ?? 0
+    if (h > 0 || n <= 0) return { berat: b, harga: h }
+    return b > 0 ? { berat: b, harga: n / b } : { berat: 1, harga: n }
+  }
+  const awalSampah = awalPotongan(initialPurchase.potongan_sampah, initialPurchase.berat_potongan_sampah, initialPurchase.harga_potongan_sampah)
+  const awalSusut = awalPotongan(initialPurchase.potongan_susut, initialPurchase.berat_potongan_susut, initialPurchase.harga_potongan_susut)
+  const awalAir = awalPotongan(initialPurchase.potongan_air, initialPurchase.berat_potongan_air, initialPurchase.harga_potongan_air)
+  const awalKarung = awalPotongan(initialPurchase.potongan_karung, initialPurchase.berat_potongan_karung, initialPurchase.harga_potongan_karung)
 
-  const [beratPotSampah, setBeratPotSampah] = useState(initialPurchase.berat_potongan_sampah ?? 0)
-  const [beratPotSusut, setBeratPotSusut] = useState(initialPurchase.berat_potongan_susut ?? 0)
-  const [beratPotAir, setBeratPotAir] = useState(initialPurchase.berat_potongan_air ?? 0)
-  const [beratPotKarung, setBeratPotKarung] = useState(initialPurchase.berat_potongan_karung ?? 0)
+  const [potSampah, setPotSampah] = useState(awalSampah.harga)
+  const [potSusut, setPotSusut] = useState(awalSusut.harga)
+  const [potAir, setPotAir] = useState(awalAir.harga)
+  const [potKarung, setPotKarung] = useState(awalKarung.harga)
+
+  const [beratPotSampah, setBeratPotSampah] = useState(awalSampah.berat)
+  const [beratPotSusut, setBeratPotSusut] = useState(awalSusut.berat)
+  const [beratPotAir, setBeratPotAir] = useState(awalAir.berat)
+  const [beratPotKarung, setBeratPotKarung] = useState(awalKarung.berat)
+
+  // Kasbon (DP) yang dipakai nota ini. Digit mentah; pemisah ribuan hanya
+  // tampilan. Saldo lapak diambil sekali untuk membatasi nominalnya.
+  const dpAwal = initialPurchase.dp_yang_digunakan ?? 0
+  const [dpDigunakan, setDpDigunakan] = useState(dpAwal > 0 ? String(Math.round(dpAwal)) : "")
+  const [sisaDpMap, setSisaDpMap] = useState<Record<string, number>>({})
+  useEffect(() => {
+    let aktif = true
+    fetch("/api/dp/summary")
+      .then(res => (res.ok ? res.json() : null))
+      .then((rows: { supplierId: string; remaining: number }[] | null) => {
+        if (!aktif || !rows) return
+        setSisaDpMap(Object.fromEntries(rows.map(r => [r.supplierId, r.remaining])))
+      })
+      .catch(() => {})
+    return () => { aktif = false }
+  }, [])
 
   // Items
   const [items, setItems] = useState<PurchaseItem[]>(
@@ -186,8 +224,39 @@ export default function EditTransaksiForm({
   const hargaPotSusut = beratPotSusut * potSusut
   const hargaPotAir = beratPotAir * potAir
   const hargaPotKarung = beratPotKarung * potKarung
-  const totalPotongan = hargaPotSampah + hargaPotSusut + hargaPotAir + hargaPotKarung
+  // Staff tidak mengedit potongan, jadi totalnya memakai nilai yang tersimpan
+  // (sama dengan yang dipakai server); Admin/Manager memakai hasil isian.
+  const totalPotongan = sebagaiStaff
+    ? (initialPurchase.potongan_sampah ?? 0) + (initialPurchase.potongan_susut ?? 0) + (initialPurchase.potongan_air ?? 0) + (initialPurchase.potongan_karung ?? 0)
+    : hargaPotSampah + hargaPotSusut + hargaPotAir + hargaPotKarung
   const totalAfterCuts = totalBeforeCuts - totalPotongan
+
+  const dpAngka = dpDigunakan ? Number(dpDigunakan) : 0
+  // Saldo yang tersedia = saldo lapak sekarang + DP yang sudah terpotong oleh
+  // nota ini (akan dikembalikan sebelum dipotong ulang). Berlaku hanya bila
+  // lapaknya tidak diganti.
+  const sisaDp = (sisaDpMap[supplierId] ?? 0) + (supplierId === initialPurchase.supplierId ? dpAwal : 0)
+  const tampilkanKasbon = sisaDp > 0 || dpAwal > 0
+  const dpMelebihiSaldo = dpAngka > sisaDp + 0.01
+  const dpMelebihiNota = dpAngka > Math.max(totalAfterCuts, 0) + 0.01
+  const barisKasbon = dpAngka > 0 ? (
+    <div className="mt-4 flex items-baseline justify-between gap-4 border-t pt-3" style={{ borderColor: "var(--border)" }}>
+      <span className="text-sm font-medium" style={{ color: "var(--muted)" }}>
+        Potongan kasbon (DP) &minus; {fmtRp(dpAngka)}
+      </span>
+      <span className="text-right text-sm font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+        Dibayar ke lapak {fmtRp(Math.max(totalAfterCuts - dpAngka, 0))}
+      </span>
+    </div>
+  ) : null
+  const rincianPotongan = sebagaiStaff
+    ? [
+        { nama: "Sampah", nilai: initialPurchase.potongan_sampah ?? 0 },
+        { nama: "Susut Timbangan", nilai: initialPurchase.potongan_susut ?? 0 },
+        { nama: "Kadar Air", nilai: initialPurchase.potongan_air ?? 0 },
+        { nama: "Karung", nilai: initialPurchase.potongan_karung ?? 0 },
+      ].filter(r => r.nilai > 0)
+    : []
 
   const barisPotongan: BarisPotongan[] = [
     { kunci: 'sampah', nama: 'Sampah',          berat: beratPotSampah, setBerat: setBeratPotSampah, harga: potSampah,  setHarga: setPotSampah,  nilai: hargaPotSampah },
@@ -199,6 +268,14 @@ export default function EditTransaksiForm({
   const handleSave = async () => {
     if (items.length === 0) {
       setError("Minimal harus ada 1 item.")
+      return
+    }
+    if (tampilkanKasbon && dpMelebihiSaldo) {
+      setError(`DP yang digunakan melebihi sisa kasbon lapak (${fmtRp(sisaDp)}).`)
+      return
+    }
+    if (tampilkanKasbon && dpMelebihiNota) {
+      setError("DP yang digunakan tidak boleh melebihi nilai nota setelah potongan.")
       return
     }
     setSaving(true)
@@ -214,10 +291,11 @@ export default function EditTransaksiForm({
           berat_timbangan_lapak: beratLapak || null,
           berat_timbangan_gudang: beratGudang || null,
           items: items.map(i => ({ ...i, subtotal: nilaiItem(i) })),
-          potongan_sampah:  potSampah,   berat_potongan_sampah: beratPotSampah,  harga_potongan_sampah: hargaPotSampah,
-          potongan_susut:   potSusut,    berat_potongan_susut:  beratPotSusut,   harga_potongan_susut:  hargaPotSusut,
-          potongan_air:     potAir,      berat_potongan_air:    beratPotAir,     harga_potongan_air:    hargaPotAir,
-          potongan_karung:  potKarung,   berat_potongan_karung: beratPotKarung,  harga_potongan_karung: hargaPotKarung,
+          dp_yang_digunakan: tampilkanKasbon ? dpAngka : undefined,
+          potongan_sampah:  hargaPotSampah,  berat_potongan_sampah: beratPotSampah,  harga_potongan_sampah: potSampah,
+          potongan_susut:   hargaPotSusut,   berat_potongan_susut:  beratPotSusut,   harga_potongan_susut:  potSusut,
+          potongan_air:     hargaPotAir,     berat_potongan_air:    beratPotAir,     harga_potongan_air:    potAir,
+          potongan_karung:  hargaPotKarung,  berat_potongan_karung: beratPotKarung,  harga_potongan_karung: potKarung,
         }),
       })
       const data = await res.json()
@@ -236,21 +314,23 @@ export default function EditTransaksiForm({
       {/* Aturan pengeditan dinyatakan sekali di atas, lengkap dengan status
           nota apa adanya -- bukan lencana kuning tetap yang dulu memberi
           kesan semua nota sedang menunggu sesuatu. */}
+      {/* Hanya ikon dan status nota. Judul "Mode koreksi" dan kalimat
+          penjelasnya dihapus (arahan Manager 11 Okt 2026): halaman ini
+          sudah berjudul Edit Transaksi, dan jejak audit adalah aturan
+          sistem, bukan sesuatu yang perlu dibacakan di tiap layar. Satu
+          pengecualian: nota yang sudah transfer tetap diberi alasan, karena
+          seluruh isiannya mati dan tanpa keterangan itu terlihat rusak. */}
       <div className={`notice ${terkunci ? "tone-warning" : "tone-info"}`}>
         <div className="notice-icon">
           {terkunci ? <Lock className="h-4 w-4" /> : <PencilLine className="h-4 w-4" />}
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="notice-title">{terkunci ? "Nota terkunci" : "Mode koreksi"}</p>
-            <StatusPill label={status.label} tone={status.tone} />
-          </div>
-          <p className="notice-body">
-            {terkunci
-              ? "Pembayaran sudah ditransfer, jadi angkanya tidak bisa diubah lagi. Koreksi harus lewat jalur audit."
-              : "Perubahan disimpan tanpa mengubah status nota."}
-          </p>
-          <p className="notice-foot">Setiap perubahan tercatat di audit log beserta nama pengubahnya.</p>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <StatusPill label={status.label} tone={status.tone} />
+          {terkunci && (
+            <p className="notice-body" style={{ margin: 0 }}>
+              Sudah ditransfer, angkanya tidak bisa diubah. Koreksi lewat jalur audit.
+            </p>
+          )}
         </div>
       </div>
 
@@ -340,13 +420,29 @@ export default function EditTransaksiForm({
             <span className="section-eyebrow">Rincian</span>
             <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Item Pembelian</h3>
           </div>
-          <button
-            onClick={addItem}
-            disabled={terkunci}
-            className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold disabled:opacity-40"
-          >
-            + Tambah Item
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Ponsel: ikon hapus pindah ke sini, di kiri tombol tambah
+                (arahan Manager 11 Okt 2026); baris ikon di tiap kartu item
+                hanya memakan satu baris kosong. Ia menghapus item TERAKHIR.
+                Layar lebar tetap punya ikon hapus di tiap baris. */}
+            <button
+              type="button"
+              onClick={() => removeItem(items.length - 1)}
+              disabled={items.length <= 1 || terkunci}
+              className="btn-netral tone-danger inline-flex min-h-9 min-w-9 items-center justify-center rounded-[var(--radius-sm)] p-2 disabled:opacity-30 md:hidden"
+              title="Hapus item terakhir"
+              aria-label="Hapus item terakhir"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={addItem}
+              disabled={terkunci}
+              className="btn-primer premium-button rounded-[var(--radius-sm)] px-4 py-2 text-xs font-bold disabled:opacity-40"
+            >
+              + Tambah Item
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="tabel-lembut min-w-full text-sm">
@@ -358,7 +454,7 @@ export default function EditTransaksiForm({
                 {!draftStaff && <th className="!text-right">Berat Final (KG)</th>}
                 <th className="!text-right">Harga/KG (Rp)</th>
                 <th className="!text-right">Subtotal</th>
-                <th />
+                <th className="max-md:hidden!" />
               </tr>
             </thead>
             <tbody>
@@ -418,7 +514,7 @@ export default function EditTransaksiForm({
                   <td className="whitespace-nowrap text-right font-bold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
                     {fmtRp(nilaiItem(item))}
                   </td>
-                  <td className="text-center">
+                  <td className="max-md:hidden! text-center">
                     <button
                       onClick={() => removeItem(idx)}
                       disabled={items.length === 1 || terkunci}
@@ -449,6 +545,56 @@ export default function EditTransaksiForm({
           bawah kartu Potongan. Keduanya bicara hal yang sama -- berapa yang
           dipotong dan berapa sisanya -- jadi memisahkannya cuma menambah
           satu tepi kartu di antara sebab dan akibatnya. */}
+      {/* Kasbon (DP) yang dipakai nota ini. Boleh dibetulkan oleh semua peran
+          yang bisa membuka layar ini, supaya salah ketik nominal kasbon punya
+          jalan keluar; saldo lapak disesuaikan di server. */}
+      {tampilkanKasbon && (
+        <div className="section overflow-hidden">
+          <div className="section-shell-head">
+            <div>
+              <span className="section-eyebrow">Kasbon</span>
+              <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Potongan Kasbon (DP)</h3>
+            </div>
+            <span className="text-xs" style={{ color: "var(--muted)" }}>
+              Sisa kasbon lapak ini:{" "}
+              <span className="font-mono font-bold tabular-nums" style={{ color: sisaDp > 0 ? "var(--brand-strong)" : "var(--muted-faint)" }}>
+                {fmtRp(sisaDp)}
+              </span>
+            </span>
+          </div>
+          <div className="section-body">
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 font-semibold text-slate-400">Rp</div>
+              <input
+                type="text"
+                inputMode="numeric"
+                aria-label="Potongan kasbon (DP)"
+                value={fmtDigitInput(dpDigunakan)}
+                onChange={(e) => setDpDigunakan(e.target.value.replace(/\D/g, ""))}
+                placeholder="0"
+                disabled={terkunci}
+                className="h-11 w-full rounded-[10px] border border-slate-200 bg-white pl-12 pr-4 font-mono text-lg font-bold tabular-nums text-slate-800 outline-none transition-[border-color,box-shadow] focus:border-[color:var(--brand)] focus:ring-2 focus:ring-[color:var(--brand)]/20 disabled:opacity-60"
+              />
+            </div>
+            {dpAngka > 0 && (
+              <p className="mt-2 text-xs font-bold" style={{ color: "var(--brand-strong)" }}>
+                &asymp; {fmtSkalaRupiah(dpAngka)} rupiah
+              </p>
+            )}
+            {dpMelebihiSaldo && (
+              <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+                Melebihi sisa kasbon lapak ({fmtRp(sisaDp)}).
+              </p>
+            )}
+            {!dpMelebihiSaldo && dpMelebihiNota && (
+              <p className="mt-1 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+                Melebihi nilai nota setelah potongan ({fmtRp(Math.max(totalAfterCuts, 0))}).
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {sebagaiStaff ? (
         <div className="section overflow-hidden">
           <div className="section-body">
@@ -464,16 +610,17 @@ export default function EditTransaksiForm({
                 <p>Total potongan: &minus; {fmtRp(totalPotongan)}</p>
               </div>
             </div>
-            {(initialPurchase.dp_yang_digunakan ?? 0) > 0 && (
-              <div className="mt-4 flex items-baseline justify-between gap-4 border-t pt-3" style={{ borderColor: "var(--border)" }}>
-                <span className="text-sm font-medium" style={{ color: "var(--muted)" }}>
-                  Potongan kasbon (DP) &minus; {fmtRp(initialPurchase.dp_yang_digunakan ?? 0)}
-                </span>
-                <span className="text-sm font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
-                  Dibayar ke lapak {fmtRp(Math.max(totalAfterCuts - (initialPurchase.dp_yang_digunakan ?? 0), 0))}
-                </span>
-              </div>
+            {rincianPotongan.length > 0 && (
+              <ul className="mt-3 space-y-0.5 text-xs" style={{ color: "var(--muted)" }}>
+                {rincianPotongan.map(r => (
+                  <li key={r.nama} className="flex justify-between gap-4">
+                    <span>Potongan {r.nama}</span>
+                    <span className="tabular-nums">&minus; {fmtRp(r.nilai)}</span>
+                  </li>
+                ))}
+              </ul>
             )}
+            {barisKasbon}
           </div>
         </div>
       ) : (
@@ -486,18 +633,21 @@ export default function EditTransaksiForm({
         judul="Potongan"
         deskripsi="Berat (KG) dikali harga per KG; nilai potongan dihitung otomatis."
         kaki={
-          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-            <div>
-              <span className="section-eyebrow">Nilai transaksi</span>
-              <p className="mt-1 text-3xl font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
-                {fmtRp(totalAfterCuts)}
-              </p>
+          <>
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+              <div>
+                <span className="section-eyebrow">Nilai transaksi</span>
+                <p className="mt-1 text-3xl font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+                  {fmtRp(totalAfterCuts)}
+                </p>
+              </div>
+              <div className="space-y-0.5 text-left text-xs font-medium sm:text-right" style={{ color: "var(--muted)" }}>
+                <p>Sebelum potongan: {fmtRp(totalBeforeCuts)}</p>
+                <p>Total potongan: &minus; {fmtRp(totalPotongan)}</p>
+              </div>
             </div>
-            <div className="space-y-0.5 text-left text-xs font-medium sm:text-right" style={{ color: "var(--muted)" }}>
-              <p>Sebelum potongan: {fmtRp(totalBeforeCuts)}</p>
-              <p>Total potongan: &minus; {fmtRp(totalPotongan)}</p>
-            </div>
-          </div>
+            {barisKasbon}
+          </>
         }
       />
       )}
@@ -514,13 +664,9 @@ export default function EditTransaksiForm({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-4">
-        <button
-          onClick={() => router.push(backUrl)}
-          className="btn-netral premium-button px-6 py-2.5 text-sm"
-        >
-          Kembali
-        </button>
+      {/* Tombol Kembali pindah ke atas halaman (TombolKembali di tiap
+          halaman edit), sama seperti menu lain. */}
+      <div className="flex items-center justify-end gap-4">
         <button
           onClick={handleSave}
           disabled={saving || success || terkunci}

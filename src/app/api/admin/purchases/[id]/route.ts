@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
-import { createAuditLog } from "@/lib/audit"
+import { createAuditLogTx } from "@/lib/audit"
+import { allocateDp, refundDp, InsufficientDpError } from "@/lib/dpAllocation"
 import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, positiveNumber, percentageNumber } from "@/lib/numberValidation"
 import {
@@ -82,6 +83,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       metode_pembayaran_terpilih,
       berat_timbangan_lapak,
       berat_timbangan_gudang,
+      dp_yang_digunakan,
       potongan_sampah, berat_potongan_sampah, harga_potongan_sampah,
       potongan_susut,  berat_potongan_susut,  harga_potongan_susut,
       potongan_air,    berat_potongan_air,    harga_potongan_air,
@@ -200,6 +202,14 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     const totalPotAir     = toNumber(p.potongan_air, "Potongan air")
     const totalPotKarung  = toNumber(p.potongan_karung, "Potongan karung")
 
+    // Kasbon yang dipakai boleh dibetulkan (salah ketik). Bila tidak dikirim,
+    // nilai tersimpan dipertahankan. Perubahannya menyesuaikan saldo kasbon
+    // lapak di dalam transaksi basis data yang sama dengan penyimpanan nota.
+    const dpLama = existing.dp_yang_digunakan ?? 0
+    const dpBaru = dp_yang_digunakan === undefined || dp_yang_digunakan === null
+      ? dpLama
+      : toNumber(dp_yang_digunakan, "DP yang digunakan")
+
     const persentase = percentageNumber(
       existing.persentase_pembayaran,
       "Persentase pembayaran",
@@ -213,9 +223,16 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       potonganSusut: totalPotSusut,
       potonganAir: totalPotAir,
       potonganKarung: totalPotKarung,
-      dpDigunakan: existing.dp_yang_digunakan ?? 0,
+      dpDigunakan: dpBaru,
       persentasePembayaran: persentase,
     })
+
+    // Kasbon yang BERUBAH tidak boleh melebihi nilai nota setelah potongan.
+    // Nilai lama yang sudah tersimpan dibiarkan agar menyimpan ulang nota
+    // lama tidak mendadak ditolak.
+    if (dpBaru !== dpLama && totals.dpDikembalikan > 0) {
+      throw new PurchaseCalculationError("DP yang digunakan tidak boleh melebihi nilai nota setelah potongan.")
+    }
 
     // Transaksi yang terminnya sudah dilunasi tidak boleh dikembalikan menjadi
     // belum lunas hanya karena disimpan ulang. Pelunasan dapat terjadi pada
@@ -237,15 +254,27 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     const shouldReturnToApproval =
       priceAboveStandard && existing.status_approval === "approved"
 
+    const supplierTujuan = p.supplierId ?? existing.supplierId
+
     const updatedPurchase = await prisma.$transaction(async (tx) => {
+      // Kembalikan DP lama ke lapak lamanya lalu potong DP baru dari lapak
+      // yang berlaku sekarang. Dua langkah ini membuat perubahan nominal
+      // maupun pergantian lapak selalu berakhir dengan saldo yang benar,
+      // tanpa menghitung selisih satu per satu.
+      if (dpBaru !== dpLama || supplierTujuan !== existing.supplierId) {
+        if (dpLama > 0) await refundDp(tx, existing.supplierId, dpLama)
+        if (dpBaru > 0) await allocateDp(tx, supplierTujuan, dpBaru)
+      }
+
       await tx.purchaseItem.deleteMany({ where: { purchaseId: id } })
 
-      return tx.purchase.update({
+      const purchase = await tx.purchase.update({
         where: { id },
         data: {
           ...(p.supplierId ? { supplierId: p.supplierId } : {}),
           ...(p.nomor_nota !== undefined ? { nomor_nota: p.nomor_nota } : {}),
           ...(metode_pembayaran_terpilih ? { metode_pembayaran_terpilih } : {}),
+          dp_yang_digunakan: dpBaru,
           berat_timbangan_lapak: draftStaff
             ? validatedItems.reduce((sum, i) => sum + i.berat_lapak, 0)
             : berat_timbangan_lapak != null ? toNumber(berat_timbangan_lapak, "Berat timbangan lapak") : existing.berat_timbangan_lapak,
@@ -285,21 +314,25 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
         },
         include: { items: true, supplier: true }
       })
-    })
 
-    await createAuditLog({
-      userId: session.user.id,
-      action: "EDIT_PURCHASE",
-      table_name: "Purchase",
-      record_id: id,
-      old_data: existing,
-      new_data: updatedPurchase,
+      // Di dalam transaksi yang sama: perubahan yang gagal dicatat tidak
+      // boleh lolos tanpa jejak.
+      await createAuditLogTx(tx, {
+        userId: session.user.id,
+        action: "EDIT_PURCHASE",
+        table_name: "Purchase",
+        record_id: id,
+        old_data: existing,
+        new_data: purchase,
+      })
+
+      return purchase
     })
 
     return NextResponse.json({ message: "Transaksi berhasil diperbarui", purchase: updatedPurchase })
   } catch (error) {
     const message = getErrorMessage(error)
-    if (error instanceof PurchaseCalculationError) {
+    if (error instanceof PurchaseCalculationError || error instanceof InsufficientDpError) {
       return NextResponse.json({ error: message }, { status: 400 })
     }
     console.error("Edit Purchase Error:", error)

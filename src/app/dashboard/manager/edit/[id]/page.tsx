@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import EditTransaksiForm from "@/components/features/EditTransaksiForm"
 import PageHeader from "@/components/ui/PageHeader"
+import TombolKembali from "@/components/ui/TombolKembali"
 
 export default async function ManagerEditTransaksiPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -41,6 +42,7 @@ export default async function ManagerEditTransaksiPage({ params }: { params: Pro
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      <TombolKembali href="/dashboard/manager/history" />
       <PageHeader
         eyebrow="Koreksi transaksi"
         title="Edit Transaksi"
