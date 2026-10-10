@@ -95,10 +95,10 @@ export default function RemainingKasbonList() {
         </div>
 
         {data.length > 0 && (
-          <div className="text-right">
+          <div className="text-left md:text-right">
             <span className="field-label" style={{ marginBottom: 2 }}>Total Sisa Kasbon</span>
             <span
-              className="text-base font-extrabold"
+              className="block text-base font-extrabold"
               style={{ color: "var(--warning)", fontVariantNumeric: "tabular-nums" }}
             >
               {fmtRp(totalOutstanding)}
@@ -126,7 +126,45 @@ export default function RemainingKasbonList() {
             </p>
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-[var(--radius-md)] border" style={{ borderColor: "var(--border)" }}>
+          <>
+            {/* Ponsel: satu kartu per lapak. Tabel lima kolom tidak muat di
+                layar sempit -- kolom Sisa Kasbon, angka terpenting di
+                daftar ini, justru yang terpotong di tepi kanan. */}
+            <ul className="mt-4 space-y-3 md:hidden">
+              {data.map((item) => (
+                <li
+                  key={item.supplierId}
+                  className="rounded-[var(--radius-md)] border p-3.5"
+                  style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="min-w-0 text-sm font-bold" style={{ color: "var(--foreground)" }}>{item.supplierNama}</p>
+                    <span
+                      className="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                      style={{ background: "var(--bg-tint)", color: "var(--muted)" }}
+                    >
+                      {item.totalDeliveries}x kirim
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-baseline justify-between gap-3 border-t pt-2" style={{ borderColor: "var(--border)" }}>
+                    <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Sisa kasbon</span>
+                    <span className="font-extrabold tabular-nums" style={{ color: "var(--warning)" }}>{fmtRp(item.remaining)}</span>
+                  </div>
+                  <dl className="mt-1.5 grid grid-cols-2 gap-x-3 text-xs" style={{ color: "var(--muted)" }}>
+                    <div>
+                      <dt>Total kasbon</dt>
+                      <dd className="font-semibold tabular-nums">{fmtRp(item.totalApproved)}</dd>
+                    </div>
+                    <div className="text-right">
+                      <dt>Telah dipakai</dt>
+                      <dd className="font-semibold tabular-nums">{fmtRp(item.totalUsed)}</dd>
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+
+          <div className="mt-4 hidden overflow-x-auto md:block rounded-[var(--radius-md)] border" style={{ borderColor: "var(--border)" }}>
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b text-[11px] font-bold uppercase tracking-wider" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)", color: "var(--muted)" }}>
@@ -162,6 +200,7 @@ export default function RemainingKasbonList() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>

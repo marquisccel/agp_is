@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react"
 import dynamic from "next/dynamic"
+import { useRouter } from "next/navigation"
 import type { Supplier } from "@prisma/client"
 import RingkasanLapak from "@/components/features/RingkasanLapak"
 import ElegantSelect from "@/components/ui/ElegantSelect"
@@ -61,37 +62,62 @@ interface NotaData {
   dpDigunakan: number
 }
 
+/**
+ * Mode edit: form yang sama dipakai Staff untuk membetulkan nota draft
+ * buatannya (salah ketik). Isian awalnya diisi dari nota yang ada, dan
+ * simpannya memanggil rute edit, bukan rute pembuatan.
+ */
+export interface EditNota {
+  id: string
+  supplierId: string
+  metodeBayar: string
+  jenisPengambilan: string
+  /** DP yang sudah terpotong oleh nota ini, sebelum diedit. */
+  dpAwal: number
+  nomorDraft: string
+  tanggal: string
+  items: Item[]
+  potongan: Record<"sampah" | "susut" | "air" | "karung", { berat: number; harga: number }>
+}
+
 export default function PurchaseForm({
   suppliers,
   namaGudang,
   standarHarga = [],
+  edit,
 }: {
   suppliers: Supplier[]
   namaGudang: string
   standarHarga?: StandarHarga[]
+  edit?: EditNota
 }) {
-  const [supplierId, setSupplierId] = useState("")
-  const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter()
+  const [supplierId, setSupplierId] = useState(edit?.supplierId ?? "")
+  const [searchQuery, setSearchQuery] = useState(
+    () => suppliers.find((s) => s.id === edit?.supplierId)?.nama ?? ""
+  )
   const [isOpen, setIsOpen] = useState(false)
-  const [metodeBayar, setMetodeBayar] = useState("TIMBANGAN_GUDANG")
-  const [jenisPengambilan, setJenisPengambilan] = useState("AMBIL")
-  const [items, setItems] = useState<Item[]>([{ sku_name: "", spec: "", berat_estimasi: 0, harga_per_kg: 0 }])
+  const [metodeBayar, setMetodeBayar] = useState(edit?.metodeBayar ?? "TIMBANGAN_GUDANG")
+  const [jenisPengambilan, setJenisPengambilan] = useState(edit?.jenisPengambilan ?? "AMBIL")
+  const [items, setItems] = useState<Item[]>(
+    edit?.items?.length ? edit.items : [{ sku_name: "", spec: "", berat_estimasi: 0, harga_per_kg: 0 }]
+  )
   /** Digit mentah; pemisah ribuan hanya untuk tampilan. */
-  const [dpDigunakan, setDpDigunakan] = useState("")
+  const [dpDigunakan, setDpDigunakan] = useState(edit && edit.dpAwal > 0 ? String(edit.dpAwal) : "")
   const [sisaDpMap, setSisaDpMap] = useState<Record<string, number>>({})
 
   const filteredSuppliers = suppliers.filter(s =>
     s.nama.toLowerCase().includes(searchQuery.toLowerCase())
   )
   const selectedSupplier = suppliers.find((supplier) => supplier.id === supplierId)
-  const [beratPotonganSampah, setBeratPotonganSampah] = useState<number>(0)
-  const [hargaPotonganSampah, setHargaPotonganSampah] = useState<number>(0)
-  const [beratPotonganSusut, setBeratPotonganSusut] = useState<number>(0)
-  const [hargaPotonganSusut, setHargaPotonganSusut] = useState<number>(0)
-  const [beratPotonganAir, setBeratPotonganAir] = useState<number>(0)
-  const [hargaPotonganAir, setHargaPotonganAir] = useState<number>(0)
-  const [beratPotonganKarung, setBeratPotonganKarung] = useState<number>(0)
-  const [hargaPotonganKarung, setHargaPotonganKarung] = useState<number>(0)
+  const [beratPotonganSampah, setBeratPotonganSampah] = useState<number>(edit?.potongan.sampah.berat ?? 0)
+  const [hargaPotonganSampah, setHargaPotonganSampah] = useState<number>(edit?.potongan.sampah.harga ?? 0)
+  const [beratPotonganSusut, setBeratPotonganSusut] = useState<number>(edit?.potongan.susut.berat ?? 0)
+  const [hargaPotonganSusut, setHargaPotonganSusut] = useState<number>(edit?.potongan.susut.harga ?? 0)
+  const [beratPotonganAir, setBeratPotonganAir] = useState<number>(edit?.potongan.air.berat ?? 0)
+  const [hargaPotonganAir, setHargaPotonganAir] = useState<number>(edit?.potongan.air.harga ?? 0)
+  const [beratPotonganKarung, setBeratPotonganKarung] = useState<number>(edit?.potongan.karung.berat ?? 0)
+  const [hargaPotonganKarung, setHargaPotonganKarung] = useState<number>(edit?.potongan.karung.harga ?? 0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [notaData, setNotaData] = useState<NotaData | null>(null)
@@ -117,7 +143,13 @@ export default function PurchaseForm({
     return () => { aktif = false }
   }, [])
 
-  const sisaDp = supplierId ? (sisaDpMap[supplierId] ?? 0) : 0
+  // Saat mengedit, DP yang sudah dipotong nota ini tidak lagi ada di saldo
+  // lapaknya, padahal akan dikembalikan sebelum dipotong ulang. Tanpa
+  // menambahkannya di sini, Staff tidak bisa mempertahankan nominal yang
+  // sama dengan yang sudah tersimpan.
+  const sisaDp = supplierId
+    ? (sisaDpMap[supplierId] ?? 0) + (edit && supplierId === edit.supplierId ? edit.dpAwal : 0)
+    : 0
   const dpAngka = dpDigunakan ? Number(dpDigunakan) : 0
 
   const potonganSampah = beratPotonganSampah * hargaPotonganSampah
@@ -197,8 +229,8 @@ export default function PurchaseForm({
         harga_potongan_karung: hargaPotonganKarung,
       }
 
-      const res = await fetch("/api/purchases/draft", {
-        method: "POST",
+      const res = await fetch(edit ? `/api/staff/purchases/${edit.id}` : "/api/purchases/draft", {
+        method: edit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -215,8 +247,8 @@ export default function PurchaseForm({
         supplierKontakWa: selectedSupplier?.kontak_wa || null,
         gudangNama: namaGudang,
         items,
-        tanggal: new Date().toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" }),
-        nomorDraft: saved.id?.slice(0, 8).toUpperCase() || "DRAFT",
+        tanggal: new Date(edit?.tanggal ?? Date.now()).toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" }),
+        nomorDraft: edit?.nomorDraft || saved.id?.slice(0, 8).toUpperCase() || "DRAFT",
         potonganSampah,
         beratPotonganSampah,
         hargaPotonganSampah,
@@ -231,6 +263,10 @@ export default function PurchaseForm({
         hargaPotonganKarung,
         dpDigunakan: dpAngka,
       })
+
+      // Mode edit: form tetap berisi nota yang baru dibetulkan, dan layar
+      // kembali ke riwayat begitu popup nota ditutup.
+      if (edit) return
 
       // Reset form
       setSupplierId("")
@@ -468,19 +504,12 @@ export default function PurchaseForm({
     </div>
   )
 
-  const bagianPotongan = (
+  // Potongan Kasbon (DP) -- kasbon yang sudah disetujui Manager langsung
+  // dipotong di nota ini, tidak lagi menunggu tahap verifikasi gudang.
+  // Dipisah dari PotonganFields karena di ponsel menu Potongan Tambahan
+  // dihapus (arahan Manager) sementara kasbon tetap ada.
+  const bagianKasbon = (
     <>
-      <PotonganFields
-        baris={barisPotongan}
-        total={totalDeductions}
-        eyebrow="Opsional"
-        judul="Potongan Tambahan"
-        deskripsi="Isi berat (KG) dan harga per KG; nilai potongan dihitung otomatis."
-      />
-
-      {/* Potongan Kasbon (DP) -- kasbon yang sudah disetujui Manager
-          langsung dipotong di nota ini, tidak lagi menunggu tahap
-          verifikasi gudang. */}
       {supplierId && (
         <div className="rounded-[var(--radius-md)] border p-4" style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -532,6 +561,19 @@ export default function PurchaseForm({
     </>
   )
 
+  const bagianPotongan = (
+    <>
+      <PotonganFields
+        baris={barisPotongan}
+        total={totalDeductions}
+        eyebrow="Opsional"
+        judul="Potongan Tambahan"
+        deskripsi="Isi berat (KG) dan harga per KG; nilai potongan dihitung otomatis."
+      />
+      {bagianKasbon}
+    </>
+  )
+
   const bagianTinjau = (
     <>
       {/* Estimasi Total */}
@@ -558,7 +600,7 @@ export default function PurchaseForm({
           )}
           <div className="mt-3 flex flex-col justify-between gap-1 border-t pt-3 md:flex-row md:items-center" style={{ borderColor: "var(--brand-soft-strong)" }}>
             <span className="text-sm font-bold" style={{ color: "var(--brand-strong)" }}>
-              Estimasi dibayar ke lapak
+              Estimasi harus dibayar ke lapak
             </span>
             <span className="font-mono text-xl font-extrabold tabular-nums" style={{ color: "var(--brand-strong)" }}>
               {fmtRp(totalDibayarKeLapak)}
@@ -569,13 +611,23 @@ export default function PurchaseForm({
     </>
   )
 
+  // Tiga langkah di ponsel (arahan Manager): menu Potongan Tambahan dan
+  // langkah Tinjau dihapus. Kasbon dan total akhir yang harus dibayar kini
+  // satu layar, supaya Staff melihat hasil potongan kasbonnya saat itu juga
+  // dan tidak perlu membuka nota untuk tahu angka akhirnya.
   const langkahForm = [
     { judul: "Lapak & Metode", keterangan: "Pilih lapak, lalu tentukan cara timbang dan pengambilannya." },
     { judul: "Item Barang", keterangan: "Masukkan SKU, berat lapak, dan harga per kilogram." },
-    { judul: "Potongan", keterangan: "Isi bila ada potongan atau kasbon yang dipakai. Boleh dilewati." },
-    { judul: "Tinjau & Simpan", keterangan: "Periksa estimasi pembayaran sebelum nota dibuat." },
+    { judul: "Kasbon & Total", keterangan: "Potong kasbon bila ada, lalu cek total yang harus dibayar ke lapak." },
   ]
-  const isiLangkah = [bagianLapak, bagianItem, bagianPotongan, bagianTinjau]
+  const isiLangkah = [
+    bagianLapak,
+    bagianItem,
+    <div key="kasbon-total" className="space-y-4">
+      {bagianKasbon}
+      {bagianTinjau}
+    </div>,
+  ]
   const langkahTerakhir = langkahForm.length - 1
 
   // Validasi peramban hanya melihat isian yang sedang dipasang, yaitu isian
@@ -591,7 +643,13 @@ export default function PurchaseForm({
     <>
       {/* Nota Modal */}
       {notaData && (
-        <NotaDraft data={notaData} onClose={() => setNotaData(null)} />
+        <NotaDraft
+          data={notaData}
+          onClose={() => {
+            setNotaData(null)
+            if (edit) router.push("/dashboard/staff/history")
+          }}
+        />
       )}
 
       <form
@@ -614,13 +672,7 @@ export default function PurchaseForm({
 
             {/* Tombol lanjut/simpan di kaki kartu form, dipisah garis tipis
                 dari isian langkah (lihat .bilah-aksi di globals.css). */}
-            <StickyActionBar
-              keterangan={
-                langkah === langkahTerakhir && totalDibayarKeLapak > 0
-                  ? `Estimasi dibayar ${fmtRp(totalDibayarKeLapak)}`
-                  : undefined
-              }
-            >
+            <StickyActionBar>
               {langkah > 0 && (
                 <button
                   type="button"
@@ -630,8 +682,15 @@ export default function PurchaseForm({
                   Kembali
                 </button>
               )}
+              {/* key berbeda WAJIB: tanpanya React memakai ulang elemen
+                  <button> yang sama saat "Lanjut" berganti jadi tombol
+                  submit, dan peramban menjalankan aksi bawaan klik terhadap
+                  type yang sudah berubah -- klik "Lanjut" di langkah
+                  sebelum terakhir langsung mengirim form dan melompati
+                  langkah terakhir. */}
               {langkah < langkahTerakhir ? (
                 <button
+                  key="lanjut"
                   type="button"
                   onClick={majuLangkah}
                   className="btn-primer flex-1 rounded-[var(--radius-md)] px-4 text-sm font-bold"
@@ -640,12 +699,13 @@ export default function PurchaseForm({
                 </button>
               ) : (
                 <button
+                  key="simpan"
                   type="submit"
                   disabled={loading}
                   className="btn-primer flex flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {loading && <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />}
-                  {loading ? "Menyimpan..." : "Simpan & Buat Nota Draft"}
+                  {loading ? "Menyimpan..." : edit ? "Simpan Perubahan" : "Cetak Nota"}
                 </button>
               )}
             </StickyActionBar>
@@ -670,7 +730,7 @@ export default function PurchaseForm({
                 {loading && (
                   <span className="pemuat h-4 w-4 rounded-full border-2 animate-spin" />
                 )}
-                {loading ? "Menyimpan..." : "Simpan & Buat Nota Draft"}
+                {loading ? "Menyimpan..." : edit ? "Simpan Perubahan" : "Simpan & Buat Nota Draft"}
               </button>
             </div>
           </>

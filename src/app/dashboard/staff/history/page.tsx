@@ -117,6 +117,13 @@ export default async function StaffHistoryPage() {
                           >
                             Lihat Nota
                           </a>
+                        ) : purchase.status_approval === "menunggu_verifikasi" ? (
+                          <a
+                            href={`/dashboard/staff/edit/${purchase.id}`}
+                            className="btn-netral premium-button inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                          >
+                            Edit Nota
+                          </a>
                         ) : (
                           <span className="text-xs" style={{ color: "var(--muted-faint)" }}>-</span>
                         )}
@@ -147,6 +154,9 @@ export default async function StaffHistoryPage() {
             const status = getPurchaseStatus(purchase.status_approval)
             const bayar = statusPembayaran(purchase)
             const bisaLihatNota = ["approved", "sudah_transfer"].includes(purchase.status_approval)
+            // Nota yang masih draft boleh dibetulkan pembuatnya (salah
+            // ketik); begitu gudang memverifikasi, pintunya ditutup.
+            const bisaEdit = purchase.status_approval === "menunggu_verifikasi"
 
             return (
               <KartuData
@@ -205,6 +215,13 @@ export default async function StaffHistoryPage() {
                       className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
                     >
                       Lihat Nota
+                    </a>
+                  ) : bisaEdit ? (
+                    <a
+                      href={`/dashboard/staff/edit/${purchase.id}`}
+                      className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                    >
+                      Edit Nota
                     </a>
                   ) : undefined
                 }
