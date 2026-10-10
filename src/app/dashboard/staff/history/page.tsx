@@ -10,6 +10,10 @@ import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 import { statusPembayaran } from "@/lib/paymentStatus"
 import KartuData from "@/components/ui/KartuData"
 
+// Staff boleh membetulkan notanya sendiri (salah ketik) selama belum
+// ditransfer; perubahan tercatat di audit trail Manager.
+const STATUS_BISA_EDIT = ["menunggu_verifikasi", "menunggu_approval_harga", "approved"]
+
 export default async function StaffHistoryPage() {
   const session = await getServerSession(authOptions)
   if (!session || !isOperationalRole(session.user.role)) {
@@ -108,22 +112,27 @@ export default async function StaffHistoryPage() {
                         )}
                       </td>
                       <td className="text-center">
-                        {["approved", "sudah_transfer"].includes(purchase.status_approval) ? (
-                          <a
-                            href={`/nota/${purchase.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="btn-netral premium-button inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
-                          >
-                            Lihat Nota
-                          </a>
-                        ) : purchase.status_approval === "menunggu_verifikasi" ? (
-                          <a
-                            href={`/dashboard/staff/edit/${purchase.id}`}
-                            className="btn-netral premium-button inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
-                          >
-                            Edit Nota
-                          </a>
+                        {["approved", "sudah_transfer"].includes(purchase.status_approval) || STATUS_BISA_EDIT.includes(purchase.status_approval) ? (
+                          <div className="inline-flex items-center gap-2">
+                            {STATUS_BISA_EDIT.includes(purchase.status_approval) && (
+                              <a
+                                href={`/dashboard/staff/edit/${purchase.id}`}
+                                className="btn-netral premium-button inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                              >
+                                Edit Nota
+                              </a>
+                            )}
+                            {["approved", "sudah_transfer"].includes(purchase.status_approval) && (
+                              <a
+                                href={`/nota/${purchase.id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn-netral premium-button inline-flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                              >
+                                Lihat Nota
+                              </a>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-xs" style={{ color: "var(--muted-faint)" }}>-</span>
                         )}
@@ -154,9 +163,7 @@ export default async function StaffHistoryPage() {
             const status = getPurchaseStatus(purchase.status_approval)
             const bayar = statusPembayaran(purchase)
             const bisaLihatNota = ["approved", "sudah_transfer"].includes(purchase.status_approval)
-            // Nota yang masih draft boleh dibetulkan pembuatnya (salah
-            // ketik); begitu gudang memverifikasi, pintunya ditutup.
-            const bisaEdit = purchase.status_approval === "menunggu_verifikasi"
+            const bisaEdit = STATUS_BISA_EDIT.includes(purchase.status_approval)
 
             return (
               <KartuData
@@ -207,22 +214,27 @@ export default async function StaffHistoryPage() {
                 ]}
                 aksiRata="kanan"
                 aksi={
-                  bisaLihatNota ? (
-                    <a
-                      href={`/nota/${purchase.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
-                    >
-                      Lihat Nota
-                    </a>
-                  ) : bisaEdit ? (
-                    <a
-                      href={`/dashboard/staff/edit/${purchase.id}`}
-                      className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
-                    >
-                      Edit Nota
-                    </a>
+                  bisaLihatNota || bisaEdit ? (
+                    <>
+                      {bisaEdit && (
+                        <a
+                          href={`/dashboard/staff/edit/${purchase.id}`}
+                          className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                        >
+                          Edit Nota
+                        </a>
+                      )}
+                      {bisaLihatNota && (
+                        <a
+                          href={`/nota/${purchase.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn-netral premium-button rounded-[var(--radius-sm)] px-3 text-xs font-bold"
+                        >
+                          Lihat Nota
+                        </a>
+                      )}
+                    </>
                   ) : undefined
                 }
               />

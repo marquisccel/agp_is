@@ -14,6 +14,16 @@ import {
 
 const ALLOWED_ROLES = ["ADMIN", "MANAGER"]
 
+/**
+ * Staff boleh membetulkan nota BUATANNYA SENDIRI yang sudah lewat tahap draft
+ * (menunggu approval harga atau disetujui) -- arahan Manager 10 Okt 2026,
+ * dengan pengawasan lewat audit trail. Batasannya diterapkan di PUT di bawah:
+ * lapak, nomor nota, dan seluruh potongan tidak dapat diubah Staff. Nota yang
+ * masih draft dibetulkan lewat /api/staff/purchases/[id] karena ikut
+ * menyesuaikan saldo kasbon.
+ */
+const STATUS_EDITABLE_STAFF = ["menunggu_approval_harga", "approved"]
+
 type EditablePurchaseItemInput = {
   sku_name: string
   spec?: string | null
@@ -59,7 +69,8 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     const { id } = await context.params
     const session = await getServerSession(authOptions)
     const role = session?.user?.role
-    if (!role || !ALLOWED_ROLES.includes(role)) {
+    const sebagaiStaff = role === "STAFF"
+    if (!role || !(ALLOWED_ROLES.includes(role) || sebagaiStaff)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -83,6 +94,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     const existing = await prisma.purchase.findUnique({
       where: { id },
       include: {
+        items: true,
         returs: true,
         warehouse: { include: { skuPrices: true } },
       },
@@ -93,10 +105,45 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
     // Admin memeriksa-silang SEMUA gudang sejak arahan Manager 30 Sep 2026
     // (lihat lib/roles.ts), sama seperti Manager -- tidak ada lagi
-    // pengecekan warehouseId di sini.
+    // pengecekan warehouseId di sini. Staff sebaliknya dikurung ke notanya
+    // sendiri di gudangnya.
+    if (sebagaiStaff) {
+      if (
+        existing.userIdStaff !== session!.user.id ||
+        existing.warehouseId !== session!.user.warehouseId
+      ) {
+        return NextResponse.json({ error: "Nota ini bukan buatan Anda." }, { status: 403 })
+      }
+      if (!STATUS_EDITABLE_STAFF.includes(existing.status_approval)) {
+        return NextResponse.json(
+          { error: "Nota ini tidak dapat diedit Staff pada statusnya sekarang." },
+          { status: 400 }
+        )
+      }
+    }
     if (existing.status_approval === "sudah_transfer") {
       return NextResponse.json({ error: "Transaksi yang sudah transfer tidak dapat diedit. Buat koreksi manual melalui alur audit." }, { status: 400 })
     }
+
+    // Bagi Staff, lapak, nomor nota, dan semua potongan dikunci ke nilai
+    // tersimpan -- bukan sekadar disembunyikan di layar, karena isian badan
+    // permintaan bisa dikirim langsung ke alamat ini.
+    const p = sebagaiStaff
+      ? {
+          supplierId: undefined as string | undefined,
+          nomor_nota: undefined as string | null | undefined,
+          potongan_sampah: existing.potongan_sampah, berat_potongan_sampah: existing.berat_potongan_sampah, harga_potongan_sampah: existing.harga_potongan_sampah,
+          potongan_susut: existing.potongan_susut, berat_potongan_susut: existing.berat_potongan_susut, harga_potongan_susut: existing.harga_potongan_susut,
+          potongan_air: existing.potongan_air, berat_potongan_air: existing.berat_potongan_air, harga_potongan_air: existing.harga_potongan_air,
+          potongan_karung: existing.potongan_karung, berat_potongan_karung: existing.berat_potongan_karung, harga_potongan_karung: existing.harga_potongan_karung,
+        }
+      : {
+          supplierId, nomor_nota,
+          potongan_sampah, berat_potongan_sampah, harga_potongan_sampah,
+          potongan_susut, berat_potongan_susut, harga_potongan_susut,
+          potongan_air, berat_potongan_air, harga_potongan_air,
+          potongan_karung, berat_potongan_karung, harga_potongan_karung,
+        }
 
     // Recompute totals from items
     const purchaseItems = items as EditablePurchaseItemInput[]
@@ -140,10 +187,10 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       return s + (r.berat_retur ?? 0) * harga + (r.potongan_nilai ?? 0)
     }, 0)
 
-    const totalPotSampah  = toNumber(potongan_sampah, "Potongan sampah")
-    const totalPotSusut   = toNumber(potongan_susut, "Potongan susut")
-    const totalPotAir     = toNumber(potongan_air, "Potongan air")
-    const totalPotKarung  = toNumber(potongan_karung, "Potongan karung")
+    const totalPotSampah  = toNumber(p.potongan_sampah, "Potongan sampah")
+    const totalPotSusut   = toNumber(p.potongan_susut, "Potongan susut")
+    const totalPotAir     = toNumber(p.potongan_air, "Potongan air")
+    const totalPotKarung  = toNumber(p.potongan_karung, "Potongan karung")
 
     const persentase = percentageNumber(
       existing.persentase_pembayaran,
@@ -171,7 +218,14 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     // atas standar dapat dimasukkan pasca-approval tanpa kembali ke antrean
     // persetujuan Manager.
     const standards = existing.warehouse?.skuPrices ?? []
-    const priceAboveStandard = hasPriceAboveStandard(validatedItems, standards)
+    // Yang diperiksa hanya baris yang harganya BARU (SKU atau harga berbeda
+    // dari yang tersimpan). Memeriksa semua baris membuat nota yang harganya
+    // sudah disetujui Manager ikut ditarik kembali ke antrean dan kehilangan
+    // nomor notanya hanya karena Staff membetulkan salah ketik di kolom lain.
+    const itemBerubahHarga = validatedItems.filter(
+      (baru) => !existing.items.some((lama) => lama.sku_name === baru.sku_name && lama.harga_per_kg === baru.harga_per_kg)
+    )
+    const priceAboveStandard = hasPriceAboveStandard(itemBerubahHarga, standards)
     const shouldReturnToApproval =
       priceAboveStandard && existing.status_approval === "approved"
 
@@ -181,23 +235,23 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       return tx.purchase.update({
         where: { id },
         data: {
-          ...(supplierId ? { supplierId } : {}),
-          ...(nomor_nota !== undefined ? { nomor_nota } : {}),
+          ...(p.supplierId ? { supplierId: p.supplierId } : {}),
+          ...(p.nomor_nota !== undefined ? { nomor_nota: p.nomor_nota } : {}),
           ...(metode_pembayaran_terpilih ? { metode_pembayaran_terpilih } : {}),
           berat_timbangan_lapak: berat_timbangan_lapak != null ? toNumber(berat_timbangan_lapak, "Berat timbangan lapak") : existing.berat_timbangan_lapak,
           berat_timbangan_gudang: berat_timbangan_gudang != null ? toNumber(berat_timbangan_gudang, "Berat timbangan gudang") : existing.berat_timbangan_gudang,
           potongan_sampah:  totalPotSampah,
-          berat_potongan_sampah: toNumber(berat_potongan_sampah, "Berat potongan sampah"),
-          harga_potongan_sampah: toNumber(harga_potongan_sampah, "Harga potongan sampah"),
+          berat_potongan_sampah: toNumber(p.berat_potongan_sampah, "Berat potongan sampah"),
+          harga_potongan_sampah: toNumber(p.harga_potongan_sampah, "Harga potongan sampah"),
           potongan_susut:   totalPotSusut,
-          berat_potongan_susut:  toNumber(berat_potongan_susut, "Berat potongan susut"),
-          harga_potongan_susut:  toNumber(harga_potongan_susut, "Harga potongan susut"),
+          berat_potongan_susut:  toNumber(p.berat_potongan_susut, "Berat potongan susut"),
+          harga_potongan_susut:  toNumber(p.harga_potongan_susut, "Harga potongan susut"),
           potongan_air:     totalPotAir,
-          berat_potongan_air:    toNumber(berat_potongan_air, "Berat potongan air"),
-          harga_potongan_air:    toNumber(harga_potongan_air, "Harga potongan air"),
+          berat_potongan_air:    toNumber(p.berat_potongan_air, "Berat potongan air"),
+          harga_potongan_air:    toNumber(p.harga_potongan_air, "Harga potongan air"),
           potongan_karung:  totalPotKarung,
-          berat_potongan_karung: toNumber(berat_potongan_karung, "Berat potongan karung"),
-          harga_potongan_karung: toNumber(harga_potongan_karung, "Harga potongan karung"),
+          berat_potongan_karung: toNumber(p.berat_potongan_karung, "Berat potongan karung"),
+          harga_potongan_karung: toNumber(p.harga_potongan_karung, "Harga potongan karung"),
           total_nilai_sebelum_retur: totals.totalNilaiSebelumRetur,
           total_potongan_retur: totals.totalPotonganRetur,
           total_nilai_setelah_retur: totals.totalNilaiSetelahRetur,

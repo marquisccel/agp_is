@@ -68,10 +68,17 @@ export default function EditTransaksiForm({
   purchase: initialPurchase,
   suppliers,
   backUrl = "/dashboard/admin/history",
+  sebagaiStaff = false,
 }: {
   purchase: Purchase
   suppliers: Supplier[]
   backUrl?: string
+  /**
+   * Staff membetulkan notanya sendiri (arahan Manager 10 Okt 2026): kartu
+   * Potongan disembunyikan, lapak dan nomor nota dikunci. Penguncian yang
+   * sebenarnya ada di rute API; di sini hanya agar layarnya jujur.
+   */
+  sebagaiStaff?: boolean
 }) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -255,7 +262,7 @@ export default function EditTransaksiForm({
                 onChange={e => setNomorNota(e.target.value)}
                 placeholder="Kosongkan jika tidak ada"
                 className="field-input"
-                disabled={terkunci}
+                disabled={terkunci || sebagaiStaff}
               />
             </div>
 
@@ -267,7 +274,7 @@ export default function EditTransaksiForm({
                 onChange={setSupplierId}
                 ariaLabel="Pilih lapak atau supplier"
                 className="w-full"
-                disabled={terkunci}
+                disabled={terkunci || sebagaiStaff}
               />
             </div>
 
@@ -418,6 +425,24 @@ export default function EditTransaksiForm({
           bawah kartu Potongan. Keduanya bicara hal yang sama -- berapa yang
           dipotong dan berapa sisanya -- jadi memisahkannya cuma menambah
           satu tepi kartu di antara sebab dan akibatnya. */}
+      {sebagaiStaff ? (
+        <div className="section overflow-hidden">
+          <div className="section-body">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+              <div>
+                <span className="section-eyebrow">Nilai transaksi</span>
+                <p className="mt-1 text-3xl font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+                  {fmtRp(totalAfterCuts)}
+                </p>
+              </div>
+              <div className="space-y-0.5 text-left text-xs font-medium sm:text-right" style={{ color: "var(--muted)" }}>
+                <p>Sebelum potongan: {fmtRp(totalBeforeCuts)}</p>
+                <p>Total potongan: &minus; {fmtRp(totalPotongan)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
       <PotonganFields
         kartu
         readOnly={terkunci}
@@ -441,6 +466,7 @@ export default function EditTransaksiForm({
           </div>
         }
       />
+      )}
 
       {/* Ringkasan */}
 

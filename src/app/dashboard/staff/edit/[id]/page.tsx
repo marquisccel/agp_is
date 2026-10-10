@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import PurchaseForm from "@/components/features/PurchaseForm"
+import EditTransaksiForm from "@/components/features/EditTransaksiForm"
 import PageHeader from "@/components/ui/PageHeader"
 import { namaGudang } from "@/lib/namaGudang"
 
@@ -31,13 +32,49 @@ export default async function EditNotaStaffPage({ params }: { params: Promise<{ 
     return notFound()
   }
 
+  // Nota yang sudah lewat draft (menunggu approval harga / disetujui)
+  // dibetulkan lewat form koreksi seperti Admin, tanpa kartu Potongan,
+  // lapak, dan nomor nota -- arahan Manager 10 Okt 2026.
+  if (["menunggu_approval_harga", "approved"].includes(purchase.status_approval)) {
+    const suppliers = await prisma.supplier.findMany({ where: { warehouseId }, orderBy: { nama: "asc" } })
+    const purchaseSerialized = {
+      ...purchase,
+      createdAt: purchase.createdAt.toISOString(),
+      updatedAt: purchase.updatedAt.toISOString(),
+      approvedAt: purchase.approvedAt?.toISOString() ?? null,
+      tanggal: purchase.tanggal.toISOString(),
+      tanggal_transfer: purchase.tanggal_transfer?.toISOString() ?? null,
+    }
+    return (
+      <div className="mx-auto max-w-5xl space-y-6">
+        <PageHeader
+          eyebrow="Koreksi transaksi"
+          title="Edit Transaksi"
+          description={
+            <>
+              <span className="font-semibold text-slate-700">{purchase.supplier.nama}</span>
+              {" · "}
+              <span className="font-mono text-slate-600">{purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}</span>
+            </>
+          }
+        />
+        <EditTransaksiForm
+          purchase={purchaseSerialized}
+          suppliers={suppliers}
+          backUrl="/dashboard/staff/history"
+          sebagaiStaff
+        />
+      </div>
+    )
+  }
+
   if (purchase.status_approval !== "menunggu_verifikasi") {
     return (
       <div className="space-y-6">
         <PageHeader
           eyebrow="Edit nota"
           title="Nota tidak dapat diedit"
-          description="Nota ini sudah diverifikasi gudang. Jika ada yang perlu dibetulkan, hubungi Admin atau Manager."
+          description="Nota ini sudah ditransfer atau dibatalkan. Jika ada yang perlu dibetulkan, hubungi Admin atau Manager."
         />
         <Link href="/dashboard/staff/history" className="btn-netral inline-flex rounded-[var(--radius-sm)] px-4 py-2 text-sm font-bold">
           Kembali ke riwayat
