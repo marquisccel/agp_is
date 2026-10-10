@@ -311,26 +311,25 @@ export default function EditTransaksiForm({
 
   return (
     <div className="premium-workflow space-y-6">
-      {/* Aturan pengeditan dinyatakan sekali di atas, lengkap dengan status
-          nota apa adanya -- bukan lencana kuning tetap yang dulu memberi
-          kesan semua nota sedang menunggu sesuatu. */}
-      {/* Hanya ikon dan status nota. Judul "Mode koreksi" dan kalimat
-          penjelasnya dihapus (arahan Manager 11 Okt 2026): halaman ini
-          sudah berjudul Edit Transaksi, dan jejak audit adalah aturan
-          sistem, bukan sesuatu yang perlu dibacakan di tiap layar. Satu
-          pengecualian: nota yang sudah transfer tetap diberi alasan, karena
-          seluruh isiannya mati dan tanpa keterangan itu terlihat rusak. */}
+      {/* Ikon dan status nota, lalu satu baris keterangan jejak audit
+          (arahan Manager 11 Okt 2026; judul "Mode koreksi" dan kalimat
+          penjelasnya dihapus). Nota yang sudah transfer tetap diberi alasan,
+          karena seluruh isiannya mati dan tanpa keterangan itu terlihat
+          rusak. */}
       <div className={`notice ${terkunci ? "tone-warning" : "tone-info"}`}>
         <div className="notice-icon">
           {terkunci ? <Lock className="h-4 w-4" /> : <PencilLine className="h-4 w-4" />}
         </div>
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        <div className="min-w-0 flex-1">
           <StatusPill label={status.label} tone={status.tone} />
           {terkunci && (
-            <p className="notice-body" style={{ margin: 0 }}>
+            <p className="notice-body mt-2">
               Sudah ditransfer, angkanya tidak bisa diubah. Koreksi lewat jalur audit.
             </p>
           )}
+          <p className="notice-foot mt-2">
+            Setiap perubahan tercatat di audit log Manager beserta nama pengubahnya.
+          </p>
         </div>
       </div>
 
