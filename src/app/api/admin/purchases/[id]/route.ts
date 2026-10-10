@@ -15,14 +15,14 @@ import {
 const ALLOWED_ROLES = ["ADMIN", "MANAGER"]
 
 /**
- * Staff boleh membetulkan nota BUATANNYA SENDIRI yang sudah lewat tahap draft
- * (menunggu approval harga atau disetujui) -- arahan Manager 10 Okt 2026,
- * dengan pengawasan lewat audit trail. Batasannya diterapkan di PUT di bawah:
- * lapak, nomor nota, dan seluruh potongan tidak dapat diubah Staff. Nota yang
- * masih draft dibetulkan lewat /api/staff/purchases/[id] karena ikut
- * menyesuaikan saldo kasbon.
+ * Staff boleh membetulkan nota BUATANNYA SENDIRI selama belum ditransfer
+ * (draft, menunggu approval harga, atau disetujui) -- arahan Manager
+ * 10 Okt 2026, dengan pengawasan lewat audit trail. Batasannya diterapkan di
+ * PUT di bawah: lapak, nomor nota, potongan, dan berat timbangan gudang tidak
+ * dapat diubah Staff. Kasbon yang sudah terpotong pada nota juga tidak
+ * disentuh, jadi saldo lapak tidak perlu disesuaikan.
  */
-const STATUS_EDITABLE_STAFF = ["menunggu_approval_harga", "approved"]
+const STATUS_EDITABLE_STAFF = ["menunggu_verifikasi", "menunggu_approval_harga", "approved"]
 
 type EditablePurchaseItemInput = {
   sku_name: string
@@ -155,15 +155,23 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     // sama seperti pada verifikasi gudang.
     const metodeTerpilih = metode_pembayaran_terpilih || existing.metode_pembayaran_terpilih
 
+    // Pada nota yang masih draft, gudang belum menimbang: berat final sama
+    // dengan berat lapak yang diketik Staff, jadi keduanya dijaga searah di
+    // sini dan bukan diserahkan ke layar.
+    const draftStaff = sebagaiStaff && existing.status_approval === "menunggu_verifikasi"
+
     const validatedItems = purchaseItems.map((item, index) => {
       if (!item.sku_name || typeof item.sku_name !== "string") {
         throw new Error(`SKU item ${index + 1} wajib diisi.`)
       }
 
-      const beratFinal = positiveNumber(item.berat_final_item, `Berat final item ${index + 1}`)
-      const beratLapak = item.berat_lapak === null || item.berat_lapak === undefined || item.berat_lapak === ""
-        ? beratFinal
+      const beratLapakInput = item.berat_lapak === null || item.berat_lapak === undefined || item.berat_lapak === ""
+        ? null
         : positiveNumber(item.berat_lapak, `Berat lapak item ${index + 1}`)
+      const beratFinal = draftStaff && beratLapakInput !== null
+        ? beratLapakInput
+        : positiveNumber(item.berat_final_item, `Berat final item ${index + 1}`)
+      const beratLapak = beratLapakInput ?? beratFinal
       const hargaPerKg = positiveNumber(item.harga_per_kg, `Harga/kg item ${index + 1}`)
       const weightToUse = resolveWeightForPricing(metodeTerpilih, beratLapak, beratFinal)
 
@@ -238,8 +246,12 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
           ...(p.supplierId ? { supplierId: p.supplierId } : {}),
           ...(p.nomor_nota !== undefined ? { nomor_nota: p.nomor_nota } : {}),
           ...(metode_pembayaran_terpilih ? { metode_pembayaran_terpilih } : {}),
-          berat_timbangan_lapak: berat_timbangan_lapak != null ? toNumber(berat_timbangan_lapak, "Berat timbangan lapak") : existing.berat_timbangan_lapak,
-          berat_timbangan_gudang: berat_timbangan_gudang != null ? toNumber(berat_timbangan_gudang, "Berat timbangan gudang") : existing.berat_timbangan_gudang,
+          berat_timbangan_lapak: draftStaff
+            ? validatedItems.reduce((sum, i) => sum + i.berat_lapak, 0)
+            : berat_timbangan_lapak != null ? toNumber(berat_timbangan_lapak, "Berat timbangan lapak") : existing.berat_timbangan_lapak,
+          berat_timbangan_gudang: !sebagaiStaff && berat_timbangan_gudang != null
+            ? toNumber(berat_timbangan_gudang, "Berat timbangan gudang")
+            : existing.berat_timbangan_gudang,
           potongan_sampah:  totalPotSampah,
           berat_potongan_sampah: toNumber(p.berat_potongan_sampah, "Berat potongan sampah"),
           harga_potongan_sampah: toNumber(p.harga_potongan_sampah, "Harga potongan sampah"),

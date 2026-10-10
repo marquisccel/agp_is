@@ -30,6 +30,7 @@ interface Purchase {
   berat_timbangan_lapak: number | null
   berat_timbangan_gudang: number | null
   status_approval: string
+  dp_yang_digunakan?: number | null
   potongan_sampah: number | null
   berat_potongan_sampah: number | null
   harga_potongan_sampah: number | null
@@ -87,6 +88,11 @@ export default function EditTransaksiForm({
   const supplierOptions = suppliers.map(s => ({ value: s.id, label: s.nama }))
   const status = getPurchaseStatus(initialPurchase.status_approval)
 
+  // Nota draft belum ditimbang gudang: berat final = berat lapak yang diketik
+  // Staff. Kolom Berat Final disembunyikan dan dijaga searah di updateItem;
+  // server menegakkan hal yang sama.
+  const draftStaff = sebagaiStaff && initialPurchase.status_approval === "menunggu_verifikasi"
+
   // Nota yang sudah ditransfer ditolak oleh API. Dulu keadaan itu baru
   // ketahuan setelah seluruh form diisi dan tombol simpan ditekan --
   // formnya tampak normal, tombolnya hidup, lalu gagal di detik terakhir.
@@ -133,7 +139,11 @@ export default function EditTransaksiForm({
   const updateItem = (idx: number, field: keyof PurchaseItem, value: string | number | null) => {
     setItems(prev => {
       const next = [...prev]
-      next[idx] = { ...next[idx], [field]: value }
+      next[idx] = {
+        ...next[idx],
+        [field]: value,
+        ...(draftStaff && field === "berat_lapak" ? { berat_final_item: Number(value) || 0 } : {}),
+      }
       return next
     })
   }
@@ -142,7 +152,7 @@ export default function EditTransaksiForm({
     setItems(prev => [...prev, {
       sku_name: SKU_LIST[0],
       spec: "Gabyuk",
-      berat_lapak: null,
+      berat_lapak: sebagaiStaff ? 0 : null,
       berat_final_item: 0,
       harga_per_kg: 0,
       subtotal: 0,
@@ -298,7 +308,7 @@ export default function EditTransaksiForm({
                 className="field-input"
                 value={beratLapak}
                 onValueChange={setBeratLapak}
-                disabled={terkunci}
+                disabled={terkunci || draftStaff}
               />
             </div>
 
@@ -310,7 +320,7 @@ export default function EditTransaksiForm({
                 className="field-input"
                 value={beratGudang}
                 onValueChange={setBeratGudang}
-                disabled={terkunci}
+                disabled={terkunci || sebagaiStaff}
               />
             </div>
           </div>
@@ -344,7 +354,8 @@ export default function EditTransaksiForm({
               <tr>
                 <th>SKU</th>
                 <th>Spec</th>
-                <th className="!text-right">Berat Final (KG)</th>
+                {sebagaiStaff && <th className="!text-right">Berat Lapak (KG)</th>}
+                {!draftStaff && <th className="!text-right">Berat Final (KG)</th>}
                 <th className="!text-right">Harga/KG (Rp)</th>
                 <th className="!text-right">Subtotal</th>
                 <th />
@@ -373,15 +384,28 @@ export default function EditTransaksiForm({
                       disabled={terkunci}
                     />
                   </td>
-                  <td>
-                    <NumberInput
-                      aria-label={`Berat final item ${idx + 1}`}
-                      value={item.berat_final_item}
-                      onValueChange={(n) => updateItem(idx, "berat_final_item", n)}
-                      className="field-input text-right"
-                      disabled={terkunci}
-                    />
-                  </td>
+                  {sebagaiStaff && (
+                    <td>
+                      <NumberInput
+                        aria-label={`Berat lapak item ${idx + 1}`}
+                        value={item.berat_lapak ?? 0}
+                        onValueChange={(n) => updateItem(idx, "berat_lapak", n)}
+                        className="field-input text-right"
+                        disabled={terkunci}
+                      />
+                    </td>
+                  )}
+                  {!draftStaff && (
+                    <td>
+                      <NumberInput
+                        aria-label={`Berat final item ${idx + 1}`}
+                        value={item.berat_final_item}
+                        onValueChange={(n) => updateItem(idx, "berat_final_item", n)}
+                        className="field-input text-right"
+                        disabled={terkunci}
+                      />
+                    </td>
+                  )}
                   <td>
                     <NumberInput
                       aria-label={`Harga per KG item ${idx + 1}`}
@@ -440,6 +464,16 @@ export default function EditTransaksiForm({
                 <p>Total potongan: &minus; {fmtRp(totalPotongan)}</p>
               </div>
             </div>
+            {(initialPurchase.dp_yang_digunakan ?? 0) > 0 && (
+              <div className="mt-4 flex items-baseline justify-between gap-4 border-t pt-3" style={{ borderColor: "var(--border)" }}>
+                <span className="text-sm font-medium" style={{ color: "var(--muted)" }}>
+                  Potongan kasbon (DP) &minus; {fmtRp(initialPurchase.dp_yang_digunakan ?? 0)}
+                </span>
+                <span className="text-sm font-extrabold" style={{ color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+                  Dibayar ke lapak {fmtRp(Math.max(totalAfterCuts - (initialPurchase.dp_yang_digunakan ?? 0), 0))}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       ) : (
