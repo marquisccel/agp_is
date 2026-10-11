@@ -17,6 +17,7 @@ import StatusPill, { TONE_STYLE } from "@/components/ui/StatusPill"
 import PageHeader from "@/components/ui/PageHeader"
 import TombolKembali from "@/components/ui/TombolKembali"
 import KoreksiKekurangan from "@/components/features/KoreksiKekurangan"
+import RincianTimbanganList from "@/components/ui/RincianTimbanganList"
 import { kewajibanKeLapak } from "@/lib/settlement"
 
 interface PurchaseItem {
@@ -27,6 +28,8 @@ interface PurchaseItem {
   berat_final_item: number
   harga_per_kg: number
   subtotal: number
+  /** Rincian putaran timbang gudang (JSON, boleh kosong). */
+  rincian_timbangan?: unknown
 }
 
 interface ReturItem {
@@ -346,6 +349,7 @@ export default function ManagerPurchaseDetailClient({
                         </span>
                       )}
                     </div>
+                    <RincianTimbanganList nilai={item.rincian_timbangan} />
                     <dl className="mt-2 divide-y divide-slate-100 text-sm">
                       <div className="flex items-center justify-between gap-3 py-2">
                         <dt className="text-xs text-slate-500">Lapak (kg)</dt>
@@ -430,6 +434,7 @@ export default function ManagerPurchaseDetailClient({
                               {item.spec}
                             </span>
                           )}
+                          <RincianTimbanganList nilai={item.rincian_timbangan} />
                         </td>
                         <td className="text-right font-mono font-medium">{lWeight.toFixed(1)}</td>
                         <td className="text-right font-mono font-bold" style={{ color: "var(--foreground)" }}>{gWeight.toFixed(1)}</td>

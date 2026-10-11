@@ -20,6 +20,8 @@ interface PurchaseItem {
   berat_final_item: number
   harga_per_kg: number
   subtotal: number
+  /** Dibawa terus ke server supaya rincian timbangan gudang tidak hilang saat edit. */
+  rincian_timbangan?: unknown
 }
 
 interface Purchase {

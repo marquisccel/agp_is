@@ -8,6 +8,7 @@ import { nonNegativeNumber, percentageNumber, positiveNumber } from "@/lib/numbe
 import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import { markSupplierGreen } from "@/lib/supplierStatus"
 import { InsufficientDpError, refundDp } from "@/lib/dpAllocation"
+import { normalisasiRincian, rincianCocok, totalRincian } from "@/lib/rincianTimbangan"
 
 type DoubleCheckItemInput = {
   sku_name: string
@@ -16,6 +17,7 @@ type DoubleCheckItemInput = {
   berat_final_item?: number | string | null
   harga_per_kg?: number | string | null
   subtotal?: number | string | null
+  rincian_timbangan?: unknown
 }
 
 type ReturItemInput = {
@@ -108,11 +110,21 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       const subtotal = weightToUse * hargaPerKg
       total_nilai_sebelum_retur += subtotal
 
+      // Rincian putaran timbang gudang (opsional). Jumlah kilogramnya harus
+      // sama dengan berat final: berat final adalah angka yang dibayar,
+      // rincian hanya penjelasnya. Beda keduanya berarti salah satu salah.
+      const rincian = normalisasiRincian(item.rincian_timbangan)
+      if (rincian && !rincianCocok(rincian, gudangW)) {
+        throw new Error(
+          `Total rincian timbangan ${item.sku_name} (${totalRincian(rincian).kg} kg) harus sama dengan berat final (${gudangW} kg).`
+        )
+      }
+
       const standard = currentPurchase.warehouse?.skuPrices.find(s => s.sku_name === item.sku_name)
       if (standard && hargaPerKg > standard.max_price_per_kg) {
         isPriceAboveStandard = true
       }
-      return { ...item, harga_per_kg: hargaPerKg, subtotal, weightToUse }
+      return { ...item, harga_per_kg: hargaPerKg, subtotal, weightToUse, rincian }
     })
 
     // Calculate Returns
@@ -256,6 +268,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
               berat_final_item: toNumber(i.berat_final_item, `Berat final ${i.sku_name}`),
               harga_per_kg: toNumber(i.harga_per_kg, `Harga/kg ${i.sku_name}`),
               subtotal: toNumber(i.subtotal, `Subtotal ${i.sku_name}`),
+              rincian_timbangan: i.rincian ?? undefined,
             }))
           },
           returs: {
@@ -293,6 +306,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   } catch (error) {
     const message = getErrorMessage(error)
     if (error instanceof InsufficientDpError) {
+      return NextResponse.json({ error: message }, { status: 400 })
+    }
+    // Kesalahan isian (rincian timbangan, SKU, angka) adalah salah masukan,
+    // bukan kegagalan server.
+    if (/harus|wajib|tidak valid|tidak boleh|terlalu banyak/.test(message)) {
       return NextResponse.json({ error: message }, { status: 400 })
     }
     console.error("Error double checking purchase:", error)

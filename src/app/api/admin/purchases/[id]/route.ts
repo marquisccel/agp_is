@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions"
 import { prisma } from "@/lib/prisma"
 import { createAuditLogTx } from "@/lib/audit"
 import { allocateDp, refundDp, InsufficientDpError } from "@/lib/dpAllocation"
+import { bacaRincian, rincianCocok } from "@/lib/rincianTimbangan"
 import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, positiveNumber, percentageNumber } from "@/lib/numberValidation"
 import {
@@ -32,6 +33,7 @@ type EditablePurchaseItemInput = {
   berat_final_item?: number | string | null
   harga_per_kg?: number | string | null
   subtotal?: number | string | null
+  rincian_timbangan?: unknown
 }
 
 const toNumber = (value: number | string | null | undefined, fieldName = "Nilai") => nonNegativeNumber(value, fieldName)
@@ -177,6 +179,14 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       const hargaPerKg = positiveNumber(item.harga_per_kg, `Harga/kg item ${index + 1}`)
       const weightToUse = resolveWeightForPricing(metodeTerpilih, beratLapak, beratFinal)
 
+      // Rincian timbangan gudang dibawa terus selama masih cocok dengan berat
+      // final. Item dibuat ulang tiap kali nota disimpan, jadi tanpa ini
+      // rincian hilang pada edit pertama. Bila beratnya diubah sehingga tidak
+      // lagi cocok, rincian dibuang: angka yang tidak berjumlah ke berat
+      // final lebih menyesatkan daripada tidak ada rincian.
+      const rincian = bacaRincian(item.rincian_timbangan)
+      const rincianTersimpan = rincian && rincianCocok(rincian, beratFinal) ? rincian : undefined
+
       return {
         sku_name: item.sku_name,
         spec: item.spec || null,
@@ -184,6 +194,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
         berat_final_item: beratFinal,
         harga_per_kg: hargaPerKg,
         subtotal: weightToUse * hargaPerKg,
+        rincian_timbangan: rincianTersimpan,
       }
     })
 

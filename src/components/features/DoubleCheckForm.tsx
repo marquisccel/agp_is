@@ -4,7 +4,6 @@ import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Purchase, PurchaseItem, Supplier, User } from "@prisma/client"
 import ElegantSelect from "@/components/ui/ElegantSelect"
-import PotonganFields, { type BarisPotongan } from "@/components/features/PotonganFields"
 import NumberInput from "@/components/ui/NumberInput"
 import { fmtRp } from "@/lib/format"
 import StandarHargaSku, { standarHargaSku, type StandarHarga } from "@/components/features/StandarHargaSku"
@@ -31,6 +30,26 @@ type WorkingItem = {
 }
 
 type ReturInput = { sku_name: string; berat_retur: number; potongan_nilai: number; alasan: string }
+
+/** Satu putaran timbang di gudang: berat satu timbangan dan jumlah karungnya. */
+type Timbangan = { kg: number; karung: number }
+
+/**
+ * Alasan retur/potongan. Dulu "Alasan Retur" berupa teks bebas, sementara
+ * potongan sampah, susut, kadar air, dan karung punya kartu sendiri di
+ * bawahnya -- dua tempat untuk hal yang sama. Sekarang semuanya satu daftar
+ * dinamis (arahan Manager 11 Okt 2026): tiap baris adalah satu potongan
+ * dengan jenisnya dipilih dari daftar ini.
+ */
+const ALASAN_OPTIONS = [
+  { value: "", label: "Pilih alasan" },
+  { value: "Sampah", label: "Sampah" },
+  { value: "Susut Timbangan", label: "Susut Timbangan" },
+  { value: "Kadar Air", label: "Kadar Air" },
+  { value: "Potongan Karung", label: "Potongan Karung" },
+]
+
+const bulat2 = (n: number) => Math.round(n * 100) / 100
 
 const METODE_BAYAR_OPTIONS = [
   { value: "TIMBANGAN_GUDANG", label: "Timbangan Gudang" },
@@ -86,34 +105,31 @@ export default function DoubleCheckForm({
     berat_final_item: 0, // Timbangan gudang; wajib diisi Admin, lihat catatan di atas
   })))
 
-  // Returs -- transaksi pada tahap ini selalu menunggu_verifikasi (belum pernah
-  // melalui double-check), jadi belum mungkin ada retur tersimpan sebelumnya.
-  const [returs, setReturs] = useState<ReturInput[]>([])
+  // Retur/potongan. Potongan sampah, susut, kadar air, dan karung yang sudah
+  // diisi Staff di nota (desktop) tidak boleh hilang diam-diam sekarang
+  // kartu potongannya dihapus: nilainya dibawa masuk sebagai baris di daftar
+  // ini -- nilai rupiahnya persis sama (sebagai penalti flat), supaya angka
+  // nota tidak bergeser. Admin bisa mengubah atau menghapusnya.
+  const [returs, setReturs] = useState<ReturInput[]>(() => {
+    const skuPertama = purchase.items[0]?.sku_name ?? ""
+    return ([
+      ["Sampah", purchase.berat_potongan_sampah, purchase.harga_potongan_sampah],
+      ["Susut Timbangan", purchase.berat_potongan_susut, purchase.harga_potongan_susut],
+      ["Kadar Air", purchase.berat_potongan_air, purchase.harga_potongan_air],
+      ["Potongan Karung", purchase.berat_potongan_karung, purchase.harga_potongan_karung],
+    ] as [string, number | null, number | null][])
+      .map(([alasan, berat, harga]) => ({ alasan, nilai: (berat ?? 0) * (harga ?? 0) }))
+      .filter((r) => r.nilai > 0)
+      .map((r) => ({ sku_name: skuPertama, berat_retur: 0, potongan_nilai: r.nilai, alasan: r.alasan }))
+  })
   const dpDigunakan = purchase.dp_yang_digunakan || 0
 
-  // Deductions from draft
-  const [beratPotonganSampah, setBeratPotonganSampah] = useState<number>(purchase.berat_potongan_sampah || 0)
-  const [hargaPotonganSampah, setHargaPotonganSampah] = useState<number>(purchase.harga_potongan_sampah || 0)
-  const [beratPotonganSusut, setBeratPotonganSusut] = useState<number>(purchase.berat_potongan_susut || 0)
-  const [hargaPotonganSusut, setHargaPotonganSusut] = useState<number>(purchase.harga_potongan_susut || 0)
-  const [beratPotonganAir, setBeratPotonganAir] = useState<number>(purchase.berat_potongan_air || 0)
-  const [hargaPotonganAir, setHargaPotonganAir] = useState<number>(purchase.harga_potongan_air || 0)
-  const [beratPotonganKarung, setBeratPotonganKarung] = useState<number>(purchase.berat_potongan_karung || 0)
-  const [hargaPotonganKarung, setHargaPotonganKarung] = useState<number>(purchase.harga_potongan_karung || 0)
-
-  const potonganSampah = beratPotonganSampah * hargaPotonganSampah
-  const potonganSusut = beratPotonganSusut * hargaPotonganSusut
-  const potonganAir = beratPotonganAir * hargaPotonganAir
-  const potonganKarung = beratPotonganKarung * hargaPotonganKarung
-
-  // Bentuk baris yang sama dipakai PurchaseForm; markup-nya ada di
-  // PotonganFields supaya kedua layar tidak lagi bisa saling melenceng.
-  const barisPotongan: BarisPotongan[] = [
-    { kunci: 'sampah', nama: 'Sampah',          berat: beratPotonganSampah, setBerat: setBeratPotonganSampah, harga: hargaPotonganSampah, setHarga: setHargaPotonganSampah, nilai: potonganSampah },
-    { kunci: 'susut',  nama: 'Susut Timbangan', berat: beratPotonganSusut,  setBerat: setBeratPotonganSusut,  harga: hargaPotonganSusut,  setHarga: setHargaPotonganSusut,  nilai: potonganSusut },
-    { kunci: 'air',    nama: 'Kadar Air',       berat: beratPotonganAir,    setBerat: setBeratPotonganAir,    harga: hargaPotonganAir,    setHarga: setHargaPotonganAir,    nilai: potonganAir },
-    { kunci: 'karung', nama: 'Potongan Karung', berat: beratPotonganKarung, setBerat: setBeratPotonganKarung, harga: hargaPotonganKarung, setHarga: setHargaPotonganKarung, nilai: potonganKarung },
-  ]
+  // Rincian timbangan gudang per SKU: satu SKU ditimbang beberapa putaran
+  // (karungnya banyak), tiap putaran dicatat berat dan jumlah karungnya.
+  // Total berat masuk otomatis ke berat gudang item dan ke Timbangan Gudang.
+  const [timbanganItem, setTimbanganItem] = useState<Timbangan[][]>(() =>
+    purchase.items.map(() => [{ kg: 0, karung: 0 }])
+  )
 
   const [loading, setLoading] = useState(false)
 
@@ -129,23 +145,34 @@ export default function DoubleCheckForm({
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState("")
 
-  const addRetur = () => setReturs([...returs, { sku_name: "", berat_retur: 0, potongan_nilai: 0, alasan: "" }])
+  const addRetur = () => setReturs([...returs, { sku_name: items.length === 1 ? items[0].sku_name : "", berat_retur: 0, potongan_nilai: 0, alasan: "" }])
   const updateRetur = <K extends keyof ReturInput>(idx: number, field: K, value: ReturInput[K]) => {
     setReturs(current => current.map((r, i) => i === idx ? { ...r, [field]: value } : r))
   }
   const removeRetur = (idx: number) => setReturs(current => current.filter((_, i) => i !== idx))
 
-  const updateItem = (idx: number, value: number) => {
-    setItems((current) => {
-      const updated = current.map((item, i) => i === idx ? { ...item, berat_final_item: value } : item)
-      const totalGudang = updated.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
-      setTimbanganGudang(totalGudang)
-      return updated
-    })
+  // Satu pintu untuk semua perubahan timbangan: rincian, berat final tiap
+  // item, dan Timbangan Gudang selalu dihitung dari rincian yang sama,
+  // jadi ketiganya mustahil saling berbeda.
+  const terapkanTimbangan = (next: Timbangan[][]) => {
+    setTimbanganItem(next)
+    const totals = next.map((rows) => bulat2(rows.reduce((sum, t) => sum + (t.kg || 0), 0)))
+    setItems((current) => current.map((item, i) => ({ ...item, berat_final_item: totals[i] ?? 0 })))
+    setTimbanganGudang(bulat2(totals.reduce((a, b) => a + b, 0)))
   }
+  const ubahTimbangan = (idx: number, ti: number, field: keyof Timbangan, value: number) =>
+    terapkanTimbangan(timbanganItem.map((rows, i) => i !== idx ? rows : rows.map((t, k) => k === ti ? { ...t, [field]: value } : t)))
+  const tambahTimbangan = (idx: number) =>
+    terapkanTimbangan(timbanganItem.map((rows, i) => i === idx ? [...rows, { kg: 0, karung: 0 }] : rows))
+  const hapusTimbangan = (idx: number, ti: number) =>
+    terapkanTimbangan(timbanganItem.map((rows, i) => i === idx ? rows.filter((_, k) => k !== ti) : rows))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (returs.some((r) => !r.sku_name || !r.alasan)) {
+      setError("Lengkapi SKU dan alasan pada setiap baris retur/potongan, atau hapus barisnya.")
+      return
+    }
     setLoading(true)
     setError("")
 
@@ -154,20 +181,15 @@ export default function DoubleCheckForm({
         berat_timbangan_lapak: timbanganLapak,
         berat_timbangan_gudang: timbanganGudang,
         metode_pembayaran_terpilih: metodeBayar,
-        items,
+        // Rincian putaran timbang ikut dikirim (baris kosong dibuang di server).
+        items: items.map((item, i) => ({ ...item, rincian_timbangan: timbanganItem[i] ?? [] })),
         returs,
-        potongan_sampah: potonganSampah,
-        berat_potongan_sampah: beratPotonganSampah,
-        harga_potongan_sampah: hargaPotonganSampah,
-        potongan_susut: potonganSusut,
-        berat_potongan_susut: beratPotonganSusut,
-        harga_potongan_susut: hargaPotonganSusut,
-        potongan_air: potonganAir,
-        berat_potongan_air: beratPotonganAir,
-        harga_potongan_air: hargaPotonganAir,
-        potongan_karung: potonganKarung,
-        berat_potongan_karung: beratPotonganKarung,
-        harga_potongan_karung: hargaPotonganKarung,
+        // Semua potongan kini lewat daftar retur di atas. Kolom potongan
+        // spesifik dikirim nol supaya tidak terhitung dua kali.
+        potongan_sampah: 0, berat_potongan_sampah: 0, harga_potongan_sampah: 0,
+        potongan_susut: 0, berat_potongan_susut: 0, harga_potongan_susut: 0,
+        potongan_air: 0, berat_potongan_air: 0, harga_potongan_air: 0,
+        potongan_karung: 0, berat_potongan_karung: 0, harga_potongan_karung: 0,
         persentase_pembayaran: persentasePembayaran,
         nominal_pembayaran_awal: nominalPembayaranAwal,
         nominal_belum_lunas: nominalBelumLunas,
@@ -207,8 +229,7 @@ export default function DoubleCheckForm({
   }, 0)
 
   const totalSetelahRetur = Math.max(totalKotor - totalRetur, 0)
-  const totalDeductions = potonganSampah + potonganSusut + potonganAir + potonganKarung
-  const totalNetPayout = Math.max(totalSetelahRetur - totalDeductions, 0)
+  const totalNetPayout = totalSetelahRetur
   const totalAkhirDibayar = Math.max(totalNetPayout - dpDigunakan, 0)
   const nominalPembayaranAwal = Math.round(totalAkhirDibayar * (persentasePembayaran / 100))
   const nominalBelumLunas = Math.round(totalAkhirDibayar * ((100 - persentasePembayaran) / 100))
@@ -259,8 +280,8 @@ export default function DoubleCheckForm({
         <span className="section-eyebrow">Verifikasi</span>
         <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Data Timbangan</h3>
         <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>
-          Isi hasil timbangan gudang apa adanya. Kolomnya sengaja kosong supaya angkanya benar-benar dari
-          timbangan gudang, bukan salinan angka lapak.
+          Timbangan gudang terisi otomatis dari rincian timbangan per SKU di langkah berikutnya, jadi
+          angkanya benar-benar hasil timbang gudang, bukan salinan angka lapak.
         </p>
       </div>
       <div className="space-y-3 md:space-y-4">
@@ -304,17 +325,15 @@ export default function DoubleCheckForm({
               Timbangan Gudang (KG)
               <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: "var(--brand-soft)", color: "var(--brand-strong)" }}>Gudang</span>
             </label>
-            {/* Dulu type="number" dengan parseFloat(v)||0 -- pola
-                yang membuat "0,5" tercatat 5. Berat di sini dikali
-                harga per kg, jadi salah ketiknya langsung jadi salah
-                rupiah di nota. */}
-            <NumberInput
-              step="0.01"
-              required
+            {/* Hanya dibaca: terisi dari jumlah rincian timbangan per SKU
+                (arahan Manager 11 Okt 2026). Mengetik di sini akan membuat
+                angkanya berbeda dari rincian yang menjadi dasarnya. */}
+            <input
+              type="text" readOnly disabled
               aria-label="Timbangan gudang"
-              className="field-input mt-1"
-              value={timbanganGudang}
-              onValueChange={setTimbanganGudang}
+              className="field-input mt-1 font-mono"
+              placeholder="Terisi otomatis"
+              value={timbanganGudang > 0 ? timbanganGudang.toFixed(2) : ""}
             />
           </div>
         </div>
@@ -371,7 +390,7 @@ export default function DoubleCheckForm({
       <div className="mb-4 sembunyi-ponsel">
         <span className="section-eyebrow">Rincian</span>
         <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Finalisasi Item per SKU</h3>
-        <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Admin menginput kembali hasil timbangan gudang untuk setiap SKU yang masuk dari data staff.</p>
+        <p className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Catat hasil tiap putaran timbang di gudang: berat dan jumlah karungnya. Totalnya masuk otomatis ke Timbangan Gudang.</p>
       </div>
       <div className="space-y-3">
         {items.map((item, idx) => {
@@ -428,40 +447,81 @@ export default function DoubleCheckForm({
                 )}
               </div>
 
-              {/* Berat lapak (hanya dibaca) dan berat gudang berpasangan dua
-                  lajur juga di ponsel: keduanya angka pendek yang dibaca
-                  sambil dibandingkan, dan bertumpuk memanjangkan tiap item
-                  tanpa manfaat. */}
-              <div className="grid grid-cols-2 gap-3 pt-1 md:gap-4">
-                {/* Read-only Lapak Weight */}
-                <div className="space-y-1">
-                  <label className="field-label">
-                    Timbangan Lapak (Staff)
-                  </label>
-                  <div className="field-input font-mono font-bold" style={{ color: "var(--muted)", cursor: "not-allowed" }}>
-                    {lapakWeight.toFixed(2)} KG
-                  </div>
+              <div className="space-y-1 pt-1">
+                <label className="field-label">Timbangan Lapak (Staff)</label>
+                <div className="field-input font-mono font-bold" style={{ color: "var(--muted)", cursor: "not-allowed" }}>
+                  {lapakWeight.toFixed(2)} KG
                 </div>
+              </div>
 
-                {/* Admin input for Warehouse Weight */}
-                <div className="space-y-1">
-                  <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    Timbangan Gudang (Admin)
-                    <span className="font-bold" style={{ color: "var(--danger)" }}>*</span>
-                  </label>
-                  <div className="relative">
-                    <NumberInput
-                      step="0.01"
-                      required
-                      placeholder="0.00"
-                      className="field-input pr-10 font-mono font-bold"
-                      value={item.berat_final_item}
-                      onValueChange={(n) => updateItem(idx, n)}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold" style={{ color: "var(--muted-faint)" }}>
-                      KG
-                    </span>
+              {/* Rincian per putaran timbang. Satu SKU biasanya terdiri dari
+                  banyak karung yang ditimbang bergantian: timbangan pertama
+                  sekian kilo dan sekian karung, timbangan kedua, dan
+                  seterusnya -- persis seperti packing list tulis tangan di
+                  gudang. */}
+              <div className="space-y-2">
+                <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  Timbangan Gudang (Admin)
+                  <span className="font-bold" style={{ color: "var(--danger)" }}>*</span>
+                </label>
+                {(timbanganItem[idx] ?? []).map((t, ti) => (
+                  <div key={ti} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+                    <div>
+                      <span className="mb-1 block text-[10px] font-semibold" style={{ color: "var(--muted-faint)" }}>
+                        Timbangan {ti + 1} (KG)
+                      </span>
+                      <NumberInput
+                        step="0.01"
+                        required={ti === 0}
+                        placeholder="0.00"
+                        aria-label={`Berat timbangan ${ti + 1} ${item.sku_name}`}
+                        className="field-input font-mono font-bold"
+                        value={t.kg}
+                        onValueChange={(n) => ubahTimbangan(idx, ti, "kg", n)}
+                      />
+                    </div>
+                    <div>
+                      <span className="mb-1 block text-[10px] font-semibold" style={{ color: "var(--muted-faint)" }}>
+                        Jumlah karung
+                      </span>
+                      <NumberInput
+                        pemisahRibuan
+                        placeholder="0"
+                        aria-label={`Jumlah karung timbangan ${ti + 1} ${item.sku_name}`}
+                        className="field-input font-mono font-bold"
+                        value={t.karung}
+                        onValueChange={(n) => ubahTimbangan(idx, ti, "karung", n)}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => hapusTimbangan(idx, ti)}
+                      disabled={(timbanganItem[idx] ?? []).length <= 1}
+                      className="btn-netral tone-danger mb-0.5 inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-sm)] disabled:opacity-30"
+                      aria-label={`Hapus timbangan ${ti + 1} ${item.sku_name}`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
                   </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => tambahTimbangan(idx)}
+                  className="btn-netral premium-button w-full px-3 py-2 text-xs font-bold"
+                >
+                  + Tambah Timbangan
+                </button>
+                <div
+                  className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] border px-3 py-2.5"
+                  style={{ background: "var(--surface-sunken)", borderColor: "var(--border)" }}
+                >
+                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Total {item.sku_name}</span>
+                  <span className="text-right font-mono text-sm font-extrabold tabular-nums" style={{ color: "var(--foreground)" }}>
+                    {gudangWeight.toFixed(2)} KG
+                    <span className="ml-2 font-sans text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                      {(timbanganItem[idx] ?? []).reduce((a, t) => a + (t.karung || 0), 0).toLocaleString("id-ID")} karung
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -490,7 +550,7 @@ export default function DoubleCheckForm({
         </div>
 
         {returs.length === 0 ? (
-          <p className="text-sm italic" style={{ color: "var(--muted-faint)" }}>Tidak ada retur.</p>
+          <p className="text-sm italic" style={{ color: "var(--muted-faint)" }}>Tidak ada retur atau potongan.</p>
         ) : (
           <div className="space-y-4">
             {returs.map((retur, idx) => {
@@ -516,8 +576,14 @@ export default function DoubleCheckForm({
                     />
                   </div>
                   <div>
-                    <label className="field-label">Alasan Retur</label>
-                    <input type="text" className="field-input mt-1" placeholder="Basah, kotor..." value={retur.alasan} onChange={e => updateRetur(idx, 'alasan', e.target.value)} />
+                    <label className="field-label">Alasan</label>
+                    <ElegantSelect
+                      value={retur.alasan}
+                      options={ALASAN_OPTIONS}
+                      onChange={(value) => updateRetur(idx, 'alasan', value)}
+                      ariaLabel="Pilih alasan retur atau potongan"
+                      className="mt-1 w-full"
+                    />
                   </div>
                 </div>
 
@@ -543,14 +609,6 @@ export default function DoubleCheckForm({
           </div>
         )}
       </div>
-
-      <PotonganFields
-        baris={barisPotongan}
-        total={totalDeductions}
-        eyebrow="Verifikasi"
-        judul="Potongan Spesifik"
-        deskripsi="Tinjau atau sesuaikan potongan sampah, susut timbangan, kadar air, dan karung."
-      />
 
       {/* Potongan kasbon hanya ditampilkan, tidak bisa diubah di sini:
           saldo kasbon sudah terpotong saat Staff membuat nota. Kalau
@@ -580,20 +638,16 @@ export default function DoubleCheckForm({
           <p className="text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--brand-strong)" }}>Payment summary</p>
           <h3 className="mt-1 text-base font-bold text-slate-950 md:text-lg">Rincian Perhitungan Pembayaran</h3>
         </div>
-        <p className="text-xs font-medium text-slate-500">Nilai bersih setelah retur, potongan, dan DP.</p>
+        <p className="text-xs font-medium text-slate-500">Nilai bersih setelah retur/potongan dan DP.</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="workflow-stat p-3.5">
           <span className="text-xs font-semibold block text-slate-500">Subtotal Kotor ({metodeBayar === 'TIMBANGAN_LAPAK' ? 'Lapak' : 'Gudang'})</span>
           <span className="text-base font-bold text-slate-800">Rp {totalKotor.toLocaleString('id-ID')}</span>
         </div>
         <div className="workflow-stat p-3.5">
-          <span className="text-xs font-semibold block text-slate-500">Total Potongan Retur</span>
+          <span className="text-xs font-semibold block text-slate-500">Total Retur / Potongan</span>
           <span className="text-base font-bold" style={{ color: totalRetur > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>-Rp {totalRetur.toLocaleString('id-ID')}</span>
-        </div>
-        <div className="workflow-stat p-3.5">
-          <span className="text-xs font-semibold block text-slate-500">Potongan Spesifik (Sampah, Susut, Air, Karung)</span>
-          <span className="text-base font-bold" style={{ color: totalDeductions > 0 ? "var(--danger)" : "var(--muted-faint)", fontVariantNumeric: "tabular-nums" }}>-Rp {totalDeductions.toLocaleString('id-ID')}</span>
         </div>
         <div className="workflow-stat p-3.5">
           <span className="text-xs font-semibold block text-slate-500">Potongan DP Terpakai</span>
@@ -660,9 +714,9 @@ export default function DoubleCheckForm({
   )
 
   const langkahVerifikasi = [
-    { judul: "Timbangan Gudang", keterangan: "Isi hasil timbangan gudang apa adanya, bukan salinan angka lapak." },
-    { judul: "Item per SKU", keterangan: "Masukkan kembali berat gudang untuk setiap SKU yang masuk." },
-    { judul: "Retur & Potongan", keterangan: "Catat retur bila ada, lalu tinjau potongannya. Boleh dilewati." },
+    { judul: "Timbangan Gudang", keterangan: "Terisi otomatis dari rincian timbangan per SKU di langkah berikutnya." },
+    { judul: "Item per SKU", keterangan: "Catat tiap putaran timbang gudang: berat dan jumlah karung." },
+    { judul: "Retur & Potongan", keterangan: "Catat retur atau potongan (sampah, susut, kadar air, karung) bila ada. Boleh dilewati." },
     { judul: "Tinjau & Simpan", keterangan: "Periksa perhitungan pembayaran sebelum verifikasi disimpan." },
   ]
   const isiLangkahVerifikasi = [blokTimbangan, blokItem, blokPotongan, blokTinjau]

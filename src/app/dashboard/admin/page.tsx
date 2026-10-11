@@ -8,6 +8,24 @@ import { PENDING_VERIFICATION_STATUSES } from "@/lib/purchaseStatus"
 import PageHeader from "@/components/ui/PageHeader"
 import { ClipboardCheck } from "lucide-react"
 import KartuData from "@/components/ui/KartuData"
+import { fmtRp } from "@/lib/format"
+
+/**
+ * Nilai transaksi sebuah draft: taksiran Staff setelah potongan yang ia
+ * isi di nota. Kasbon dipisah karena bukan potongan nilai nota, melainkan
+ * pembayaran di muka yang dihitung belakangan di ringkasan pembayaran.
+ */
+function nilaiTransaksiDraft(d: {
+  items: { subtotal: number }[]
+  potongan_sampah: number | null
+  potongan_susut: number | null
+  potongan_air: number | null
+  potongan_karung: number | null
+}) {
+  const kotor = d.items.reduce((s, i) => s + (i.subtotal || 0), 0)
+  const potongan = (d.potongan_sampah ?? 0) + (d.potongan_susut ?? 0) + (d.potongan_air ?? 0) + (d.potongan_karung ?? 0)
+  return Math.max(kotor - potongan, 0)
+}
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -112,10 +130,13 @@ export default async function AdminDashboard() {
               key={draft.id}
               judul={draft.supplier.nama}
               subjudul={`${draft.warehouse.nama} · ${new Date(draft.createdAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })} · oleh ${draft.staff.nama}`}
-              baris={draft.items.map((i) => ({
-                label: i.sku_name,
-                nilai: `${i.berat_final_item} kg`,
-              }))}
+              baris={[
+                ...draft.items.map((i) => ({
+                  label: i.sku_name,
+                  nilai: `${i.berat_final_item} kg`,
+                })),
+                { label: "Nilai transaksi", nilai: fmtRp(nilaiTransaksiDraft(draft)) },
+              ]}
               aksi={
                 <Link
                   href={`/dashboard/admin/check/${draft.id}`}
@@ -138,13 +159,14 @@ export default async function AdminDashboard() {
                 <th>Gudang</th>
                 <th>Lapak</th>
                 <th>Item (Estimasi)</th>
+                <th className="!text-right">Nilai Transaksi</th>
                 <th className="!text-center">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {drafts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
+                  <td colSpan={6} className="py-12 text-center" style={{ color: "var(--muted-faint)" }}>
                     Tidak ada transaksi yang menunggu double check.
                   </td>
                 </tr>
@@ -167,6 +189,16 @@ export default async function AdminDashboard() {
                           <span className="font-semibold" style={{ color: "var(--foreground)" }}>{i.sku_name}</span>: {i.berat_final_item} kg
                         </div>
                       ))}
+                    </td>
+                    <td className="text-right">
+                      <div className="font-semibold tabular-nums" style={{ color: "var(--foreground)" }}>
+                        {fmtRp(nilaiTransaksiDraft(draft))}
+                      </div>
+                      {(draft.dp_yang_digunakan ?? 0) > 0 && (
+                        <div className="mt-1 text-xs tabular-nums" style={{ color: "var(--muted-faint)" }}>
+                          Kasbon {fmtRp(draft.dp_yang_digunakan ?? 0)}
+                        </div>
+                      )}
                     </td>
                     <td className="text-center">
                       <Link href={`/dashboard/admin/check/${draft.id}`}>

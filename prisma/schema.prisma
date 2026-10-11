@@ -170,6 +170,9 @@ model PurchaseItem {
   spec             String?  // 'Grading' | 'Gabyuk'
   berat_lapak      Float?   // Timbangan lapak staff per SKU
   berat_final_item Float    // Timbangan gudang admin per SKU
+  // Rincian putaran timbang gudang: [{ kg, karung }, ...]. Boleh kosong --
+  // nota lama dan nota tanpa rincian tetap sah. Lihat lib/rincianTimbangan.ts.
+  rincian_timbangan Json?
   harga_per_kg     Float
   subtotal         Float
 }

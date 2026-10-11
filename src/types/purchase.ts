@@ -16,6 +16,7 @@ export type PurchaseItemDTO = {
   berat_final_item: number
   harga_per_kg: number
   subtotal: number
+  rincian_timbangan?: unknown
 }
 
 export type ReturItemDTO = {
