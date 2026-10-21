@@ -274,7 +274,7 @@ export default function PurchaseForm({
   // dua kali, dan cepat atau lambat salah satunya tertinggal.
 
   const bagianLapak = (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start md:gap-x-6 md:gap-y-5">
       {/* Supplier Search Dropdown */}
       <div className="space-y-2 relative">
         <label className="field-label">Lapak / Supplier</label>
@@ -355,7 +355,7 @@ export default function PurchaseForm({
       {/* Gudang is read-only from session */}
       <div className="space-y-2">
         <label className="field-label">Gudang</label>
-        <div className="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-100 text-slate-600 font-medium flex items-center gap-2">
+        <div className="field-input field-lg flex cursor-default items-center gap-2 font-medium text-slate-600">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           {namaGudang}
         </div>
@@ -391,7 +391,7 @@ export default function PurchaseForm({
       {/* Tanggal pembelian (arahan Manager 21 Okt 2026): barang bisa dibeli
           tanggal 10 tetapi nota baru dibuat tanggal 13. Laporan dan target
           harian mengikuti tanggal ini. */}
-      <div className="space-y-2 md:col-span-2">
+      <div className="space-y-2">
         <label className="field-label" htmlFor="tanggal-pembelian">Tanggal Pembelian</label>
         <input
           id="tanggal-pembelian"
