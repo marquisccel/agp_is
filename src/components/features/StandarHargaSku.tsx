@@ -32,10 +32,13 @@ export default function StandarHargaSku({
   skuName,
   harga,
   standar,
+  sebaris = false,
 }: {
   skuName: string
   harga: number
   standar: StandarHarga[]
+  /** Tampil sebagai sisipan di baris yang sama dengan harga, bukan paragraf sendiri. */
+  sebaris?: boolean
 }) {
   const batas = standarHargaSku(skuName, standar)
 
@@ -45,6 +48,16 @@ export default function StandarHargaSku({
   if (batas === null) return null
 
   const melebihi = harga > batas
+
+  if (sebaris) {
+    return (
+      <span style={{ color: melebihi ? "var(--warning)" : "var(--muted-faint)" }}>
+        {melebihi
+          ? `(di atas standar ${fmtRp(batas)}/kg, menunggu Manager)`
+          : `(standar harga ${fmtRp(batas)}/kg)`}
+      </span>
+    )
+  }
 
   return (
     <p className="mt-1.5 text-[11px] font-semibold" style={{ color: melebihi ? "var(--warning)" : "var(--muted-faint)" }}>

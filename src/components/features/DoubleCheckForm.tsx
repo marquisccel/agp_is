@@ -400,8 +400,9 @@ export default function DoubleCheckForm({
 
           return (
             <div key={idx} className="space-y-3 rounded-[var(--radius-md)] border p-3 shadow-sm transition-all hover:shadow-md md:p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-              <div className="flex flex-col justify-between gap-2 border-b pb-2 sm:flex-row sm:items-center" style={{ borderColor: "var(--border)" }}>
-                <div>
+              <div className="space-y-1 border-b pb-2" style={{ borderColor: "var(--border)" }}>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <div className="min-w-0">
                   <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{item.sku_name}</span>
                   {/* Spec itu kategori penyortiran, bukan keadaan
                       baik-buruk; sama seperti di Detail Transaksi. */}
@@ -410,13 +411,6 @@ export default function DoubleCheckForm({
                       {item.spec}
                     </span>
                   )}
-                  {/* Harga yang diketik Staff ikut ditampilkan: Admin
-                      tidak mengubahnya di sini, tapi harga itulah yang
-                      menentukan notanya lolos atau naik ke Manager. */}
-                  <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                    Harga {fmtRp(item.harga_per_kg)}/kg
-                  </p>
-                  <StandarHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} />
                 </div>
 
                 {/* SKU Delta indicator */}
@@ -426,8 +420,8 @@ export default function DoubleCheckForm({
                     "Susut -100%" -- peringatan atas angka yang belum
                     dimasukkan. */}
                 {gudangWeight <= 0 ? (
-                  <span className="rounded-[var(--radius-sm)] px-2 py-0.5 text-[10px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted-faint)" }}>
-                    Menunggu timbangan gudang
+                  <span className="shrink-0 whitespace-nowrap rounded-[var(--radius-sm)] px-2 py-0.5 text-[10px] font-bold" style={{ background: "var(--bg-tint)", color: "var(--muted-faint)" }}>
+                    Belum ditimbang
                   </span>
                 ) : diff !== 0 ? (
                   <span
@@ -445,6 +439,15 @@ export default function DoubleCheckForm({
                     Cocok
                   </span>
                 )}
+              </div>
+              {/* Harga yang diketik Staff ikut ditampilkan: Admin
+                  tidak mengubahnya di sini, tapi harga itulah yang
+                  menentukan notanya lolos atau naik ke Manager. Standar
+                  harga satu baris dengannya supaya kartu tidak memanjang. */}
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                Harga {fmtRp(item.harga_per_kg)}/kg{" "}
+                <StandarHargaSku skuName={item.sku_name} harga={item.harga_per_kg} standar={standarHarga} sebaris />
+              </p>
               </div>
 
               <div className="space-y-1 pt-1">
@@ -518,7 +521,8 @@ export default function DoubleCheckForm({
                   <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Total {item.sku_name}</span>
                   <span className="text-right font-mono text-sm font-extrabold tabular-nums" style={{ color: "var(--foreground)" }}>
                     {gudangWeight.toFixed(2)} KG
-                    <span className="ml-2 font-sans text-xs font-semibold" style={{ color: "var(--muted)" }}>
+                    <span className="mx-1.5 font-sans font-normal" style={{ color: "var(--muted-faint)" }} aria-hidden="true">/</span>
+                    <span className="font-sans text-xs font-semibold" style={{ color: "var(--muted)" }}>
                       {(timbanganItem[idx] ?? []).reduce((a, t) => a + (t.karung || 0), 0).toLocaleString("id-ID")} karung
                     </span>
                   </span>
