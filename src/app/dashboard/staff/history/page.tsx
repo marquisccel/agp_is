@@ -83,7 +83,7 @@ export default async function StaffHistoryPage() {
                   return (
                     <tr key={purchase.id}>
                       <td className="font-medium" style={{ color: "var(--foreground)" }}>
-                        {new Date(purchase.createdAt).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" })}
+                        {new Date(purchase.tanggal).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" })}
                       </td>
                       <td className="font-medium">{purchase.supplier.nama}</td>
                       <td>{purchase.metode_pembayaran_terpilih?.replace("_", " ") || "-"}</td>
@@ -169,7 +169,7 @@ export default async function StaffHistoryPage() {
               <KartuData
                 key={purchase.id}
                 judul={purchase.supplier.nama}
-                subjudul={new Date(purchase.createdAt).toLocaleString("id-ID", {
+                subjudul={new Date(purchase.tanggal).toLocaleString("id-ID", {
                   dateStyle: "medium",
                   timeStyle: "short",
                   timeZone: "Asia/Jakarta",

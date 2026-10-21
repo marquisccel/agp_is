@@ -122,7 +122,7 @@ export default async function ManagerDashboard({
     where: {
       purchase: {
         status_approval: { in: ACTIVE_PURCHASE_STATUSES },
-        createdAt: { gte: monthStart, lt: monthEnd }
+        tanggal: { gte: monthStart, lt: monthEnd }
       }
     }
   })
@@ -182,7 +182,7 @@ export default async function ManagerDashboard({
   const validPurchases = await prisma.purchase.findMany({
     where: {
       status_approval: { in: ACTIVE_PURCHASE_STATUSES },
-      createdAt: { gte: twelveMonthsAgo, lt: monthEnd }
+      tanggal: { gte: twelveMonthsAgo, lt: monthEnd }
     },
     include: {
       items: true,
@@ -194,7 +194,7 @@ export default async function ManagerDashboard({
   const calendarPurchases = await prisma.purchase.findMany({
     where: {
       status_approval: { in: ACTIVE_PURCHASE_STATUSES },
-      createdAt: { gte: calendarStart, lt: calendarEnd }
+      tanggal: { gte: calendarStart, lt: calendarEnd }
     },
     include: {
       items: true,
@@ -219,12 +219,12 @@ export default async function ManagerDashboard({
 
     // Pengeluaran (Expenses) calculation
     const getExpense = (p: (typeof validPurchases)[number]) => p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
-    globalExpenses.bulanan += wPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd).reduce((s, p) => s + getExpense(p), 0)
+    globalExpenses.bulanan += wPurchases.filter(p => p.tanggal >= monthStart && p.tanggal < monthEnd).reduce((s, p) => s + getExpense(p), 0)
     
 
-    const actual_harian   = wPurchases.filter(p => p.createdAt >= todayStart && p.createdAt < todayEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
-    const actual_mingguan = wPurchases.filter(p => p.createdAt >= weekStart && p.createdAt < weekEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
-    const actual_bulanan  = wPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
+    const actual_harian   = wPurchases.filter(p => p.tanggal >= todayStart && p.tanggal < todayEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
+    const actual_mingguan = wPurchases.filter(p => p.tanggal >= weekStart && p.tanggal < weekEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
+    const actual_bulanan  = wPurchases.filter(p => p.tanggal >= monthStart && p.tanggal < monthEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
 
     const yearlyData: { label: string; weight: number; target: number | null }[] = []
     for (let i = 11; i >= 0; i--) {
@@ -232,7 +232,7 @@ export default async function ManagerDashboard({
       const label  = d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" })
       const mStart = new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
       const mEnd   = new Date(Date.UTC(d.getFullYear(), d.getMonth() + 1, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
-      const weight = wPurchases.filter(p => p.createdAt >= mStart && p.createdAt < mEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
+      const weight = wPurchases.filter(p => p.tanggal >= mStart && p.tanggal < mEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
       const monthlyTarget = trendTargetMap.get(`${w.id}-${d.getFullYear()}-${d.getMonth() + 1}`)?.target_bulanan_kg || 0
       yearlyData.push({ label, weight, target: monthlyTarget > 0 ? monthlyTarget : null })
     }
@@ -243,7 +243,7 @@ export default async function ManagerDashboard({
     for (let d = 1; d <= daysInMonth; d++) {
       const dStart = new Date(Date.UTC(selectedTahun, selectedBulan - 1, d, 0, 0, 0) - 7 * 60 * 60 * 1000)
       const dEnd   = new Date(dStart.getTime() + 24 * 60 * 60 * 1000)
-      const weight = wPurchases.filter(p => p.createdAt >= dStart && p.createdAt < dEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
+      const weight = wPurchases.filter(p => p.tanggal >= dStart && p.tanggal < dEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
       dailyData.push({ label: `${d}`, weight, target: displayTarget?.target_harian_kg || 0 })
     }
 
@@ -254,7 +254,7 @@ export default async function ManagerDashboard({
       const wkEnd   = new Date(wkStart.getTime() + 7 * 24 * 60 * 60 * 1000)
       const wkLabel = new Date(wkStart.getTime() + 7 * 60 * 60 * 1000) // shift back to WIB for display
       const wNum = `${wkLabel.getUTCDate()}/${wkLabel.getUTCMonth() + 1}`
-      const weight = wPurchases.filter(p => p.createdAt >= wkStart && p.createdAt < wkEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
+      const weight = wPurchases.filter(p => p.tanggal >= wkStart && p.tanggal < wkEnd).flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
       weeklyData.push({ label: `Mg ${wNum}`, weight, target: displayTarget?.target_mingguan_kg || 0 })
     }
 
@@ -273,7 +273,7 @@ export default async function ManagerDashboard({
     }
   }
 
-  const monthlyPurchases = validPurchases.filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd)
+  const monthlyPurchases = validPurchases.filter(p => p.tanggal >= monthStart && p.tanggal < monthEnd)
 
   // ──────────────────────────────────────────
   // 6b. Delta bulan lalu (untuk stat strip) -- validPurchases sudah
@@ -282,7 +282,7 @@ export default async function ManagerDashboard({
   // ──────────────────────────────────────────
   const prevMonthStart = new Date(Date.UTC(selectedTahun, selectedBulan - 2, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
   const prevMonthEnd = monthStart
-  const prevMonthPurchases = validPurchases.filter(p => p.createdAt >= prevMonthStart && p.createdAt < prevMonthEnd)
+  const prevMonthPurchases = validPurchases.filter(p => p.tanggal >= prevMonthStart && p.tanggal < prevMonthEnd)
   const prevMonthTonase = prevMonthPurchases.flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0) / 1000
   const getExpenseValue = (p: (typeof validPurchases)[number]) => p.total_dibayar ?? p.total_nilai_setelah_retur ?? p.total_nilai_sebelum_retur ?? 0
   const prevMonthExpense = prevMonthPurchases.reduce((s, p) => s + getExpenseValue(p), 0)
@@ -295,7 +295,7 @@ export default async function ManagerDashboard({
   const calendarMap: Record<string, { totalKg: number; totalTransaksi: number; warehouses: Record<string, number> }> = {}
 
   for (const purchase of calendarPurchases) {
-    const localDateObj = new Date(purchase.createdAt.getTime() + 7 * 60 * 60 * 1000)
+    const localDateObj = new Date(purchase.tanggal.getTime() + 7 * 60 * 60 * 1000)
     const dateKey = localDateObj.toISOString().slice(0, 10)
     if (!calendarMap[dateKey]) {
       calendarMap[dateKey] = { totalKg: 0, totalTransaksi: 0, warehouses: {} }
@@ -319,7 +319,7 @@ export default async function ManagerDashboard({
   // 8. Top 10 Lapak per warehouse (selected month)
   // ──────────────────────────────────────────
   const warehouseTopData = warehouses.map(w => {
-    const wPurchases = validPurchases.filter(p => p.warehouseId === w.id && p.createdAt >= monthStart && p.createdAt < monthEnd)
+    const wPurchases = validPurchases.filter(p => p.warehouseId === w.id && p.tanggal >= monthStart && p.tanggal < monthEnd)
 
     // Aggregate per supplier
     const supplierMap: Record<string, { nama: string; totalKg: number; totalNilai: number; totalItems: number; transaksi: number }> = {}
@@ -455,7 +455,7 @@ export default async function ManagerDashboard({
     entry.detailTransaksi.push({
       purchaseId: p.id,
       nomorNota: p.nomor_nota || null,
-      tanggal: p.createdAt.toISOString(),
+      tanggal: p.tanggal.toISOString(),
       beratLapak: lapak,
       beratGudang: gudang,
       selisih: selisih,

@@ -61,6 +61,7 @@ export default async function ManagerEditTransaksiPage({ params }: { params: Pro
         purchase={purchaseSerialized}
         suppliers={suppliers}
         backUrl="/dashboard/manager/history"
+        revisiSetelahTransfer
       />
     </div>
   )

@@ -690,11 +690,9 @@ export default function ManagerSupplierDetailsClient({ supplier }: { supplier: S
                                 <Link href={`/dashboard/manager/purchases/${p.id}`} className="btn-netral premium-button px-3 py-1.5 text-xs">
                                   Detail
                                 </Link>
-                                {p.status_approval !== "sudah_transfer" && (
-                                  <Link href={`/dashboard/manager/edit/${p.id}`} className="btn-netral premium-button px-3 py-1.5 text-xs">
-                                    Edit
-                                  </Link>
-                                )}
+                                <Link href={`/dashboard/manager/edit/${p.id}`} className="btn-netral premium-button px-3 py-1.5 text-xs">
+                                  {p.status_approval === "sudah_transfer" ? "Revisi" : "Edit"}
+                                </Link>
                               </div>
                             </td>
                           </tr>

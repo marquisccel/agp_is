@@ -129,7 +129,7 @@ export default async function AdminDashboard() {
             <KartuData
               key={draft.id}
               judul={draft.supplier.nama}
-              subjudul={`${draft.warehouse.nama} · ${new Date(draft.createdAt).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })} · oleh ${draft.staff.nama}`}
+              subjudul={`${draft.warehouse.nama} · ${new Date(draft.tanggal).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })} · oleh ${draft.staff.nama}`}
               baris={[
                 ...draft.items.map((i) => ({
                   label: i.sku_name,
@@ -174,7 +174,7 @@ export default async function AdminDashboard() {
                 drafts.map((draft) => (
                   <tr key={draft.id}>
                     <td>
-                      <div className="font-medium" style={{ color: "var(--foreground)" }}>{new Date(draft.createdAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}</div>
+                      <div className="font-medium" style={{ color: "var(--foreground)" }}>{new Date(draft.tanggal).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })}</div>
                       <div className="mt-1 text-xs" style={{ color: "var(--muted-faint)" }}>Oleh: {draft.staff.nama}</div>
                     </td>
                     <td className="font-medium">

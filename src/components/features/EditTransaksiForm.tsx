@@ -10,6 +10,7 @@ import PotonganFields, { type BarisPotongan } from "@/components/features/Potong
 import { getPurchaseStatus } from "@/lib/purchaseStatusLabels"
 import { SKU_LIST } from "@/lib/skuList"
 import { fmtDigitInput, fmtSkalaRupiah } from "@/lib/format"
+import { MAKS_HARI_MUNDUR_STAFF, hariIniWib, hariMundurWib, tanggalWib } from "@/lib/tanggalPembelian"
 import { resolveWeightForPricing } from "@/lib/purchaseCalculation"
 
 interface PurchaseItem {
@@ -27,6 +28,8 @@ interface PurchaseItem {
 interface Purchase {
   id: string
   nomor_nota: string | null
+  /** Tanggal pembelian (ISO). */
+  tanggal?: string
   supplierId: string
   supplier: { id: string; nama: string }
   metode_pembayaran_terpilih: string | null
@@ -73,6 +76,7 @@ export default function EditTransaksiForm({
   suppliers,
   backUrl = "/dashboard/admin/history",
   sebagaiStaff = false,
+  revisiSetelahTransfer = false,
 }: {
   purchase: Purchase
   suppliers: Supplier[]
@@ -83,6 +87,11 @@ export default function EditTransaksiForm({
    * sebenarnya ada di rute API; di sini hanya agar layarnya jujur.
    */
   sebagaiStaff?: boolean
+  /**
+   * Manager boleh merevisi nota yang SUDAH ditransfer (arahan Manager
+   * 21 Okt 2026). Tanpa ini nota berstatus sudah transfer terkunci penuh.
+   */
+  revisiSetelahTransfer?: boolean
 }) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -100,12 +109,17 @@ export default function EditTransaksiForm({
   // ketahuan setelah seluruh form diisi dan tombol simpan ditekan --
   // formnya tampak normal, tombolnya hidup, lalu gagal di detik terakhir.
   // Sekarang dinyatakan di awal dan seluruh isian dimatikan.
-  const terkunci = initialPurchase.status_approval === "sudah_transfer"
+  const sudahTransfer = initialPurchase.status_approval === "sudah_transfer"
+  const terkunci = sudahTransfer && !revisiSetelahTransfer
+  const transferDirevisi = sudahTransfer && revisiSetelahTransfer
 
   // Basic fields
   const [nomor_nota, setNomorNota] = useState(initialPurchase.nomor_nota || "")
   const [supplierId, setSupplierId] = useState(initialPurchase.supplierId)
   const [metode, setMetode] = useState(initialPurchase.metode_pembayaran_terpilih || "TIMBANGAN_GUDANG")
+  const [tanggalPembelian, setTanggalPembelian] = useState(
+    initialPurchase.tanggal ? tanggalWib(new Date(initialPurchase.tanggal)) : hariIniWib()
+  )
   const [beratLapak, setBeratLapak] = useState(initialPurchase.berat_timbangan_lapak ?? 0)
   const [beratGudang, setBeratGudang] = useState(initialPurchase.berat_timbangan_gudang ?? 0)
 
@@ -289,6 +303,7 @@ export default function EditTransaksiForm({
         body: JSON.stringify({
           supplierId,
           nomor_nota: nomor_nota || null,
+          tanggal_pembelian: tanggalPembelian,
           metode_pembayaran_terpilih: metode,
           berat_timbangan_lapak: beratLapak || null,
           berat_timbangan_gudang: beratGudang || null,
@@ -326,7 +341,12 @@ export default function EditTransaksiForm({
           <StatusPill label={status.label} tone={status.tone} />
           {terkunci && (
             <p className="notice-body mt-2">
-              Sudah ditransfer, angkanya tidak bisa diubah. Koreksi lewat jalur audit.
+              Sudah ditransfer. Hanya Manager yang dapat merevisinya.
+            </p>
+          )}
+          {transferDirevisi && (
+            <p className="notice-body mt-2">
+              Nota ini sudah ditransfer. Revisi mengubah nilai nota, jadi sesuaikan selisih pembayarannya ke lapak bila perlu.
             </p>
           )}
           <p className="notice-foot mt-2">
@@ -366,6 +386,21 @@ export default function EditTransaksiForm({
                 ariaLabel="Pilih lapak atau supplier"
                 className="w-full"
                 disabled={terkunci || sebagaiStaff}
+              />
+            </div>
+
+            <div>
+              <label className="field-label" htmlFor="edit-tanggal-pembelian">Tanggal Pembelian</label>
+              <input
+                id="edit-tanggal-pembelian"
+                type="date"
+                required
+                className="field-input"
+                value={tanggalPembelian}
+                max={hariIniWib()}
+                min={sebagaiStaff ? hariMundurWib(MAKS_HARI_MUNDUR_STAFF) : undefined}
+                onChange={(e) => setTanggalPembelian(e.target.value)}
+                disabled={terkunci}
               />
             </div>
 

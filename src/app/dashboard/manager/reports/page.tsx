@@ -54,7 +54,7 @@ export default async function ManagerReportsPage({
   const purchases = await prisma.purchase.findMany({
     where: {
       status_approval: { in: ["approved", "sudah_transfer"] },
-      createdAt: { gte: yearStart, lt: yearEnd },
+      tanggal: { gte: yearStart, lt: yearEnd },
     },
     include: {
       items: true,
@@ -88,7 +88,7 @@ export default async function ManagerReportsPage({
     const mEnd   = new Date(Date.UTC(selectedTahun, monthIdx + 1, 1, 0, 0, 0) - 7 * 60 * 60 * 1000)
 
     // Filter purchases strictly in this month
-    const mPurchases = purchases.filter(p => p.createdAt >= mStart && p.createdAt < mEnd)
+    const mPurchases = purchases.filter(p => p.tanggal >= mStart && p.tanggal < mEnd)
 
     const totalKg = mPurchases.flatMap(p => p.items).reduce((s, i) => s + (i.berat_final_item || 0), 0)
     const totalSpent = mPurchases.reduce(
@@ -121,7 +121,7 @@ export default async function ManagerReportsPage({
 
   // 5. YTD Aggregates
   const ytdKg = monthlyData.reduce((s, m) => s + m.totalKg, 0)
-  const periodPurchases = purchases.filter(p => p.createdAt >= selectedMonthStart && p.createdAt < selectedMonthEnd)
+  const periodPurchases = purchases.filter(p => p.tanggal >= selectedMonthStart && p.tanggal < selectedMonthEnd)
   const periodItems = periodPurchases.flatMap(p => p.items)
   const periodKg = periodItems.reduce((sum, item) => sum + (item.berat_final_item || 0), 0)
   const periodSpent = periodPurchases.reduce(

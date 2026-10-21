@@ -6,6 +6,7 @@ import { createAuditLog } from "@/lib/audit"
 import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, positiveNumber } from "@/lib/numberValidation"
 import { allocateDp, InsufficientDpError } from "@/lib/dpAllocation"
+import { MAKS_HARI_MUNDUR_STAFF, periksaTanggalPembelian, hariIniWib } from "@/lib/tanggalPembelian"
 
 type DraftPurchaseItemInput = {
   sku_name: string
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
       supplierId,
       metode_pembayaran_terpilih,
       jenis_pengambilan,
+      tanggal_pembelian,
       dp_yang_digunakan,
       items,
       potongan_sampah,
@@ -57,6 +59,16 @@ export async function POST(req: Request) {
         { error: "Jenis pengambilan wajib dipilih (AMBIL atau KIRIM)." },
         { status: 400 }
       )
+    }
+
+    // Tanggal pembelian (arahan Manager 21 Okt 2026): barang bisa dibeli
+    // beberapa hari sebelum nota diketik. Kosong = hari ini. Staff dibatasi
+    // paling lama 31 hari ke belakang dan tidak boleh di masa depan.
+    const tanggalPeriksa = periksaTanggalPembelian(tanggal_pembelian ?? hariIniWib(), {
+      maksHariMundur: MAKS_HARI_MUNDUR_STAFF,
+    })
+    if (!tanggalPeriksa.ok) {
+      return NextResponse.json({ error: tanggalPeriksa.error }, { status: 400 })
     }
 
     // Determine warehouseId from session user
@@ -146,6 +158,7 @@ export async function POST(req: Request) {
         warehouseId,
         supplierId,
         userIdStaff: session.user.id,
+        tanggal: tanggalPeriksa.tanggal,
         metode_pembayaran_terpilih,
         jenis_pengambilan,
         berat_timbangan_lapak: totalLapakWeight,

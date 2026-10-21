@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLogTx } from "@/lib/audit"
 import { allocateDp, refundDp, InsufficientDpError } from "@/lib/dpAllocation"
 import { bacaRincian, rincianCocok } from "@/lib/rincianTimbangan"
+import { MAKS_HARI_MUNDUR_STAFF, periksaTanggalPembelian, tanggalWib } from "@/lib/tanggalPembelian"
 import { getErrorMessage } from "@/lib/errors"
 import { nonNegativeNumber, positiveNumber, percentageNumber } from "@/lib/numberValidation"
 import {
@@ -85,6 +86,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       metode_pembayaran_terpilih,
       berat_timbangan_lapak,
       berat_timbangan_gudang,
+      tanggal_pembelian,
       dp_yang_digunakan,
       potongan_sampah, berat_potongan_sampah, harga_potongan_sampah,
       potongan_susut,  berat_potongan_susut,  harga_potongan_susut,
@@ -125,8 +127,30 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
         )
       }
     }
-    if (existing.status_approval === "sudah_transfer") {
-      return NextResponse.json({ error: "Transaksi yang sudah transfer tidak dapat diedit. Buat koreksi manual melalui alur audit." }, { status: 400 })
+    // Nota yang sudah ditransfer hanya dapat direvisi Manager (arahan Manager
+    // 21 Okt 2026): salah input pada nota yang diinput Admin ditemukan setelah
+    // transfer, dan koreksinya tidak boleh menunggu. Admin dan Staff tetap
+    // ditolak. Revisi itu dicatat dengan nama aksi sendiri di audit trail,
+    // supaya mudah ditelusuri dan dibedakan dari edit biasa.
+    const revisiSetelahTransfer = existing.status_approval === "sudah_transfer"
+    if (revisiSetelahTransfer && role !== "MANAGER") {
+      return NextResponse.json(
+        { error: "Nota yang sudah ditransfer hanya dapat direvisi oleh Manager." },
+        { status: 400 }
+      )
+    }
+
+    // Tanggal pembelian: hanya diubah bila memang berbeda dari yang tersimpan,
+    // supaya menyimpan ulang tidak menggeser jam nota yang sudah ada.
+    let tanggalBaru: Date | undefined
+    if (tanggal_pembelian !== undefined && tanggal_pembelian !== null && tanggal_pembelian !== tanggalWib(existing.tanggal)) {
+      const hasil = periksaTanggalPembelian(tanggal_pembelian, {
+        maksHariMundur: sebagaiStaff ? MAKS_HARI_MUNDUR_STAFF : null,
+      })
+      if (!hasil.ok) {
+        return NextResponse.json({ error: hasil.error }, { status: 400 })
+      }
+      tanggalBaru = hasil.tanggal
     }
 
     // Bagi Staff, lapak, nomor nota, dan semua potongan dikunci ke nilai
@@ -286,6 +310,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
           ...(p.nomor_nota !== undefined ? { nomor_nota: p.nomor_nota } : {}),
           ...(metode_pembayaran_terpilih ? { metode_pembayaran_terpilih } : {}),
           dp_yang_digunakan: dpBaru,
+          ...(tanggalBaru ? { tanggal: tanggalBaru } : {}),
           berat_timbangan_lapak: draftStaff
             ? validatedItems.reduce((sum, i) => sum + i.berat_lapak, 0)
             : berat_timbangan_lapak != null ? toNumber(berat_timbangan_lapak, "Berat timbangan lapak") : existing.berat_timbangan_lapak,
@@ -330,7 +355,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       // boleh lolos tanpa jejak.
       await createAuditLogTx(tx, {
         userId: session.user.id,
-        action: "EDIT_PURCHASE",
+        action: revisiSetelahTransfer ? "EDIT_PURCHASE_SETELAH_TRANSFER" : "EDIT_PURCHASE",
         table_name: "Purchase",
         record_id: id,
         old_data: existing,

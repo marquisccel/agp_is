@@ -105,7 +105,7 @@ export async function GET(req: Request) {
     const purchases = await prisma.purchase.findMany({
       where: {
         status_approval: { in: ["approved", "sudah_transfer"] },
-        createdAt: { gte: monthStart, lt: monthEnd }
+        tanggal: { gte: monthStart, lt: monthEnd }
       },
       include: {
         warehouse: true,
@@ -161,17 +161,17 @@ export async function GET(req: Request) {
       const wPurchases = purchases.filter(p => p.warehouseId === w.id)
 
       const actual_harian = wPurchases
-        .filter(p => p.createdAt >= todayStart && p.createdAt < todayEnd)
+        .filter(p => p.tanggal >= todayStart && p.tanggal < todayEnd)
         .flatMap(p => p.items)
         .reduce((s, item) => s + (item.berat_final_item || 0), 0)
 
       const actual_mingguan = wPurchases
-        .filter(p => p.createdAt >= weekStart && p.createdAt < weekEnd)
+        .filter(p => p.tanggal >= weekStart && p.tanggal < weekEnd)
         .flatMap(p => p.items)
         .reduce((s, item) => s + (item.berat_final_item || 0), 0)
 
       const actual_bulanan = wPurchases
-        .filter(p => p.createdAt >= monthStart && p.createdAt < monthEnd)
+        .filter(p => p.tanggal >= monthStart && p.tanggal < monthEnd)
         .flatMap(p => p.items)
         .reduce((s, item) => s + (item.berat_final_item || 0), 0)
 

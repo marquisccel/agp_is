@@ -57,6 +57,11 @@ export const AUDIT_ACTIONS: Record<string, AuditActionInfo> = {
     description: "mengubah data transaksi pembelian",
     tone: TONE.netral,
   },
+  EDIT_PURCHASE_SETELAH_TRANSFER: {
+    label: "Nota direvisi setelah transfer",
+    description: "merevisi nota yang sudah ditransfer",
+    tone: TONE.perhatian,
+  },
   ADMIN_DOUBLE_CHECK: {
     label: "Verifikasi gudang selesai",
     description: "menyelesaikan verifikasi timbangan gudang",

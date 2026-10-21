@@ -11,6 +11,7 @@ import PotonganFields, { type BarisPotongan } from "@/components/features/Potong
 import NumberInput from "@/components/ui/NumberInput"
 import StandarHargaSku, { type StandarHarga } from "@/components/features/StandarHargaSku"
 import { pesanError } from "@/lib/pesanError"
+import { MAKS_HARI_MUNDUR_STAFF, hariIniWib, hariMundurWib } from "@/lib/tanggalPembelian"
 import { useLayarPonsel } from "@/lib/useLayarPonsel"
 import StickyActionBar from "@/components/ui/StickyActionBar"
 import WizardLangkah from "@/components/ui/WizardLangkah"
@@ -75,6 +76,8 @@ export default function PurchaseForm({
   const [isOpen, setIsOpen] = useState(false)
   const [metodeBayar, setMetodeBayar] = useState("TIMBANGAN_GUDANG")
   const [jenisPengambilan, setJenisPengambilan] = useState("AMBIL")
+  /** "YYYY-MM-DD" menurut WIB. Bawaannya hari ini; diubah bila barang dibeli di hari sebelumnya. */
+  const [tanggalPembelian, setTanggalPembelian] = useState(() => hariIniWib())
   const [items, setItems] = useState<Item[]>([{ sku_name: "", spec: "", berat_estimasi: 0, harga_per_kg: 0 }])
   /** Digit mentah; pemisah ribuan hanya untuk tampilan. */
   const [dpDigunakan, setDpDigunakan] = useState("")
@@ -181,6 +184,7 @@ export default function PurchaseForm({
         supplierId,
         metode_pembayaran_terpilih: metodeBayar,
         jenis_pengambilan: jenisPengambilan,
+        tanggal_pembelian: tanggalPembelian,
         dp_yang_digunakan: dpAngka,
         items,
         potongan_sampah: potonganSampah,
@@ -215,7 +219,8 @@ export default function PurchaseForm({
         supplierKontakWa: selectedSupplier?.kontak_wa || null,
         gudangNama: namaGudang,
         items,
-        tanggal: new Date().toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" }),
+        // Tanggal pada nota adalah tanggal PEMBELIAN yang dipilih, bukan hari nota diketik.
+        tanggal: new Date(`${tanggalPembelian}T12:00:00+07:00`).toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" }),
         nomorDraft: saved.id?.slice(0, 8).toUpperCase() || "DRAFT",
         potonganSampah,
         beratPotonganSampah,
@@ -245,6 +250,7 @@ export default function PurchaseForm({
       setBeratPotonganKarung(0)
       setHargaPotonganKarung(0)
       setDpDigunakan("")
+      setTanggalPembelian(hariIniWib())
       setLangkah(0)
     } catch (err) {
       setError(pesanError(err))
@@ -379,6 +385,26 @@ export default function PurchaseForm({
         />
         <p className="text-xs text-slate-400">
           Dipakai untuk rekap efektivitas armada di dashboard Manager.
+        </p>
+      </div>
+
+      {/* Tanggal pembelian (arahan Manager 21 Okt 2026): barang bisa dibeli
+          tanggal 10 tetapi nota baru dibuat tanggal 13. Laporan dan target
+          harian mengikuti tanggal ini. */}
+      <div className="space-y-2 md:col-span-2">
+        <label className="field-label" htmlFor="tanggal-pembelian">Tanggal Pembelian</label>
+        <input
+          id="tanggal-pembelian"
+          type="date"
+          required
+          className="field-input field-lg"
+          value={tanggalPembelian}
+          min={hariMundurWib(MAKS_HARI_MUNDUR_STAFF)}
+          max={hariIniWib()}
+          onChange={(e) => setTanggalPembelian(e.target.value)}
+        />
+        <p className="text-xs text-slate-400">
+          Isi tanggal barang dibeli bila berbeda dari hari ini. Paling lama {MAKS_HARI_MUNDUR_STAFF} hari ke belakang.
         </p>
       </div>
     </div>

@@ -37,6 +37,8 @@ interface Purchase {
   id: string
   nomor_nota: string | null
   createdAt: string | Date
+  /** Tanggal pembelian (bukan tanggal nota diketik). */
+  tanggal: string | Date
   status_approval: string
   metode_pembayaran_terpilih: string | null
   total_nilai_setelah_retur: number | null
@@ -188,7 +190,7 @@ export default function AdminHistoryClient({
               <KartuData
                 key={purchase.id}
                 judul={purchase.supplier.nama}
-                subjudul={`${purchase.warehouse ? `${purchase.warehouse.nama} · ` : ""}${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`} · ${new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
+                subjudul={`${purchase.warehouse ? `${purchase.warehouse.nama} · ` : ""}${purchase.nomor_nota || `#${purchase.id.split("-")[0]}`} · ${new Date(purchase.tanggal).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
                 status={<StatusPill label={status.label} tone={status.tone} />}
                 baris={[
                   { label: "Staff", nilai: purchase.staff.nama },
@@ -270,7 +272,7 @@ export default function AdminHistoryClient({
                     <tr key={purchase.id}>
                       <td>
                         <div className="font-semibold text-slate-900">
-                          {new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}
+                          {new Date(purchase.tanggal).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}
                         </div>
                         <div className="text-xs text-slate-400 mt-1 font-mono">
                           {purchase.nomor_nota || `#${purchase.id.split("-")[0]}`}

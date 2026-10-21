@@ -211,14 +211,11 @@ export default function ManagerPurchaseDetailClient({
         }
         actions={
           <>
-          {/* API menolak mengedit nota yang sudah ditransfer. Tombolnya dulu
-              tetap tampil dan mengantar ke form yang seluruhnya terkunci --
-              perjalanan yang tidak pernah bisa selesai. */}
-          {!isTransferred && (
-            <Link href={`/dashboard/manager/edit/${purchase.id}`} className="premium-button btn-netral inline-flex items-center px-4 py-2 text-xs">
-              Edit Transaksi
-            </Link>
-          )}
+          {/* Manager boleh merevisi nota yang sudah ditransfer (arahan Manager
+              21 Okt 2026), jadi tombolnya tampil pada semua status. */}
+          <Link href={`/dashboard/manager/edit/${purchase.id}`} className="premium-button btn-netral inline-flex items-center px-4 py-2 text-xs">
+            {isTransferred ? "Revisi Transaksi" : "Edit Transaksi"}
+          </Link>
           </>
         }
       />

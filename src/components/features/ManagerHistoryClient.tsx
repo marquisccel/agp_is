@@ -29,6 +29,8 @@ interface Purchase {
   id: string
   nomor_nota: string | null
   createdAt: string | Date
+  /** Tanggal pembelian (bukan tanggal nota diketik). */
+  tanggal: string | Date
   status_approval: string
   status_pelunasan: string | null
   nominal_belum_lunas: number | null
@@ -196,7 +198,7 @@ export default function ManagerHistoryClient({
                         <div className="font-bold text-slate-950">{purchase.warehouse.nama}</div>
                         <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
                           <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}</span>
+                          <span>{new Date(purchase.tanggal).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}</span>
                         </div>
                       </td>
                       <td>
@@ -304,7 +306,7 @@ export default function ManagerHistoryClient({
               <KartuData
                 key={purchase.id}
                 judul={purchase.supplier.nama}
-                subjudul={`${purchase.warehouse.nama} · ${new Date(purchase.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
+                subjudul={`${purchase.warehouse.nama} · ${new Date(purchase.tanggal).toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" })}`}
                 status={<StatusPill label={status.label} tone={status.tone} />}
                 baris={[
                   { label: "Nota", nilai: <span className="font-mono">{nomor}</span> },

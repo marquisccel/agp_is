@@ -73,17 +73,17 @@ export default async function StaffDashboard() {
 
   const todayAgg = warehouseId ? await prisma.purchaseItem.aggregate({
     _sum: { berat_final_item: true },
-    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, createdAt: { gte: todayStart, lt: todayEnd } } }
+    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, tanggal: { gte: todayStart, lt: todayEnd } } }
   }) : null
 
   const weekAgg = warehouseId ? await prisma.purchaseItem.aggregate({
     _sum: { berat_final_item: true },
-    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, createdAt: { gte: weekStart, lt: weekEnd } } }
+    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, tanggal: { gte: weekStart, lt: weekEnd } } }
   }) : null
 
   const monthAgg = warehouseId ? await prisma.purchaseItem.aggregate({
     _sum: { berat_final_item: true },
-    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, createdAt: { gte: monthStart, lt: monthEnd } } }
+    where: { purchase: { warehouseId, status_approval: { in: ACTIVE_PURCHASE_STATUSES }, tanggal: { gte: monthStart, lt: monthEnd } } }
   }) : null
 
   const beratHariIni   = todayAgg?._sum.berat_final_item || 0

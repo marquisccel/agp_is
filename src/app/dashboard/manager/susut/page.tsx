@@ -33,7 +33,7 @@ export default async function ManagerSusutPage({
   const validPurchases = await prisma.purchase.findMany({
     where: {
       status_approval: { in: ACTIVE_PURCHASE_STATUSES },
-      createdAt: { gte: monthStart, lt: monthEnd }
+      tanggal: { gte: monthStart, lt: monthEnd }
     },
     include: {
       items: true,
@@ -97,7 +97,7 @@ export default async function ManagerSusutPage({
     entry.detailTransaksi.push({
       purchaseId: p.id,
       nomorNota: p.nomor_nota || null,
-      tanggal: p.createdAt.toISOString(),
+      tanggal: p.tanggal.toISOString(),
       beratLapak: lapak,
       beratGudang: gudang,
       selisih: selisih,
