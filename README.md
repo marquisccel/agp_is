@@ -518,16 +518,3 @@ npm run audit:data
 ```
 
 `npm run lint` saat ini masih memunculkan sejumlah peringatan peninggalan proses penstabilan sebelumnya. Peringatan itu sudah diketahui dan bukan penghalang, tetapi kode baru sebaiknya tidak menambahnya.
-
----
-
-## Dokumen lain
-
-| Dokumen | Isi |
-|---|---|
-| [Pasang di VPS](docs/deploy-vps.md) | langkah pemasangan di server |
-| [Tinjauan pengerasan keamanan](docs/hardening-review-2026-06-18.md) | hasil tinjauan keamanan |
-| [Fase 2: Status Lapak](docs/phase-2-supplier-status.md) | latar belakang status lapak |
-| [Fase 3: Kontrol Pembayaran](docs/phase-3-payment-control.md) | latar belakang kontrol pembayaran |
-| [Fase 4: Tata Kelola Pelaporan](docs/phase-4-reporting-governance.md) | latar belakang pelaporan dan audit |
-| [Peta jalan Fase 5 sampai 7](docs/roadmap-fase-5-7.md) | rencana lanjutan |
